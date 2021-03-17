@@ -14,6 +14,7 @@
         <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
         <version.okhttp>3.14.9</version.okhttp>
         <version.resteasy>4.5.9.Final</version.resteasy>
+        <version.microprofile>2.0</version.microprofile>
     </properties>
     <parent>
         <groupId>id.global</groupId>
@@ -39,6 +40,11 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${version.slf4j}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.rest.client</groupId>
+                <artifactId>microprofile-rest-client-api</artifactId>
+                <version>${version.microprofile}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
