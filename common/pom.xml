@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <modules>
+        <module>okhttp</module>
+        <module>exception</module>
+    </modules>
+    <properties>
+        <version.microprofile>2.0</version.microprofile>
+        <version.jackson>2.11.3</version.jackson>
+        <version.jboss>2.0.1.Final</version.jboss>
+        <version.slf4j>1.7.30</version.slf4j>
+        <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+        <version.okhttp>3.14.9</version.okhttp>
+        <version.resteasy>4.5.9.Final</version.resteasy>
+    </properties>
+    <parent>
+        <groupId>id.global</groupId>
+        <artifactId>globalid-parent</artifactId>
+        <version>2</version>
+        <relativePath/>
+    </parent>
+    <groupId>id.global.common</groupId>
+    <artifactId>globalid-common</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <scm>
+        <connection>scm:git:git@gitlab.com:globalid/common/java/globalid-common.git</connection>
+        <developerConnection>scm:git:git@gitlab.com:globalid/common/java/globalid-common.git</developerConnection>
+        <url>https://gitlab.com/globalid/common/java/globalid-common</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${version.slf4j}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${version.jackson}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.spec.javax.ws.rs</groupId>
+                <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+                <version>${version.jboss}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${version.okhttp}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client</artifactId>
+                <version>${version.resteasy}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
