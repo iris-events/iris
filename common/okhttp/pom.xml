@@ -7,7 +7,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>common-okhttp</artifactId>
+    <artifactId>globalid-okhttp</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
