@@ -18,13 +18,13 @@
     </parent>
     <groupId>id.global.common</groupId>
     <artifactId>globalid-common</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.5</version>
 
     <scm>
         <connection>scm:git:git@gitlab.com:globalid/common/java/globalid-common.git</connection>
         <developerConnection>scm:git:git@gitlab.com:globalid/common/java/globalid-common.git</developerConnection>
         <url>https://gitlab.com/globalid/common/java/globalid-common</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.5</tag>
     </scm>
 
 
