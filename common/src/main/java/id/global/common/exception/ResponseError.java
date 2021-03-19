@@ -28,4 +28,14 @@ public enum ResponseError implements IResponseError {
     public Response.StatusType getStatusType() {
         return statusType;
     }
+
+    @Override
+    public int getOrdinal() {
+        return this.ordinal();
+    }
+
+    @Override
+    public String getName() {
+        return this.name();
+    }
 }
