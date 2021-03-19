@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <modules>
-        <module>okhttp</module>
-        <module>exception</module>
-    </modules>
     <properties>
         <version.microprofile>2.0</version.microprofile>
         <version.jackson>2.11.3</version.jackson>
@@ -24,7 +20,6 @@
     <groupId>id.global.common</groupId>
     <artifactId>globalid-common</artifactId>
     <version>1.0.4-SNAPSHOT</version>
-    <packaging>pom</packaging>
 
     <scm>
         <connection>scm:git:git@gitlab.com:globalid/common/java/globalid-common.git</connection>
@@ -32,6 +27,34 @@
         <url>https://gitlab.com/globalid/common/java/globalid-common</url>
         <tag>HEAD</tag>
     </scm>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ws.rs</groupId>
+            <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+        </dependency>
+    </dependencies>
 
     <dependencyManagement>
         <dependencies>
