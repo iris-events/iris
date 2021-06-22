@@ -1,7 +1,8 @@
 package id.global.common.exception;
 
-import javax.ws.rs.core.Response;
 import java.util.UUID;
+
+import javax.ws.rs.core.Response;
 
 public class ControllerException extends RuntimeException {
     private final IResponseError error;
@@ -28,7 +29,8 @@ public class ControllerException extends RuntimeException {
     }
 
     public ErrorModel toEntity() {
-        return new ErrorModel(getMessage(), UUID.randomUUID().toString(), error.getStatusType().getStatusCode(), error.getName());
+        return new ErrorModel(getMessage(), UUID.randomUUID().toString(), error.getStatusType().getStatusCode(),
+                error.getName());
     }
 
     protected Response toResponse() {

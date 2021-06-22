@@ -1,4 +1,5 @@
 package id.global.common.okhttp;
+
 /*
  * Copyright (C) 2015 Thomas Broyer (t.broyer@ltgt.net)
  *
@@ -14,7 +15,6 @@ package id.global.common.okhttp;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -45,13 +45,16 @@ import okio.BufferedSink;
 /**
  * Implementation of {@link ClientHttpEngine} based on OkHttp.
  *
- * <p>Usage:
+ * <p>
+ * Usage:
  *
- * <pre><code>
+ * <pre>
+ * <code>
  * new ResteasyClientBuilder()
  *     .httpEngine(new OkHttpClientEngine(okHttpClient))
  *     .build()
- * </code></pre>
+ * </code>
+ * </pre>
  *
  * @author Thomas Broyer <t.broyer@ltgt.net>
  */
