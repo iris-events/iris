@@ -9,8 +9,6 @@ public enum ResponseError implements IResponseError {
     ERR_UNAUTHORIZED(Response.Status.UNAUTHORIZED),
     ERR_TOKEN(Response.Status.UNAUTHORIZED),
     ERR_USER_TOKEN_NOT_FOUND(Response.Status.NOT_FOUND),
-    ERR_MINOR_PERSON(Response.Status.BAD_REQUEST),
-    ERR_NAME_NOT_VALID(Response.Status.BAD_REQUEST),
     ERR_BAD_REQUEST(Response.Status.BAD_REQUEST),
     ERR_SERVER_ERROR(Response.Status.INTERNAL_SERVER_ERROR),
     ERR_CONSENT_COMPLETED(Response.Status.CONFLICT),
