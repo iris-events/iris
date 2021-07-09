@@ -1,0 +1,2 @@
+include:
+  - 'smallrye-async-api.gitlab-ci.yml'
