@@ -44,11 +44,11 @@ public class AmqpProducer {
 
     public void connect() {
 
-        if(connection != null && connection.isOpen()) {
+        if (connection != null && connection.isOpen()) {
             try {
                 connection.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.error("Problem with closing active connection", e);
             }
         }
         ConnectionFactory factory = new ConnectionFactory();
@@ -65,13 +65,14 @@ public class AmqpProducer {
         while (!createChannel(factory)) {
             if (failCounter >= 10) {
                 //TODO: we need to set some flag that producer is not working
+                isShutdown = true;
                 break;
             }
 
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOG.error("Thread.sleep interupted!", e);
             }
         }
     }
@@ -90,7 +91,7 @@ public class AmqpProducer {
             isShutdown = false;
             LOG.info("Connected to RabbitMQ");
         } catch (IOException | TimeoutException e) {
-            LOG.error("Faild Connecton! Count: "+failCounter++, e);
+            LOG.error("Faild Connecton! Count: " + failCounter++, e);
             return false;
         }
         return true;
@@ -115,11 +116,11 @@ public class AmqpProducer {
         bytes = objectMapper.writeValueAsBytes(message);
         publish(exchange, "", properties, bytes);
     }
+
     public void publishTopic(String exchange, String topic, Object message, AMQP.BasicProperties properties) throws Exception {
         byte[] bytes = new byte[0];
         bytes = objectMapper.writeValueAsBytes(message);
         publish(exchange, topic, properties, bytes);
-//        throw new UnsupportedOperationException("sentToTopic not implemented!");
     }
 
     public void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes) throws Exception {
@@ -132,6 +133,4 @@ public class AmqpProducer {
             throw new Exception("Channel is CLOSED!");
         }
     }
-
-
 }
