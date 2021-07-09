@@ -24,8 +24,6 @@ public class AmqpProducer {
     private int failCounter = 0;
     private boolean isShutdown = true;
 
-    private ConcurrentNavigableMap<Long, byte[]> outstandingConfirms = new ConcurrentSkipListMap<>();
-
     public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper) {
         this.amqpConfiguration = configuration;
         this.objectMapper = objectMapper;
@@ -128,7 +126,6 @@ public class AmqpProducer {
         if (!channel.isOpen()) {
             throw new Exception("Channel is CLOSED!");
         }
-        outstandingConfirms.put(channel.getNextPublishSeqNo(), bytes);
         channel.basicPublish(exchange, routingKey, properties, bytes);
 
         if (!channel.isOpen()) {
