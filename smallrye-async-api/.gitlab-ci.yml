@@ -1,0 +1,10 @@
+include:
+  - project: 'globalid/infrastructure/gitlab-ci'
+    ref: master
+    file:
+      - '/templates/java-lib-jdk-16.yml'
+
+package:
+  stage: build
+  script:
+    - mvn -B -ntp -s $MAVEN_SETTINGS package
