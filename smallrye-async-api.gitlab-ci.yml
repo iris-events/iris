@@ -1,0 +1,6 @@
+include:
+  - '/smallrye-async-api/.gitlab-ci.yml'
+
+default:
+  before_script:
+    - cd smallrye-async-api/
