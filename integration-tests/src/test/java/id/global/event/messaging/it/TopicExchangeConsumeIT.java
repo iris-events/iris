@@ -1,19 +1,18 @@
 package id.global.event.messaging.it;
 
 import id.global.asyncapi.spec.annotations.TopicMessageHandler;
+import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -27,13 +26,18 @@ public class TopicExchangeConsumeIT {
 
     @Inject MyLoggingServiceB internalLoggingServiceB;
 
+    @BeforeEach
+    public void setup() {
+        producer.connect();
+    }
+
+
     @Test
-    void topicTest() throws IOException, InterruptedException, ExecutionException, TimeoutException {
-        producer.declareTopicExchange(TOPIC_EXCHANGE);
-        producer.sendMessage(new LoggingEvent("Quick orange fox", 1L), TOPIC_EXCHANGE, "quick.orange.fox");
-        producer.sendMessage(new LoggingEvent("Quick yellow rabbit", 2L), TOPIC_EXCHANGE, "quick.yellow.rabbit");
-        producer.sendMessage(new LoggingEvent("Lazy blue snail", 3L), TOPIC_EXCHANGE, "lazy.blue.snail");
-        producer.sendMessage(new LoggingEvent("Lazy orange rabbit", 4L), TOPIC_EXCHANGE, "lazy.orange.rabbit");
+    void topicTest() throws Exception {
+        producer.publishTopic(TOPIC_EXCHANGE,"quick.orange.fox",new LoggingEvent("Quick orange fox", 1L), null);
+        producer.publishTopic(TOPIC_EXCHANGE,"quick.yellow.rabbit",new LoggingEvent("Quick yellow rabbit", 2L), null);
+        producer.publishTopic(TOPIC_EXCHANGE,"lazy.blue.snail",new LoggingEvent("Lazy blue snail", 3L), null);
+        producer.publishTopic(TOPIC_EXCHANGE,"lazy.orange.rabbit",new LoggingEvent("Lazy orange rabbit", 4L), null);
 
         assertEquals("Quick orange fox", internalLoggingServiceA.getFutureList().get(0).get(1, TimeUnit.SECONDS));
         assertEquals("Quick yellow rabbit", internalLoggingServiceB.getFutureList().get(0).get(1, TimeUnit.SECONDS));
@@ -84,33 +88,5 @@ public class TopicExchangeConsumeIT {
         }
     }
 
-    public static class LoggingEvent {
 
-        private String log;
-        private Long level;
-
-        public LoggingEvent() {
-        }
-
-        public LoggingEvent(String log, Long level) {
-            this.log = log;
-            this.level = level;
-        }
-
-        public String getLog() {
-            return log;
-        }
-
-        public Long getLevel() {
-            return level;
-        }
-
-        public void setLog(String log) {
-            this.log = log;
-        }
-
-        public void setLevel(Long level) {
-            this.level = level;
-        }
-    }
 }

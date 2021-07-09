@@ -1,19 +1,22 @@
 package id.global.event.messaging.it;
 
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
+import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.event.messaging.it.events.Event;
+import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -24,41 +27,42 @@ public class FanoutExchangeConsumeIT {
 
     @Inject MyLoggingServiceB internalLoggingServiceB;
 
-    @Inject AmqpConfiguration config;
+    @Inject TestHandlerService service;
+
+    @BeforeEach
+    public void setup() {
+        service.reset();
+        producer.connect();
+    }
 
     private static final String EXCHANGE = "test_fanout_exchange";
 
-    // For proper cleanup we need names of all "random" queue names generated for fanout exchanges
-    //    @AfterAll void teardown() throws IOException, TimeoutException {
-    //        ConnectionFactory factory = new ConnectionFactory();
-    //        factory.setHost(config.getUrl());
-    //        factory.setPort(config.getPort());
-    //
-    //        if (config.isAuthenticated()) {
-    //            factory.setUsername(config.getUsername());
-    //            factory.setPassword(config.getPassword());
-    //        }
-    //        factory.setAutomaticRecoveryEnabled(true);
-    //        Connection connection = factory.newConnection();
-    //        Channel channel = connection.createChannel();
-    //
-    ////        channel.queueDelete(EVENT_QUEUE);
-    ////        channel.queueDelete(EVENT_QUEUE_PRIORITY);
-    //
-    //        // temp
-    //        channel.exchangeDelete(EXCHANGE);
-    //
-    //        channel.close();
-    //        connection.close();
-    //    }
-
     @Test
-    void fanoutTest() throws IOException, InterruptedException, ExecutionException {
-        producer.declareFanoutExchange(EXCHANGE);
-        producer.sendMessage(new LoggingEvent("this is log", 1L), EXCHANGE, "");
+    void fanoutTest() throws Exception {
+        producer.publishFanout(EXCHANGE,new LoggingEvent("this is log", 1L),null);
 
         assertEquals("this is log", internalLoggingServiceA.getFuture().get());
         assertEquals("this is log", internalLoggingServiceB.getFuture().get());
+    }
+
+    @Test
+    void publishMessageToUnknownExchange_ShoutFail() throws Exception {
+        producer.publishExchange("not known", new Event("a", 10L), null);
+
+        while (!producer.isShutdown()){} //TODO: this is no OK, figure it out how to properly wait for shutdown
+        System.out.println(service.getFanoutCount());
+
+        assertTrue(producer.isShutdown());
+        assertThrows(Exception.class, () -> producer.publishExchange("not known", new Event("a", 6L), null));
+    }
+
+    @Test
+    void publishMessageToFanout_ShouldReceiveTwoMessages() throws Exception {
+        producer.publishFanout("my.fanout", new Event("a", 23L), null);
+
+        CompletableFuture.allOf(service.getFanout1(),service.getFanout2()).join();
+
+        assertEquals(2, service.getFanoutCount());
     }
 
     @ApplicationScoped
@@ -89,33 +93,42 @@ public class FanoutExchangeConsumeIT {
         }
     }
 
-    public static class LoggingEvent {
+    @ApplicationScoped
+    public static class TestHandlerService {
 
-        private String log;
-        private Long level;
+        private CompletableFuture<Event> fanout1 = new CompletableFuture<>();
+        private  CompletableFuture<Event> fanout2 = new CompletableFuture<>();
 
-        public LoggingEvent() {
+        public void reset(){
+            fanout1 = new CompletableFuture<>();
+            fanout2 = new CompletableFuture<>();
         }
 
-        public LoggingEvent(String log, Long level) {
-            this.log = log;
-            this.level = level;
+        public CompletableFuture<Event> getFanout1() {
+            return fanout1;
         }
 
-        public String getLog() {
-            return log;
+        public CompletableFuture<Event> getFanout2() {
+            return fanout2;
         }
 
-        public Long getLevel() {
-            return level;
+        private final AtomicInteger eventCount = new AtomicInteger();
+        public int getFanoutCount() {
+            return eventCount.get();
         }
 
-        public void setLog(String log) {
-            this.log = log;
+        @FanoutMessageHandler(exchange = "my.fanout")
+        public void handleFanoutMessage(Event event) {
+            eventCount.getAndIncrement();
+            fanout1.complete(event);
         }
 
-        public void setLevel(Long level) {
-            this.level = level;
+        @FanoutMessageHandler(exchange = "my.fanout")
+        public void handleFanoutOtherMessage(Event event) {
+            eventCount.getAndIncrement();
+            fanout2.complete(event);
         }
+
     }
+
 }
