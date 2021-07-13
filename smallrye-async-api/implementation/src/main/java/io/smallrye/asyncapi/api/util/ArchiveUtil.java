@@ -16,11 +16,12 @@
 
 package io.smallrye.asyncapi.api.util;
 
-import io.smallrye.asyncapi.api.AsyncApiConfig;
-import io.smallrye.asyncapi.api.AsyncApiConfigImpl;
-import io.smallrye.asyncapi.api.AsyncApiConstants;
-import io.smallrye.asyncapi.runtime.AsyncApiFormat;
-import io.smallrye.asyncapi.runtime.AsyncApiStaticFile;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
@@ -33,11 +34,11 @@ import org.jboss.shrinkwrap.api.classloader.ShrinkWrapClassLoader;
 import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.Set;
+import io.smallrye.asyncapi.api.AsyncApiConfig;
+import io.smallrye.asyncapi.api.AsyncApiConfigImpl;
+import io.smallrye.asyncapi.api.AsyncApiConstants;
+import io.smallrye.asyncapi.runtime.AsyncApiFormat;
+import io.smallrye.asyncapi.runtime.AsyncApiStaticFile;
 
 /**
  * Some useful methods for creating stuff from ShrinkWrap {@link Archive}s.

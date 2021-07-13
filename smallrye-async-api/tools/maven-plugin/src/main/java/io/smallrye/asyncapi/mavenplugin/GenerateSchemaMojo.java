@@ -46,7 +46,7 @@ import io.smallrye.asyncapi.runtime.io.Format;
 import io.smallrye.asyncapi.runtime.scanner.GidAnnotationScanner;
 import io.smallrye.asyncapi.spec.AAIConfig;
 
-@Mojo(name = "generate-schema", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "generate-schema", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class GenerateSchemaMojo extends AbstractMojo {
 
     /**
@@ -152,8 +152,8 @@ public class GenerateSchemaMojo extends AbstractMojo {
     @Parameter(property = "apicurioArtifactId", defaultValue = "${project.name}:${project.version}")
     private String apicurioArtifactId;
 
-    @Parameter(property = "apicurioArtefactType", defaultValue = "ASYNCAPI")
-    private String apicurioArtefactType;
+    @Parameter(property = "apicurioArtifactType", defaultValue = "ASYNCAPI")
+    private String apicurioArtifactType;
 
     @Parameter(property = "uploadType", defaultValue = "json")
     private String uploadType;
@@ -167,10 +167,15 @@ public class GenerateSchemaMojo extends AbstractMojo {
             try {
                 getLog().info("INFO output of apicurio vars = \nURL = " + apicurioRegistryUrl +
                         "\nArtifactId = " + apicurioArtifactId
-                        + "\nArtifactType = " + apicurioArtefactType);
+                        + "\nArtifactType = " + apicurioArtifactType);
 
                 IndexView index = createIndex();
                 AaiDocument schema = generateSchema(index);
+
+                int schemaComponentsSize = schema.components.schemas.size();
+                int channelsSize = schema.channels.size();
+
+                getLog().info("Generated schema info:\nComponents: " + schemaComponentsSize + "\nChannels: " + channelsSize);
 
                 if (apicurioRegistryUrl != null) {
                     uploadToApicurio(schema);
@@ -186,17 +191,20 @@ public class GenerateSchemaMojo extends AbstractMojo {
 
     private void uploadToApicurio(AaiDocument schema) throws IOException, MojoExecutionException {
         String schemaOutput = "";
+        String mediaType = "";
         if (uploadType.equalsIgnoreCase("json")) {
+            mediaType = "applicatino/json";
             schemaOutput = AsyncApiSerializer.serialize(schema, Format.JSON);
         } else if (uploadType.equalsIgnoreCase("yaml")) {
+            mediaType = "application/x-yaml";
             schemaOutput = AsyncApiSerializer.serialize(schema, Format.YAML);
         }
         String artifactName = String.format("%s:%s", apicurioArtifactId, uploadType);
+        String contentType = String.format("%s; artifactType=%s", mediaType, apicurioArtifactType);
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            //            HttpPost post = new HttpPost(apicurioRegistryUrl + "/api/artifacts");
             HttpPost post = new HttpPost(apicurioRegistryUrl + "/api/artifacts?ifExists=UPDATE");
-            post.addHeader("Content-type", "application/json; artifactType=" + apicurioArtefactType);
+            post.addHeader("Content-type", contentType);
             post.addHeader("X-Registry-ArtifactId", artifactName);
             post.setHeader("Accept", "application/json");
             post.setEntity(new StringEntity(schemaOutput));
