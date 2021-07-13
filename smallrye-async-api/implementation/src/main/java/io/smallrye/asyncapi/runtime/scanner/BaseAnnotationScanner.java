@@ -2,6 +2,7 @@ package io.smallrye.asyncapi.runtime.scanner;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -10,12 +11,13 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelBindings;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelItem;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20Components;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Message;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Operation;
@@ -23,6 +25,10 @@ import io.apicurio.datamodels.core.models.common.Schema;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
 import io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant;
 import io.smallrye.asyncapi.runtime.io.schema.SchemaReader;
+import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
+import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
+import io.smallrye.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
+import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 
 public abstract class BaseAnnotationScanner {
 
@@ -61,40 +67,72 @@ public abstract class BaseAnnotationScanner {
         return Objects.equals(annotation.target().kind(), AnnotationTarget.Kind.CLASS);
     }
 
-    protected void createChannels(Map<String, ObjectNode> events,
-            Map<String, String> messageTypes, String opType, Aai20Document asyncApi) {
+    protected void createChannels(List<ChannelInfo> channelInfos,
+            Map<String, String> messageTypes, Aai20Document asyncApi) {
         if (asyncApi.channels == null) {
             asyncApi.channels = new HashMap<>();
         }
 
-        events.forEach((eventKey, jsonNodes) -> {
+        channelInfos.forEach(channelInfo -> {
+            String eventKey = channelInfo.getEventKey();
             AaiChannelItem channelItem = new Aai20ChannelItem(eventKey);
             AaiOperation operation;
-            if (opType.equals(OperationConstant.PROP_SUBSCRIBE)) {
-                channelItem.subscribe = new Aai20Operation(opType);
+            if (channelInfo.getOperationType().equals(OperationConstant.PROP_SUBSCRIBE)) {
+                channelItem.subscribe = new Aai20Operation(OperationConstant.PROP_SUBSCRIBE);
                 operation = channelItem.subscribe;
-            } else if (opType.equals(OperationConstant.PROP_PUBLISH)) {
-                channelItem.publish = new Aai20Operation(opType);
+            } else if (channelInfo.getOperationType().equals(OperationConstant.PROP_PUBLISH)) {
+                channelItem.publish = new Aai20Operation(OperationConstant.PROP_PUBLISH);
                 operation = channelItem.publish;
             } else {
                 throw new IllegalArgumentException("opType argument should be one of [publish, subscribe]");
             }
+
             operation.message = new Aai20Message(eventKey);
             operation.message.addExtraProperty(PROP_MESSAGE_TYPE, messageTypes.get(eventKey));
 
             Schema payloadSchema = new Schema();
             payloadSchema.setReference(COMPONENTS_SCHEMAS_PREFIX + eventKey);
             operation.message.payload = payloadSchema;
-            asyncApi.channels.put(eventKey, channelItem);
+
+            channelItem.bindings = new Aai20ChannelBindings();
+            channelItem.bindings.amqp = new GidAai20AmqpChannelBindings();
+            GidAai20AmqpChannelBindings amqp = (GidAai20AmqpChannelBindings) channelItem.bindings.amqp;
+            amqp.setIs("routingKey"); // We probably won't ever use "queue" ?
+
+            Map<String, Object> queue = new HashMap<>();
+            ChannelBindingsInfo bindingsInfo = channelInfo.getBindingsInfo();
+            String queueName = bindingsInfo.getQueue();
+            queue.put("name", queueName);
+            queue.put("durable", bindingsInfo.isQueueDurable());
+            queue.put("exclusive", bindingsInfo.isQueueExclusive());
+            queue.put("autoDelete", bindingsInfo.isQueueAutoDelete());
+            queue.put("vhost", bindingsInfo.getQueueVhost());
+            amqp.setQueue(queue);
+
+            Map<String, Object> exchange = new HashMap<>();
+            String exchangeName = bindingsInfo.getExchange();
+            exchange.put("name", exchangeName);
+            exchange.put("type", bindingsInfo.getExchangeType().getType());
+            exchange.put("durable", bindingsInfo.isExchangeDurable());
+            exchange.put("autoDelete", bindingsInfo.isExchangeAutoDelete());
+            exchange.put("vhost", bindingsInfo.getExchangeVhost());
+            amqp.setExchange(exchange);
+
+            String channelKey = String.format("%s/%s", exchangeName, queueName);
+
+            asyncApi.channels.put(channelKey, channelItem);
         });
     }
 
-    protected void insertComponentSchemas(final AnnotationScannerContext context, Map<String, ObjectNode> collectedNodes,
+    protected void insertComponentSchemas(final AnnotationScannerContext context, Map<String, JsonSchemaInfo> collectedNodes,
             Aai20Document asyncApi) {
-        collectedNodes.forEach((s, jsonNodes) -> {
+        if (asyncApi.components == null) {
+            asyncApi.components = new Aai20Components();
+        }
+        collectedNodes.forEach((s, jsonSchemaInfo) -> {
             // Read and save definitions of each scanned schema node, if any
             // These definitions are later inserted under `#/components/schemas`
-            JsonNode definitions = jsonNodes.get("definitions");
+            JsonNode definitions = jsonSchemaInfo.getGeneratedSchema().get("definitions");
             if (definitions != null) {
                 // extract this to a method
                 Iterator<Map.Entry<String, JsonNode>> defFieldsIterator = definitions.fields();
@@ -106,7 +144,7 @@ public abstract class BaseAnnotationScanner {
                     context.addDefinitionSchema(key, definitionAaiSchema);
                 }
             }
-            AaiSchema aaiSchema = SchemaReader.readSchema(jsonNodes, true);
+            AaiSchema aaiSchema = SchemaReader.readSchema(jsonSchemaInfo.getGeneratedSchema(), true);
             asyncApi.components.schemas.put(s, aaiSchema);
         });
     }

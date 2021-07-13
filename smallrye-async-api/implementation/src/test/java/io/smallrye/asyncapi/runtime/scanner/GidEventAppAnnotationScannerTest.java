@@ -1,22 +1,23 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
-import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
-import io.apicurio.datamodels.asyncapi.models.AaiSchema;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
-import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersApp;
-import io.smallrye.asyncapi.runtime.scanner.app.FanoutEventHandlersApp;
-import io.smallrye.asyncapi.runtime.scanner.model.TestEventV2;
-import org.jboss.jandex.Index;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.jboss.jandex.Index;
+import org.junit.Test;
+
+import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
+import io.apicurio.datamodels.asyncapi.models.AaiSchema;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
+import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersApp;
+import io.smallrye.asyncapi.runtime.scanner.app.FanoutEventHandlersApp;
+import io.smallrye.asyncapi.runtime.scanner.model.TestEventV2;
 
 public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
     @Test
@@ -46,18 +47,18 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertNotNull(document.components.schemas);
         assertNotNull(document.channels);
 
-        assertEquals(4, document.channels.size());
+        assertEquals(6, document.channels.size());
 
         Set<Map.Entry<String, AaiChannelItem>> channelEntries = document.channels.entrySet();
         List<Map.Entry<String, AaiChannelItem>> publishChannels = channelEntries.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getValue().publish != null)
                 .collect(Collectors.toList());
-        List<Map.Entry<String, AaiChannelItem>> subscrubeChannels = channelEntries.stream()
+        List<Map.Entry<String, AaiChannelItem>> subscribeChannels = channelEntries.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getValue().subscribe != null)
                 .collect(Collectors.toList());
 
-        assertEquals(1, publishChannels.size());
-        assertEquals(3, subscrubeChannels.size());
+        assertEquals(0, publishChannels.size()); // for now, as we do not annotate producers, we won't create publish channels
+        assertEquals(6, subscribeChannels.size());
         assertEquals(7, document.components.schemas.size());
 
         // Finding JsonNode under components.schemas is expected in this case
@@ -78,7 +79,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         // TODO needs serious rework of channel (and bindings for them) creation for
         // fanout and topic exchanges
         assertEquals(5, document.components.schemas.size());
-        assertEquals(2, document.channels.size());
+        assertEquals(3, document.channels.size());
     }
 
     @Test

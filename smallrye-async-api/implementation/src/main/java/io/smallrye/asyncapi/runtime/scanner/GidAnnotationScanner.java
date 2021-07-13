@@ -35,15 +35,21 @@ import io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant;
 import io.smallrye.asyncapi.runtime.io.components.ComponentReader;
 import io.smallrye.asyncapi.runtime.io.info.InfoReader;
 import io.smallrye.asyncapi.runtime.io.server.ServerReader;
+import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
+import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
+import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
+import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import io.smallrye.asyncapi.runtime.util.JandexUtil;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +75,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
      * Constructor.
      *
      * @param config AsyncApiConfig instance
-     * @param index IndexView of deployment
+     * @param index  IndexView of deployment
      */
     public GidAnnotationScanner(AsyncApiConfig config, IndexView index) {
         super(config, index);
@@ -110,38 +116,32 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return asyncApi;
     }
 
+    private Stream<AnnotationInstance> getMethodAnnotations(Class<?> annotationClass, IndexView index) {
+        DotName annotationName = DotName.createSimple(annotationClass.getName());
+        return index.getAnnotations(annotationName).stream().filter(this::annotatedMethods);
+    }
+
     private void processMessageHandlerAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
             throws ClassNotFoundException {
-        DotName messageHandlerDotName = DotName.createSimple(MessageHandler.class.getName());
-        DotName fanoutMessageHandlerDotName = DotName.createSimple(FanoutMessageHandler.class.getName());
-        DotName topicMessageHandlerDotName = DotName.createSimple(TopicMessageHandler.class.getName());
-
-        Stream<AnnotationInstance> directAnnotations = context.getIndex().getAnnotations(messageHandlerDotName)
-                .stream().filter(this::annotatedMethods);
-        Stream<AnnotationInstance> fanoutAnnotations = context.getIndex().getAnnotations(fanoutMessageHandlerDotName)
-                .stream().filter(this::annotatedMethods);
-        Stream<AnnotationInstance> topicAnnotations = context.getIndex().getAnnotations(topicMessageHandlerDotName)
-                .stream().filter(this::annotatedMethods);
+        Stream<AnnotationInstance> directAnnotations = getMethodAnnotations(MessageHandler.class, context.getIndex());
+        Stream<AnnotationInstance> fanoutAnnotations = getMethodAnnotations(FanoutMessageHandler.class, context.getIndex());
+        Stream<AnnotationInstance> topicAnnotations = getMethodAnnotations(TopicMessageHandler.class, context.getIndex());
 
         Stream<AnnotationInstance> concat = Stream.concat(directAnnotations, fanoutAnnotations);
         List<AnnotationInstance> methodAnnos = Stream.concat(concat, topicAnnotations).collect(Collectors.toList());
 
-        Map<String, ObjectNode> outgoingEvents = new HashMap<>();
-        Map<String, ObjectNode> incomingEvents = new HashMap<>();
+        Map<String, JsonSchemaInfo> incomingEvents = new HashMap<>();
+        List<ChannelInfo> channelInfos = new ArrayList<>();
+
         Map<String, String> messageTypes = new HashMap<>();
 
         for (AnnotationInstance methodAnno : methodAnnos) {
+            DotName annotationName = methodAnno.name();
+            List<AnnotationValue> annotationValues = methodAnno.values();
+
             MethodInfo methodInfo = (MethodInfo) methodAnno.target();
-            Type returnType = methodInfo.returnType();
             String type = JandexUtil.stringValue(methodAnno, "type");
 
-            if (!returnType.kind().equals(Type.Kind.VOID)) {
-                // Return type is not void, we can scan the class and add it to schemas
-                String simpleName = loadClass(returnType.toString()).getSimpleName();
-                ObjectNode node = generateJsonSchema(returnType.toString());
-                outgoingEvents.put(simpleName, node);
-                messageTypes.put(simpleName, type);
-            }
             List<Type> parameters = methodInfo.parameters();
             Type eventType;
             if (parameters.size() != 1) {
@@ -154,17 +154,26 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 eventType = parameters.get(0);
             }
             String simpleName = loadClass(eventType.toString()).getSimpleName();
-            ObjectNode node = generateJsonSchema(eventType.toString());
-            incomingEvents.put(simpleName, node);
+            incomingEvents.put(simpleName, generateJsonSchemaInfo(annotationName, eventType.toString(), annotationValues));
+            channelInfos.add(generateChannelBindingsInfo(methodAnno, simpleName));
             messageTypes.put(simpleName, type);
         }
 
         insertComponentSchemas(context, incomingEvents, asyncApi);
-        insertComponentSchemas(context, outgoingEvents, asyncApi);
+        createChannels(channelInfos, messageTypes, asyncApi);
+    }
 
-        // TODO handle fanout, topic, add bindings
-        createChannels(incomingEvents, messageTypes, OperationConstant.PROP_SUBSCRIBE, asyncApi);
-        createChannels(outgoingEvents, messageTypes, OperationConstant.PROP_PUBLISH, asyncApi);
+    private ExchangeType getExchangeTypeFromAnnotation(AnnotationInstance methodAnno) {
+        ExchangeType exchangeType = ExchangeType.DIRECT;
+        String annotationName = methodAnno.name().toString();
+
+        if (annotationName.equals(TopicMessageHandler.class.getSimpleName())) {
+            exchangeType = ExchangeType.TOPIC;
+        } else if (annotationName.equals(FanoutMessageHandler.class.getSimpleName())) {
+            exchangeType = ExchangeType.FANOUT;
+        }
+
+        return exchangeType;
     }
 
     private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, Aai20Document asyncApi) {
@@ -195,8 +204,27 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return document;
     }
 
-    private ObjectNode generateJsonSchema(String className) throws ClassNotFoundException {
-        return schemaGenerator.generateSchema(loadClass(className));
+    private JsonSchemaInfo generateJsonSchemaInfo(DotName annotationName, String className,
+            List<AnnotationValue> annotationValues) throws ClassNotFoundException {
+        Class<?> loadedClass = loadClass(className);
+        String eventSimpleName = loadedClass.getSimpleName();
+        ObjectNode generatedSchema = schemaGenerator.generateSchema(loadedClass);
+        return new JsonSchemaInfo(
+                annotationName,
+                eventSimpleName,
+                generatedSchema,
+                annotationValues);
+    }
+
+    private ChannelInfo generateChannelBindingsInfo(AnnotationInstance methodAnnotation, String eventClassSimpleName) {
+        String exchange = methodAnnotation.value("exchange") != null ? methodAnnotation.value("exchange").asString() : "";
+        String queue =
+                methodAnnotation.value("queue") != null ? methodAnnotation.value("queue").asString() : eventClassSimpleName;
+        ExchangeType exchangeType = getExchangeTypeFromAnnotation(methodAnnotation);
+        ChannelBindingsInfo channelBindingsInfo = new ChannelBindingsInfo(exchange, queue, exchangeType);
+
+        // Maybe we'll add publish channels in the future
+        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, OperationConstant.PROP_SUBSCRIBE);
     }
 
     private Class<?> loadClass(String className) throws ClassNotFoundException {
@@ -211,7 +239,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         // Schema generator JsonSchema of components
         SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7,
                 OptionPreset.PLAIN_JSON)
-                        .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
+                .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 
         Set<String> ignorePackagePrefixes = config.convertExternalTypesToObjectIgnoredPackages();
         if (!ignorePackagePrefixes.isEmpty()) {

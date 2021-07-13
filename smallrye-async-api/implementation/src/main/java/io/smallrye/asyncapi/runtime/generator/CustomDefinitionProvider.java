@@ -2,6 +2,8 @@ package io.smallrye.asyncapi.runtime.generator;
 
 import java.util.Set;
 
+import org.jboss.logging.Logger;
+
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.CustomPropertyDefinition;
@@ -11,6 +13,7 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
 public class CustomDefinitionProvider {
+    private static final Logger LOG = Logger.getLogger(CustomDefinitionProvider.class);
 
     public static final String JAVA_PACKAGE_PREFIX = "java.";
 
@@ -21,6 +24,7 @@ public class CustomDefinitionProvider {
 
             SchemaGeneratorConfig generatorConfig = context.getGeneratorConfig();
             if (isInIgnoredPackagePrefixes(fullTypeDescription, ignoredPackages)) {
+                LOG.debug("Ignoring type from schema: " + fullTypeDescription);
                 return null;
             } else {
                 return new CustomDefinition(generatorConfig.createObjectNode()
@@ -37,6 +41,7 @@ public class CustomDefinitionProvider {
 
             SchemaGeneratorConfig generatorConfig = context.getGeneratorConfig();
             if (isInIgnoredPackagePrefixes(fullTypeDescription, ignoredPackages)) {
+                LOG.debug("Ignoring field from schema: " + fullTypeDescription);
                 return null;
             } else {
                 return new CustomPropertyDefinition(

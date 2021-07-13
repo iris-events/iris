@@ -52,6 +52,7 @@ import io.smallrye.asyncapi.runtime.io.message.ApiMessageConstant;
 import io.smallrye.asyncapi.runtime.io.message.MessageReader;
 import io.smallrye.asyncapi.runtime.io.schema.SchemaConstant;
 import io.smallrye.asyncapi.runtime.io.server.ServerReader;
+import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import io.smallrye.asyncapi.runtime.util.JandexUtil;
 import io.smallrye.asyncapi.spec.annotations.AsyncAPIDefinition;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
@@ -197,20 +198,21 @@ public class AsyncApiAnnotationScanner extends BaseAnnotationScanner {
     private void processClassSchemas(final AnnotationScannerContext context, Aai20Document aaiDocument) {
         ObjectMapper mapper = JsonUtil.MAPPER;
 
-        Map<String, ObjectNode> collect = context.getIndex()
+        Map<String, JsonSchemaInfo> collect = context.getIndex()
                 .getAnnotations(SchemaConstant.DOTNAME_SCHEMA)
                 .stream()
                 .filter(this::annotatedClasses)
                 .collect(Collectors.toMap(
                         annotationInstance -> annotationInstance.target().asClass().simpleName(),
-                        o -> {
+                        annotationInstance -> {
                             try {
-                                String className = o.target().asClass().name().toString();
-                                return generateJsonSchema(className);
+                                String className = annotationInstance.target().asClass().name().toString();
+                                return new JsonSchemaInfo(annotationInstance.name(), className, generateJsonSchema(className),
+                                        annotationInstance.values());
                             } catch (ClassNotFoundException e) {
-                                e.printStackTrace();
+                                LOG.error("Could not process class schemas.", e);
+                                return new JsonSchemaInfo(null, null, null, null);
                             }
-                            return mapper.createObjectNode();
                         }));
 
         insertComponentSchemas(context, collect, aaiDocument);
