@@ -26,8 +26,6 @@ import java.nio.charset.StandardCharsets;
 
 import java.nio.file.Path;
 
-import java.util.Iterator;
-
 @Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE)
 public class AmqpGeneratorMojo extends AbstractMojo {
 
@@ -72,9 +70,11 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             return true;
         }
 
+        //TODO: set to true, when apicurio schema is fixed
         @Override
-        public boolean isIncludeAdditionalProperties()
-        {return false;}
+        public boolean isIncludeAdditionalProperties() {
+            return false;
+        }
     };
 
 
@@ -101,7 +101,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            getLog().error("DONE");
+            getLog().info("Generation completed!");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -117,26 +117,18 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             JSONArray jsonObject = (JSONArray) jsonParser.parse(artifcats);
 
 
-            getLog().error(jsonObject.size() + "");
-
-            for (int i = 0; i < jsonObject.size(); i++) {
-
-
-
-                if(jsonObject.get(i).toString().endsWith("yaml"))
+            for (Object o : jsonObject) {  //just an artifact name
+                if (o.toString().endsWith("yaml"))  //skip yaml files
                     continue;
-                getLog().error(jsonObject.get(i).toString());
-                String ymlContent = null;
+
                 try {
-                    ymlContent = readContentFromWeb("https://schema.internal.globalid.dev/api/artifacts/" + jsonObject.get(i).toString());
+                    String ymlContent  = readContentFromWeb("https://schema.internal.globalid.dev/api/artifacts/" + o);
                     parseAsyncApiJson(ymlContent);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                getLog().error("DONE");
-
             }
 
         } catch (IOException e) {
@@ -246,6 +238,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             generate(fileNema);
         }
 
+        //TODO: create Client package that contains different enums and helper function!
+        generateSupportClasses();
+
+    }
+    public void generateSupportClasses(){
+
     }
 
     public void generateChannelSupportData(JSONObject jsonObject){
@@ -256,7 +254,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     }
 
     public void generate(String fileName) throws IOException, ParseException {
-        getLog().info("Generating model for JsonSchema: " + fileName);
+        getLog().info("Generating Java class from JsonSchema file: " + fileName);
         JCodeModel codeModel = new JCodeModel();
         URL source = Path.of(project.getBasedir() + "/" + schemaTempDir + "/" + fileName).toFile().toURI().toURL();
         File directory = Path.of(project.getBasedir() + tmpDirectory + srcJava).toFile();
