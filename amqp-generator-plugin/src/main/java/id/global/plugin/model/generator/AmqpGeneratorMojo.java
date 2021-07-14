@@ -35,19 +35,19 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "artifactSource", required = true)
     ArtifactSource artifactSource;
 
-
     //TODO: use this instead hardcoded url!
-    @Parameter(property = "apicurioUrl", required = true)
+    @Parameter(property = "apicurioUrl", required = false)
     String apicurioUrl;
+
+    @Parameter(property = "fileDestination", required = false)
+    String fileDestination;
 
     @Parameter(property = "packageName", required = true)
     String packageName;
 
-
-    private static final String srcJava = "/src/main/java";
-    private static final String schemaTempDir = "schemas";
+    private static final String srcJava = "aaa/src/main/java";
+    private static final String schemaTempDir = "aaa/schemas";
     private static final String tmpDirectory = "/";
-
 
     private final GenerationConfig config = new DefaultGenerationConfig() {
         @Override
@@ -77,23 +77,22 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     };
 
-
     public void execute() throws MojoExecutionException, MojoFailureException {
         cleanUpDirectories();
-        if (artifactSource == ArtifactSource.DISK) {
-            generateFromFile();
+        if (artifactSource == ArtifactSource.FILE) {
+            generateFromFile(fileDestination);
         } else {
             generateFromApicurio();
         }
     }
 
-    public void generateFromFile() {
+    public void generateFromFile(String fileDestination) {
 
         try {
             String ymlContent = null;
             try {
-                ymlContent = readFileContent("vojko.json");
-                parseAsyncApiJson(ymlContent,"");
+                ymlContent = readSchemaContent(project.getBasedir() +"/" +fileDestination);
+                parseAsyncApiJson(ymlContent, "");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ParseException e) {
@@ -106,7 +105,29 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
+    public String readSchemaContent(String fileName) {
+        String text = "";
+        try {
+            InputStream inputStream = getFileInputStream(fileName);
+            text = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+            inputStream.close();
+        } catch (URISyntaxException | IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        return text;
+    }
 
+
+    public InputStream getFileInputStream(String fileName) throws URISyntaxException, IOException, ParseException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream inputStream = new FileInputStream(fileName);
+
+        if (inputStream == null) {
+            throw new IllegalArgumentException("file not found! " + fileName);
+        } else {
+            return inputStream;
+        }
+    }
     public void generateFromApicurio() {
         String artifcats;
         try {
@@ -114,9 +135,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             JSONParser jsonParser = new JSONParser();
             JSONArray jsonObject = (JSONArray) jsonParser.parse(artifcats);
 
-
-            for (Object o : jsonObject) {  //just an artifact name
-                if (o.toString().endsWith("yaml"))  //skip yaml files
+            for (Object o : jsonObject) { //just an artifact name
+                if (o.toString().endsWith("yaml")) //skip yaml files
                     continue;
 
                 try {
@@ -150,13 +170,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             e.printStackTrace();
         }
 
-
     }
 
     public String readFileContent(String fileName) {
         String text = "";
         try {
-            InputStream inputStream = getFileInputStream(fileName);
+            InputStream inputStream = getResourceFileInputStream(fileName);
             text = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
             inputStream.close();
         } catch (URISyntaxException | IOException | ParseException e) {
@@ -165,7 +184,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         return text;
     }
 
-    public InputStream getFileInputStream(String fileName) throws URISyntaxException, IOException, ParseException {
+    public InputStream getResourceFileInputStream(String fileName) throws URISyntaxException, IOException, ParseException {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream inputStream = classLoader.getResourceAsStream(fileName);
 
@@ -197,8 +216,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             content = content.replace("#", "file:");
             content = content.replace(
                     "\\/components\\/schemas\\/",
-                    project.getBasedir() + "/" + schemaTempDir + "/"
-            );
+                    project.getBasedir() + "/" + schemaTempDir + "/");
             myWriter.write(content);
             myWriter.close();
         } catch (IOException e) {
@@ -232,8 +250,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-
-    public void parseAsyncApiJson(String json,String appName) throws IOException, ParseException {
+    public void parseAsyncApiJson(String json, String appName) throws IOException, ParseException {
 
         getLog().info("Parsing AsyncApi definition!");
 
@@ -252,33 +269,32 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         //TODO: create Client package that contains different enums and helper function!
         generateSupportClasses(appName);
-//        writeFile("version.txt",appName,project.getBasedir()+"/");
+        //        writeFile("version.txt",appName,project.getBasedir()+"/");
 
     }
 
     public void generateSupportClasses(String appname) {
         String path = project.getBasedir() + tmpDirectory + srcJava
                 + "/" + packageName.replace(".", "/")
-                .substring(0, packageName.lastIndexOf("."))
-                + "/client/"+appname;
+                        .substring(0, packageName.lastIndexOf("."))
+                + "/client/" + appname;
 
         Path.of(path).toFile().mkdirs();
 
-
-        String template =  readFileContent("Exchanges.java");
+        String template = readFileContent("Exchanges.java");
         template = template.replace("!!!", appname);
         template = template.replace("#####", """
-                        
-        EXCHANGE1_ROUTING_KEY1("EXCHANGE1", "ROUTING_KEY1", "direct"),
-                EXCHANGE1_ROUTING_KEY2("EXCHANGE1", "ROUTING_KEY2", "direct"),
-                EXCHANGE2_ROUTING_KEY1("EXCHANGE2", "ROUTING_KEY1", "fanout"),
-                EXCHANGE3_ROUTING_KEY2("EXCHANGE3", "ROUTING_KEY2", "topic"),
-                EEEXCHANGE4_ROUTING_KEY3("EXCHANGE4", "ROUTING_KEY3", "fanout");""");
 
-        String pomtemplate =  readFileContent("xpom.xml");
+                EXCHANGE1_ROUTING_KEY1("EXCHANGE1", "ROUTING_KEY1", "direct"),
+                        EXCHANGE1_ROUTING_KEY2("EXCHANGE1", "ROUTING_KEY2", "direct"),
+                        EXCHANGE2_ROUTING_KEY1("EXCHANGE2", "ROUTING_KEY1", "fanout"),
+                        EXCHANGE3_ROUTING_KEY2("EXCHANGE3", "ROUTING_KEY2", "topic"),
+                        EEEXCHANGE4_ROUTING_KEY3("EXCHANGE4", "ROUTING_KEY3", "fanout");""");
 
-        writeFile("Exchanges.java",template, path);
-//        writeFile("xpom.xml",pomtemplate, project.getBasedir().toString());
+        String pomtemplate = readFileContent("xpom.xml");
+
+        writeFile("Exchanges.java", template, path);
+        //        writeFile("xpom.xml",pomtemplate, project.getBasedir().toString());
 
     }
 
@@ -295,7 +311,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         URL source = Path.of(project.getBasedir() + "/" + schemaTempDir + "/" + fileName).toFile().toURI().toURL();
         File directory = Path.of(project.getBasedir() + tmpDirectory + srcJava).toFile();
         directory.mkdirs();
-        SchemaMapper mapper = new SchemaMapper(new RuleFactory(config, new Jackson2Annotator(config), new SchemaStore()), new SchemaGenerator());
+        SchemaMapper mapper = new SchemaMapper(new RuleFactory(config, new Jackson2Annotator(config), new SchemaStore()),
+                new SchemaGenerator());
         mapper.generate(codeModel, "ClassName", packageName, source);
         codeModel.build(Path.of(project.getBasedir() + tmpDirectory + srcJava).toFile());
     }

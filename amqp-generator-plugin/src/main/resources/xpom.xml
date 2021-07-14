@@ -6,7 +6,7 @@
         <!--        <maven.deploy.skip>false</maven.deploy.skip>-->
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
-                <testprop></testprop>
+        <appName></appName>
     </properties>
     <!--The identifier of the parent POM-->
     <parent>
@@ -17,9 +17,9 @@
     </parent>
 
 
-    <artifactId>amqp-models-${testprop}</artifactId>
+    <artifactId>amqp-models-${appName}</artifactId>
     <version>1.0</version>
-    <name>test 123</name>
+    <name>Models for ${appName}</name>
 
     <build>
         <plugins>
