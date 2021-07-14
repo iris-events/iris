@@ -4,17 +4,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>id.global</groupId>
+    <parent>
+        <groupId>id.global</groupId>
+        <artifactId>globalid-parent</artifactId>
+        <version>3</version>
+        <relativePath/>
+    </parent>
+
+
     <artifactId>amqp-generator-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <version>1.1-SNAPSHOT</version>
     <name>amqp-generator-maven-plugin Maven Mojo</name>
-    <url>http://maven.apache.org</url>
+
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
         <maven-plugin-plugin.version>3.6.1</maven-plugin-plugin.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
