@@ -1,4 +1,4 @@
-package id.global.client.!!!;
+package id.global.models.!!!.client;
 
 public enum Exchanges {
 
