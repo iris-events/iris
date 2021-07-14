@@ -78,8 +78,6 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     };
 
 
-
-
     public void execute() throws MojoExecutionException, MojoFailureException {
         cleanUpDirectories();
         if (artifactSource == ArtifactSource.DISK) {
@@ -94,8 +92,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         try {
             String ymlContent = null;
             try {
-                ymlContent =  readFileContent("vojko.json");
-                parseAsyncApiJson(ymlContent);
+                ymlContent = readFileContent("vojko.json");
+                parseAsyncApiJson(ymlContent,"");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ParseException e) {
@@ -122,8 +120,10 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                     continue;
 
                 try {
-                    String ymlContent  = readContentFromWeb("https://schema.internal.globalid.dev/api/artifacts/" + o);
-                    parseAsyncApiJson(ymlContent);
+                    String ymlContent = readContentFromWeb("https://schema.internal.globalid.dev/api/artifacts/" + o);
+                    getLog().info("applicationFor: " + o);
+                    String applicationName = o.toString().split(":")[0]; //TODO: make it nicer
+                    parseAsyncApiJson(ymlContent, applicationName);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ParseException e) {
@@ -156,7 +156,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     public String readFileContent(String fileName) {
         String text = "";
         try {
-            InputStream inputStream = getFileInputStream("vojko.txt");
+            InputStream inputStream = getFileInputStream(fileName);
             text = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
             inputStream.close();
         } catch (URISyntaxException | IOException | ParseException e) {
@@ -207,6 +207,18 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     }
 
+    public void writeFile(String fileName, String content, String path) {
+        FileWriter myWriter = null;
+        try {
+            myWriter = new FileWriter(path + "/" + fileName);
+            myWriter.write(content);
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void drillDown(JSONObject root, String padding) {
         getLog().info("Creating JsonSchema files for model generator!");
 
@@ -221,7 +233,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     }
 
 
-    public void parseAsyncApiJson(String json) throws IOException, ParseException {
+    public void parseAsyncApiJson(String json,String appName) throws IOException, ParseException {
 
         getLog().info("Parsing AsyncApi definition!");
 
@@ -239,14 +251,38 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
 
         //TODO: create Client package that contains different enums and helper function!
-        generateSupportClasses();
+        generateSupportClasses(appName);
+//        writeFile("version.txt",appName,project.getBasedir()+"/");
 
     }
-    public void generateSupportClasses(){
+
+    public void generateSupportClasses(String appname) {
+        String path = project.getBasedir() + tmpDirectory + srcJava
+                + "/" + packageName.replace(".", "/")
+                .substring(0, packageName.lastIndexOf("."))
+                + "/client/"+appname;
+
+        Path.of(path).toFile().mkdirs();
+
+
+        String template =  readFileContent("Exchanges.java");
+        template = template.replace("!!!", appname);
+        template = template.replace("#####", """
+                        
+        EXCHANGE1_ROUTING_KEY1("EXCHANGE1", "ROUTING_KEY1", "direct"),
+                EXCHANGE1_ROUTING_KEY2("EXCHANGE1", "ROUTING_KEY2", "direct"),
+                EXCHANGE2_ROUTING_KEY1("EXCHANGE2", "ROUTING_KEY1", "fanout"),
+                EXCHANGE3_ROUTING_KEY2("EXCHANGE3", "ROUTING_KEY2", "topic"),
+                EEEXCHANGE4_ROUTING_KEY3("EXCHANGE4", "ROUTING_KEY3", "fanout");""");
+
+        String pomtemplate =  readFileContent("xpom.xml");
+
+        writeFile("Exchanges.java",template, path);
+//        writeFile("xpom.xml",pomtemplate, project.getBasedir().toString());
 
     }
 
-    public void generateChannelSupportData(JSONObject jsonObject){
+    public void generateChannelSupportData(JSONObject jsonObject) {
         getLog().info("Creating JsonSchema generateChannelSupportData!");
         for (String key : (Iterable<String>) jsonObject.keySet()) {
             getLog().warn("Channel: " + key + "   " + jsonObject.get(key).toString());
