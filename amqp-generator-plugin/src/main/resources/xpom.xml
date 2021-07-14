@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <!--        <maven.deploy.skip>false</maven.deploy.skip>-->
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+                <testprop></testprop>
+    </properties>
+    <!--The identifier of the parent POM-->
+    <parent>
+        <groupId>id.global.amqp</groupId>
+        <artifactId>amqp-models</artifactId>
+        <relativePath>pom.xml</relativePath>
+        <version>0.5-SNAPSHOT</version>
+    </parent>
+
+
+    <artifactId>amqp-models-${testprop}</artifactId>
+    <version>1.0</version>
+    <name>test 123</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
