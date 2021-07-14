@@ -178,6 +178,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
                 getLog().info("Generated schema info:\nComponents: " + schemaComponentsSize + "\nChannels: " + channelsSize);
 
                 if (apicurioRegistryUrl != null) {
+                    write(schema);
                     uploadToApicurio(schema);
                 } else {
                     write(schema);
