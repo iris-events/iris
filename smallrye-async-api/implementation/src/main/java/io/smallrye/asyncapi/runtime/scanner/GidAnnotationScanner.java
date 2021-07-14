@@ -16,6 +16,23 @@
 
 package io.smallrye.asyncapi.runtime.scanner;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
+import org.jboss.logging.Logger;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
@@ -23,6 +40,7 @@ import com.github.victools.jsonschema.generator.SchemaGenerator;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaVersion;
+
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.TopicMessageHandler;
@@ -41,22 +59,6 @@ import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import io.smallrye.asyncapi.runtime.util.JandexUtil;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.Type;
-import org.jboss.logging.Logger;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Scans a deployment (using the archive and jandex annotation index) for relevant annotations. These
@@ -75,7 +77,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
      * Constructor.
      *
      * @param config AsyncApiConfig instance
-     * @param index  IndexView of deployment
+     * @param index IndexView of deployment
      */
     public GidAnnotationScanner(AsyncApiConfig config, IndexView index) {
         super(config, index);
@@ -218,8 +220,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
     private ChannelInfo generateChannelBindingsInfo(AnnotationInstance methodAnnotation, String eventClassSimpleName) {
         String exchange = methodAnnotation.value("exchange") != null ? methodAnnotation.value("exchange").asString() : "";
-        String queue =
-                methodAnnotation.value("queue") != null ? methodAnnotation.value("queue").asString() : eventClassSimpleName;
+        String queue = methodAnnotation.value("queue") != null ? methodAnnotation.value("queue").asString()
+                : eventClassSimpleName;
         ExchangeType exchangeType = getExchangeTypeFromAnnotation(methodAnnotation);
         ChannelBindingsInfo channelBindingsInfo = new ChannelBindingsInfo(exchange, queue, exchangeType);
 
@@ -239,7 +241,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         // Schema generator JsonSchema of components
         SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7,
                 OptionPreset.PLAIN_JSON)
-                .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
+                        .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 
         Set<String> ignorePackagePrefixes = config.convertExternalTypesToObjectIgnoredPackages();
         if (!ignorePackagePrefixes.isEmpty()) {
