@@ -1,0 +1,4 @@
+package:
+  stage: build
+  script:
+    - mvn -B -ntp -s $MAVEN_SETTINGS package
