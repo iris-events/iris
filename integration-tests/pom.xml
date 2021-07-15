@@ -3,15 +3,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>id.global</groupId>
-    <artifactId>event-messaging-parent</artifactId>
+    <groupId>id.global.events</groupId>
+    <artifactId>quarkus-extension-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>event-messaging-integration-tests</artifactId>
   <name>Event Messaging - Integration Tests</name>
   <dependencies>
     <dependency>
-      <groupId>id.global</groupId>
+      <groupId>id.global.events</groupId>
       <artifactId>event-messaging</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -44,48 +44,62 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <skipITs>${test.skip.docker}</skipITs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- Automatically start Rabbitmq for integration testing - requires Docker -->
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <configuration>
+          <skip>${test.skip.docker}</skip>
+          <images>
+            <image>
+              <name>rabbitmq:3-alpine</name>
+              <alias>rabbitmq-quarkus-eda-it</alias>
+              <run>
+                <env>
+                </env>
+                <ports>
+                  <port>5672:5672</port>
+                </ports>
+                <log>
+                  <prefix>RabbitMQ:</prefix>
+                  <date>default</date>
+                  <color>cyan</color>
+                </log>
+                <wait>
+                  <tcp>
+                    <mode>mapped</mode>
+                    <ports>
+                      <port>5672</port>
+                    </ports>
+                  </tcp>
+                  <time>10000</time>
+                </wait>
+              </run>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>docker-start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>docker-stop</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
-<!--  <profiles>-->
-<!--    <profile>-->
-<!--      <id>native-image</id>-->
-<!--      <activation>-->
-<!--        <property>-->
-<!--          <name>native</name>-->
-<!--        </property>-->
-<!--      </activation>-->
-<!--      <build>-->
-<!--        <plugins>-->
-<!--          <plugin>-->
-<!--            <artifactId>maven-surefire-plugin</artifactId>-->
-<!--            <configuration>-->
-<!--              <skipTests>${native.surefire.skip}</skipTests>-->
-<!--            </configuration>-->
-<!--          </plugin>-->
-<!--          <plugin>-->
-<!--            <artifactId>maven-failsafe-plugin</artifactId>-->
-<!--            <executions>-->
-<!--              <execution>-->
-<!--                <goals>-->
-<!--                  <goal>integration-test</goal>-->
-<!--                  <goal>verify</goal>-->
-<!--                </goals>-->
-<!--                <configuration>-->
-<!--                  <systemPropertyVariables>-->
-<!--                    <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>-->
-<!--                    <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>-->
-<!--                    <maven.home>${maven.home}</maven.home>-->
-<!--                  </systemPropertyVariables>-->
-<!--                </configuration>-->
-<!--              </execution>-->
-<!--            </executions>-->
-<!--          </plugin>-->
-<!--        </plugins>-->
-<!--      </build>-->
-<!--      <properties>-->
-<!--        <quarkus.package.type>native</quarkus.package.type>-->
-<!--      </properties>-->
-<!--    </profile>-->
-<!--  </profiles>-->
 </project>

@@ -1,0 +1,20 @@
+include:
+  - project: 'globalid/infrastructure/gitlab-ci'
+    ref: master
+    file:
+      - '/templates/java-lib-jdk-16.yml'
+
+package:
+  stage: build
+  script:
+    - mvn -B -ntp -s $MAVEN_SETTINGS package
+
+test:
+  stage: test
+  variables:
+    QUARKUS_EDA_RABBIT_HOST: rabbitmq
+  script:
+    - mvn -B -ntp -s $MAVEN_SETTINGS $MAVEN_CLI_OPTS verify -Dci=$CI_JOB_ID
+  services:
+    - name: rabbitmq:3-alpine
+      alias: rabbitmq

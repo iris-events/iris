@@ -1,18 +1,20 @@
 package id.global.event.messaging.runtime.consumer;
 
+import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+
+import org.jboss.logging.Logger;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DeliverCallback;
+
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
-import id.global.event.messaging.runtime.enums.ExchangeType;
-import org.jboss.logging.Logger;
-
-import java.io.IOException;
-import java.lang.invoke.MethodHandle;
+import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public class AmqpConsumer {
     private static final Logger LOG = Logger.getLogger(AmqpConsumer.class.getName());

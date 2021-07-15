@@ -1,10 +1,15 @@
 package id.global.event.messaging.deployment;
 
-import id.global.event.messaging.runtime.context.AmqpContext;
+import java.io.IOException;
+import java.util.List;
+
+import org.jboss.logging.Logger;
+
 import id.global.event.messaging.runtime.ConsumerConfigRecorder;
-import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
+import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
@@ -16,10 +21,6 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import org.jboss.logging.Logger;
-
-import java.io.IOException;
-import java.util.List;
 
 class EventMessagingProcessor {
 
@@ -40,8 +41,7 @@ class EventMessagingProcessor {
                                 AmqpProducer.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
-                        .build()
-        );
+                        .build());
     }
 
     @BuildStep

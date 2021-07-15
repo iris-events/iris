@@ -1,6 +1,6 @@
 package id.global.event.messaging.runtime.context;
 
-import id.global.event.messaging.runtime.enums.ExchangeType;
+import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public class AmqpContext {
     private String queue;
