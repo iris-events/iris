@@ -15,16 +15,10 @@ import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.rules.RuleFactory;
 
 import java.io.File;
-import java.net.URL;
-
-
 import java.io.IOException;
 import java.io.InputStream;
-
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-
 import java.util.Comparator;
 import java.util.stream.Stream;
 
@@ -55,27 +49,13 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "modelName", required = true)
     String modelName;
 
-
-    private static final String temporaryFolder = "/models/";
-//    private static final String temporarySourceFolder = temporaryFolder + "src/main/java/";
-    private static final String temporarySchemaFolder = temporaryFolder + "schemas/";
-
     private  final Path tmpFolder = Paths.get("models");
     private  final Path tmpSourceFolder = tmpFolder.resolve(Paths.get("src","main","java"));
     private  final Path tmpSchemaFolder = tmpFolder.resolve(Paths.get("schemas"));
 
 
-//resolve
-// //http://www.java2s.com/Tutorials/Java/IO_How_to/Path/Combine_paths_using_path_resolution.htm
-
-
     public void execute() throws MojoExecutionException {
 
-
-//        System.out.println(basePath.toString());
-//        System.out.println(basePath2.toString());
-//        System.out.println(basePath3.toString());
-//        System.out.println(basePath4.toString());
 
         cleanUpDirectories();
         if (artifactSource == ArtifactSource.FILE) {
@@ -91,6 +71,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         String ymlContent;
         try {
+            Paths.get(project.getBasedir().toURI()).resolve("target").resolve("generated").resolve(fileDestination);
             ymlContent = readSchemaContent(project.getBasedir() + "/target/generated/" + fileDestination);
             parseAsyncApiJson(ymlContent, "");
         } catch (Exception e) {
@@ -246,23 +227,15 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
 
     public void generateAdditonalFiles() {
-
-//        Paths.get(project.getBasedir().toURI()).resolve(tmpSourceFolder);
-
-
         String stringPath = packageName.replace(".",File.separator);
-
 
         Path path = Paths.get(project.getBasedir().toURI())
                 .resolve(tmpSourceFolder)
                 .resolve(stringPath)
                 .resolve("client");
-//        String supportDataPath = project.getBasedir() + temporarySourceFolder + packageName.replace(".", "/") + "/client/";
 
         writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java"), path.toString());
 
-
-//        String pomFileLocation = project.getBasedir() + temporaryFolder;
         Path pomPath = Paths.get(project.getBasedir().toURI())
                 .resolve(tmpFolder);
 
