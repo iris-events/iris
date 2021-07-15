@@ -13,6 +13,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.rules.RuleFactory;
+
+import java.io.File;
 import java.net.URL;
 
 
@@ -55,12 +57,26 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
 
     private static final String temporaryFolder = "/models/";
-    private static final String temporarySourceFolder = temporaryFolder + "src/main/java/";
+//    private static final String temporarySourceFolder = temporaryFolder + "src/main/java/";
     private static final String temporarySchemaFolder = temporaryFolder + "schemas/";
-    private static final String resourceFolder = temporaryFolder + "src/main/resources/";
+
+    private  final Path tmpFolder = Paths.get("models");
+    private  final Path tmpSourceFolder = tmpFolder.resolve(Paths.get("src","main","java"));
+    private  final Path tmpSchemaFolder = tmpFolder.resolve(Paths.get("schemas"));
+
+
+//resolve
+// //http://www.java2s.com/Tutorials/Java/IO_How_to/Path/Combine_paths_using_path_resolution.htm
 
 
     public void execute() throws MojoExecutionException {
+
+
+//        System.out.println(basePath.toString());
+//        System.out.println(basePath2.toString());
+//        System.out.println(basePath3.toString());
+//        System.out.println(basePath4.toString());
+
         cleanUpDirectories();
         if (artifactSource == ArtifactSource.FILE) {
             generateFromFile(fileDestination);
@@ -94,19 +110,16 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void cleanUpDirectories() {
         try {
-            deleteDirectoryAll(project.getBasedir() + "/models");
+            deleteDirectoryAll(Path.of(project.getBasedir().toURI()).resolve(tmpFolder));
         } catch (IOException e) {
             getLog().error("Directory cleanup failed!", e);
 
         }
     }
 
-    public static void deleteDirectoryAll(String dir) throws IOException {
-
-        Path path = Paths.get(dir);
-
-        if (Files.exists(path)) {
-            try (Stream<Path> walk = Files.walk(path)) {
+    public static void deleteDirectoryAll(Path dir) throws IOException {
+        if (Files.exists(dir)) {
+            try (Stream<Path> walk = Files.walk(dir)) {
                 walk
                         .sorted(Comparator.reverseOrder())
                         .forEach(AmqpGeneratorMojo::deleteDirectory);
@@ -129,6 +142,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         try {
             try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
                 assert is != null;
+                //TODO: check this out...
                 text = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
             return text;
@@ -156,11 +170,20 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     }
 
     public void writeSchemaFile(String fileName, String content) {
-        Path path = Paths.get(project.getBasedir() + temporarySchemaFolder + fileName);
-        content = content.replace("#", "file:");
+
+        Path path = Paths.get(project.getBasedir().toURI())
+                .resolve(tmpSchemaFolder)
+                .resolve(fileName);
+
+        content = content.replace("#", "");
+
+        Path p = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder);
+
+
         content = content.replace(
                 "\\/components\\/schemas\\/",
-                project.getBasedir() + temporarySchemaFolder);
+                p.toUri().toString()
+        );
         try {
             Files.writeString(path, content);
         } catch (IOException e) {
@@ -175,7 +198,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             Path clientPath = Paths.get(path);
             Files.createDirectories(clientPath);
 
-            Path filePath = Paths.get(path + "/" + fileName);
+            Path filePath = Paths.get(path, fileName);
             Files.writeString(filePath, content);
         } catch (IOException e) {
             getLog().error("Failed to write file", e);
@@ -202,8 +225,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
 
         //create directory structure
-        Path pathSource = Paths.get(project.getBasedir() + temporarySourceFolder);
-        Path pathSchema = Paths.get(project.getBasedir() + temporarySchemaFolder);
+        Path pathSource = Paths.get(project.getBasedir().toURI()).resolve(tmpSourceFolder);
+        Path pathSchema = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder);
         Files.createDirectories(pathSource);
         Files.createDirectories(pathSchema);
 
@@ -224,13 +247,26 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void generateAdditonalFiles() {
 
-        String supportDataPath = project.getBasedir() + temporarySourceFolder + packageName.replace(".", "/") + "/client/";
-
-        writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java"), supportDataPath);
+//        Paths.get(project.getBasedir().toURI()).resolve(tmpSourceFolder);
 
 
-        String pomFileLocation = project.getBasedir() + temporaryFolder;
-        writeFile("pom.xml", preparePomTemplate("pom.xml"), pomFileLocation);
+        String stringPath = packageName.replace(".",File.separator);
+
+
+        Path path = Paths.get(project.getBasedir().toURI())
+                .resolve(tmpSourceFolder)
+                .resolve(stringPath)
+                .resolve("client");
+//        String supportDataPath = project.getBasedir() + temporarySourceFolder + packageName.replace(".", "/") + "/client/";
+
+        writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java"), path.toString());
+
+
+//        String pomFileLocation = project.getBasedir() + temporaryFolder;
+        Path pomPath = Paths.get(project.getBasedir().toURI())
+                .resolve(tmpFolder);
+
+        writeFile("pom.xml", preparePomTemplate("pom.xml"), pomPath.toString());
 
     }
 
@@ -266,13 +302,9 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     public void generate(String fileName) throws IOException {
 
         JCodeModel codeModel = new JCodeModel();
-        URL source = Path.of(project.getBasedir() + temporarySchemaFolder + fileName).toFile().toURI().toURL();
 
-
-        Path clientPath = Paths.get(project.getBasedir() + temporarySourceFolder);
+        Path clientPath = Paths.get(project.getBasedir().toURI()).resolve(tmpSourceFolder);
         Files.createDirectories(clientPath);
-
-
 
         SchemaMapper mapper = new SchemaMapper(
                 new RuleFactory(
@@ -282,11 +314,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 new SchemaGenerator());
 
 
+
+        Path schemes = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder).resolve(fileName);
         //TODO: investigate what ClassName does!
-        mapper.generate(codeModel, "ClassName", packageName, source);
+        mapper.generate(codeModel, "ClassName", packageName, schemes.toUri().toURL());
 
-
-        codeModel.build(Path.of(project.getBasedir() + temporarySourceFolder).toFile());
+        codeModel.build(clientPath.toFile());
     }
 
 
