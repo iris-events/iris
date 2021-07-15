@@ -3,7 +3,6 @@ package id.global.plugin.model.generator;
 import com.sun.codemodel.JCodeModel;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -61,7 +60,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private static final String resourceFolder = temporaryFolder + "src/main/resources/";
 
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         cleanUpDirectories();
         if (artifactSource == ArtifactSource.FILE) {
             generateFromFile(fileDestination);
@@ -74,28 +73,21 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void generateFromFile(String fileDestination) {
 
+        String ymlContent;
         try {
-            String ymlContent;
-            try {
-                ymlContent = readSchemaContent(project.getBasedir() + "/target/generated/" + fileDestination);
-                parseAsyncApiJson(ymlContent, "");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            getLog().info("Generation completed!");
+            ymlContent = readSchemaContent(project.getBasedir() + "/target/generated/" + fileDestination);
+            parseAsyncApiJson(ymlContent, "");
         } catch (Exception e) {
-            e.printStackTrace();
+            getLog().error("Parsing AsyncApi definition!", e);
         }
+        getLog().info("Generation completed!");
     }
 
     public String readSchemaContent(String fileName) {
-
-        System.out.println(fileName);
-
         try {
             return Files.readString(Paths.get(fileName));
         } catch (IOException e) {
-            e.printStackTrace();
+            getLog().error("Schema content read failed!", e);
         }
         return null;
     }
@@ -104,21 +96,25 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         try {
             deleteDirectoryAll(project.getBasedir() + "/models");
         } catch (IOException e) {
-            e.printStackTrace();
+            getLog().error("Directory cleanup failed!", e);
+
         }
     }
 
     public static void deleteDirectoryAll(String dir) throws IOException {
 
         Path path = Paths.get(dir);
-        try (Stream<Path> walk = Files.walk(path)) {
-            walk
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(AmqpGeneratorMojo::deleteDirectory);
+
+        if (Files.exists(path)) {
+            try (Stream<Path> walk = Files.walk(path)) {
+                walk
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(AmqpGeneratorMojo::deleteDirectory);
+            }
         }
+
     }
 
-    // extract method to handle exception in lambda
     public static void deleteDirectory(Path path) {
         try {
             Files.delete(path);
@@ -129,16 +125,15 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
 
     public String readResourceFileContent(String fileName) {
-
-        System.out.println(fileName);
         String text;
         try {
             try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
+                assert is != null;
                 text = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
             return text;
         } catch (IOException e) {
-            e.printStackTrace();
+            getLog().error("Cannot read resource file content!", e);
         }
         return null;
 
@@ -169,7 +164,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         try {
             Files.writeString(path, content);
         } catch (IOException e) {
-            e.printStackTrace();
+            getLog().error("Failed to write schema file", e);
         }
 
     }
@@ -183,7 +178,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             Path filePath = Paths.get(path + "/" + fileName);
             Files.writeString(filePath, content);
         } catch (IOException e) {
-            e.printStackTrace();
+            getLog().error("Failed to write file", e);
         }
     }
 
@@ -268,11 +263,15 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    public void generate(String fileName) throws IOException, ParseException {
+    public void generate(String fileName) throws IOException {
 
         JCodeModel codeModel = new JCodeModel();
         URL source = Path.of(project.getBasedir() + temporarySchemaFolder + fileName).toFile().toURI().toURL();
-        Path.of(project.getBasedir() + temporarySourceFolder).toFile().mkdirs();
+
+
+        Path clientPath = Paths.get(project.getBasedir() + temporarySourceFolder);
+        Files.createDirectories(clientPath);
+
 
 
         SchemaMapper mapper = new SchemaMapper(
@@ -308,12 +307,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                     String applicationName = o.toString().split(":")[0]; //TODO: make it nicer
                     parseAsyncApiJson(ymlContent, applicationName);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    getLog().error("Generating from appicurio failed!", e);
                 }
             }
 
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            getLog().error("Reading from appicurio failed!", e);
         }
     }
 }
