@@ -1,9 +1,10 @@
 package id.global.event.messaging.deployment;
 
-import id.global.event.messaging.runtime.enums.ExchangeType;
-import io.quarkus.builder.item.MultiBuildItem;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
+
+import io.quarkus.builder.item.MultiBuildItem;
+import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final ClassInfo declaringClass;
@@ -59,7 +60,8 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return exchangeType;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "MessageHandlerInfoBuildItem{" +
                 "declaringClass=" + declaringClass +
                 ", parameterType=" + parameterType +

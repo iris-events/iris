@@ -1,22 +1,25 @@
 package id.global.event.messaging.deployment;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.TopicMessageHandler;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Logger;
+import static io.smallrye.asyncapi.runtime.scanner.model.ExchangeType.DIRECT;
+import static io.smallrye.asyncapi.runtime.scanner.model.ExchangeType.FANOUT;
+import static io.smallrye.asyncapi.runtime.scanner.model.ExchangeType.TOPIC;
 
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static id.global.event.messaging.runtime.enums.ExchangeType.DIRECT;
-import static id.global.event.messaging.runtime.enums.ExchangeType.FANOUT;
-import static id.global.event.messaging.runtime.enums.ExchangeType.TOPIC;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
+import org.jboss.logging.Logger;
+
+import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
+import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 
 public class MessageHandlerScanner {
     private static final Logger LOG = Logger.getLogger(MessageHandlerScanner.class);
@@ -43,7 +46,8 @@ public class MessageHandlerScanner {
         return Stream
                 .concat(Stream.concat(scanDirectMessageHandlerAnnotations(directAnnotations),
                         scanFanoutMessageHandlerAnnotations(fanoutAnnotations)),
-                        scanTopicMessageHandlerAnnotations(topicAnnotations)).collect(Collectors.toList());
+                        scanTopicMessageHandlerAnnotations(topicAnnotations))
+                .collect(Collectors.toList());
     }
 
     private Stream<MessageHandlerInfoBuildItem> scanTopicMessageHandlerAnnotations(
@@ -94,9 +98,9 @@ public class MessageHandlerScanner {
         return directAnnotations.filter(isNotSyntheticPredicate()).map(annotationInstance -> {
             validateDirect(annotationInstance);
 
-            String exchange = annotationInstance.value(EXCHANGE_PARAM) != null ?
-                    annotationInstance.value(EXCHANGE_PARAM).asString() :
-                    null;
+            String exchange = annotationInstance.value(EXCHANGE_PARAM) != null
+                    ? annotationInstance.value(EXCHANGE_PARAM).asString()
+                    : null;
             String queue = annotationInstance.value(QUEUE_PARAM).asString();
             // Implement parsing other parameters if needed here
 
@@ -114,22 +118,40 @@ public class MessageHandlerScanner {
 
     private void validateDirect(AnnotationInstance annotationInstance) {
         validateMethodParamNumber(annotationInstance);
+        validateMethodParam(annotationInstance);
         validateParam(annotationInstance, QUEUE_PARAM);
     }
 
     private void validateFanout(AnnotationInstance annotationInstance) {
         validateMethodParamNumber(annotationInstance);
+        validateMethodParam(annotationInstance);
         validateParam(annotationInstance, EXCHANGE_PARAM);
     }
 
     private void validateTopic(AnnotationInstance annotationInstance) {
         validateMethodParamNumber(annotationInstance);
+        validateMethodParam(annotationInstance);
         validateParam(annotationInstance, EXCHANGE_PARAM);
         validateParam(annotationInstance, BINDING_KEYS_PARAM);
     }
 
     private Predicate<AnnotationInstance> isNotSyntheticPredicate() {
         return annotationInstance -> !annotationInstance.target().asMethod().isSynthetic();
+    }
+
+    private void validateMethodParam(AnnotationInstance annotationInstance) {
+        MethodInfo methodInfo = annotationInstance.target().asMethod();
+        Type parameterType = methodInfo.parameters().get(0);
+        ClassInfo classByName = index.getClassByName(parameterType.name());
+
+        if (classByName == null) {
+            throw new MessageHandlerValidationException(
+                    String.format(
+                            "MessageHandler annotated method %s::%s can not have external dependency classes as parameters",
+                            methodInfo.declaringClass(),
+                            methodInfo.name()));
+        }
+
     }
 
     private void validateMethodParamNumber(AnnotationInstance annotationInstance) {

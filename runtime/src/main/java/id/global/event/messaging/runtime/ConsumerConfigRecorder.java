@@ -1,9 +1,10 @@
 package id.global.event.messaging.runtime;
 
+import org.jboss.logging.Logger;
+
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
-import org.jboss.logging.Logger;
 
 @Recorder
 public class ConsumerConfigRecorder {

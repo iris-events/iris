@@ -1,19 +1,21 @@
 package id.global.event.messaging.test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.Delivery;
-import com.rabbitmq.client.Envelope;
-import id.global.event.messaging.runtime.context.AmqpContext;
-import id.global.event.messaging.runtime.context.MethodHandleContext;
-import id.global.event.messaging.runtime.enums.ExchangeType;
-import id.global.event.messaging.runtime.consumer.AmqpConsumer;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.Delivery;
+import com.rabbitmq.client.Envelope;
+
+import id.global.event.messaging.runtime.consumer.AmqpConsumer;
+import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.MethodHandleContext;
+import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public class AmqpConsumerTest {
 
@@ -32,8 +34,7 @@ public class AmqpConsumerTest {
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, TEST_METHOD_NAME),
                 new AmqpContext(QUEUE, EXCHANGE, new String[0], ExchangeType.DIRECT),
                 handler,
-                new ObjectMapper()
-        );
+                new ObjectMapper());
 
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);

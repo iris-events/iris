@@ -1,23 +1,22 @@
 package id.global.event.messaging.it;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.event.messaging.it.events.Event;
-import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.producer.AmqpProducer;
-import io.quarkus.test.junit.QuarkusTest;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
+import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.event.messaging.it.events.Event;
+import id.global.event.messaging.runtime.producer.AmqpProducer;
+import io.quarkus.test.junit.QuarkusTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -28,9 +27,11 @@ public class ProduceAndConsumeIT {
     public static final String EVENT_QUEUE_PRIORITY = "test_EventQueue_priority";
     public static final String EXCHANGE = "test_exchange";
 
-    @Inject AmqpProducer producer;
+    @Inject
+    AmqpProducer producer;
 
-    @Inject TestHandlerService service;
+    @Inject
+    TestHandlerService service;
 
     @BeforeEach
     public void setup() {
@@ -47,8 +48,6 @@ public class ProduceAndConsumeIT {
         //TODO: do we need this assertion here?
         assertThrows(TimeoutException.class, () -> service.getHandledEvent().get(1000, TimeUnit.MILLISECONDS));
     }
-
-
 
     @ApplicationScoped
     public static class TestHandlerService {
@@ -73,6 +72,5 @@ public class ProduceAndConsumeIT {
             return handledPriorityEvent;
         }
     }
-
 
 }

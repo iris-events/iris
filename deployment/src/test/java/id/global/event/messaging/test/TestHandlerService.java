@@ -1,8 +1,8 @@
 package id.global.event.messaging.test;
 
-import id.global.asyncapi.spec.annotations.MessageHandler;
-
 import javax.enterprise.context.ApplicationScoped;
+
+import id.global.asyncapi.spec.annotations.MessageHandler;
 
 @ApplicationScoped
 public class TestHandlerService {

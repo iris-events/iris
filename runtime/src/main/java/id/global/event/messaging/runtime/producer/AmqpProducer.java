@@ -1,17 +1,20 @@
 package id.global.event.messaging.runtime.producer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rabbitmq.client.*;
-import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+import javax.enterprise.context.ApplicationScoped;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.io.IOException;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.TimeoutException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
+import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 
 @ApplicationScoped
 public class AmqpProducer {
@@ -55,7 +58,6 @@ public class AmqpProducer {
         factory.setHost(amqpConfiguration.getUrl());
         factory.setPort(amqpConfiguration.getPort());
 
-
         if (amqpConfiguration.isAuthenticated()) {
             factory.setUsername(amqpConfiguration.getUsername());
             factory.setPassword(amqpConfiguration.getPassword());
@@ -96,7 +98,6 @@ public class AmqpProducer {
         }
         return true;
     }
-
 
     public void publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) throws Exception {
         byte[] bytes = new byte[0];
