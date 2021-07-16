@@ -1,6 +1,0 @@
-include:
-  - '/amqp-generator-plugin/.gitlab-ci.yml'
-
-default:
-  before_script:
-    - cd amqp-generator-plugin/
