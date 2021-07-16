@@ -29,26 +29,20 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-project</artifactId>
-            <version>2.2.1</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
         </dependency>
-
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jandex</artifactId>
