@@ -6,7 +6,7 @@
         <groupId>id.global.events</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>smallrye-gid-async-api-maven-plugin</artifactId>
+    <artifactId>asyncapi-schema-generator-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     
     <name>SmallRye: GiD AsyncAPI Tools :: Maven</name>
