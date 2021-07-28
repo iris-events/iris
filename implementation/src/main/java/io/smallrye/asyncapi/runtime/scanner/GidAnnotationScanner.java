@@ -57,6 +57,8 @@ import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
+import io.smallrye.asyncapi.runtime.util.ChannelInfoGenerator;
+import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 import io.smallrye.asyncapi.runtime.util.JandexUtil;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 
@@ -77,7 +79,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
      * Constructor.
      *
      * @param config AsyncApiConfig instance
-     * @param index IndexView of deployment
+     * @param index  IndexView of deployment
      */
     public GidAnnotationScanner(AsyncApiConfig config, IndexView index) {
         super(config, index);
@@ -157,25 +159,16 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             }
             String simpleName = loadClass(eventType.toString()).getSimpleName();
             incomingEvents.put(simpleName, generateJsonSchemaInfo(annotationName, eventType.toString(), annotationValues));
-            channelInfos.add(generateChannelBindingsInfo(methodAnno, simpleName));
+            channelInfos.add(ChannelInfoGenerator.generateSubscribeChannelInfo(
+                    methodAnno.value("exchange"),
+                    methodAnno.value("queue"),
+                    simpleName,
+                    GidAnnotationParser.getExchangeTypeFromAnnotation(methodAnno.name())));
             messageTypes.put(simpleName, type);
         }
 
         insertComponentSchemas(context, incomingEvents, asyncApi);
         createChannels(channelInfos, messageTypes, asyncApi);
-    }
-
-    private ExchangeType getExchangeTypeFromAnnotation(AnnotationInstance methodAnno) {
-        ExchangeType exchangeType = ExchangeType.DIRECT;
-        String annotationName = methodAnno.name().toString();
-
-        if (annotationName.equals(TopicMessageHandler.class.getSimpleName())) {
-            exchangeType = ExchangeType.TOPIC;
-        } else if (annotationName.equals(FanoutMessageHandler.class.getSimpleName())) {
-            exchangeType = ExchangeType.FANOUT;
-        }
-
-        return exchangeType;
     }
 
     private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, Aai20Document asyncApi) {
@@ -222,7 +215,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         String exchange = methodAnnotation.value("exchange") != null ? methodAnnotation.value("exchange").asString() : "";
         String queue = methodAnnotation.value("queue") != null ? methodAnnotation.value("queue").asString()
                 : eventClassSimpleName;
-        ExchangeType exchangeType = getExchangeTypeFromAnnotation(methodAnnotation);
+        ExchangeType exchangeType = GidAnnotationParser.getExchangeTypeFromAnnotation(methodAnnotation.name());
         ChannelBindingsInfo channelBindingsInfo = new ChannelBindingsInfo(exchange, queue, exchangeType);
 
         // Maybe we'll add publish channels in the future
@@ -241,10 +234,11 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         // Schema generator JsonSchema of components
         SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7,
                 OptionPreset.PLAIN_JSON)
-                        .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
+                .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 
-        Set<String> ignorePackagePrefixes = config.convertExternalTypesToObjectIgnoredPackages();
-        if (!ignorePackagePrefixes.isEmpty()) {
+        Set<String> ignorePackagePrefixes = config.excludeFromSchemas();
+        if (isSetPropertyPresent(ignorePackagePrefixes)) {
+            LOG.info("Registering custom definition providers for package prefixes: " + ignorePackagePrefixes);
             configBuilder.forTypesInGeneral()
                     .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownTypeToObject(ignorePackagePrefixes));
 
@@ -255,5 +249,4 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         SchemaGeneratorConfig schemaGeneratorConfig = configBuilder.build();
         return new SchemaGenerator(schemaGeneratorConfig);
     }
-
 }

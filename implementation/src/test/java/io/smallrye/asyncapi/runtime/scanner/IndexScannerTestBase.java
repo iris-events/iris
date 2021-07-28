@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
@@ -54,12 +56,18 @@ public class IndexScannerTestBase {
         return dynamicConfig(Collections.emptyMap());
     }
 
-    public static AsyncApiConfig testConfig(String testPackagePrefix) {
+    public static AsyncApiConfig excludeFromSchemasTestConfig(Set<String> excludePackagePrefixes) {
         Map<String, Object> properties = new HashMap<>();
 
-        properties.put(
-                AsyncApiConstants.CONVERT_UNKNOWN_TO_OBJECT_IGNORED_PACKAGES,
-                testPackagePrefix);
+        String collect = excludePackagePrefixes.stream().collect(Collectors.joining(","));
+
+        properties.put(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, collect);
+        return dynamicConfig(properties);
+    }
+
+    public static AsyncApiConfig scanDependenciesDisableConfig() {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(AsyncApiConstants.SCAN_DEPENDENCIES_DISABLE, true);
         return dynamicConfig(properties);
     }
 

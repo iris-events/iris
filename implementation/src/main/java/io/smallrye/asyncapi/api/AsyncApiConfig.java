@@ -99,7 +99,7 @@ public interface AsyncApiConfig {
         return null;
     }
 
-    default Set<String> convertExternalTypesToObjectIgnoredPackages() {
+    default Set<String> excludeFromSchemas() {
         return Collections.emptySet();
     }
 }
