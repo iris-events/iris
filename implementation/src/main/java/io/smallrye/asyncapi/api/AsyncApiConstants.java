@@ -34,7 +34,7 @@ public final class AsyncApiConstants {
     public static final String WEB_ARCHIVE_CLASS_PREFIX = "/WEB-INF/classes/";
 
     public static final String EXTENSION_PROPERTY_PREFIX = "x-";
-    public static final String CONVERT_UNKNOWN_TO_OBJECT_IGNORED_PACKAGES = "mp.asyncapi.convert-unknown-to-object-ignored-packages";
+    public static final String EXCLUDE_FROM_SCHEMAS = "mp.asyncapi.exclude-from-schemas";
 
     private static final String MIME_ANY = "*/*";
     public static final String[] DEFAULT_PARAMETER_MEDIA_TYPES = { MIME_ANY };

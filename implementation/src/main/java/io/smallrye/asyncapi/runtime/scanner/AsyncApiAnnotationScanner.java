@@ -91,13 +91,13 @@ public class AsyncApiAnnotationScanner extends BaseAnnotationScanner {
                 OptionPreset.PLAIN_JSON)
                         .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 
-        Set<String> ignorePackagePrefixes = config.convertExternalTypesToObjectIgnoredPackages();
-        if (!ignorePackagePrefixes.isEmpty()) {
+        Set<String> excludeFromSchemas = config.excludeFromSchemas();
+        if (isSetPropertyPresent(excludeFromSchemas)) {
             configBuilder.forTypesInGeneral()
-                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownTypeToObject(ignorePackagePrefixes));
+                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownTypeToObject(excludeFromSchemas));
 
             configBuilder.forFields()
-                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownFieldToObject(ignorePackagePrefixes));
+                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownFieldToObject(excludeFromSchemas));
         }
 
         SchemaGeneratorConfig schemaGeneratorConfig = configBuilder.build();

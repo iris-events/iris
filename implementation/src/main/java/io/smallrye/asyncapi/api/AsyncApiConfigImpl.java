@@ -48,7 +48,7 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
     private Set<String> scanDependenciesJars;
     private Boolean schemaReferencesEnable;
     private String customSchemaRegistryClass;
-    private Set<String> convertToObjectIgnoredPackages;
+    private Set<String> excludeFromSchemas;
 
     /**
      * Constructor.
@@ -227,12 +227,12 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
     }
 
     @Override
-    public Set<String> convertExternalTypesToObjectIgnoredPackages() {
-        if (convertToObjectIgnoredPackages == null) {
+    public Set<String> excludeFromSchemas() {
+        if (excludeFromSchemas == null) {
             String packages = getConfig()
-                    .getOptionalValue(AsyncApiConstants.CONVERT_UNKNOWN_TO_OBJECT_IGNORED_PACKAGES, String.class).orElse(null);
-            convertToObjectIgnoredPackages = asCsvSet(packages);
+                    .getOptionalValue(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, String.class).orElse(null);
+            excludeFromSchemas = asCsvSet(packages);
         }
-        return convertToObjectIgnoredPackages;
+        return excludeFromSchemas;
     }
 }
