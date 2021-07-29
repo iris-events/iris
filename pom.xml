@@ -29,7 +29,7 @@
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <rabbit.amqp-client.version>5.12.0</rabbit.amqp-client.version>
     <gid.models.version>0.5-SNAPSHOT</gid.models.version>
-    <smallrye.asyncapi.version>1.0.0-SNAPSHOT</smallrye.asyncapi.version>
+    <smallrye.asyncapi.version>1.0.1-SNAPSHOT</smallrye.asyncapi.version>
   </properties>
   <dependencyManagement>
     <dependencies>
