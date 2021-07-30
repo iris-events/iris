@@ -109,7 +109,7 @@ public class MavenConfig implements AsyncApiConfig {
     }
 
     @Override
-    public Set<String> convertExternalTypesToObjectIgnoredPackages() {
-        return asCsvSet(properties.getOrDefault(AsyncApiConstants.CONVERT_UNKNOWN_TO_OBJECT_IGNORED_PACKAGES, null));
+    public Set<String> excludeFromSchemas() {
+        return asCsvSet(properties.getOrDefault(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, null));
     }
 }
