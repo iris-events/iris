@@ -81,9 +81,6 @@ public class GenerateSchemaMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", required = true)
     private MavenProject mavenProject;
 
-    @Parameter(property = "project.compileClasspathElements", required = true, readonly = true)
-    private List<String> classpath;
-
     @Parameter(defaultValue = "false", property = "skip")
     private boolean skip;
 
@@ -122,26 +119,14 @@ public class GenerateSchemaMojo extends AbstractMojo {
     @Parameter(property = "servers")
     private List<String> servers;
 
-    @Parameter(property = "pathServers")
-    private List<String> pathServers;
-
-    @Parameter(property = "operationServers")
-    private List<String> operationServers;
-
     @Parameter(property = "scanDependenciesDisable")
     private Boolean scanDependenciesDisable;
 
     @Parameter(property = "scanDependenciesJars")
     private List<String> scanDependenciesJars;
 
-    @Parameter(property = "schemaReferencesEnable")
-    private Boolean schemaReferencesEnable;
-
     @Parameter(property = "customSchemaRegistryClass")
     private String customSchemaRegistryClass;
-
-    @Parameter(property = "applicationPathDisable")
-    private Boolean applicationPathDisable;
 
     @Parameter(property = "asyncApiVersion")
     private String asyncApiVersion;
@@ -158,8 +143,8 @@ public class GenerateSchemaMojo extends AbstractMojo {
     @Parameter(property = "uploadType", defaultValue = "json")
     private String uploadType;
 
-    @Parameter(property = "convertUnknownToObjectIgnoredPackages", defaultValue = "false")
-    private List<String> convertUnknownToObjectIgnoredPackages;
+    @Parameter(property = "excludeFromSchemas")
+    private List<String> excludeFromSchemas;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -278,6 +263,8 @@ public class GenerateSchemaMojo extends AbstractMojo {
 
         ClassLoader classLoader = getClassLoader(mavenProject);
 
+        getLog().info("THE SET PROPERTY = " + asyncApiConfig.excludeFromSchemas());
+
         GidAnnotationScanner scanner = new GidAnnotationScanner(asyncApiConfig, index, classLoader);
         return scanner.scan();
     }
@@ -306,8 +293,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
         addToPropertyMap(cp, AsyncApiConstants.SCAN_DEPENDENCIES_JARS, scanDependenciesJars);
         addToPropertyMap(cp, AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, customSchemaRegistryClass);
         addToPropertyMap(cp, AsyncApiConstants.VERSION, asyncApiVersion);
-        addToPropertyMap(cp, AsyncApiConstants.CONVERT_UNKNOWN_TO_OBJECT_IGNORED_PACKAGES,
-                convertUnknownToObjectIgnoredPackages);
+        addToPropertyMap(cp, AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, excludeFromSchemas);
 
         return cp;
     }
