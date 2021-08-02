@@ -92,7 +92,7 @@ public class AsyncApiAnnotationScanner extends BaseAnnotationScanner {
                         .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 
         Set<String> excludeFromSchemas = config.excludeFromSchemas();
-        if (isSetPropertyPresent(excludeFromSchemas)) {
+        if (!excludeFromSchemas.isEmpty()) {
             configBuilder.forTypesInGeneral()
                     .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownTypeToObject(excludeFromSchemas));
 

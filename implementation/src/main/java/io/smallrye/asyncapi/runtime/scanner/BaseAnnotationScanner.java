@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -150,9 +149,4 @@ public abstract class BaseAnnotationScanner {
         });
     }
 
-    protected boolean isSetPropertyPresent(Set<String> property) {
-        return property != null &&
-                !property.isEmpty() &&
-                (property.size() != 1 || !property.stream().findFirst().get().equals("false"));
-    }
 }

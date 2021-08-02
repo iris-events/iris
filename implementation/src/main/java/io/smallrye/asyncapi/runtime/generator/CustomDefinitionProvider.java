@@ -49,7 +49,6 @@ public class CustomDefinitionProvider {
     }
 
     private static boolean isInExcludeFromSchemas(String fullTypeDescription, Set<String> excludeFromSchemas) {
-        return excludeFromSchemas.stream().filter(fullTypeDescription::startsWith).findFirst()
-                .orElse(null) != null;
+        return excludeFromSchemas.stream().anyMatch(fullTypeDescription::startsWith);
     }
 }

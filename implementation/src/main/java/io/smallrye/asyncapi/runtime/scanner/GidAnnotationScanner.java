@@ -236,14 +236,14 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 OptionPreset.PLAIN_JSON)
                 .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 
-        Set<String> ignorePackagePrefixes = config.excludeFromSchemas();
-        if (isSetPropertyPresent(ignorePackagePrefixes)) {
-            LOG.info("Registering custom definition providers for package prefixes: " + ignorePackagePrefixes);
+        Set<String> excludeFromSchemas = config.excludeFromSchemas();
+        if (!excludeFromSchemas.isEmpty()) {
+            LOG.info("Registering custom definition providers for package prefixes: " + excludeFromSchemas);
             configBuilder.forTypesInGeneral()
-                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownTypeToObject(ignorePackagePrefixes));
+                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownTypeToObject(excludeFromSchemas));
 
             configBuilder.forFields()
-                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownFieldToObject(ignorePackagePrefixes));
+                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownFieldToObject(excludeFromSchemas));
         }
 
         SchemaGeneratorConfig schemaGeneratorConfig = configBuilder.build();

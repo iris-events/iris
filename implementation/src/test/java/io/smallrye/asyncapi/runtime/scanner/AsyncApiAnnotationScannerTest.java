@@ -1,8 +1,9 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.util.Map;
@@ -39,33 +40,34 @@ public class AsyncApiAnnotationScannerTest extends IndexScannerTestBase {
         String id = document.id;
         Info info = document.info;
 
-        assertEquals("2.0.0", id);
-        assertEquals("Test application", info.title);
-        assertEquals("1.0", info.version);
-        assertNull(info.description);
-        assertNull(info.termsOfService);
-        assertNull(info.contact);
-        assertNull(info.license);
+        assertThat(id, is("2.0.0"));
+        assertThat(info.title, is("Test application"));
+        assertThat(info.version, is("1.0"));
+        assertThat(info.description, nullValue());
+        assertThat(info.termsOfService, nullValue());
+        assertThat(info.contact, nullValue());
+        assertThat(info.license, nullValue());
 
         Map<String, AaiChannelItem> channels = document.channels;
-        assertEquals(1, channels.size());
+
+        assertThat(channels.size(), is(1));
         AaiChannelItem channel1 = channels.get("channel1");
-        assertNotNull(channel1);
-        assertNotNull(channel1.subscribe);
-        assertNull(channel1.publish);
+        assertThat(channel1, notNullValue());
+        assertThat(channel1.subscribe, notNullValue());
+        assertThat(channel1.publish, nullValue());
 
         AaiOperation subscribe = channel1.subscribe;
-        assertEquals("channel1Subscribe", subscribe.operationId);
-        assertEquals("subscribe to channel1", subscribe.description);
+        assertThat(subscribe.operationId, is("channel1Subscribe"));
+        assertThat(subscribe.description, is("subscribe to channel1"));
 
         AaiMessage message = subscribe.message;
-        assertNotNull(message);
-        assertEquals("channel1Message", message.name);
-        assertEquals("message for channel1 subscription", message.description);
+        assertThat(message, notNullValue());
+        assertThat(message.name, is("channel1Message"));
+        assertThat(message.description, is("message for channel1 subscription"));
 
         Object payload = message.payload;
         // This is currently not supported
-        assertNull(payload);
+        assertThat(payload, nullValue());
 
     }
 
@@ -81,54 +83,54 @@ public class AsyncApiAnnotationScannerTest extends IndexScannerTestBase {
 
         Aai20Document document = scanner.scan();
 
-        assertNotNull(document);
+        assertThat(document, notNullValue());
 
         Map<String, AaiChannelItem> channels = document.channels;
         AaiComponents components = document.components;
 
-        assertNotNull(channels);
-        assertNotNull(components);
-        assertEquals(2, channels.size());
+        assertThat(channels, notNullValue());
+        assertThat(components, notNullValue());
+        assertThat(channels.size(), is(2));
 
         AaiChannelItem consumerChannelItem = channels.get("test/some/queue/path/{testId}");
         AaiChannelItem producerChannelItem = channels.get("test/some/queue/path");
-        assertNotNull(consumerChannelItem);
-        assertNotNull(producerChannelItem);
+        assertThat(consumerChannelItem, notNullValue());
+        assertThat(producerChannelItem, notNullValue());
 
-        assertEquals("Just a test consumer", consumerChannelItem.description);
+        assertThat(consumerChannelItem.description, is("Just a test consumer"));
 
         AaiOperation subscribeOperation = consumerChannelItem.subscribe;
         Map<String, AaiParameter> channelParameters = consumerChannelItem.parameters;
 
-        assertNotNull(subscribeOperation);
-        assertNotNull(channelParameters);
-        assertEquals(1, channelParameters.size());
-        assertNull(producerChannelItem.parameters);
+        assertThat(subscribeOperation, notNullValue());
+        assertThat(channelParameters, notNullValue());
+        assertThat(channelParameters.size(), is(1));
+        assertThat(producerChannelItem.parameters, nullValue());
 
         AaiParameter testParameter = channelParameters.get("testId");
-        assertEquals("a parameter", testParameter.description);
-        assertEquals(SchemaType.STRING.toString(), ((AaiSchema) testParameter.schema).type);
+        assertThat(testParameter.description, is("a parameter"));
+        assertThat(((AaiSchema) testParameter.schema).type, is(SchemaType.STRING.toString()));
 
-        assertEquals("consumeSomeQueueEvent", subscribeOperation.operationId);
-        assertEquals("consumer subscribe operation", subscribeOperation.description);
+        assertThat(subscribeOperation.operationId, is("consumeSomeQueueEvent"));
+        assertThat(subscribeOperation.description, is("consumer subscribe operation"));
 
         AaiMessage subscribeMessage = subscribeOperation.message;
-        assertNotNull(subscribeMessage);
-        assertNotNull(subscribeMessage.payload);
+        assertThat(subscribeMessage, notNullValue());
+        assertThat(subscribeMessage.payload, notNullValue());
         Schema payload = (Schema) subscribeMessage.payload;
-        assertEquals("#/components/schemas/TestModel", payload.$ref);
+        assertThat(payload.$ref, is("#/components/schemas/TestModel"));
 
         Map<String, AaiSchema> schemas = components.schemas;
-        assertEquals(4, schemas.size());
+        assertThat(schemas.size(), is(4));
 
         AaiSchema testModel = schemas.get("TestModel");
         AaiSchema user = schemas.get("User");
         AaiSchema status = schemas.get("Status");
         AaiSchema userMap = schemas.get("Map(String,User)");
 
-        assertNotNull(testModel);
-        assertNotNull(user);
-        assertNotNull(status);
-        assertNotNull(userMap);
+        assertThat(testModel, notNullValue());
+        assertThat(user, notNullValue());
+        assertThat(status, notNullValue());
+        assertThat(userMap, notNullValue());
     }
 }
