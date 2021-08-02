@@ -72,9 +72,10 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public String modelReader() {
-        if (modelReader == null) {
-            modelReader = getConfig().getOptionalValue(AAIConfig.MODEL_READER, String.class).orElse(null);
+        if (modelReader != null) {
+            return modelReader;
         }
+        modelReader = getConfig().getOptionalValue(AAIConfig.MODEL_READER, String.class).orElse(null);
         return modelReader;
     }
 
@@ -83,9 +84,10 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public String filter() {
-        if (filter == null) {
-            filter = getConfig().getOptionalValue(AAIConfig.FILTER, String.class).orElse(null);
+        if (filter != null) {
+            return filter;
         }
+        filter = getConfig().getOptionalValue(AAIConfig.FILTER, String.class).orElse(null);
         return filter;
     }
 
@@ -94,9 +96,10 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public boolean scanDisable() {
-        if (scanDisable == null) {
-            scanDisable = getConfig().getOptionalValue(AAIConfig.SCAN_DISABLE, Boolean.class).orElse(false);
+        if (scanDisable != null) {
+            return scanDisable;
         }
+        scanDisable = getConfig().getOptionalValue(AAIConfig.SCAN_DISABLE, Boolean.class).orElse(false);
         return scanDisable;
     }
 
@@ -106,10 +109,11 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public Set<String> scanPackages() {
-        if (scanPackages == null) {
-            String packages = getConfig().getOptionalValue(AAIConfig.SCAN_PACKAGES, String.class).orElse(null);
-            scanPackages = asCsvSet(packages);
+        if (scanPackages != null) {
+            return scanPackages;
         }
+        String packages = getConfig().getOptionalValue(AAIConfig.SCAN_PACKAGES, String.class).orElse(null);
+        scanPackages = asCsvSet(packages);
         return scanPackages;
     }
 
@@ -127,10 +131,11 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public Set<String> scanClasses() {
-        if (scanClasses == null) {
-            String classes = getConfig().getOptionalValue(AAIConfig.SCAN_CLASSES, String.class).orElse(null);
-            scanClasses = asCsvSet(classes);
+        if (scanClasses != null) {
+            return scanClasses;
         }
+        String classes = getConfig().getOptionalValue(AAIConfig.SCAN_CLASSES, String.class).orElse(null);
+        scanClasses = asCsvSet(classes);
         return scanClasses;
     }
 
@@ -143,10 +148,11 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public Set<String> scanExcludePackages() {
-        if (scanExcludePackages == null) {
-            String packages = getConfig().getOptionalValue(AAIConfig.SCAN_EXCLUDE_PACKAGES, String.class).orElse(null);
-            scanExcludePackages = asCsvSet(packages);
+        if (scanExcludePackages != null) {
+            return scanExcludePackages;
         }
+        String packages = getConfig().getOptionalValue(AAIConfig.SCAN_EXCLUDE_PACKAGES, String.class).orElse(null);
+        scanExcludePackages = asCsvSet(packages);
         return scanExcludePackages;
     }
 
@@ -160,10 +166,11 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public Set<String> scanExcludeClasses() {
-        if (scanExcludeClasses == null) {
-            String classes = getConfig().getOptionalValue(AAIConfig.SCAN_EXCLUDE_CLASSES, String.class).orElse(null);
-            scanExcludeClasses = asCsvSet(classes);
+        if (scanExcludeClasses != null) {
+            return scanExcludeClasses;
         }
+        String classes = getConfig().getOptionalValue(AAIConfig.SCAN_EXCLUDE_CLASSES, String.class).orElse(null);
+        scanExcludeClasses = asCsvSet(classes);
         return scanExcludeClasses;
     }
 
@@ -177,10 +184,11 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public Set<String> servers() {
-        if (servers == null) {
-            String theServers = getConfig().getOptionalValue(AAIConfig.SERVERS, String.class).orElse(null);
-            servers = asCsvSet(theServers);
+        if (servers != null) {
+            return servers;
         }
+        String theServers = getConfig().getOptionalValue(AAIConfig.SERVERS, String.class).orElse(null);
+        servers = asCsvSet(theServers);
         return servers;
     }
 
@@ -189,10 +197,11 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public boolean scanDependenciesDisable() {
-        if (scanDependenciesDisable == null) {
-            scanDependenciesDisable = getConfig().getOptionalValue(AsyncApiConstants.SCAN_DEPENDENCIES_DISABLE, Boolean.class)
-                    .orElse(false);
+        if (scanDependenciesDisable != null) {
+            return scanDependenciesDisable;
         }
+        scanDependenciesDisable = getConfig().getOptionalValue(AsyncApiConstants.SCAN_DEPENDENCIES_DISABLE, Boolean.class)
+                .orElse(false);
         return scanDependenciesDisable;
     }
 
@@ -201,38 +210,42 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
      */
     @Override
     public Set<String> scanDependenciesJars() {
-        if (scanDependenciesJars == null) {
-            String classes = getConfig().getOptionalValue(AsyncApiConstants.SCAN_DEPENDENCIES_JARS, String.class).orElse(null);
-            scanDependenciesJars = asCsvSet(classes);
+        if (scanDependenciesJars != null) {
+            return scanDependenciesJars;
         }
+        String classes = getConfig().getOptionalValue(AsyncApiConstants.SCAN_DEPENDENCIES_JARS, String.class).orElse(null);
+        scanDependenciesJars = asCsvSet(classes);
         return scanDependenciesJars;
     }
 
     @Override
     public boolean schemaReferencesEnable() {
-        if (schemaReferencesEnable == null) {
-            schemaReferencesEnable = getConfig().getOptionalValue(AsyncApiConstants.SCHEMA_REFERENCES_ENABLE, Boolean.class)
-                    .orElse(false);
+        if (schemaReferencesEnable != null) {
+            return schemaReferencesEnable;
         }
+        schemaReferencesEnable = getConfig().getOptionalValue(AsyncApiConstants.SCHEMA_REFERENCES_ENABLE, Boolean.class)
+                .orElse(false);
         return schemaReferencesEnable;
     }
 
     @Override
     public String customSchemaRegistryClass() {
-        if (customSchemaRegistryClass == null) {
-            customSchemaRegistryClass = getConfig()
-                    .getOptionalValue(AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, String.class).orElse(null);
+        if (customSchemaRegistryClass != null) {
+            return customSchemaRegistryClass;
         }
+        customSchemaRegistryClass = getConfig()
+                .getOptionalValue(AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, String.class).orElse(null);
         return customSchemaRegistryClass;
     }
 
     @Override
     public Set<String> excludeFromSchemas() {
-        if (excludeFromSchemas == null) {
-            String packages = getConfig()
-                    .getOptionalValue(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, String.class).orElse(null);
-            excludeFromSchemas = asCsvSet(packages);
+        if (excludeFromSchemas != null) {
+            return excludeFromSchemas;
         }
+        String packages = getConfig()
+                .getOptionalValue(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, String.class).orElse(null);
+        excludeFromSchemas = asCsvSet(packages);
         return excludeFromSchemas;
     }
 }

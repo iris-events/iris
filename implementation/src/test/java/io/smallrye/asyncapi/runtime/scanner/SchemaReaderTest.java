@@ -1,12 +1,12 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,12 +30,12 @@ public class SchemaReaderTest extends IndexScannerTestBase {
 
         Optional<Map<String, AaiSchema>> propertiesOpt = SchemaReader.readSchemas(propertiesNode);
 
-        assertTrue(propertiesOpt.isPresent());
+        assertThat(propertiesOpt.isPresent(), is(true));
         Map<String, AaiSchema> stringAaiSchemaMap = propertiesOpt.get();
-        Assert.assertEquals(6, stringAaiSchemaMap.size());
+        assertThat(stringAaiSchemaMap.size(), is(6));
 
         AaiSchema aaiSchema = SchemaReader.readSchema(schemaNode);
         Map<String, AaiSchema> properties = aaiSchema.properties;
-        Assert.assertEquals(6, properties.size());
+        assertThat(properties.size(), is(6));
     }
 }
