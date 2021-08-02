@@ -3,13 +3,8 @@ package id.global.models.!!!.client;
 public enum Exchanges {
 
     //TODO: generate with data from apicurio
-    //TODO: add more options
-    #####
-//    EXCHANGE1_ROUTING_KEY1("EXCHANGE1", "ROUTING_KEY1", "direct"),
-//    EXCHANGE1_ROUTING_KEY2("EXCHANGE1", "ROUTING_KEY2", "direct"),
-//    EXCHANGE2_ROUTING_KEY1("EXCHANGE2", "ROUTING_KEY1", "fanout"),
-//    EXCHANGE3_ROUTING_KEY2("EXCHANGE3", "ROUTING_KEY2", "topic"),
-//    EXCHANGE4_ROUTING_KEY3("EXCHANGE4", "ROUTING_KEY3", "fanout");
+    //TODO: add more option
+#####
 
     public final String exchange;
     public final String routingKey;

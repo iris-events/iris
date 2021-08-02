@@ -14,17 +14,22 @@ import org.json.simple.parser.ParseException;
 import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.rules.RuleFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 @Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE)
 public class AmqpGeneratorMojo extends AbstractMojo {
 
+    private static final String defaultUrl = "https://schema.internal.globalid.dev";
+    private static final String enumTemplate = """
+                %s_%s("%s","%s","%s"),
+            """;
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
@@ -32,16 +37,17 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "artifactSource", required = true)
     ArtifactSource artifactSource;
 
-    //TODO: use this instead hardcoded url!
-    @Parameter(property = "apicurioUrl", required = false)
+    @Parameter(property = "apicurioUrl")
     String apicurioUrl;
 
-    @Parameter(property = "fileDestination", required = false)
-    String fileDestination;
+    @Parameter(property = "asyncApiFilename")
+    String asyncApiFilename = "asyncapi.json";
+
+    @Parameter(property = "asyncApiDirectory")
+    String asyncApiDirectory = "target,generated";
 
     @Parameter(property = "packageName", required = true)
     String packageName;
-
 
     @Parameter(property = "modelVersion", required = true)
     String modelVersion;
@@ -49,40 +55,52 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "modelName", required = true)
     String modelName;
 
-    private  final Path tmpFolder = Paths.get("models");
-    private  final Path tmpSourceFolder = tmpFolder.resolve(Paths.get("src","main","java"));
-    private  final Path tmpSchemaFolder = tmpFolder.resolve(Paths.get("schemas"));
+    @Parameter(property = "skip")
+    boolean skip = false;
+
+    private final Path tmpFolder = Paths.get("models");
+    private final Path tmpSourceFolder = tmpFolder.resolve(Paths.get("src", "main", "java"));
+    private final Path tmpSchemaFolder = tmpFolder.resolve(Paths.get("schemas"));
 
 
     public void execute() throws MojoExecutionException {
-
-
-        cleanUpDirectories();
-        if (artifactSource == ArtifactSource.FILE) {
-            generateFromFile(fileDestination);
-        } else if (artifactSource == ArtifactSource.APICURIO) {
-            generateFromApicurio();
+        if (!skip) {
+            cleanUpDirectories();
+            if (artifactSource == ArtifactSource.FILE) {
+                generateFromFile(asyncApiDirectory, asyncApiFilename);
+            } else if (artifactSource == ArtifactSource.APICURIO) {
+                generateFromApiCurio(apicurioUrl);
+            } else {
+                throw new MojoExecutionException("Execute failed! Artifact source location not known!");
+            }
         } else {
-            throw new MojoExecutionException("Execute failed! Artifact source location not known!");
+            getLog().info("Skipping model generation! Skip: [" + skip + "]");
         }
     }
 
-    public void generateFromFile(String fileDestination) {
+    public void generateFromFile(String asyncApiDirectory, String asyncApiFilename) {
 
         String ymlContent;
         try {
-            Paths.get(project.getBasedir().toURI()).resolve("target").resolve("generated").resolve(fileDestination);
-            ymlContent = readSchemaContent(project.getBasedir() + "/target/generated/" + fileDestination);
-            parseAsyncApiJson(ymlContent, "");
+
+            String[] pathSpliced;
+            pathSpliced = asyncApiDirectory.split(","); //separate directory via , to be platform independent
+            Path p = Paths.get(project.getBasedir().toURI());
+            for (String sub : pathSpliced) {
+                p = p.resolve(sub);
+            }
+            p = p.resolve(asyncApiFilename);
+            ymlContent = readSchemaContent(p);
+            parseAsyncApiJson(ymlContent);
         } catch (Exception e) {
             getLog().error("Parsing AsyncApi definition!", e);
         }
         getLog().info("Generation completed!");
     }
 
-    public String readSchemaContent(String fileName) {
+    public String readSchemaContent(Path path) {
         try {
-            return Files.readString(Paths.get(fileName));
+            return Files.readString(path);
         } catch (IOException e) {
             getLog().error("Schema content read failed!", e);
         }
@@ -123,7 +141,6 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         try {
             try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
                 assert is != null;
-                //TODO: check this out...
                 text = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
             return text;
@@ -134,20 +151,21 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     }
 
+
+    //Use this when plugin will have to generate models from apicurio url
     public String readContentFromWeb(String contentUrl) throws IOException {
-        //TODO: for later use if needed
-        return "";
-//        getLog().info("Reading AsyncApi definition from url: " + contentUrl);
-//
-//        URL url = new URL(contentUrl);
-//        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-//        StringBuilder builder = new StringBuilder();
-//        String inputLine;
-//        while ((inputLine = in.readLine()) != null) {
-//            builder.append(inputLine);
-//        }
-//        in.close();
-//        return builder.toString();
+        getLog().info("Reading AsyncApi definition from url: " + contentUrl);
+        URL url = new URL(contentUrl);
+        String inputLine;
+        StringBuilder builder = new StringBuilder();
+        try (BufferedReader br =
+                     new BufferedReader(new InputStreamReader(url.openStream()))) {
+            while ((inputLine = br.readLine()) != null) {
+                builder.append(inputLine);
+            }
+        }
+
+        return builder.toString();
     }
 
     public void writeSchemaFile(String fileName, String content) {
@@ -161,6 +179,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         Path p = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder);
 
 
+        //TODO windows will have problems ... check what original document has.. if generated document is OS dependent format
+        //TODO: then we need to fix this if document is always in UNIX style path then no need to fix this
         content = content.replace(
                 "\\/components\\/schemas\\/",
                 p.toUri().toString()
@@ -194,16 +214,15 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    public void parseAsyncApiJson(String json, String appName) throws IOException, ParseException {
-
+    public void parseAsyncApiJson(String json) throws IOException, ParseException {
         getLog().info("Parsing AsyncApi definition!");
 
         JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(json);
-        JSONObject components = (JSONObject) jsonObject.get("components");
-        JSONObject schemas = (JSONObject) components.get("schemas"); //generate objects
-        JSONObject channels = (JSONObject) jsonObject.get("channels"); //generate helpers (enums for exchanges, etc..)
 
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(json);
+        JSONObject components = getJsonObject(jsonObject, "components");
+        JSONObject schemas = getJsonObject(components, "schemas");
+        JSONObject channels = getJsonObject(jsonObject, "channels");
 
         //create directory structure
         Path pathSource = Paths.get(project.getBasedir().toURI()).resolve(tmpSourceFolder);
@@ -211,30 +230,26 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         Files.createDirectories(pathSource);
         Files.createDirectories(pathSchema);
 
-
         drillDown(schemas, " ");
 
-
-        for (String fileNema : (Iterable<String>) schemas.keySet()) {
-            generate(fileNema);
+        for (String fileName : (Iterable<String>) schemas.keySet()) {
+            generate(fileName);
         }
 
-        //TODO: create Client package that contains different enums and helper function!
-        generateChannelSupportData(channels);
-        generateAdditonalFiles();
-
+        generateAdditionalFiles(channels);
     }
 
 
-    public void generateAdditonalFiles() {
-        String stringPath = packageName.replace(".",File.separator);
+    public void generateAdditionalFiles(JSONObject channels) {
+        String stringPath = packageName.replace(".", File.separator);
 
         Path path = Paths.get(project.getBasedir().toURI())
                 .resolve(tmpSourceFolder)
                 .resolve(stringPath)
                 .resolve("client");
 
-        writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java"), path.toString());
+        String replaceWith = generateChannelSupportData(channels);
+        writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
 
         Path pomPath = Paths.get(project.getBasedir().toURI())
                 .resolve(tmpFolder);
@@ -243,33 +258,57 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     }
 
-    public String prepareExchangeTemplate(String templateFile) {
+    public String prepareExchangeTemplate(String templateFile, String content) {
         String template = readResourceFileContent(templateFile);
         template = template.replace("!!!", modelName);
-        //TODO: generate whatever will be needed here...
-        template = template.replace("#####", """
-                EXCHANGE1_ROUTING_KEY1("EXCHANGE1", "ROUTING_KEY1", "direct"),
-                        EXCHANGE1_ROUTING_KEY2("EXCHANGE1", "ROUTING_KEY2", "direct"),
-                        EXCHANGE2_ROUTING_KEY1("EXCHANGE2", "ROUTING_KEY1", "fanout"),
-                        EXCHANGE3_ROUTING_KEY2("EXCHANGE3", "ROUTING_KEY2", "topic"),
-                        EEEXCHANGE4_ROUTING_KEY3("EXCHANGE4", "ROUTING_KEY3", "fanout");""");
+        template = template.replace("#####", content);
         return template;
     }
 
     public String preparePomTemplate(String templateFile) {
-        String pomtemplate = readResourceFileContent(templateFile);
-        pomtemplate = pomtemplate.replace("XXXX", modelName);
-        pomtemplate = pomtemplate.replace("YYYY", modelVersion);
-        return pomtemplate;
+        String pomTemplate = readResourceFileContent(templateFile);
+        pomTemplate = pomTemplate.replace("XXXX", modelName);
+        pomTemplate = pomTemplate.replace("YYYY", modelVersion);
+        return pomTemplate;
+    }
+
+    public JSONObject getJsonObject(JSONObject jsonObject, String key) {
+        AtomicReference<JSONObject> o = new AtomicReference<>(jsonObject);
+        Arrays.stream(key.split("\\.")).forEach(
+                k -> o.set((JSONObject) o.get().get(k))
+        );
+        return o.get();
     }
 
 
-    public void generateChannelSupportData(JSONObject jsonObject) {
-        //TODO: do the magic for channel stuff!
+    public String generateChannelSupportData(JSONObject jsonObject) {
         getLog().info("Creating JsonSchema generateChannelSupportData!");
+
+        StringBuilder sb = new StringBuilder();
+
+
         for (String key : (Iterable<String>) jsonObject.keySet()) {
-            getLog().warn("Channel: " + key + "   " + jsonObject.get(key).toString());
+
+            String exchange = key.split("/")[0];
+            String routingKey = key.split("/")[1];
+
+            JSONObject exchangeObject = getJsonObject(jsonObject, key + "." + "bindings.amqp.exchange");
+            String type = (String) exchangeObject.get("type");
+
+            sb.append(
+                    //will output ->  MYEXCHANGE_APTOCARDEVENT_ROOT("MYEXCHANGE","AptoCardEvent_Root","direct"),
+                    String.format(enumTemplate,
+                            exchange.toUpperCase(),
+                            routingKey.toUpperCase(),
+                            exchange,
+                            routingKey,
+                            type)
+            );
         }
+
+        int start = sb.toString().lastIndexOf(",");
+        sb.replace(start, start + 1, ";");
+        return sb.toString();
     }
 
     public void generate(String fileName) throws IOException {
@@ -287,38 +326,42 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 new SchemaGenerator());
 
 
-
         Path schemes = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder).resolve(fileName);
-        //TODO: investigate what ClassName does!
         mapper.generate(codeModel, "ClassName", packageName, schemes.toUri().toURL());
 
         codeModel.build(clientPath.toFile());
     }
 
 
-    public void generateFromApicurio() {
-        String artifcats;
+    public void generateFromApiCurio(String baseUrl) {
+
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = defaultUrl;
+        }
+
+        String artifacts;
+
         try {
-            artifcats = readContentFromWeb("https://schema.internal.globalid.dev/api/artifacts");
+            artifacts = readContentFromWeb(baseUrl + "/api/artifacts");
             JSONParser jsonParser = new JSONParser();
-            JSONArray jsonObject = (JSONArray) jsonParser.parse(artifcats);
+            JSONArray jsonObject = (JSONArray) jsonParser.parse(artifacts);
 
             for (Object o : jsonObject) { //just an artifact name
                 if (o.toString().endsWith("yaml")) //skip yaml files
                     continue;
 
                 try {
-                    String ymlContent = readContentFromWeb("https://schema.internal.globalid.dev/api/artifacts/" + o);
-                    getLog().info("applicationFor: " + o);
-                    String applicationName = o.toString().split(":")[0]; //TODO: make it nicer
-                    parseAsyncApiJson(ymlContent, applicationName);
+                    String ymlContent = readContentFromWeb(baseUrl + "/api/artifacts/" + o);
+                    getLog().info("Parsing for application: " + o);
+                    modelName = o.toString().split(":")[0];
+                    parseAsyncApiJson(ymlContent);
                 } catch (IOException e) {
-                    getLog().error("Generating from appicurio failed!", e);
+                    getLog().error("Generating from apicurio failed!", e);
                 }
             }
 
         } catch (IOException | ParseException e) {
-            getLog().error("Reading from appicurio failed!", e);
+            getLog().error("Reading from apicurio failed!", e);
         }
     }
 }
