@@ -1,9 +1,10 @@
 package id.global.event.messaging.it;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,7 +16,6 @@ import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class TopicExchangeConsumeIT {
@@ -32,27 +32,38 @@ public class TopicExchangeConsumeIT {
 
     @BeforeEach
     public void setup() {
-        producer.connect();
     }
 
     @Test
     void topicTest() throws Exception {
-        producer.publishTopic(TOPIC_EXCHANGE, "quick.orange.fox", new LoggingEvent("Quick orange fox", 1L), null);
-        producer.publishTopic(TOPIC_EXCHANGE, "quick.yellow.rabbit", new LoggingEvent("Quick yellow rabbit", 2L), null);
-        producer.publishTopic(TOPIC_EXCHANGE, "lazy.blue.snail", new LoggingEvent("Lazy blue snail", 3L), null);
-        producer.publishTopic(TOPIC_EXCHANGE, "lazy.orange.rabbit", new LoggingEvent("Lazy orange rabbit", 4L), null);
+        LoggingEvent l1 = new LoggingEvent("Quick orange fox", 1L);
+        LoggingEvent l2 = new LoggingEvent("Quick yellow rabbit", 2L);
+        LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
+        LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
 
-        assertEquals("Quick orange fox", internalLoggingServiceA.getFutureList().get(0).get(1, TimeUnit.SECONDS));
-        assertEquals("Quick yellow rabbit", internalLoggingServiceB.getFutureList().get(0).get(1, TimeUnit.SECONDS));
-        assertEquals("Lazy blue snail", internalLoggingServiceB.getFutureList().get(1).get(1, TimeUnit.SECONDS));
-        assertEquals("Lazy orange rabbit", internalLoggingServiceA.getFutureList().get(1).get(1, TimeUnit.SECONDS));
-        assertEquals("Lazy orange rabbit", internalLoggingServiceB.getFutureList().get(2).get(1, TimeUnit.SECONDS));
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "quick.orange.fox", l1, null);
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "quick.yellow.rabbit", l2, null);
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.blue.snail", l3, null);
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.orange.rabbit", l4, null);
+
+        Thread.sleep(150); //wait for little bit
+
+        assertTrue(internalLoggingServiceA.getEvents().contains("Quick orange fox"));
+        assertTrue(internalLoggingServiceB.getEvents().contains("Quick yellow rabbit"));
+        assertTrue(internalLoggingServiceB.getEvents().contains("Lazy blue snail"));
+        assertTrue(internalLoggingServiceA.getEvents().contains("Lazy orange rabbit"));
+        assertTrue(internalLoggingServiceB.getEvents().contains("Lazy orange rabbit"));
     }
 
     @ApplicationScoped
     public static class MyLoggingServiceA {
         public List<CompletableFuture<String>> futureList = new ArrayList<>();
         public int i = 0;
+        private List<String> events = new ArrayList<>();
+
+        public List<String> getEvents() {
+            return events;
+        }
 
         public MyLoggingServiceA() {
             futureList.add(new CompletableFuture<>());
@@ -60,9 +71,12 @@ public class TopicExchangeConsumeIT {
 
         @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = { "*.orange.*" })
         public void handleLogEvents(LoggingEvent event) {
-            futureList.add(new CompletableFuture<>());
-            futureList.get(i).complete(event.getLog());
-            i++;
+
+            futureList.add(
+                    CompletableFuture.supplyAsync(() -> {
+                        events.add(event.getLog());
+                        return event.getLog();
+                    }));
         }
 
         public List<CompletableFuture<String>> getFutureList() {
@@ -74,6 +88,11 @@ public class TopicExchangeConsumeIT {
     public static class MyLoggingServiceB {
         public List<CompletableFuture<String>> futureList = new ArrayList<>();
         public int i = 0;
+        private List<String> events = new ArrayList<>();
+
+        public List<String> getEvents() {
+            return events;
+        }
 
         public MyLoggingServiceB() {
             futureList.add(new CompletableFuture<>());
@@ -81,9 +100,11 @@ public class TopicExchangeConsumeIT {
 
         @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = { "*.*.rabbit", "lazy.#" })
         public void handleLogEvents(LoggingEvent event) {
-            futureList.add(new CompletableFuture<>());
-            futureList.get(i).complete(event.getLog());
-            i++;
+            futureList.add(
+                    CompletableFuture.supplyAsync(() -> {
+                        events.add(event.getLog());
+                        return event.getLog();
+                    }));
         }
 
         public List<CompletableFuture<String>> getFutureList() {
