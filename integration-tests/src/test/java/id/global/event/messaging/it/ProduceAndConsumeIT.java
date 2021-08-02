@@ -1,8 +1,11 @@
 package id.global.event.messaging.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,8 +18,6 @@ import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -26,6 +27,7 @@ public class ProduceAndConsumeIT {
     public static final String EVENT_QUEUE = "test_EventQueue";
     public static final String EVENT_QUEUE_PRIORITY = "test_EventQueue_priority";
     public static final String EXCHANGE = "test_exchange";
+    public static final String EXCHANGE_ADDITIONAL = "test_exchange_additional";
 
     @Inject
     AmqpProducer producer;
@@ -35,18 +37,26 @@ public class ProduceAndConsumeIT {
 
     @BeforeEach
     public void setup() {
-        producer.connect();
     }
 
     @Test
     void basicProduceConsumeTest() throws Exception {
-        producer.publishDirect(EXCHANGE, EVENT_QUEUE_PRIORITY, new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE), null);
 
-        assertEquals(EVENT_PAYLOAD_NAME, service.getHandledPriorityEvent().get().getName());
-        assertEquals(EVENT_PAYLOAD_AGE, service.getHandledPriorityEvent().get().getAge());
+        producer.publishDirectAsync(
+                EXCHANGE,
+                Optional.of(EVENT_QUEUE),
+                new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
+                null);
 
-        //TODO: do we need this assertion here?
-        assertThrows(TimeoutException.class, () -> service.getHandledEvent().get(1000, TimeUnit.MILLISECONDS));
+        producer.publishDirectAsync(
+                EXCHANGE_ADDITIONAL,
+                Optional.of(EVENT_QUEUE_PRIORITY),
+                new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
+                null);
+
+        assertEquals(EVENT_PAYLOAD_NAME, service.getHandledPriorityEvent().get(1000, TimeUnit.MILLISECONDS).getName());
+        assertEquals(EVENT_PAYLOAD_AGE, service.getHandledPriorityEvent().get(1000, TimeUnit.MILLISECONDS).getAge());
+        assertEquals(2, service.count.get());
     }
 
     @ApplicationScoped
@@ -54,13 +64,17 @@ public class ProduceAndConsumeIT {
         private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         private final CompletableFuture<Event> handledPriorityEvent = new CompletableFuture<>();
 
+        public static final AtomicInteger count = new AtomicInteger(0);
+
         @MessageHandler(queue = EVENT_QUEUE, exchange = EXCHANGE)
         public void handle(Event event) {
+            count.incrementAndGet();
             handledEvent.complete(event);
         }
 
-        @MessageHandler(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE)
+        @MessageHandler(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE_ADDITIONAL)
         public void handlePriority(Event event) {
+            count.incrementAndGet();
             handledPriorityEvent.complete(event);
         }
 
