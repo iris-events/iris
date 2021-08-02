@@ -1,0 +1,25 @@
+= Quarkus Evend Driven Architecture Extension
+
+Quarkus extension enabling event driven communication between quarkus services.
+
+== Instructions
+
+Compile and test the project:
+
+[source,bash]
+----
+mvn verify -Dquarkus.amqp.url=localhost
+----
+
+=== Project structure
+
+* link:deployment/[] - Build time part of the extension. Annotation scanning, registration of consumers, etc.
+* link:integration-tests/[] - Integration tests for the extension.
+* link:runtime/[] - Run time part of the extension. Consumer and producer classes, etc.
+
+== Extension configuration
+- `quarkus.amqp.url` - AMQP broker address. Default value is read from `QUARKUS_EDA_RABBIT_HOST` environment variable. Make sure that is set, or run with `-Dquarkus.amqp.url=YOUR_AMQP_HOST`.
+- `quarkus.amqp.port` - AMQP broker port. Default value = 5672
+- `quarkus.amqp.authenticated` - To use authenticated connection to the AMQP broker or not. If `true` set the `username` and `password` config properties also. Default value = `false`.
+- `quarkus.amqp.username` - AMQP authenticated connection username. Default value = `user`
+- `quarkus.amqp.password` - AMQP authenticated connection password. Default value = `user`
