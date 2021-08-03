@@ -11,6 +11,7 @@
         <relativePath/>
     </parent>
 
+    <groupId>id.global.events</groupId>
     <artifactId>smallrye-async-api-parent</artifactId>
     <version>1.0.1-SNAPSHOT</version>
 
