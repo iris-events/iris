@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>id.global</groupId>
+        <groupId>id.global.events</groupId>
         <artifactId>smallrye-async-api-parent</artifactId>
         <version>1.0.1-SNAPSHOT</version>
     </parent>
