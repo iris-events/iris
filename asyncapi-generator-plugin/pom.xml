@@ -48,7 +48,7 @@
             <artifactId>jandex</artifactId>
         </dependency>
         <dependency>
-            <groupId>id.global</groupId>
+            <groupId>id.global.events</groupId>
             <artifactId>smallrye-async-api</artifactId>
         </dependency>
     </dependencies>

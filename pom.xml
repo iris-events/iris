@@ -73,7 +73,7 @@
 				<version>${jandex.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>id.global</groupId>
+				<groupId>id.global.events</groupId>
 				<artifactId>smallrye-async-api</artifactId>
 				<version>${version.smallrye.async.api}</version>
 			</dependency>
