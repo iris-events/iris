@@ -50,7 +50,6 @@
         <dependency>
             <groupId>id.global</groupId>
             <artifactId>smallrye-async-api</artifactId>
-            <version>${version.smallrye.async.api}</version>
         </dependency>
     </dependencies>
 
