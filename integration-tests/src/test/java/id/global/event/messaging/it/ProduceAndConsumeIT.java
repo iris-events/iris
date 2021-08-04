@@ -37,6 +37,7 @@ public class ProduceAndConsumeIT {
 
     @BeforeEach
     public void setup() {
+        service.reset();
     }
 
     @Test
@@ -59,12 +60,32 @@ public class ProduceAndConsumeIT {
         assertEquals(2, service.count.get());
     }
 
+    @Test
+    void basicProduceConsumeAsyncTest() throws Exception {
+
+        for (int i = 0; i < 100; i++)
+            producer.publishDirectAsync(
+                    EXCHANGE,
+                    Optional.of(EVENT_QUEUE),
+                    new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
+                    null);
+
+        Thread.sleep(100);
+        assertEquals(EVENT_PAYLOAD_NAME, service.getHandledPriorityEvent().get(1000, TimeUnit.MILLISECONDS).getName());
+        assertEquals(EVENT_PAYLOAD_AGE, service.getHandledPriorityEvent().get(1000, TimeUnit.MILLISECONDS).getAge());
+        assertEquals(100, service.count.get());
+    }
+
     @ApplicationScoped
     public static class TestHandlerService {
         private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         private final CompletableFuture<Event> handledPriorityEvent = new CompletableFuture<>();
 
         public static final AtomicInteger count = new AtomicInteger(0);
+
+        public void reset() {
+            count.set(0);
+        }
 
         @MessageHandler(queue = EVENT_QUEUE, exchange = EXCHANGE)
         public void handle(Event event) {
