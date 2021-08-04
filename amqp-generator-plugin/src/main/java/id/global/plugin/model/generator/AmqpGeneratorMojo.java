@@ -46,8 +46,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "asyncApiDirectory")
     String asyncApiDirectory = "target,generated";
 
-    @Parameter(property = "packageName", required = true)
-    String packageName;
+    @Parameter(property = "packageName")
+    String packageName = "id.global.models";
 
     @Parameter(property = "modelVersion", required = true)
     String modelVersion;
@@ -245,7 +245,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         Path path = Paths.get(project.getBasedir().toURI())
                 .resolve(tmpSourceFolder)
-                .resolve(stringPath)
+                .resolve(stringPath + File.separator + modelName)
                 .resolve("client");
 
         String replaceWith = generateChannelSupportData(channels);
@@ -327,7 +327,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
 
         Path schemes = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder).resolve(fileName);
-        mapper.generate(codeModel, "ClassName", packageName, schemes.toUri().toURL());
+        mapper.generate(codeModel, "ClassName", packageName + "." + modelName, schemes.toUri().toURL());
 
         codeModel.build(clientPath.toFile());
     }
