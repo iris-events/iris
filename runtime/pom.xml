@@ -23,8 +23,6 @@
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/io.quarkus/quarkus-jackson -->
-    <!-- https://mvnrepository.com/artifact/io.quarkus/quarkus-jackson-deployment -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jackson</artifactId>
