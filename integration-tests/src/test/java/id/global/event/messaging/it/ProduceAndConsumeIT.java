@@ -42,13 +42,13 @@ public class ProduceAndConsumeIT {
     @Test
     void basicProduceConsumeTest() throws Exception {
 
-        producer.publishDirectAsync(
+        producer.publishDirect(
                 EXCHANGE,
                 Optional.of(EVENT_QUEUE),
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
                 null);
 
-        producer.publishDirectAsync(
+        producer.publishDirect(
                 EXCHANGE_ADDITIONAL,
                 Optional.of(EVENT_QUEUE_PRIORITY),
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),

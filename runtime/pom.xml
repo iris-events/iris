@@ -9,6 +9,7 @@
   </parent>
   <artifactId>event-messaging</artifactId>
   <name>Event Messaging - Runtime</name>
+
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -27,16 +28,13 @@
       <groupId>id.global</groupId>
       <artifactId>smallrye-async-api</artifactId>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/io.quarkus/quarkus-jackson -->
-    <!-- https://mvnrepository.com/artifact/io.quarkus/quarkus-jackson-deployment -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jackson</artifactId>
-      <version>2.0.0.Final</version>
+      <version>${version.quarkus}</version>
     </dependency>
-
-
   </dependencies>
+
   <build>
     <plugins>
       <plugin>

@@ -19,7 +19,7 @@ import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 
 @ApplicationScoped
 public class AmqpProducer {
-    private static final Logger LOG = Logger.getLogger(AmqpProducer.class);
+    private static final Logger LOG = Logger.getLogger(AmqpProducer.class.getName());
     private final AmqpConfiguration amqpConfiguration;
 
     private final ObjectMapper objectMapper;
@@ -60,7 +60,7 @@ public class AmqpProducer {
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
-               LOG.error("Can't get hostname!", e);
+                LOG.error("Can't get hostname!", e);
             }
         }
         return hostName;
@@ -121,17 +121,21 @@ public class AmqpProducer {
      * @param properties additional properties for producer
      * @throws Exception
      */
-    public void publishDirect(String exchange, Optional<String> routingKey, Object message, AMQP.BasicProperties properties)
+    public boolean publishDirect(String exchange, Optional<String> routingKey, Object message, AMQP.BasicProperties properties)
             throws Exception {
 
         routingKey = routingKey.filter(s -> !s.isEmpty());
-        byte[] bytes = new byte[0];
+        final byte[] bytes = objectMapper.writeValueAsBytes(message);
 
-        bytes = objectMapper.writeValueAsBytes(message);
-        publishMessage(exchange,
-                routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
-                properties,
-                bytes);
+        try {
+            return publishMessage(exchange,
+                    routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
+                    properties,
+                    bytes);
+        } catch (Exception e) {
+            LOG.error("Sending failed! ", e);
+            return false;
+        }
     }
 
     /**
@@ -225,7 +229,23 @@ public class AmqpProducer {
                     } else {
                         final Channel newChannel = connection.createChannel();
                         newChannel.confirmSelect();
+                        newChannel.addConfirmListener(new ConfirmCallback() {
+                            @Override
+                            public void handle(long deliveryTag, boolean multiple) throws IOException {
+                                System.out.println("DELIVERED ACK " + deliveryTag + " " + multiple);
+                                LOG.warn("DELIVERED ACK " + deliveryTag + " " + multiple);
+                                //                                log.warn("DELIVERED ACK " + deliveryTag + " " + multiple);
+                            }
+                        }, new ConfirmCallback() {
+                            @Override
+                            public void handle(long deliveryTag, boolean multiple) throws IOException {
+                                System.out.println("DELIVERED NACK " + deliveryTag + " " + multiple);
+                                LOG.warn("DELIVERED NACK " + deliveryTag + " " + multiple);
+                                //                                log.warn("DELIVERED NACK " + deliveryTag + " " + multiple);
+                            }
+                        });
                         channels.set(newChannel);
+
                         publish(exchange, routingKey, properties, bytes, channels.get());
 
                     }
@@ -264,26 +284,83 @@ public class AmqpProducer {
     private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
             Optional<Channel> channel) {
         try {
-            if (channel.isPresent()) {
+            if (channel.isPresent() && channel.get().isOpen()) {
                 channel.get().basicPublish(exchange, routingKey, properties, bytes);
+            } else {
+                System.out.println("channel not opened");
             }
         } catch (Exception e) {
             LOG.error("Message publishing failed!", e);
         }
     }
 
-    private void publishMessage(final String exchange,
+    private final Object object = new Object();
+    private AtomicInteger count = new AtomicInteger(0);
+
+    private boolean publishMessage(final String exchange,
             final String routingKey,
             final AMQP.BasicProperties properties,
             final byte[] bytes) throws Exception {
+        synchronized (this.object) {
+            final CompletableFuture<String> feature = new CompletableFuture<>();
 
-        if (this.channel.isEmpty()) {
-            this.channel = createChannel();
-            this.channel.get().confirmSelect();
+            if (this.connection.isOpen()) {
+                if (this.channel.isEmpty()) {
+                    this.channel = createChannel();
+                    if (this.channel.isPresent()) {
+                        this.channel.get().confirmSelect();
+                        this.channel.get().addConfirmListener(confirmListener);
+                        this.channel.get().addReturnListener(returnListener);
+                    }
+                } else if (!this.channel.get().isOpen()) {
+                    try {
+                        this.channel.get().close();
 
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    this.channel = Optional.empty();
+                    this.channel = createChannel();
+                    if (this.channel.isPresent()) {
+                        this.channel.get().confirmSelect();
+                        this.channel.get().addConfirmListener(confirmListener);
+                        this.channel.get().addReturnListener(returnListener);
+                    }
+                }
+
+                publish(exchange, routingKey, properties, bytes, this.channel);
+
+                if (count.incrementAndGet() == 100) {
+                    this.channel.get().waitForConfirms(500);
+                    count.set(0);
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    ConfirmListener confirmListener = new ConfirmListener() {
+        @Override
+        public void handleAck(long deliveryTag, boolean multiple) throws IOException {
+            LOG.info("Message with deliveryTag [" + deliveryTag + "] ACK!");
         }
 
-        publish(exchange, routingKey, properties, bytes, this.channel);
-    }
+        @Override
+        public void handleNack(long deliveryTag, boolean multiple) throws IOException {
+            LOG.info("Message with deliveryTag [" + deliveryTag + "] NACK!");
+        }
+    };
+
+    //this will be used if message has "mandatory" flag set
+    ReturnListener returnListener = new ReturnListener() {
+        @Override
+        public void handleReturn(int replyCode, String replyText, String exchange, String routingKey,
+                AMQP.BasicProperties properties, byte[] body) throws IOException {
+            LOG.error("Message returned! exchange=[" + exchange + "], routingKey=[" + routingKey + "]: replyCode=[" + replyCode
+                    + "] replyMessage=[" + replyText + "]");
+        }
+    };
 
 }
