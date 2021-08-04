@@ -21,7 +21,7 @@ Sample usage:
 
 ```xml
 <plugin>
-  <groupId>id.global</groupId>
+  <groupId>id.global.events</groupId>
   <artifactId>amqp-generator-maven-plugin</artifactId>
   <executions>
     <execution>
@@ -33,7 +33,7 @@ Sample usage:
   </executions>
   <configuration>
       <artifactSource>FILE</artifactSource>
-      <apicurioUrl>http://url.to.apicurio.registry</apicurioUrl>
+<!--      <apicurioUrl>http://url.to.apicurio.registry</apicurioUrl>-->
       <asyncApiFilename>asyncapi.json</asyncApiFilename>
       <asyncApiDirectory>target,generated</asyncApiDirectory>
       <modelVersion>${project.version}</modelVersion>
