@@ -4,7 +4,20 @@ This maven plugin allows you to generate models from AsyncAPI Schema on build.
 
 # Using the maven plugin
 
-Add this to your pom.xml:
+# Available configurations
+| propertyName  | required  | options  |  defaultValue | dependsOn/Notes  |
+|---|---|---|---|---|
+| artifactSource  |  yes |  FILE / APICURIO |  FILE | Chose if definition is read from url or file  |
+| apicurioUrl | no  |   |  https://schema.internal.globalid.dev | artifactSource=APICURIO  |
+| asyncApiFilename|  no |   | asyncapi.json  |  artifactSource=FILE |
+| asyncApiDirectory | no  |   |  target,generated | artifactSource=FILE ; path should be seperated with ","  |
+| modelVersion| yes  |   |   | modelVersion should use ${project.version}  |
+| modelName|  yes |   |   | ModelName should use ${project.artifactId}  |
+| packageName |  no |   | "id.global.models"  | Package name will be used with modelName  |
+| skip| no  |   | false  |  Skip generation process |
+
+
+Sample usage:
 
 ```xml
 <plugin>
@@ -19,23 +32,19 @@ Add this to your pom.xml:
     </execution>
   </executions>
   <configuration>
-    <artifactSource>FILE</artifactSource>
-    <packageName>id.global.models.${artifactId}</packageName>
-    <fileDestination>asyncapi.json</fileDestination>
-    <modelName>${artifactId}</modelName>
-    <modelVersion>${version}</modelVersion>
+      <artifactSource>FILE</artifactSource>
+      <apicurioUrl>http://url.to.apicurio.registry</apicurioUrl>
+      <asyncApiFilename>asyncapi.json</asyncApiFilename>
+      <asyncApiDirectory>target,generated</asyncApiDirectory>
+      <modelVersion>${project.version}</modelVersion>
+      <modelName>${project.artifactId}</modelName>
+      <packageName>id.global.models</packageName>
+      <skip>false</skip>
   </configuration>
 </plugin>
 ```
 
-Generated models will appear in `target/generated/asyncapi.yaml`.
+Generated models will appear in root folder `/models`.
 
 It's recommended to use the latest non-snapshot version of this plugin
 
-# Configuration options
-
-- `artifactSource`
-- `packageName`
-- `fileDestination`
-- `modelName`
-- `modelVersion`  
