@@ -223,31 +223,15 @@ public class AmqpProducer {
             CompletableFuture.runAsync(() -> {
                 try {
                     final Channel existing = channels.get();
-
                     if (existing != null && existing.isOpen()) {
                         publish(exchange, routingKey, properties, bytes, existing);
+                        existing.waitForConfirms(500);
                     } else {
                         final Channel newChannel = connection.createChannel();
                         newChannel.confirmSelect();
-                        newChannel.addConfirmListener(new ConfirmCallback() {
-                            @Override
-                            public void handle(long deliveryTag, boolean multiple) throws IOException {
-                                System.out.println("DELIVERED ACK " + deliveryTag + " " + multiple);
-                                LOG.warn("DELIVERED ACK " + deliveryTag + " " + multiple);
-                                //                                log.warn("DELIVERED ACK " + deliveryTag + " " + multiple);
-                            }
-                        }, new ConfirmCallback() {
-                            @Override
-                            public void handle(long deliveryTag, boolean multiple) throws IOException {
-                                System.out.println("DELIVERED NACK " + deliveryTag + " " + multiple);
-                                LOG.warn("DELIVERED NACK " + deliveryTag + " " + multiple);
-                                //                                log.warn("DELIVERED NACK " + deliveryTag + " " + multiple);
-                            }
-                        });
+                        publish(exchange, routingKey, properties, bytes, newChannel);
+                        newChannel.waitForConfirms(500);
                         channels.set(newChannel);
-
-                        publish(exchange, routingKey, properties, bytes, channels.get());
-
                     }
                 } catch (Exception e) {
                     LOG.error("Message publishing failed!", e);
