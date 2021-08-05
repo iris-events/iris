@@ -27,7 +27,9 @@ public class AmqpProducer {
     private final ExecutorService pool;
     private final String hostName;
     private Optional<Channel> channel = Optional.empty();
-    private AtomicInteger failCounter = new AtomicInteger(0);
+    private final AtomicInteger failCounter = new AtomicInteger(0);
+    private final Object object = new Object();
+    private final AtomicInteger count = new AtomicInteger(0);
 
     public final ThreadLocal<Channel> channels = new ThreadLocal<Channel>() {
         private static final Logger LOG = Logger.getLogger(ThreadLocal.class);
@@ -249,12 +251,25 @@ public class AmqpProducer {
         try {
             if (channel != null && channel.isOpen()) {
                 channel.basicPublish(exchange, routingKey, properties, bytes);
+            } else {
+                LOG.error("Channel not present or not opened!");
             }
         } catch (Exception e) {
             LOG.error("Message publishing failed!", e);
         }
     }
 
+    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes, Optional<Channel> channel) {
+        try {
+            if (channel.isPresent() && channel.get().isOpen()) {
+                channel.get().basicPublish(exchange, routingKey, properties, bytes);
+            } else {
+                LOG.error("Channel not present or not opened!");
+            }
+        } catch (Exception e) {
+            LOG.error("Message publishing failed!", e);
+        }
+    }
     private Optional<Channel> createChannel() {
         try {
 
@@ -264,22 +279,6 @@ public class AmqpProducer {
         }
         return Optional.empty();
     }
-
-    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
-            Optional<Channel> channel) {
-        try {
-            if (channel.isPresent() && channel.get().isOpen()) {
-                channel.get().basicPublish(exchange, routingKey, properties, bytes);
-            } else {
-                System.out.println("channel not opened");
-            }
-        } catch (Exception e) {
-            LOG.error("Message publishing failed!", e);
-        }
-    }
-
-    private final Object object = new Object();
-    private AtomicInteger count = new AtomicInteger(0);
 
     private boolean publishMessage(final String exchange,
             final String routingKey,
@@ -299,10 +298,8 @@ public class AmqpProducer {
                 } else if (!this.channel.get().isOpen()) {
                     try {
                         this.channel.get().close();
+                    } catch (Exception ignored) {}
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
                     this.channel = Optional.empty();
                     this.channel = createChannel();
                     if (this.channel.isPresent()) {
@@ -314,6 +311,7 @@ public class AmqpProducer {
 
                 publish(exchange, routingKey, properties, bytes, this.channel);
 
+                //for every 100 messages that are send wait for all confirmations
                 if (count.incrementAndGet() == 100) {
                     this.channel.get().waitForConfirms(500);
                     count.set(0);
