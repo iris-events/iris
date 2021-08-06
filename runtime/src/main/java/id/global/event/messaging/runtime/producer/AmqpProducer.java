@@ -60,7 +60,7 @@ public class AmqpProducer {
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
-               LOG.error("Can't get hostname!", e);
+                LOG.error("Can't get hostname!", e);
             }
         }
         return hostName;
