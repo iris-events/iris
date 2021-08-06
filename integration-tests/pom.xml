@@ -45,7 +45,7 @@
           </execution>
         </executions>
         <configuration>
-          <skipITs>${test.skip.docker}</skipITs>
+          <skipITs>${test.skip.integration}</skipITs>
         </configuration>
       </plugin>
       <plugin>
