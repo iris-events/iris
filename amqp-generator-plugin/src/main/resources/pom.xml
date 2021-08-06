@@ -9,8 +9,6 @@
     </parent>
     <properties>
         <!--        <maven.deploy.skip>false</maven.deploy.skip>-->
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
         <appName>XXXX</appName>
         <appVersion>YYYY</appVersion>
     </properties>
