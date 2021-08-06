@@ -259,7 +259,8 @@ public class AmqpProducer {
         }
     }
 
-    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes, Optional<Channel> channel) {
+    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
+            Optional<Channel> channel) {
         try {
             if (channel.isPresent() && channel.get().isOpen()) {
                 channel.get().basicPublish(exchange, routingKey, properties, bytes);
@@ -270,6 +271,7 @@ public class AmqpProducer {
             LOG.error("Message publishing failed!", e);
         }
     }
+
     private Optional<Channel> createChannel() {
         try {
 
@@ -298,7 +300,8 @@ public class AmqpProducer {
                 } else if (!this.channel.get().isOpen()) {
                     try {
                         this.channel.get().close();
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
 
                     this.channel = Optional.empty();
                     this.channel = createChannel();
