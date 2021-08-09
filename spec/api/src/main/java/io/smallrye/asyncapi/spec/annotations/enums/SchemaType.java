@@ -24,6 +24,7 @@ public enum SchemaType {
     STRING("string"),
     OBJECT("object"),
     ARRAY("array"),
+    NULL("null"),
     DEFAULT("");
 
     private String value;

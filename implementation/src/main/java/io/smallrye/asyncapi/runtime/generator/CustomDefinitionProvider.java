@@ -23,7 +23,7 @@ public class CustomDefinitionProvider {
             if (isInExcludeFromSchemas(fullTypeDescription, excludeFromSchemas)) {
                 return new CustomDefinition(generatorConfig.createObjectNode()
                         .put(generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE),
-                                generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_OBJECT)));
+                                generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_NULL)));
             } else {
                 LOG.info("Ignoring type from schema: " + fullTypeDescription);
                 return null;
@@ -40,7 +40,7 @@ public class CustomDefinitionProvider {
                 return new CustomPropertyDefinition(
                         generatorConfig.createObjectNode()
                                 .put(generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE),
-                                        generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_OBJECT)));
+                                        generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_NULL)));
             } else {
                 LOG.info("Ignoring field from schema: " + fullTypeDescription);
                 return null;
