@@ -40,6 +40,8 @@ import com.github.victools.jsonschema.generator.SchemaGenerator;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaVersion;
+import com.github.victools.jsonschema.module.jackson.JacksonModule;
+import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.asyncapi.spec.annotations.MessageHandler;
@@ -232,9 +234,13 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
     private SchemaGenerator initSchemaGenerator(AsyncApiConfig config) {
         // Schema generator JsonSchema of components
+        JacksonModule module = new JacksonModule(
+                JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY
+        );
         SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7,
                 OptionPreset.PLAIN_JSON)
-                .with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
+                .with(Option.DEFINITIONS_FOR_ALL_OBJECTS)
+                .with(module);
 
         Set<String> excludeFromSchemas = config.excludeFromSchemas();
         if (!excludeFromSchemas.isEmpty()) {
