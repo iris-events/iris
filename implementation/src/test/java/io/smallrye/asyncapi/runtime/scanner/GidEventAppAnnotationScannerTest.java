@@ -172,4 +172,22 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.components.schemas.size(), is(1));
         assertThat(document.components.schemas.get("Map(String,Object)"), nullValue());
     }
+
+    @Test
+    public void enumValuesShouldNotIgnoreJsonProperty() {
+        Index index = indexOf(EventHandlersApp.class);
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+
+        AaiSchema status = document.components.schemas.get("Status");
+
+        assertThat(status.type, is("string"));
+        assertThat(status.enum_.size(), is(3));
+        assertThat(status.enum_.contains("dormant"), is(true));
+        assertThat(status.enum_.contains("live"), is(true));
+        assertThat(status.enum_.contains("dead"), is(true));
+        assertThat(status.enum_.contains("DORMANT"), is(false));
+        assertThat(status.enum_.contains("LIVE"), is(false));
+        assertThat(status.enum_.contains("DEAD"), is(false));
+    }
 }

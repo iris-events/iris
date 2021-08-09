@@ -1,17 +1,22 @@
 package io.smallrye.asyncapi.runtime.scanner.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum Status {
-    DORMANT("dormant"),
-    LIVE("live"),
-    DEAD("dead");
+    @JsonProperty("dormant")
+    DORMANT(),
+    @JsonProperty("live")
+    LIVE(),
+    @JsonProperty("dead")
+    DEAD();
 
-    private final String status;
+    //    private final String status;
 
-    Status(String status) {
-        this.status = status;
-    }
+    //    Status(String status) {
+    //        this.status = status;
+    //    }
 
-    public String getStatus() {
-        return status;
-    }
+    //    public String getStatus() {
+    //        return status;
+    //    }
 }
