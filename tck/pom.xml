@@ -11,17 +11,16 @@
     <dependencies>
         <!-- Project Dependencies -->
         <dependency>
-            <groupId>id.global</groupId>
+            <groupId>id.global.events</groupId>
             <artifactId>smallrye-async-api-spec-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>id.global</groupId>
+            <groupId>id.global.events</groupId>
             <artifactId>smallrye-async-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>id.global</groupId>
+            <groupId>id.global.events</groupId>
             <artifactId>smallrye-async-api-spec-tck</artifactId>
             <version>${project.version}</version>
         </dependency>

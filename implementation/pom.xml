@@ -29,9 +29,8 @@
 
         <!-- Project Dependencies -->
         <dependency>
-            <groupId>id.global</groupId>
+            <groupId>id.global.events</groupId>
             <artifactId>smallrye-async-api-spec-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- Third Party Libraries -->

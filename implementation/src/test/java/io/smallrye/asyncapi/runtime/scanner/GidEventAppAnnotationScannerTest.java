@@ -145,7 +145,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         // Finding JsonNode under components.schemas is NOT expected
         assertThat(documentWithExclude.components.schemas.get("JsonNode"), nullValue());
         assertThat(documentWithExclude.components.schemas.get(TestEventV2.class.getSimpleName()).properties.get("payload").type,
-                is("object"));
+                is("null"));
     }
 
     @Test
