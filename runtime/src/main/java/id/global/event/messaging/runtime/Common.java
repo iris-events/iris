@@ -37,22 +37,22 @@ public class Common {
 
         try {
             if (amqpConfiguration.isAuthenticated()) {
-                factory.setUri(
-                        String.format("%s://%s:%s@%s:%s%s",
-                                amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
-                                amqpConfiguration.getUsername(),
-                                amqpConfiguration.getPassword(),
-                                amqpConfiguration.getUrl(),
-                                amqpConfiguration.getPort(),
-                                "/%2f"));
+                String connectionUrl = String.format("%s://%s:%s@%s:%s%s",
+                        amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
+                        amqpConfiguration.getUsername(),
+                        amqpConfiguration.getPassword(),
+                        amqpConfiguration.getUrl(),
+                        amqpConfiguration.getPort(),
+                        "/%2f");
+                factory.setUri(connectionUrl);
 
             } else {
-                factory.setUri(
-                        String.format("%s://%s:%s%s",
-                                amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
-                                amqpConfiguration.getUrl(),
-                                amqpConfiguration.getPort(),
-                                "/%2f"));
+                String connectionUrl = String.format("%s://%s:%s%s",
+                        amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
+                        amqpConfiguration.getUrl(),
+                        amqpConfiguration.getPort(),
+                        "/%2f");
+                factory.setUri(connectionUrl);
             }
             factory.setAutomaticRecoveryEnabled(true);
 

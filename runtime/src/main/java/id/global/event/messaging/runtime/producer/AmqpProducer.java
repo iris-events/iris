@@ -90,9 +90,9 @@ public class AmqpProducer {
     }
 
     /**
-     * @param exchange   exchange nam that message will be send to
+     * @param exchange exchange nam that message will be send to
      * @param routingKey optinal routingKey, if not provided, className of message send will be used
-     * @param message    Object/message to be send to exchange
+     * @param message Object/message to be send to exchange
      * @param properties additional properties for producer
      * @throws Exception
      */
@@ -114,11 +114,11 @@ public class AmqpProducer {
     }
 
     /**
-     * @param exchange        exchange name where message will be send
+     * @param exchange exchange name where message will be send
      * @param topicRoutingKey topicRoutingKey for message routing example: log.internal.warn, log.external.warn,
-     *                        log.internal.error
-     * @param message         Object/message to be send to exchange
-     * @param properties      additional properties for producer
+     *        log.internal.error
+     * @param message Object/message to be send to exchange
+     * @param properties additional properties for producer
      * @throws Exception
      */
     public boolean publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties)
@@ -138,8 +138,8 @@ public class AmqpProducer {
 
     /**
      * @param fanoutExchange exchange name where message will be send
-     * @param message        Object/message to be send to exchange
-     * @param properties     additional properties for producer
+     * @param message Object/message to be send to exchange
+     * @param properties additional properties for producer
      * @throws Exception
      */
     public boolean publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) throws Exception {
@@ -156,14 +156,14 @@ public class AmqpProducer {
     }
 
     /**
-     * @param exchange   exchange nam that message will be send to
+     * @param exchange exchange nam that message will be send to
      * @param routingKey optinal routingKey, if not provided, className of message send will be used
-     * @param message    Object/message to be send to exchange
+     * @param message Object/message to be send to exchange
      * @param properties additional properties for producer
      * @throws Exception
      */
     public void publishDirectAsync(String exchange, Optional<String> routingKey, Object message,
-                                   AMQP.BasicProperties properties)
+            AMQP.BasicProperties properties)
             throws Exception {
 
         routingKey = routingKey.filter(s -> !s.isEmpty());
@@ -178,8 +178,8 @@ public class AmqpProducer {
 
     /**
      * @param fanoutExchange exchange name where message will be send
-     * @param message        Object/message to be send to exchange
-     * @param properties     additional properties for producer
+     * @param message Object/message to be send to exchange
+     * @param properties additional properties for producer
      * @throws Exception
      */
     public void publishFanoutAsync(String fanoutExchange, Object message, AMQP.BasicProperties properties) throws Exception {
@@ -189,11 +189,11 @@ public class AmqpProducer {
     }
 
     /**
-     * @param exchange        exchange name where message will be send
+     * @param exchange exchange name where message will be send
      * @param topicRoutingKey topicRoutingKey for message routing example: log.internal.warn, log.external.warn,
-     *                        log.internal.error
-     * @param message         Object/message to be send to exchange
-     * @param properties      additional properties for producer
+     *        log.internal.error
+     * @param message Object/message to be send to exchange
+     * @param properties additional properties for producer
      * @throws Exception
      */
     public void publishTopicAsync(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties)
@@ -204,9 +204,9 @@ public class AmqpProducer {
     }
 
     private void publishMessageAsync(final String exchange,
-                                     final String routingKey,
-                                     final AMQP.BasicProperties properties,
-                                     final byte[] bytes) {
+            final String routingKey,
+            final AMQP.BasicProperties properties,
+            final byte[] bytes) {
 
         if (this.connection.isOpen()) {
             CompletableFuture.runAsync(() -> {
@@ -249,7 +249,7 @@ public class AmqpProducer {
     }
 
     private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
-                         Optional<Channel> channel) {
+            Optional<Channel> channel) {
         try {
             if (channel.isPresent() && channel.get().isOpen()) {
                 channel.get().basicPublish(exchange, routingKey, properties, bytes);
@@ -282,9 +282,9 @@ public class AmqpProducer {
     }
 
     private boolean publishMessage(final String exchange,
-                                   final String routingKey,
-                                   final AMQP.BasicProperties properties,
-                                   final byte[] bytes) throws Exception {
+            final String routingKey,
+            final AMQP.BasicProperties properties,
+            final byte[] bytes) throws Exception {
         synchronized (this.lock) {
             if (this.connection.isOpen()) {
                 if (this.channel.isPresent() && !this.channel.get().isOpen()) {
@@ -327,7 +327,7 @@ public class AmqpProducer {
     ReturnListener returnListener = new ReturnListener() {
         @Override
         public void handleReturn(int replyCode, String replyText, String exchange, String routingKey,
-                                 AMQP.BasicProperties properties, byte[] body) throws IOException {
+                AMQP.BasicProperties properties, byte[] body) throws IOException {
             LOG.error("Message returned! exchange=[" + exchange + "], routingKey=[" + routingKey + "]: replyCode=[" + replyCode
                     + "] replyMessage=[" + replyText + "]");
         }
