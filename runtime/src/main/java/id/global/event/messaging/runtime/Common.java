@@ -39,7 +39,9 @@ public class Common {
             if (amqpConfiguration.isAuthenticated()) {
 
                 //todo remove
-                LOG.warn("|url:" + amqpConfiguration.getUrl()+"|port:"+amqpConfiguration.getPort()+"|username:"+amqpConfiguration.getUsername()+"|auth:"+amqpConfiguration.isAuthenticated()+"|ssl:"+amqpConfiguration.isSslEnabled());
+                LOG.warn("|url:" + amqpConfiguration.getUrl() + "|port:" + amqpConfiguration.getPort() + "|username:"
+                        + amqpConfiguration.getUsername() + "|auth:" + amqpConfiguration.isAuthenticated() + "|ssl:"
+                        + amqpConfiguration.isSslEnabled());
 
                 String connectionUrl = String.format("%s://%s:%s@%s:%s%s",
                         amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
@@ -53,7 +55,9 @@ public class Common {
 
             } else {
                 //todo remove
-                LOG.warn("|url:" + amqpConfiguration.getUrl()+"|port:"+amqpConfiguration.getPort()+"|username:"+amqpConfiguration.getUsername()+"|auth:"+amqpConfiguration.isAuthenticated()+"|ssl:"+amqpConfiguration.isSslEnabled());
+                LOG.warn("|url:" + amqpConfiguration.getUrl() + "|port:" + amqpConfiguration.getPort() + "|username:"
+                        + amqpConfiguration.getUsername() + "|auth:" + amqpConfiguration.isAuthenticated() + "|ssl:"
+                        + amqpConfiguration.isSslEnabled());
 
                 String connectionUrl = String.format("%s://%s:%s%s",
                         amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",

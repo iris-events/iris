@@ -95,7 +95,8 @@ public class AmqpProducer {
      * @param message Object/message to be send to exchange
      * @param properties additional properties for producer
      */
-    public boolean publishDirect(String exchange, Optional<String> routingKey, Object message, AMQP.BasicProperties properties) {
+    public boolean publishDirect(String exchange, Optional<String> routingKey, Object message,
+            AMQP.BasicProperties properties) {
 
         try {
             routingKey = routingKey.filter(s -> !s.isEmpty());
@@ -210,17 +211,17 @@ public class AmqpProducer {
                 try {
                     final Channel existing = channels.get();
                     if (existing != null && existing.isOpen()) {
-                        publish(exchange, routingKey, properties, bytes, existing);
+                        publish(exchange, routingKey, properties, bytes, Optional.of(existing));
                         existing.waitForConfirms(500);
                     } else {
                         final Channel newChannel = connection.createChannel();
                         newChannel.confirmSelect();
-                        publish(exchange, routingKey, properties, bytes, newChannel);
+                        publish(exchange, routingKey, properties, bytes, Optional.of(newChannel));
                         newChannel.waitForConfirms(500);
                         channels.set(newChannel);
                     }
                 } catch (Exception e) {
-                    LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!",
+                    LOG.error("Message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!",
                             e);
                 }
             }, pool);
@@ -231,39 +232,13 @@ public class AmqpProducer {
 
     }
 
-    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes, Channel channel)
-            throws Exception {
-        try {
-            if (channel != null && channel.isOpen()) {
-                channel.basicPublish(exchange, routingKey, properties, bytes);
-            } else {
-                LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!");
-                throw new Exception("Channel not present or not opened!");
-            }
-        } catch (Exception e) {
-            LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!", e);
-            throw e;
-        }
-    }
-
     private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
             Optional<Channel> channel) throws Exception {
-        try {
-            if (channel.isPresent() && channel.get().isOpen()) {
-                channel.get().basicPublish(exchange, routingKey, properties, bytes);
-            } else {
-                LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!");
-
-            }
-        } catch (Exception e) {
-            LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!", e);
-            throw e;
-        }
+        channel.get().basicPublish(exchange, routingKey, properties, bytes);
     }
 
     private Optional<Channel> createChannel() {
         try {
-
             return Optional.ofNullable(connection.createChannel());
         } catch (IOException e) {
             LOG.error("Failed to create channel!", e);
