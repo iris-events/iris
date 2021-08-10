@@ -8,8 +8,10 @@ test:
   stage: test
   variables:
     QUARKUS_EDA_RABBIT_HOST: rabbitmq
+    RABBITMQ_DEFAULT_USER: user
+    RABBITMQ_DEFAULT_PASS: user
   script:
     - mvn -s $MAVEN_SETTINGS $MAVEN_CLI_OPTS verify -Dci=$CI_JOB_ID
   services:
-    - name: rabbitmq:3-alpine
+    - name: rabbitmq:3.8.19-alpine
       alias: rabbitmq

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -26,6 +27,7 @@ public class AmqpConsumerContainer {
     private Connection connection;
     private final ObjectMapper objectMapper;
     private final AmqpConfiguration config;
+    private final String hostName;
 
     private int retryCount = 0;
 
@@ -33,20 +35,13 @@ public class AmqpConsumerContainer {
 
     public AmqpConsumerContainer(AmqpConfiguration config, ObjectMapper objectMapper) {
         consumerMap = new HashMap<>();
-
+        this.hostName = Common.getHostName();
         this.config = config;
         this.objectMapper = objectMapper;
     }
 
     public void initConsumer() {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(config.getUrl());
-        factory.setPort(config.getPort());
-
-        if (config.isAuthenticated()) {
-            factory.setUsername(config.getUsername());
-            factory.setPassword(config.getPassword());
-        }
+        ConnectionFactory factory = Common.getConnectionFactory(config);
 
         while (!createConnection(factory)) {
             retryCount++;
@@ -63,7 +58,7 @@ public class AmqpConsumerContainer {
 
     private boolean createConnection(ConnectionFactory factory) {
         try {
-            connection = factory.newConnection();
+            connection = factory.newConnection("consumer_" + hostName);
 
             if (!consumerMap.isEmpty()) {
                 consumerMap.forEach((queueName, consumer) -> {

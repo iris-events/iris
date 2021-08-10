@@ -37,6 +37,12 @@ public final class AmqpConfiguration {
     @ConfigItem(defaultValue = "true")
     String authenticated;
 
+    /**
+     * use username and password authentication
+     */
+    @ConfigItem(defaultValue = "false")
+    boolean sslEnabled;
+
     public String getUrl() {
         return url;
     }
@@ -94,5 +100,13 @@ public final class AmqpConfiguration {
 
     public void setProducerConfiguration(ProducerConfiguration producerConfiguration) {
         this.producerConfiguration = producerConfiguration;
+    }
+
+    public boolean isSslEnabled() {
+        return sslEnabled;
+    }
+
+    public void setSslEnabled(boolean sslEnabled) {
+        this.sslEnabled = sslEnabled;
     }
 }

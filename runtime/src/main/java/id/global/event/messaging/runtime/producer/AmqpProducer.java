@@ -1,8 +1,6 @@
 package id.global.event.messaging.runtime.producer;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,11 +13,12 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 
+import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 
 @ApplicationScoped
 public class AmqpProducer {
-    private static final Logger LOG = Logger.getLogger(AmqpProducer.class);
+    private static final Logger LOG = Logger.getLogger(AmqpProducer.class.getName());
     private final AmqpConfiguration amqpConfiguration;
 
     private final ObjectMapper objectMapper;
@@ -27,7 +26,9 @@ public class AmqpProducer {
     private final ExecutorService pool;
     private final String hostName;
     private Optional<Channel> channel = Optional.empty();
-    private AtomicInteger failCounter = new AtomicInteger(0);
+    private final AtomicInteger failCounter = new AtomicInteger(0);
+    private final Object lock = new Object();
+    private final AtomicInteger count = new AtomicInteger(0);
 
     public final ThreadLocal<Channel> channels = new ThreadLocal<Channel>() {
         private static final Logger LOG = Logger.getLogger(ThreadLocal.class);
@@ -42,28 +43,11 @@ public class AmqpProducer {
     public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper) {
         this.amqpConfiguration = configuration;
         this.objectMapper = objectMapper;
-        this.hostName = getHostName();
+        this.hostName = Common.getHostName();
         connect();
         //TODO: set pool according to needs (should this be in configuration?)
         pool = Executors.newFixedThreadPool(6);
 
-    }
-
-    private String getHostName() {
-        String hostName;
-        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            hostName = System.getenv("COMPUTERNAME");
-        } else {
-            hostName = System.getenv("HOSTNAME");
-        }
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getHostName();
-            } catch (UnknownHostException e) {
-                LOG.error("Can't get hostname!", e);
-            }
-        }
-        return hostName;
     }
 
     public AmqpConfiguration getAmqpConfiguration() {
@@ -79,16 +63,7 @@ public class AmqpProducer {
 
         failCounter.set(0);
 
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(amqpConfiguration.getUrl());
-        factory.setPort(amqpConfiguration.getPort());
-
-        if (amqpConfiguration.isAuthenticated()) {
-            factory.setUsername(amqpConfiguration.getUsername());
-            factory.setPassword(amqpConfiguration.getPassword());
-        }
-
-        factory.setAutomaticRecoveryEnabled(true);
+        ConnectionFactory factory = Common.getConnectionFactory(amqpConfiguration);
 
         while (!connected && failCounter.get() < 10) {
             try {
@@ -119,19 +94,21 @@ public class AmqpProducer {
      * @param routingKey optinal routingKey, if not provided, className of message send will be used
      * @param message Object/message to be send to exchange
      * @param properties additional properties for producer
-     * @throws Exception
      */
-    public void publishDirect(String exchange, Optional<String> routingKey, Object message, AMQP.BasicProperties properties)
-            throws Exception {
+    public boolean publishDirect(String exchange, Optional<String> routingKey, Object message,
+            AMQP.BasicProperties properties) {
 
-        routingKey = routingKey.filter(s -> !s.isEmpty());
-        byte[] bytes = new byte[0];
-
-        bytes = objectMapper.writeValueAsBytes(message);
-        publishMessage(exchange,
-                routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
-                properties,
-                bytes);
+        try {
+            routingKey = routingKey.filter(s -> !s.isEmpty());
+            final byte[] bytes = objectMapper.writeValueAsBytes(message);
+            return publishMessage(exchange,
+                    routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
+                    properties,
+                    bytes);
+        } catch (Exception e) {
+            LOG.error("Sending to exchange: [" + exchange + "] with routingKey: [" + routingKey + "] failed! ", e);
+            return false;
+        }
     }
 
     /**
@@ -142,12 +119,19 @@ public class AmqpProducer {
      * @param properties additional properties for producer
      * @throws Exception
      */
-    public void publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties)
-            throws Exception {
+    public boolean publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties) {
         //TODO: maybe validate topic (routing key)
-        byte[] bytes = new byte[0];
-        bytes = objectMapper.writeValueAsBytes(message);
-        publishMessage(exchange, topicRoutingKey, properties, bytes);
+
+        try {
+            final byte[] bytes = objectMapper.writeValueAsBytes(message);
+            return publishMessage(exchange,
+                    topicRoutingKey,
+                    properties,
+                    bytes);
+        } catch (Exception e) {
+            LOG.error("Sending to topic exchange: [" + exchange + "] with routingKey: [" + topicRoutingKey + "] failed! ", e);
+            return false;
+        }
     }
 
     /**
@@ -156,10 +140,17 @@ public class AmqpProducer {
      * @param properties additional properties for producer
      * @throws Exception
      */
-    public void publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) throws Exception {
-        byte[] bytes = new byte[0];
-        bytes = objectMapper.writeValueAsBytes(message);
-        publishMessage(fanoutExchange, "", properties, bytes);
+    public boolean publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) {
+        try {
+            final byte[] bytes = objectMapper.writeValueAsBytes(message);
+            return publishMessage(fanoutExchange,
+                    "",
+                    properties,
+                    bytes);
+        } catch (Exception e) {
+            LOG.error("Sending to fanout exchange: [" + fanoutExchange + "] failed! ", e);
+            return false;
+        }
     }
 
     /**
@@ -219,41 +210,35 @@ public class AmqpProducer {
             CompletableFuture.runAsync(() -> {
                 try {
                     final Channel existing = channels.get();
-
                     if (existing != null && existing.isOpen()) {
-                        publish(exchange, routingKey, properties, bytes, existing);
+                        publish(exchange, routingKey, properties, bytes, Optional.of(existing));
+                        existing.waitForConfirms(500);
                     } else {
                         final Channel newChannel = connection.createChannel();
                         newChannel.confirmSelect();
+                        publish(exchange, routingKey, properties, bytes, Optional.of(newChannel));
+                        newChannel.waitForConfirms(500);
                         channels.set(newChannel);
-                        publish(exchange, routingKey, properties, bytes, channels.get());
-
                     }
                 } catch (Exception e) {
-                    LOG.error("Message publishing failed!", e);
+                    LOG.error("Message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!",
+                            e);
                 }
             }, pool);
         } else {
             LOG.error("Connection is not open!");
-            LOG.error("Message publishing failed!");
             connect();
         }
 
     }
 
-    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes, Channel channel) {
-        try {
-            if (channel != null && channel.isOpen()) {
-                channel.basicPublish(exchange, routingKey, properties, bytes);
-            }
-        } catch (Exception e) {
-            LOG.error("Message publishing failed!", e);
-        }
+    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
+            Optional<Channel> channel) throws Exception {
+        channel.get().basicPublish(exchange, routingKey, properties, bytes);
     }
 
     private Optional<Channel> createChannel() {
         try {
-
             return Optional.ofNullable(connection.createChannel());
         } catch (IOException e) {
             LOG.error("Failed to create channel!", e);
@@ -261,29 +246,65 @@ public class AmqpProducer {
         return Optional.empty();
     }
 
-    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
-            Optional<Channel> channel) {
-        try {
-            if (channel.isPresent()) {
-                channel.get().basicPublish(exchange, routingKey, properties, bytes);
-            }
-        } catch (Exception e) {
-            LOG.error("Message publishing failed!", e);
+    private void createChannel(boolean withConfirmations) throws IOException {
+        this.channel = createChannel();
+        if (withConfirmations && this.channel.isPresent()) {
+            this.channel.get().confirmSelect();
+            this.channel.get().addConfirmListener(confirmListener);
+            this.channel.get().addReturnListener(returnListener);
         }
     }
 
-    private void publishMessage(final String exchange,
+    private boolean publishMessage(final String exchange,
             final String routingKey,
             final AMQP.BasicProperties properties,
             final byte[] bytes) throws Exception {
+        synchronized (this.lock) {
+            if (this.connection.isOpen()) {
+                if (this.channel.isPresent() && !this.channel.get().isOpen()) {
+                    try {
+                        this.channel.get().close();
+                    } catch (Exception ignored) {
+                    }
+                    this.channel = Optional.empty();
+                }
 
-        if (this.channel.isEmpty()) {
-            this.channel = createChannel();
-            this.channel.get().confirmSelect();
+                createChannel(true);
 
+                publish(exchange, routingKey, properties, bytes, this.channel);
+
+                //for every 100 messages that are send wait for all confirmations
+                if (count.incrementAndGet() == 100) {
+                    this.channel.get().waitForConfirms(500);
+                    count.set(0);
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    ConfirmListener confirmListener = new ConfirmListener() {
+        @Override
+        public void handleAck(long deliveryTag, boolean multiple) throws IOException {
+            LOG.info("Message with deliveryTag [" + deliveryTag + "] ACK!" + " Multiple: " + multiple);
         }
 
-        publish(exchange, routingKey, properties, bytes, this.channel);
-    }
+        @Override
+        public void handleNack(long deliveryTag, boolean multiple) throws IOException {
+            LOG.warn("Message with deliveryTag [" + deliveryTag + "] NACK!" + " Multiple: " + multiple);
+        }
+    };
+
+    //this will be used if message has "mandatory" flag set
+    ReturnListener returnListener = new ReturnListener() {
+        @Override
+        public void handleReturn(int replyCode, String replyText, String exchange, String routingKey,
+                AMQP.BasicProperties properties, byte[] body) throws IOException {
+            LOG.error("Message returned! exchange=[" + exchange + "], routingKey=[" + routingKey + "]: replyCode=[" + replyCode
+                    + "] replyMessage=[" + replyText + "]");
+        }
+    };
 
 }
