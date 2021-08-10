@@ -94,15 +94,12 @@ public class AmqpProducer {
      * @param routingKey optinal routingKey, if not provided, className of message send will be used
      * @param message Object/message to be send to exchange
      * @param properties additional properties for producer
-     * @throws Exception
      */
-    public boolean publishDirect(String exchange, Optional<String> routingKey, Object message, AMQP.BasicProperties properties)
-            throws Exception {
-
-        routingKey = routingKey.filter(s -> !s.isEmpty());
-        final byte[] bytes = objectMapper.writeValueAsBytes(message);
+    public boolean publishDirect(String exchange, Optional<String> routingKey, Object message, AMQP.BasicProperties properties) {
 
         try {
+            routingKey = routingKey.filter(s -> !s.isEmpty());
+            final byte[] bytes = objectMapper.writeValueAsBytes(message);
             return publishMessage(exchange,
                     routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
                     properties,
@@ -121,11 +118,11 @@ public class AmqpProducer {
      * @param properties additional properties for producer
      * @throws Exception
      */
-    public boolean publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties)
-            throws Exception {
+    public boolean publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties) {
         //TODO: maybe validate topic (routing key)
-        final byte[] bytes = objectMapper.writeValueAsBytes(message);
+
         try {
+            final byte[] bytes = objectMapper.writeValueAsBytes(message);
             return publishMessage(exchange,
                     topicRoutingKey,
                     properties,
@@ -142,9 +139,9 @@ public class AmqpProducer {
      * @param properties additional properties for producer
      * @throws Exception
      */
-    public boolean publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) throws Exception {
-        final byte[] bytes = objectMapper.writeValueAsBytes(message);
+    public boolean publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) {
         try {
+            final byte[] bytes = objectMapper.writeValueAsBytes(message);
             return publishMessage(fanoutExchange,
                     "",
                     properties,
@@ -229,36 +226,38 @@ public class AmqpProducer {
             }, pool);
         } else {
             LOG.error("Connection is not open!");
-            LOG.error("Message publishing failed!");
             connect();
         }
 
     }
 
-    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes, Channel channel) {
+    private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes, Channel channel)
+            throws Exception {
         try {
             if (channel != null && channel.isOpen()) {
                 channel.basicPublish(exchange, routingKey, properties, bytes);
             } else {
                 LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!");
-                LOG.error("Channel not present or not opened!");
+                throw new Exception("Channel not present or not opened!");
             }
         } catch (Exception e) {
             LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!", e);
+            throw e;
         }
     }
 
     private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
-            Optional<Channel> channel) {
+            Optional<Channel> channel) throws Exception {
         try {
             if (channel.isPresent() && channel.get().isOpen()) {
                 channel.get().basicPublish(exchange, routingKey, properties, bytes);
             } else {
                 LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!");
-                LOG.error("Channel not present or not opened!");
+
             }
         } catch (Exception e) {
             LOG.error("Async message publishing failed exchange:[" + exchange + "], routingKey: [" + routingKey + "]!", e);
+            throw e;
         }
     }
 
