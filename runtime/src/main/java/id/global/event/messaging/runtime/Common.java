@@ -37,6 +37,7 @@ public class Common {
 
         try {
             if (amqpConfiguration.isAuthenticated()) {
+
                 String connectionUrl = String.format("%s://%s:%s@%s:%s%s",
                         amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
                         amqpConfiguration.getUsername(),
@@ -44,6 +45,13 @@ public class Common {
                         amqpConfiguration.getUrl(),
                         amqpConfiguration.getPort(),
                         "/%2f");
+
+                //TODO: remove befeore merge
+                LOG.warn("auth");
+
+                System.out.println("auth");
+                LOG.warn(connectionUrl);
+                System.out.println(connectionUrl);
                 factory.setUri(connectionUrl);
 
             } else {
@@ -52,6 +60,11 @@ public class Common {
                         amqpConfiguration.getUrl(),
                         amqpConfiguration.getPort(),
                         "/%2f");
+                //TODO: remove befeore merge
+                LOG.warn("no auth");
+                System.out.println("noauth");
+                LOG.warn(connectionUrl);
+                System.out.println(connectionUrl);
                 factory.setUri(connectionUrl);
             }
             factory.setAutomaticRecoveryEnabled(true);
