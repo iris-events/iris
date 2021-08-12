@@ -51,13 +51,10 @@ import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
 import io.smallrye.asyncapi.api.util.MergeUtil;
 import io.smallrye.asyncapi.runtime.generator.CustomDefinitionProvider;
-import io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant;
 import io.smallrye.asyncapi.runtime.io.components.ComponentReader;
 import io.smallrye.asyncapi.runtime.io.info.InfoReader;
 import io.smallrye.asyncapi.runtime.io.server.ServerReader;
-import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
-import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import io.smallrye.asyncapi.runtime.util.ChannelInfoGenerator;
 import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
@@ -101,7 +98,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
      */
     public Aai20Document scan() {
         LOG.debug("Scanning deployment for Async Annotations.");
-        Aai20Document messageHandlerAaiDocument = null;
+        Aai20Document messageHandlerAaiDocument;
         try {
             messageHandlerAaiDocument = scanGidEventAppAnnotations();
         } catch (ClassNotFoundException e) {
@@ -175,9 +172,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
     private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, Aai20Document asyncApi) {
         Map<String, AaiSchema> definitionSchemaMap = context.getDefinitionSchemaMap();
-        definitionSchemaMap.forEach((key, aaiSchema) -> {
-            asyncApi.components.schemas.put(key, aaiSchema);
-        });
+        definitionSchemaMap.forEach((key, aaiSchema) -> asyncApi.components.schemas.put(key, aaiSchema));
         context.clearDefinitionSchemaMap();
     }
 
@@ -211,17 +206,6 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 eventSimpleName,
                 generatedSchema,
                 annotationValues);
-    }
-
-    private ChannelInfo generateChannelBindingsInfo(AnnotationInstance methodAnnotation, String eventClassSimpleName) {
-        String exchange = methodAnnotation.value("exchange") != null ? methodAnnotation.value("exchange").asString() : "";
-        String queue = methodAnnotation.value("queue") != null ? methodAnnotation.value("queue").asString()
-                : eventClassSimpleName;
-        ExchangeType exchangeType = GidAnnotationParser.getExchangeTypeFromAnnotation(methodAnnotation.name());
-        ChannelBindingsInfo channelBindingsInfo = new ChannelBindingsInfo(exchange, queue, exchangeType);
-
-        // Maybe we'll add publish channels in the future
-        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, OperationConstant.PROP_SUBSCRIBE);
     }
 
     private Class<?> loadClass(String className) throws ClassNotFoundException {

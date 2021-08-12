@@ -15,6 +15,7 @@ import org.jboss.jandex.Index;
 import org.junit.Test;
 
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
+import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersApp;
@@ -39,6 +40,34 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.id, is(EventHandlersApp.ID));
         assertThat(document.info.title, is(EventHandlersApp.TITLE));
         assertThat(document.info.version, is(EventHandlersApp.VERSION));
+    }
+
+    @Test
+    public void generatedMessagesShouldHaveTitles() {
+        Index index = indexOf(EventHandlersApp.class);
+
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+
+        assertThat(document.components.schemas, notNullValue());
+        assertThat(document.channels, notNullValue());
+        assertThat(document.channels.size(), is(6));
+
+        document.channels.forEach((key, value) -> {
+            AaiOperation subscribe = value.subscribe;
+            AaiOperation publish = value.publish;
+
+            if (subscribe != null) {
+                assertThat(subscribe.message.title, notNullValue());
+                assertThat(subscribe.message._name, is(subscribe.message.title));
+            }
+
+            if (publish != null) {
+                assertThat(publish.message.title, notNullValue());
+                assertThat(publish.message._name, is(publish.message.title));
+            }
+        });
+
     }
 
     @Test
