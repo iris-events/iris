@@ -1,16 +1,20 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hamcrest.Matchers;
 import org.jboss.jandex.Index;
 import org.junit.Test;
 
@@ -26,7 +30,7 @@ import io.smallrye.asyncapi.runtime.scanner.model.TestEventV2;
 
 public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
     @Test
-    public void eventAppAnnotationShouldGenerateBasicDocument() {
+    public void eventAppAnnotationShouldGenerateBasicDocument() throws MalformedURLException {
         Index index = indexOf(EventHandlersApp.class);
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
@@ -38,7 +42,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.channels, notNullValue());
 
         assertThat(document.id, is(EventHandlersApp.ID));
-        assertThat(document.info.title, is(EventHandlersApp.TITLE));
+        assertThat(document.info.title, is("https://global.id/event-handlers"));
         assertThat(document.info.version, is(EventHandlersApp.VERSION));
     }
 
@@ -68,6 +72,27 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
             }
         });
 
+    }
+
+    @Test
+    public void generatedInfoTitleShouldConformToUri() {
+        Index index = indexOf(EventHandlersApp.class);
+
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+
+        String title = document.info.title;
+
+        URL url = null;
+
+        try {
+            url = new URL(title);
+        } catch (MalformedURLException e) {
+            fail("Title is not a valid URI");
+        }
+
+        assertThat(url, notNullValue());
+        assertThat(url.toString().length(), is(Matchers.greaterThan(0)));
     }
 
     @Test
