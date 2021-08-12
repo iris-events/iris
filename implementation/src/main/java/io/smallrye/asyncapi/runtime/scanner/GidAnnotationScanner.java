@@ -71,7 +71,6 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     private static final Logger LOG = Logger.getLogger(GidAnnotationScanner.class);
 
     public static final DotName DOTNAME_EVENT_APP_DEFINITION = DotName.createSimple(EventApp.class.getName());
-
     private final SchemaGenerator schemaGenerator;
 
     /**

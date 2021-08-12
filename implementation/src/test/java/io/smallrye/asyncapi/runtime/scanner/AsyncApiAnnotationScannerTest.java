@@ -41,7 +41,7 @@ public class AsyncApiAnnotationScannerTest extends IndexScannerTestBase {
         Info info = document.info;
 
         assertThat(id, is("2.0.0"));
-        assertThat(info.title, is("Test application"));
+        assertThat(info.title, is("https://global.id/test-application"));
         assertThat(info.version, is("1.0"));
         assertThat(info.description, nullValue());
         assertThat(info.termsOfService, nullValue());
