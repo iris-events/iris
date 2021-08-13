@@ -89,6 +89,8 @@ public abstract class BaseAnnotationScanner {
 
             operation.message = new Aai20Message(eventKey);
             operation.message.addExtraProperty(PROP_MESSAGE_TYPE, messageTypes.get(eventKey));
+            operation.message._name = eventKey;
+            operation.message.name = eventKey;
             operation.message.title = eventKey;
 
             Schema payloadSchema = new Schema();
