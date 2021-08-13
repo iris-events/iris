@@ -7,7 +7,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import io.smallrye.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
 import io.smallrye.asyncapi.runtime.scanner.model.TestEventV2;
 
 public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
+
     @Test
     public void eventAppAnnotationShouldGenerateBasicDocument() throws MalformedURLException {
         Index index = indexOf(EventHandlersApp.class);
@@ -41,8 +43,8 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.components.schemas, notNullValue());
         assertThat(document.channels, notNullValue());
 
-        assertThat(document.id, is(EventHandlersApp.ID));
-        assertThat(document.info.title, is("https://global.id/event-handlers"));
+        assertThat(document.id, is("urn:id:global:eventhandlersapptest"));
+        assertThat(document.info.title, is("Event handlers"));
         assertThat(document.info.version, is(EventHandlersApp.VERSION));
     }
 
@@ -75,20 +77,20 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
     }
 
     @Test
-    public void generatedInfoTitleShouldConformToUri() {
+    public void generatedIdShouldConformToUri() {
         Index index = indexOf(EventHandlersApp.class);
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
-        String title = document.info.title;
+        String id = document.id;
 
-        URL url = null;
+        URI url = null;
 
         try {
-            url = new URL(title);
-        } catch (MalformedURLException e) {
-            fail("Title is not a valid URI");
+            url = new URI(id);
+        } catch (URISyntaxException e) {
+            fail("Id is not a valid URI");
         }
 
         assertThat(url, notNullValue());

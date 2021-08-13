@@ -16,6 +16,7 @@
 
 package io.smallrye.asyncapi.runtime.scanner;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import io.smallrye.asyncapi.runtime.util.ChannelInfoGenerator;
 import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 import io.smallrye.asyncapi.runtime.util.JandexUtil;
+import io.smallrye.asyncapi.runtime.util.SchemeIdGenerator;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 
 /**
@@ -186,7 +188,12 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         // Here we have packageDefs, now to build the AsyncAPI
         for (AnnotationInstance packageDef : packageDefs) {
             Aai20Document packageAai = new Aai20Document();
-            packageAai.id = JandexUtil.stringValue(packageDef, PROP_ID);
+            try {
+                packageAai.id = SchemeIdGenerator.buildId(JandexUtil.stringValue(packageDef, PROP_ID));
+            } catch (URISyntaxException e) {
+                LOG.error("Could not generate schema ID", e);
+                throw new RuntimeException(e);
+            }
             packageAai.info = InfoReader.readInfo(packageDef.value(PROP_INFO));
             packageAai.servers = ServerReader.readServers(packageDef.value(PROP_SERVERS)).orElse(null);
             packageAai.components = ComponentReader.create();
