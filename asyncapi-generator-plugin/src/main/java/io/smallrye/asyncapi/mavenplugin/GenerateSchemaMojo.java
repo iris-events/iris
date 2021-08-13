@@ -90,6 +90,9 @@ public class GenerateSchemaMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.outputDirectory}", property = "classesDir")
     private File classesDir;
 
+    @Parameter(defaultValue = "${project.version}", property = "projectVersion")
+    private String projectVersion;
+
     @Parameter(property = "configProperties")
     private File configProperties;
 
@@ -152,7 +155,8 @@ public class GenerateSchemaMojo extends AbstractMojo {
             try {
                 getLog().info("INFO output of apicurio vars = \nURL = " + apicurioRegistryUrl +
                         "\nArtifactId = " + apicurioArtifactId
-                        + "\nArtifactType = " + apicurioArtifactType);
+                        + "\nArtifactType = " + apicurioArtifactType
+                        + "\nProjectVersion = " + projectVersion);
 
                 IndexView index = createIndex();
                 AaiDocument schema = generateSchema(index);
@@ -260,11 +264,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
 
     private AaiDocument generateSchema(IndexView index) throws IOException, ClassNotFoundException, MojoExecutionException {
         AsyncApiConfig asyncApiConfig = new MavenConfig(getProperties());
-
         ClassLoader classLoader = getClassLoader(mavenProject);
-
-        getLog().info("THE SET PROPERTY = " + asyncApiConfig.excludeFromSchemas());
-
         GidAnnotationScanner scanner = new GidAnnotationScanner(asyncApiConfig, index, classLoader);
         return scanner.scan();
     }
@@ -294,6 +294,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
         addToPropertyMap(cp, AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, customSchemaRegistryClass);
         addToPropertyMap(cp, AsyncApiConstants.VERSION, asyncApiVersion);
         addToPropertyMap(cp, AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, excludeFromSchemas);
+        addToPropertyMap(cp, AsyncApiConstants.PROJECT_VERSION, projectVersion);
 
         return cp;
     }

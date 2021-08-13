@@ -112,4 +112,8 @@ public class MavenConfig implements AsyncApiConfig {
     public Set<String> excludeFromSchemas() {
         return asCsvSet(properties.getOrDefault(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, null));
     }
+
+    @Override public String projectVersion() {
+        return properties.getOrDefault(AsyncApiConstants.PROJECT_VERSION, null);
+    }
 }
