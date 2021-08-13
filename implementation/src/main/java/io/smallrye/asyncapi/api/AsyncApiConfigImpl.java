@@ -49,6 +49,7 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
     private Boolean schemaReferencesEnable;
     private String customSchemaRegistryClass;
     private Set<String> excludeFromSchemas;
+    private String projectVersion;
 
     /**
      * Constructor.
@@ -247,5 +248,13 @@ public class AsyncApiConfigImpl implements AsyncApiConfig {
                 .getOptionalValue(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, String.class).orElse(null);
         excludeFromSchemas = asCsvSet(packages);
         return excludeFromSchemas;
+    }
+
+    @Override public String projectVersion() {
+        if (projectVersion != null) {
+            return projectVersion;
+        }
+        projectVersion = getConfig().getOptionalValue(AsyncApiConstants.PROJECT_VERSION, String.class).orElse(null);
+        return projectVersion;
     }
 }

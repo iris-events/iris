@@ -24,6 +24,7 @@ public final class AsyncApiConstants {
     public static final String ASYNC_API_VERSION = "2.0.0";
 
     public static final String VERSION = "mp.asyncapi.version";
+    public static final String PROJECT_VERSION = "mp.asyncapi.project.version";
     public static final String SCAN_DEPENDENCIES_DISABLE = "mp.asyncapi.extensions.scan-dependencies.disable";
     public static final String SCAN_DEPENDENCIES_JARS = "mp.asyncapi.extensions.scan-dependencies.jars";
     public static final String SCHEMA_REFERENCES_ENABLE = "mp.asyncapi.extensions.schema-references.enable";
