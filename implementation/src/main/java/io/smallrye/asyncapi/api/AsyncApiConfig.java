@@ -102,4 +102,8 @@ public interface AsyncApiConfig {
     default Set<String> excludeFromSchemas() {
         return Collections.emptySet();
     }
+
+    default String projectVersion() {
+        return null;
+    }
 }

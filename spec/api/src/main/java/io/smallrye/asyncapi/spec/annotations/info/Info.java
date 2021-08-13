@@ -26,7 +26,7 @@ public @interface Info {
      *
      * @return the application's version
      **/
-    String version();
+    String version() default "";
 
     /**
      * A short description of the application. CommonMark syntax can be used for rich text representation.

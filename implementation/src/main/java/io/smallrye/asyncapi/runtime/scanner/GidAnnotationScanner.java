@@ -185,6 +185,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 .filter(this::annotatedClasses)
                 .collect(Collectors.toList());
 
+        String projectVersion = context.getConfig().projectVersion();
         // Here we have packageDefs, now to build the AsyncAPI
         for (AnnotationInstance packageDef : packageDefs) {
             Aai20Document packageAai = new Aai20Document();
@@ -195,6 +196,10 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 throw new RuntimeException(e);
             }
             packageAai.info = InfoReader.readInfo(packageDef.value(PROP_INFO));
+            if (projectVersion != null) {
+                packageAai.info.version = projectVersion;
+            }
+
             packageAai.servers = ServerReader.readServers(packageDef.value(PROP_SERVERS)).orElse(null);
             packageAai.components = ComponentReader.create();
             MergeUtil.merge(document, packageAai);
