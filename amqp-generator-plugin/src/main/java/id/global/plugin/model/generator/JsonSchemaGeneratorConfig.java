@@ -34,22 +34,19 @@ public class JsonSchemaGeneratorConfig {
         public boolean isUsePrimitives(){return true;};
 
         @Override
-        public boolean isUseJodaDates() {
-            return true;
-        }
-
-        @Override
         public boolean isUseDoubleNumbers() {
             return true;
         }
 
-// Should we configure those two too?
-//        public boolean isUseJodaLocalDates() {
-//            return false;
-//        }
-//
-//        public boolean isUseJodaLocalTimes() {
-//            return false;
-//        }
+        @Override
+        public String getDateTimeType() {
+            return "java.time.LocalDateTime";
+        }
+
+        @Override
+        public String getDateType() {
+            return "java.time.LocalDate";
+        }
+
     };
 }
