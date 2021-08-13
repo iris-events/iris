@@ -29,5 +29,27 @@ public class JsonSchemaGeneratorConfig {
         public boolean isIncludeAdditionalProperties() {
             return false;
         }
+
+        @Override
+        public boolean isUsePrimitives(){return true;};
+
+        @Override
+        public boolean isUseJodaDates() {
+            return true;
+        }
+
+        @Override
+        public boolean isUseDoubleNumbers() {
+            return true;
+        }
+
+// Should we configure those two too?
+//        public boolean isUseJodaLocalDates() {
+//            return false;
+//        }
+//
+//        public boolean isUseJodaLocalTimes() {
+//            return false;
+//        }
     };
 }
