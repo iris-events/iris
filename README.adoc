@@ -23,3 +23,4 @@ mvn verify -Dquarkus.amqp.url=localhost
 - `quarkus.amqp.authenticated` - To use authenticated connection to the AMQP broker or not. If `true` set the `username` and `password` config properties also. Default value = `false`.
 - `quarkus.amqp.username` - AMQP authenticated connection username. Default value = `user`
 - `quarkus.amqp.password` - AMQP authenticated connection password. Default value = `user`
+- `quarkus.amqp.ssl-enabled` - AMQP connection uses SSL. Default value = `false`
