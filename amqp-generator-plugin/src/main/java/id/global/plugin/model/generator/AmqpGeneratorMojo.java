@@ -248,8 +248,10 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 .resolve(stringPath + File.separator + modelName)
                 .resolve("client");
 
-        String replaceWith = generateChannelSupportData(channels);
-        writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
+        try {
+            String replaceWith = generateChannelSupportData(channels);
+            writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
+        }catch (Exception ignored){  }
 
         Path pomPath = Paths.get(project.getBasedir().toURI())
                 .resolve(tmpFolder);

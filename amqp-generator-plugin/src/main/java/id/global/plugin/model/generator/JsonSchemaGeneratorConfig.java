@@ -29,5 +29,24 @@ public class JsonSchemaGeneratorConfig {
         public boolean isIncludeAdditionalProperties() {
             return false;
         }
+
+        @Override
+        public boolean isUsePrimitives(){return true;};
+
+        @Override
+        public boolean isUseDoubleNumbers() {
+            return true;
+        }
+
+        @Override
+        public String getDateTimeType() {
+            return "java.time.LocalDateTime";
+        }
+
+        @Override
+        public String getDateType() {
+            return "java.time.LocalDate";
+        }
+
     };
 }
