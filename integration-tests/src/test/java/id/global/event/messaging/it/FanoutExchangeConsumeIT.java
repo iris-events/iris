@@ -2,6 +2,7 @@ package id.global.event.messaging.it;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,6 +17,7 @@ import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
+import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -42,29 +44,25 @@ public class FanoutExchangeConsumeIT {
 
     @Test
     void fanoutTest() throws Exception {
-        producer.publishFanout(EXCHANGE, new LoggingEvent("this is log", 1L), null);
+        producer.publish(EXCHANGE,
+                Optional.empty(),
+                ExchangeType.FANOUT,
+                new LoggingEvent("this is log", 1L),
+                null,
+                false);
 
         assertEquals("this is log", internalLoggingServiceA.getFuture().get());
         assertEquals("this is log", internalLoggingServiceB.getFuture().get());
     }
 
-    //TODO: FIX: chek if we need this test
-    //
-    //    @Test
-    //    void publishMessageToUnknownExchange_ShoutFail() throws Exception {
-    //        producer.publishExchange("not known", new Event("a", 10L), null);
-    //
-    //        //        while (!producer.isShutdown()) {
-    //        //        } //TODO: this is no OK, figure it out how to properly wait for shutdown
-    //        System.out.println(service.getFanoutCount());
-    //
-    //        assertTrue(producer.isShutdown());
-    //        assertThrows(Exception.class, () -> producer.publishExchange("not known", new Event("a", 6L), null));
-    //    }
-
     @Test
-    void publishMessageToFanout_ShouldReceiveTwoMessages() throws Exception {
-        producer.publishFanout("my.fanout", new Event("a", 23L), null);
+    void publishMessageToFanout_ShouldReceiveTwoMessages() {
+        producer.publish("my.fanout",
+                Optional.empty(),
+                ExchangeType.FANOUT,
+                new Event("a", 23L),
+                null,
+                false);
 
         CompletableFuture.allOf(service.getFanout1(), service.getFanout2()).join();
 
@@ -73,7 +71,7 @@ public class FanoutExchangeConsumeIT {
 
     @ApplicationScoped
     public static class MyLoggingServiceA {
-        public CompletableFuture<String> future = new CompletableFuture<>();
+        private final CompletableFuture<String> future = new CompletableFuture<>();
 
         @FanoutMessageHandler(exchange = EXCHANGE)
         public void handleLogEvents(LoggingEvent event) {
@@ -87,7 +85,7 @@ public class FanoutExchangeConsumeIT {
 
     @ApplicationScoped
     public static class MyLoggingServiceB {
-        public CompletableFuture<String> future = new CompletableFuture<>();
+        private final CompletableFuture<String> future = new CompletableFuture<>();
 
         @FanoutMessageHandler(exchange = EXCHANGE)
         public void handleLogEvents(LoggingEvent event) {

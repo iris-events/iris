@@ -7,6 +7,10 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public final class AmqpConfiguration {
 
+    ConsumerConfiguration configuration;
+
+    ProducerConfiguration producerConfiguration;
+
     /**
      * rabbitmq connection url
      */
@@ -83,9 +87,6 @@ public final class AmqpConfiguration {
         this.authenticated = String.valueOf(authenticated);
     }
 
-    ConsumerConfiguration configuration;
-    ProducerConfiguration producerConfiguration;
-
     public ConsumerConfiguration getConfiguration() {
         return configuration;
     }
@@ -96,10 +97,6 @@ public final class AmqpConfiguration {
 
     public ProducerConfiguration getProducerConfiguration() {
         return producerConfiguration;
-    }
-
-    public void setProducerConfiguration(ProducerConfiguration producerConfiguration) {
-        this.producerConfiguration = producerConfiguration;
     }
 
     public boolean isSslEnabled() {

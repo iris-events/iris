@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
+import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -32,10 +34,15 @@ public class TopicExchangeConsumeIT {
 
     @BeforeEach
     public void setup() {
+        internalLoggingServiceA.reset();
+        internalLoggingServiceB.reset();
     }
 
     @Test
-    void topicTest() throws Exception {
+    void topicAsyncTest() throws Exception {
+
+        //messages can be consumed out of order
+
         LoggingEvent l1 = new LoggingEvent("Quick orange fox", 1L);
         LoggingEvent l2 = new LoggingEvent("Quick yellow rabbit", 2L);
         LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
@@ -46,7 +53,8 @@ public class TopicExchangeConsumeIT {
         producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.blue.snail", l3, null);
         producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.orange.rabbit", l4, null);
 
-        Thread.sleep(150); //wait for little bit
+        MyLoggingServiceA.completionSignal.get();
+        MyLoggingServiceB.completionSignal.get();
 
         assertTrue(internalLoggingServiceA.getEvents().contains("Quick orange fox"));
         assertTrue(internalLoggingServiceB.getEvents().contains("Quick yellow rabbit"));
@@ -55,60 +63,80 @@ public class TopicExchangeConsumeIT {
         assertTrue(internalLoggingServiceB.getEvents().contains("Lazy orange rabbit"));
     }
 
+    @Test
+    void topicTest() throws Exception {
+
+        //messages can be consumed in order
+
+        LoggingEvent l1 = new LoggingEvent("Quick orange fox", 1L);
+        LoggingEvent l2 = new LoggingEvent("Quick yellow rabbit", 2L);
+        LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
+        LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
+
+        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.orange.fox"), ExchangeType.TOPIC, l1, null, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.yellow.rabbit"), ExchangeType.TOPIC, l2, null, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.blue.snail"), ExchangeType.TOPIC, l3, null, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.orange.rabbit"), ExchangeType.TOPIC, l4, null, true);
+
+        MyLoggingServiceA.completionSignal.get();
+        MyLoggingServiceB.completionSignal.get();
+
+        assertTrue(internalLoggingServiceA.getEvents().get(0).contains("Quick orange fox"));
+        assertTrue(internalLoggingServiceB.getEvents().get(0).contains("Quick yellow rabbit"));
+        assertTrue(internalLoggingServiceB.getEvents().get(1).contains("Lazy blue snail"));
+        assertTrue(internalLoggingServiceA.getEvents().get(1).contains("Lazy orange rabbit"));
+        assertTrue(internalLoggingServiceB.getEvents().get(2).contains("Lazy orange rabbit"));
+    }
+
     @ApplicationScoped
     public static class MyLoggingServiceA {
-        public List<CompletableFuture<String>> futureList = new ArrayList<>();
-        public int i = 0;
-        private List<String> events = new ArrayList<>();
+        public static CompletableFuture<String> completionSignal = new CompletableFuture<>();
+
+        private final List<String> events = new ArrayList<>();
 
         public List<String> getEvents() {
             return events;
         }
 
-        public MyLoggingServiceA() {
-            futureList.add(new CompletableFuture<>());
+        public void reset() {
+            events.clear();
+            completionSignal = new CompletableFuture<>();
         }
 
         @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = { "*.orange.*" })
         public void handleLogEvents(LoggingEvent event) {
-
-            futureList.add(
-                    CompletableFuture.supplyAsync(() -> {
-                        events.add(event.getLog());
-                        return event.getLog();
-                    }));
-        }
-
-        public List<CompletableFuture<String>> getFutureList() {
-            return futureList;
+            synchronized (events) {
+                events.add(event.getLog());
+                if (events.size() == 2) {
+                    completionSignal.complete("done");
+                }
+            }
         }
     }
 
     @ApplicationScoped
     public static class MyLoggingServiceB {
-        public List<CompletableFuture<String>> futureList = new ArrayList<>();
-        public int i = 0;
-        private List<String> events = new ArrayList<>();
+
+        public static CompletableFuture<String> completionSignal = new CompletableFuture<>();
+        private final List<String> events = new ArrayList<>();
 
         public List<String> getEvents() {
             return events;
         }
 
-        public MyLoggingServiceB() {
-            futureList.add(new CompletableFuture<>());
+        public void reset() {
+            events.clear();
+            completionSignal = new CompletableFuture<>();
         }
 
         @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = { "*.*.rabbit", "lazy.#" })
         public void handleLogEvents(LoggingEvent event) {
-            futureList.add(
-                    CompletableFuture.supplyAsync(() -> {
-                        events.add(event.getLog());
-                        return event.getLog();
-                    }));
-        }
-
-        public List<CompletableFuture<String>> getFutureList() {
-            return futureList;
+            synchronized (events) {
+                events.add(event.getLog());
+                if (events.size() == 2) {
+                    completionSignal.complete("done");
+                }
+            }
         }
     }
 

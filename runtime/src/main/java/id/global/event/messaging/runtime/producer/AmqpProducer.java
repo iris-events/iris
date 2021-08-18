@@ -29,8 +29,9 @@ public class AmqpProducer {
     private final AtomicInteger failCounter = new AtomicInteger(0);
     private final Object lock = new Object();
     private final AtomicInteger count = new AtomicInteger(0);
+    private boolean connected;
 
-    public final ThreadLocal<Channel> channels = new ThreadLocal<Channel>() {
+    private final ThreadLocal<Channel> channels = new ThreadLocal<Channel>() {
         private static final Logger LOG = Logger.getLogger(ThreadLocal.class);
 
         @Override
@@ -41,20 +42,16 @@ public class AmqpProducer {
 
     @Inject
     public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper) {
+        pool = Executors.newFixedThreadPool(6); //TODO: set pool according to needs (should this be in configuration?)
         this.amqpConfiguration = configuration;
         this.objectMapper = objectMapper;
         this.hostName = Common.getHostName();
         connect();
-        //TODO: set pool according to needs (should this be in configuration?)
-        pool = Executors.newFixedThreadPool(6);
-
     }
 
     public AmqpConfiguration getAmqpConfiguration() {
         return amqpConfiguration;
     }
-
-    boolean connected;
 
     private void connect() {
 
@@ -90,13 +87,39 @@ public class AmqpProducer {
     }
 
     /**
-     * @param exchange exchange nam that message will be send to
-     * @param routingKey optinal routingKey, if not provided, className of message send will be used
-     * @param message Object/message to be send to exchange
-     * @param properties additional properties for producer
+     *
+     * @param exchange exchange name to which we send message to
+     * @param routingKey routing key to route message to queue
+     * @param type exchange type (DIRECT, FANOUT, TOPIC)
+     * @param message message to be send
+     * @param properties additinal properties for
+     * @param failImmediately fail immediately on publishing error
+     * @return true/false if message was published successfult to broker
      */
-    public boolean publishDirect(String exchange, Optional<String> routingKey, Object message,
-            AMQP.BasicProperties properties) {
+    public boolean publish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
+            AMQP.BasicProperties properties, boolean failImmediately) {
+        switch (type) {
+            case TOPIC -> {
+                if (routingKey.isPresent()) {
+                    return publishTopic(exchange, routingKey.get(), message, properties, failImmediately);
+                }
+            }
+            case DIRECT -> {
+                return publishDirect(exchange, routingKey, message, properties, failImmediately);
+            }
+            case FANOUT -> {
+                return publishFanout(exchange, message, properties, failImmediately);
+            }
+            default -> {
+                LOG.warn("Exchange type unknown!");
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private boolean publishDirect(String exchange, Optional<String> routingKey, Object message,
+            AMQP.BasicProperties properties, boolean immediate) {
 
         try {
             routingKey = routingKey.filter(s -> !s.isEmpty());
@@ -104,49 +127,37 @@ public class AmqpProducer {
             return publishMessage(exchange,
                     routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
                     properties,
-                    bytes);
+                    bytes, immediate);
         } catch (Exception e) {
             LOG.error("Sending to exchange: [" + exchange + "] with routingKey: [" + routingKey + "] failed! ", e);
             return false;
         }
     }
 
-    /**
-     * @param exchange exchange name where message will be send
-     * @param topicRoutingKey topicRoutingKey for message routing example: log.internal.warn, log.external.warn,
-     *        log.internal.error
-     * @param message Object/message to be send to exchange
-     * @param properties additional properties for producer
-     * @throws Exception
-     */
-    public boolean publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties) {
-        //TODO: maybe validate topic (routing key)
+    private boolean publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties,
+            boolean immediate) {
+        //TODO: maybe validate topic (routing key)?
 
         try {
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
             return publishMessage(exchange,
                     topicRoutingKey,
                     properties,
-                    bytes);
+                    bytes,
+                    immediate);
         } catch (Exception e) {
             LOG.error("Sending to topic exchange: [" + exchange + "] with routingKey: [" + topicRoutingKey + "] failed! ", e);
             return false;
         }
     }
 
-    /**
-     * @param fanoutExchange exchange name where message will be send
-     * @param message Object/message to be send to exchange
-     * @param properties additional properties for producer
-     * @throws Exception
-     */
-    public boolean publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) {
+    private boolean publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties, boolean immediate) {
         try {
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
             return publishMessage(fanoutExchange,
                     "",
                     properties,
-                    bytes);
+                    bytes, immediate);
         } catch (Exception e) {
             LOG.error("Sending to fanout exchange: [" + fanoutExchange + "] failed! ", e);
             return false;
@@ -165,9 +176,7 @@ public class AmqpProducer {
             throws Exception {
 
         routingKey = routingKey.filter(s -> !s.isEmpty());
-        byte[] bytes = new byte[0];
-
-        bytes = objectMapper.writeValueAsBytes(message);
+        final byte[] bytes = objectMapper.writeValueAsBytes(message);
         publishMessageAsync(exchange,
                 routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
                 properties,
@@ -180,9 +189,9 @@ public class AmqpProducer {
      * @param properties additional properties for producer
      * @throws Exception
      */
-    public void publishFanoutAsync(String fanoutExchange, Object message, AMQP.BasicProperties properties) throws Exception {
-        byte[] bytes = new byte[0];
-        bytes = objectMapper.writeValueAsBytes(message);
+    public void publishFanoutAsync(String fanoutExchange, Object message, AMQP.BasicProperties properties)
+            throws Exception {
+        final byte[] bytes = objectMapper.writeValueAsBytes(message);
         publishMessageAsync(fanoutExchange, "", properties, bytes);
     }
 
@@ -196,8 +205,7 @@ public class AmqpProducer {
      */
     public void publishTopicAsync(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties)
             throws Exception {
-        byte[] bytes = new byte[0];
-        bytes = objectMapper.writeValueAsBytes(message);
+        final byte[] bytes = objectMapper.writeValueAsBytes(message);
         publishMessageAsync(exchange, topicRoutingKey, properties, bytes);
     }
 
@@ -258,7 +266,7 @@ public class AmqpProducer {
     private boolean publishMessage(final String exchange,
             final String routingKey,
             final AMQP.BasicProperties properties,
-            final byte[] bytes) throws Exception {
+            final byte[] bytes, boolean immediate) throws Exception {
         synchronized (this.lock) {
             if (this.connection.isOpen()) {
                 if (this.channel.isPresent() && !this.channel.get().isOpen()) {
@@ -273,9 +281,8 @@ public class AmqpProducer {
 
                 publish(exchange, routingKey, properties, bytes, this.channel);
 
-                //for every 100 messages that are send wait for all confirmations
-                if (count.incrementAndGet() == 100) {
-                    this.channel.get().waitForConfirms(500);
+                if (count.incrementAndGet() == 100 || immediate) { //for every 100 messages that are send wait for all confirmations
+                    this.channel.get().waitForConfirms(500); //timeout is 500ms (should we change this to longer?
                     count.set(0);
                 }
                 return true;
@@ -285,7 +292,7 @@ public class AmqpProducer {
         }
     }
 
-    ConfirmListener confirmListener = new ConfirmListener() {
+    private ConfirmListener confirmListener = new ConfirmListener() {
         @Override
         public void handleAck(long deliveryTag, boolean multiple) throws IOException {
             LOG.info("Message with deliveryTag [" + deliveryTag + "] ACK!" + " Multiple: " + multiple);
@@ -298,7 +305,7 @@ public class AmqpProducer {
     };
 
     //this will be used if message has "mandatory" flag set
-    ReturnListener returnListener = new ReturnListener() {
+    private ReturnListener returnListener = new ReturnListener() {
         @Override
         public void handleReturn(int replyCode, String replyText, String exchange, String routingKey,
                 AMQP.BasicProperties properties, byte[] body) throws IOException {
