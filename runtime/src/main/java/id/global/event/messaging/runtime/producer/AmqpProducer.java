@@ -269,16 +269,10 @@ public class AmqpProducer {
             final byte[] bytes, boolean immediate) throws Exception {
         synchronized (this.lock) {
             if (this.connection.isOpen()) {
-                if (this.channel.isPresent() && !this.channel.get().isOpen()) {
-                    try {
-                        this.channel.get().close();
-                    } catch (Exception ignored) {
-                    }
+                if (this.channel.isEmpty() || !this.channel.get().isOpen()) {
                     this.channel = Optional.empty();
+                    createChannel(true);
                 }
-
-                createChannel(true);
-
                 publish(exchange, routingKey, properties, bytes, this.channel);
 
                 if (count.incrementAndGet() == 100 || immediate) { //for every 100 messages that are send wait for all confirmations
