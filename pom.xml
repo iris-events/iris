@@ -18,6 +18,7 @@
     <gid.models.version>0.5-SNAPSHOT</gid.models.version>
     <smallrye.asyncapi.version>1.0.1-SNAPSHOT</smallrye.asyncapi.version>
     <event-messaging.version>1.1.0-SNAPSHOT</event-messaging.version>
+    <hamcrest.version>2.2</hamcrest.version>
   </properties>
   <modules>
     <module>deployment</module>
@@ -35,6 +36,12 @@
         <groupId>id.global.events</groupId>
         <artifactId>smallrye-async-api</artifactId>
         <version>${smallrye.asyncapi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>${hamcrest.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

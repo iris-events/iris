@@ -35,14 +35,12 @@ public class Common {
     public static ConnectionFactory getConnectionFactory(AmqpConfiguration amqpConfiguration) {
         ConnectionFactory factory = new ConnectionFactory();
 
+        LOG.warn("Building amqp url from configuration:\nurl:" + amqpConfiguration.getUrl() + "\nport:"
+                + amqpConfiguration.getPort() + "\nusername:"
+                + amqpConfiguration.getUsername() + "\nauth:" + amqpConfiguration.isAuthenticated() + "\nssl:"
+                + amqpConfiguration.isSslEnabled());
         try {
             if (amqpConfiguration.isAuthenticated()) {
-
-                //todo remove
-                LOG.warn("|url:" + amqpConfiguration.getUrl() + "|port:" + amqpConfiguration.getPort() + "|username:"
-                        + amqpConfiguration.getUsername() + "|auth:" + amqpConfiguration.isAuthenticated() + "|ssl:"
-                        + amqpConfiguration.isSslEnabled());
-
                 String connectionUrl = String.format("%s://%s:%s@%s:%s%s",
                         amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
                         amqpConfiguration.getUsername(),
@@ -54,11 +52,6 @@ public class Common {
                 factory.setUri(connectionUrl);
 
             } else {
-                //todo remove
-                LOG.warn("|url:" + amqpConfiguration.getUrl() + "|port:" + amqpConfiguration.getPort() + "|username:"
-                        + amqpConfiguration.getUsername() + "|auth:" + amqpConfiguration.isAuthenticated() + "|ssl:"
-                        + amqpConfiguration.isSslEnabled());
-
                 String connectionUrl = String.format("%s://%s:%s%s",
                         amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
                         amqpConfiguration.getUrl(),

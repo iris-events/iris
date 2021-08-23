@@ -47,6 +47,12 @@ public final class AmqpConfiguration {
     @ConfigItem(defaultValue = "false")
     boolean sslEnabled;
 
+    /**
+     * disable initialization of consumers
+     */
+    @ConfigItem(defaultValue = "false")
+    boolean consumersDisabled;
+
     public String getUrl() {
         return url;
     }
@@ -105,5 +111,39 @@ public final class AmqpConfiguration {
 
     public void setSslEnabled(boolean sslEnabled) {
         this.sslEnabled = sslEnabled;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getAuthenticated() {
+        return authenticated;
+    }
+
+    public void setAuthenticated(String authenticated) {
+        this.authenticated = authenticated;
+    }
+
+    public boolean isConsumersDisabled() {
+        return consumersDisabled;
+    }
+
+    public void setConsumersDisabled(boolean consumersDisabled) {
+        this.consumersDisabled = consumersDisabled;
+    }
+
+    @Override
+    public String toString() {
+        return "AmqpConfiguration{" +
+                "configuration=" + configuration +
+                ", producerConfiguration=" + producerConfiguration +
+                ", url='" + url + '\'' +
+                ", port='" + port + '\'' +
+                ", username='" + username + '\'' +
+                ", authenticated='" + authenticated + '\'' +
+                ", sslEnabled=" + sslEnabled +
+                ", disabled=" + consumersDisabled +
+                '}';
     }
 }

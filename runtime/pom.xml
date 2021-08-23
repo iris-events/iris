@@ -31,7 +31,11 @@
       <groupId>id.global.events</groupId>
       <artifactId>smallrye-async-api</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
