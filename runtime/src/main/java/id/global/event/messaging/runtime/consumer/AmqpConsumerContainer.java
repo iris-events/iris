@@ -41,6 +41,10 @@ public class AmqpConsumerContainer {
     }
 
     public void initConsumer() {
+        if (config.isConsumersDisabled()) {
+            LOG.warn("Consumers disabled by config!");
+            return;
+        }
         ConnectionFactory factory = Common.getConnectionFactory(config);
 
         while (!createConnection(factory)) {
@@ -78,6 +82,11 @@ public class AmqpConsumerContainer {
 
     public void addConsumer(MethodHandle methodHandle, MethodHandleContext methodHandleContext, AmqpContext amqpContext,
             Object eventHandlerInstance) {
+        if (config.isConsumersDisabled()) {
+            LOG.warn(String.format("Ignored adding consumer for %s exchange %s and queue %s",
+                    amqpContext.getExchangeType().toString(), amqpContext.getExchange(), amqpContext.getQueue()));
+            return;
+        }
         consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
                 methodHandle,
                 methodHandleContext,
@@ -88,5 +97,9 @@ public class AmqpConsumerContainer {
 
     public int getNumOfConsumers() {
         return consumerMap.size();
+    }
+
+    public Connection getConnection() {
+        return connection;
     }
 }
