@@ -13,13 +13,15 @@ import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.rules.RuleFactory;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-@Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE)
+@Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)
 public class AmqpGeneratorMojo extends AbstractMojo {
 
     private static final String defaultUrl = "https://schema.internal.globalid.dev";
@@ -58,9 +60,19 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private final Path tmpSourceFolder = tmpFolder.resolve(Paths.get("src", "main", "java"));
     private final Path tmpSchemaFolder = tmpFolder.resolve(Paths.get("schemas"));
 
+    private URI baseDir;
 
     public void execute() throws MojoExecutionException {
         if (!skip) {
+            if (project.getBasedir() != null) {
+                baseDir = project.getBasedir().toURI();
+            } else {
+                try {
+                    baseDir = new URI("file:" + System.getProperty("user.dir"));
+                } catch (URISyntaxException e) {
+                    getLog().error("Something is wrong with folder structure!", e);
+                }
+            }
             cleanUpDirectories();
             if (artifactSource == ArtifactSource.FILE) {
                 generateFromFile(asyncApiDirectory, asyncApiFilename);
@@ -81,7 +93,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
             String[] pathSpliced;
             pathSpliced = asyncApiDirectory.split(","); //separate directory via , to be platform independent
-            Path p = Paths.get(project.getBasedir().toURI());
+            Path p = Paths.get(baseDir);
             for (String sub : pathSpliced) {
                 p = p.resolve(sub);
             }
@@ -105,7 +117,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void cleanUpDirectories() {
         try {
-            deleteDirectoryAll(Path.of(project.getBasedir().toURI()).resolve(tmpFolder));
+            deleteDirectoryAll(Path.of(baseDir).resolve(tmpFolder));
         } catch (IOException e) {
             getLog().error("Directory cleanup failed!", e);
 
@@ -166,13 +178,13 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void writeSchemaFile(String fileName, String content) {
 
-        Path path = Paths.get(project.getBasedir().toURI())
+        Path path = Paths.get(baseDir)
                 .resolve(tmpSchemaFolder)
                 .resolve(fileName);
 
         content = content.replace("#", "");
 
-        Path p = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder);
+        Path p = Paths.get(baseDir).resolve(tmpSchemaFolder);
 
 
         //TODO windows will have problems ... check what original document has.. if generated document is OS dependent format
@@ -222,8 +234,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
 
         //create directory structure
-        Path pathSource = Paths.get(project.getBasedir().toURI()).resolve(tmpSourceFolder);
-        Path pathSchema = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder);
+        Path pathSource = Paths.get(baseDir).resolve(tmpSourceFolder);
+        Path pathSchema = Paths.get(baseDir).resolve(tmpSchemaFolder);
         Files.createDirectories(pathSource);
         Files.createDirectories(pathSchema);
 
@@ -243,7 +255,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     public void generateAdditionalFiles(JsonNode channels) {
         String stringPath = packageName.replace(".", File.separator);
 
-        Path path = Paths.get(project.getBasedir().toURI())
+        Path path = Paths.get(baseDir)
                 .resolve(tmpSourceFolder)
                 .resolve(stringPath + File.separator + modelName)
                 .resolve("client");
@@ -253,7 +265,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
         }catch (Exception ignored){  }
 
-        Path pomPath = Paths.get(project.getBasedir().toURI())
+        Path pomPath = Paths.get(baseDir)
                 .resolve(tmpFolder);
 
         writeFile("pom.xml", preparePomTemplate("pom.xml"), pomPath.toString());
@@ -305,7 +317,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         JCodeModel codeModel = new JCodeModel();
 
-        Path clientPath = Paths.get(project.getBasedir().toURI()).resolve(tmpSourceFolder);
+        Path clientPath = Paths.get(baseDir).resolve(tmpSourceFolder);
         Files.createDirectories(clientPath);
 
         SchemaMapper mapper = new SchemaMapper(
@@ -316,7 +328,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 new SchemaGenerator());
 
 
-        Path schemes = Paths.get(project.getBasedir().toURI()).resolve(tmpSchemaFolder).resolve(fileName);
+        Path schemes = Paths.get(baseDir).resolve(tmpSchemaFolder).resolve(fileName);
         mapper.generate(codeModel, "ClassName", packageName + "." + modelName, schemes.toUri().toURL());
 
         codeModel.build(clientPath.toFile());
