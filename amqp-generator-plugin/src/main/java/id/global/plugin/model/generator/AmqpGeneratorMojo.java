@@ -19,6 +19,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 @Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)
@@ -63,6 +64,9 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private URI baseDir;
 
     public void execute() throws MojoExecutionException {
+
+        modelName = getCleanModelName();
+
         if (!skip) {
             if (project.getBasedir() != null) {
                 baseDir = project.getBasedir().toURI();
@@ -377,5 +381,9 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         } catch (IOException e ) {
             getLog().error("Reading from apicurio failed!", e);
         }
+    }
+
+    private String getCleanModelName(){
+        return modelName.toLowerCase(Locale.ROOT).replace("-","_");
     }
 }
