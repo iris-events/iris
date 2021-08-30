@@ -64,6 +64,9 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private URI baseDir;
 
     public void execute() throws MojoExecutionException {
+
+        modelName = getCleanModelName();
+
         if (!skip) {
             if (project.getBasedir() != null) {
                 baseDir = project.getBasedir().toURI();
@@ -258,7 +261,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         Path path = Paths.get(baseDir)
                 .resolve(tmpSourceFolder)
-                .resolve(stringPath + File.separator + getCleanModelName())
+                .resolve(stringPath + File.separator + modelName)
                 .resolve("client");
 
         try {
@@ -275,14 +278,14 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public String prepareExchangeTemplate(String templateFile, String content) {
         String template = readResourceFileContent(templateFile);
-        template = template.replace("!!!", getCleanModelName());
+        template = template.replace("!!!", modelName);
         template = template.replace("#####", content);
         return template;
     }
 
     public String preparePomTemplate(String templateFile) {
         String pomTemplate = readResourceFileContent(templateFile);
-        pomTemplate = pomTemplate.replace("XXXX", getCleanModelName());
+        pomTemplate = pomTemplate.replace("XXXX", modelName);
         pomTemplate = pomTemplate.replace("YYYY", modelVersion);
         return pomTemplate;
     }
@@ -330,7 +333,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
 
         Path schemes = Paths.get(baseDir).resolve(tmpSchemaFolder).resolve(fileName);
-        mapper.generate(codeModel, "ClassName", packageName + "." + getCleanModelName(), schemes.toUri().toURL());
+        mapper.generate(codeModel, "ClassName", packageName + "." + modelName, schemes.toUri().toURL());
 
         codeModel.build(clientPath.toFile());
     }
