@@ -58,7 +58,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     String packageName = "id.global.models";
 
     @Parameter(property = "modelVersion", required = true)
-    String modelVersion;
+    String modelVersion = "";
 
     @Parameter(property = "modelName", required = true)
     String modelName;
@@ -74,9 +74,9 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         getLog().info("Model NAME = " + modelName);
-        String modelNameClean = getCleanModelName(modelName);
+        //        modelName = getCleanModelName(modelName);
 
-        getLog().info("Model Name after cleanup = " + modelNameClean);
+        getLog().info("Model Name after cleanup = " + modelName);
 
         if (!skip) {
             if (project.getBasedir() != null) {
@@ -90,7 +90,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             }
             cleanUpDirectories();
             if (artifactSource == ArtifactSource.FILE) {
-                generateFromFile(asyncApiDirectory, asyncApiFilename, modelNameClean);
+                generateFromFile(asyncApiDirectory, asyncApiFilename);
             } else if (artifactSource == ArtifactSource.APICURIO) {
                 generateFromApiCurio(apicurioUrl);
             } else {
@@ -101,7 +101,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    public void generateFromFile(String asyncApiDirectory, String asyncApiFilename, String modelNameClean) {
+    public void generateFromFile(String asyncApiDirectory, String asyncApiFilename) {
 
         String ymlContent;
         try {
@@ -114,7 +114,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             }
             p = p.resolve(asyncApiFilename);
             ymlContent = readSchemaContent(p);
-            parseAsyncApiJson(ymlContent, modelNameClean);
+            parseAsyncApiJson(ymlContent);
         } catch (Exception e) {
             getLog().error("Parsing AsyncApi definition!", e);
         }
@@ -226,12 +226,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    public void drillDown(JsonNode root) {
+    public void drillDown(JsonNode root, String padding) {
         getLog().info("Creating JsonSchema files for model generator!");
         root.fields().forEachRemaining((k) -> writeSchemaFile(k.getKey(), k.getValue().toString()));
     }
 
-    public void parseAsyncApiJson(String json, String modelNameClean) throws IOException {
+    public void parseAsyncApiJson(String json) throws IOException {
         getLog().info("Parsing AsyncApi definition!");
 
         ObjectMapper mapper = new ObjectMapper();
@@ -248,51 +248,51 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         Files.createDirectories(pathSource);
         Files.createDirectories(pathSchema);
 
-        drillDown(schemas);
+        drillDown(schemas, " ");
 
         schemas.fieldNames().forEachRemaining(fileName -> {
                     try {
-                        generate(fileName, modelNameClean);
+                        generate(fileName);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
         );
 
-        generateAdditionalFiles(channels, modelNameClean);
+        generateAdditionalFiles(channels);
     }
 
-    public void generateAdditionalFiles(JsonNode channels, String modelNameClean) {
+    public void generateAdditionalFiles(JsonNode channels) {
         String stringPath = packageName.replace(".", File.separator);
 
         Path path = Paths.get(baseDir)
                 .resolve(tmpSourceFolder)
-                .resolve(stringPath + File.separator + modelNameClean)
+                .resolve(stringPath + File.separator + modelName)
                 .resolve("client");
 
         try {
             String replaceWith = generateChannelSupportData(channels);
-            writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith, modelNameClean), path.toString());
+            writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
         } catch (Exception ignored) {
         }
 
         Path pomPath = Paths.get(baseDir)
                 .resolve(tmpFolder);
 
-        writeFile("pom.xml", preparePomTemplate("pom.xml", modelNameClean), pomPath.toString());
+        writeFile("pom.xml", preparePomTemplate("pom.xml"), pomPath.toString());
 
     }
 
-    public String prepareExchangeTemplate(String templateFile, String content, String modelNameClean) {
+    public String prepareExchangeTemplate(String templateFile, String content) {
         String template = readResourceFileContent(templateFile);
-        template = template.replace("!!!", modelNameClean);
+        template = template.replace("!!!", modelName);
         template = template.replace("#####", content);
         return template;
     }
 
-    public String preparePomTemplate(String templateFile, String modelNameClean) {
+    public String preparePomTemplate(String templateFile) {
         String pomTemplate = readResourceFileContent(templateFile);
-        pomTemplate = pomTemplate.replace("XXXX", modelNameClean);
+        pomTemplate = pomTemplate.replace("XXXX", modelName);
         pomTemplate = pomTemplate.replace("YYYY", modelVersion);
         return pomTemplate;
     }
@@ -323,7 +323,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         return sb.toString();
     }
 
-    public void generate(String fileName, String modelNameClean) throws IOException {
+    public void generate(String fileName) throws IOException {
 
         JCodeModel codeModel = new JCodeModel();
 
@@ -338,7 +338,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 new SchemaGenerator());
 
         Path schemes = Paths.get(baseDir).resolve(tmpSchemaFolder).resolve(fileName);
-        mapper.generate(codeModel, "ClassName", packageName + "." + modelNameClean, schemes.toUri().toURL());
+        mapper.generate(codeModel, "ClassName", packageName + "." + modelName, schemes.toUri().toURL());
 
         codeModel.build(clientPath.toFile());
     }
@@ -372,8 +372,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 try {
                     String ymlContent = readContentFromWeb(baseUrl + "/api/artifacts/" + o);
                     getLog().info("Parsing for application: " + o);
-                    String modelNameClean = getCleanModelName(o.toString().split(":")[0]);
-                    parseAsyncApiJson(ymlContent, modelNameClean);
+                    modelName = o.toString().split(":")[0];
+                    parseAsyncApiJson(ymlContent);
                 } catch (IOException e) {
                     getLog().error("Generating from apicurio failed!", e);
                 }
@@ -384,7 +384,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private String getCleanModelName(String modelName) {
-        return modelName.toLowerCase().replace("-", "_");
-    }
+    //    private String getCleanModelName(String modelName) {
+    //        return modelName.toLowerCase().replace("-", "_");
+    //    }
 }
