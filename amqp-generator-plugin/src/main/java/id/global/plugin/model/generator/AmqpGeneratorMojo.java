@@ -19,7 +19,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Comparator;
-import java.util.Locale;
+//import java.util.Locale;
 import java.util.stream.Stream;
 
 @Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)
@@ -65,7 +65,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
 
-        modelName = getCleanModelName();
+//        modelName = getCleanModelName();
 
         if (!skip) {
             if (project.getBasedir() != null) {
@@ -220,9 +220,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void drillDown(JsonNode root, String padding) {
         getLog().info("Creating JsonSchema files for model generator!");
-        root.fields().forEachRemaining((k) -> {
-            writeSchemaFile(k.getKey(), k.getValue().toString());
-        });
+        root.fields().forEachRemaining((k) -> writeSchemaFile(k.getKey(), k.getValue().toString()));
     }
 
     public void parseAsyncApiJson(String json) throws IOException {
@@ -383,7 +381,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private String getCleanModelName(){
-        return modelName.toLowerCase(Locale.ROOT).replace("-","_");
-    }
+//    private String getCleanModelName(){
+//        return modelName.toLowerCase(Locale.ROOT).replace("-","_");
+//    }
 }
