@@ -73,15 +73,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private URI baseDir;
 
     public void execute() throws MojoExecutionException {
-        getLog().info("Executing mojo");
-        getLog().info("asyncApiFilename = " + asyncApiFilename);
-        getLog().info("asyncApiDirectory = " + asyncApiDirectory);
-        getLog().info("packageName = " + packageName);
-        getLog().info("modelVersion = " + modelVersion);
-        getLog().info("modelName = " + modelName);
-
         modelName = getCleanModelName(modelName);
-        getLog().info("Cleaned up modelName. Result = " + modelName);
 
         if (!skip) {
             if (project.getBasedir() != null) {
