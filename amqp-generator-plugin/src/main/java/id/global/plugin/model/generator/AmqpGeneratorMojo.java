@@ -1,26 +1,35 @@
 package id.global.plugin.model.generator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.codemodel.JCodeModel;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.stream.Stream;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.jsonschema2pojo.*;
+import org.jsonschema2pojo.Jackson2Annotator;
+import org.jsonschema2pojo.SchemaGenerator;
+import org.jsonschema2pojo.SchemaMapper;
+import org.jsonschema2pojo.SchemaStore;
 import org.jsonschema2pojo.rules.RuleFactory;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.Comparator;
-//import java.util.Locale;
-import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.codemodel.JCodeModel;
 
 @Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)
 public class AmqpGeneratorMojo extends AbstractMojo {
@@ -64,8 +73,15 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private URI baseDir;
 
     public void execute() throws MojoExecutionException {
+        getLog().info("Executing mojo");
+        getLog().info("asyncApiFilename = " + asyncApiFilename);
+        getLog().info("asyncApiDirectory = " + asyncApiDirectory);
+        getLog().info("packageName = " + packageName);
+        getLog().info("modelVersion = " + modelVersion);
+        getLog().info("modelName = " + modelName);
 
-//        modelName = getCleanModelName();
+        modelName = getCleanModelName(modelName);
+        getLog().info("Cleaned up modelName. Result = " + modelName);
 
         if (!skip) {
             if (project.getBasedir() != null) {
@@ -147,7 +163,6 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-
     public String readResourceFileContent(String fileName) {
         String text;
         try {
@@ -163,7 +178,6 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     }
 
-
     //Use this when plugin will have to generate models from apicurio url
     public String readContentFromWeb(String contentUrl) throws IOException {
         getLog().info("Reading AsyncApi definition from url: " + contentUrl);
@@ -171,7 +185,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         String inputLine;
         StringBuilder builder = new StringBuilder();
         try (BufferedReader br =
-                     new BufferedReader(new InputStreamReader(url.openStream()))) {
+                new BufferedReader(new InputStreamReader(url.openStream()))) {
             while ((inputLine = br.readLine()) != null) {
                 builder.append(inputLine);
             }
@@ -189,7 +203,6 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         content = content.replace("#", "");
 
         Path p = Paths.get(baseDir).resolve(tmpSchemaFolder);
-
 
         //TODO windows will have problems ... check what original document has.. if generated document is OS dependent format
         //TODO: then we need to fix this if document is always in UNIX style path then no need to fix this
@@ -227,13 +240,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         getLog().info("Parsing AsyncApi definition!");
 
         ObjectMapper mapper = new ObjectMapper();
-//        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        //        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         JsonNode node = mapper.readTree(json);
 
         JsonNode components = node.get("components");
         JsonNode schemas = components.get("schemas");
         JsonNode channels = node.get("channels");
-
 
         //create directory structure
         Path pathSource = Paths.get(baseDir).resolve(tmpSourceFolder);
@@ -244,15 +256,16 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         drillDown(schemas, " ");
 
         schemas.fieldNames().forEachRemaining(fileName -> {
-            try {
-                generate(fileName);
-            }catch (Exception e){e.printStackTrace();}
+                    try {
+                        generate(fileName);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
         );
 
         generateAdditionalFiles(channels);
     }
-
 
     public void generateAdditionalFiles(JsonNode channels) {
         String stringPath = packageName.replace(".", File.separator);
@@ -265,7 +278,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         try {
             String replaceWith = generateChannelSupportData(channels);
             writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
-        }catch (Exception ignored){  }
+        } catch (Exception ignored) {
+        }
 
         Path pomPath = Paths.get(baseDir)
                 .resolve(tmpFolder);
@@ -293,11 +307,10 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         StringBuilder sb = new StringBuilder();
 
-
         jsonObject.fields().forEachRemaining(k -> {
             String exchange = k.getKey().split("/")[0];
             String routingKey = k.getKey().split("/")[1];
-            String  type = k.getValue().path("bindings").path("amqp").path("exchange").path("type").textValue();
+            String type = k.getValue().path("bindings").path("amqp").path("exchange").path("type").textValue();
 
             sb.append(
                     //will output ->  MYEXCHANGE_APTOCARDEVENT_ROOT("MYEXCHANGE","AptoCardEvent_Root","direct"),
@@ -329,18 +342,15 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                         new SchemaStore()),
                 new SchemaGenerator());
 
-
         Path schemes = Paths.get(baseDir).resolve(tmpSchemaFolder).resolve(fileName);
         mapper.generate(codeModel, "ClassName", packageName + "." + modelName, schemes.toUri().toURL());
 
         codeModel.build(clientPath.toFile());
     }
 
-
     //TODO: currenty all asyncapi json document are parsed!
     //TODO: uncomment filter part bellow to grab only one (version and name)
     public void generateFromApiCurio(String baseUrl) {
-
 
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = defaultUrl;
@@ -357,14 +367,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 if (o.toString().endsWith("yaml")) //skip yaml files
                     continue;
 
-
                 //TODO: filter out all other artifacts if name not equal
-//                if(!o.toString().contains(modelName))
-//                    continue;
+                //                if(!o.toString().contains(modelName))
+                //                    continue;
                 //TODO: filter out all other artifacts if version not equal
-//                if(!o.toString().contains(modelVersion))
-//                    continue;
-
+                //                if(!o.toString().contains(modelVersion))
+                //                    continue;
 
                 try {
                     String ymlContent = readContentFromWeb(baseUrl + "/api/artifacts/" + o);
@@ -376,12 +384,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 }
             }
 
-        } catch (IOException e ) {
+        } catch (IOException e) {
             getLog().error("Reading from apicurio failed!", e);
         }
     }
 
-//    private String getCleanModelName(){
-//        return modelName.toLowerCase(Locale.ROOT).replace("-","_");
-//    }
+    private String getCleanModelName(String modelName) {
+        return modelName.toLowerCase().replace("-", "_");
+    }
 }
