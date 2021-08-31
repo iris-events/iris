@@ -73,7 +73,10 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private URI baseDir;
 
     public void execute() throws MojoExecutionException {
+        getLog().info("Model NAME = " + modelName);
         modelName = getCleanModelName(modelName);
+
+        getLog().info("Model Name after cleanup = " + modelName);
 
         if (!skip) {
             if (project.getBasedir() != null) {
