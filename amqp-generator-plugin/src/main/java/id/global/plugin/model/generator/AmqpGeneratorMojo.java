@@ -48,22 +48,22 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "apicurioUrl")
     String apicurioUrl;
 
-    @Parameter(property = "asyncApiFilename")
-    String asyncApiFilename = "asyncapi.json";
+    @Parameter(property = "asyncApiFilename", defaultValue = "asyncapi.json")
+    String asyncApiFilename;
 
-    @Parameter(property = "asyncApiDirectory")
-    String asyncApiDirectory = "target,generated";
+    @Parameter(property = "asyncApiDirectory", defaultValue = "target,generated")
+    String asyncApiDirectory;
 
-    @Parameter(property = "packageName")
-    String packageName = "id.global.models";
+    @Parameter(property = "packageName", defaultValue = "id.global.models")
+    String packageName;
 
     @Parameter(property = "modelVersion", required = true)
-    String modelVersion = "";
+    String modelVersion;
 
     @Parameter(property = "modelName", required = true)
     String modelName;
 
-    @Parameter(property = "skip")
+    @Parameter(property = "skip", defaultValue = "false")
     boolean skip = false;
 
     private final Path tmpFolder = Paths.get("models");
@@ -74,7 +74,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         getLog().info("Model NAME = " + modelName);
-        //        modelName = getCleanModelName(modelName);
+        modelName = getCleanModelName(modelName);
 
         getLog().info("Model Name after cleanup = " + modelName);
 
@@ -384,7 +384,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    //    private String getCleanModelName(String modelName) {
-    //        return modelName.toLowerCase().replace("-", "_");
-    //    }
+    private String getCleanModelName(String modelName) {
+        return modelName.toLowerCase().replace("-", "_");
+    }
 }
