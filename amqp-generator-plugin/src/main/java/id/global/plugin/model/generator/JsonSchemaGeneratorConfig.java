@@ -33,11 +33,6 @@ public class JsonSchemaGeneratorConfig {
         @Override
         public boolean isUsePrimitives(){return true;};
 
-//        @Override
-//        public boolean isUseDoubleNumbers() {
-//            return true;
-//        }
-
         @Override
         public String getDateTimeType() {
             return "java.time.ZonedDateTime";
