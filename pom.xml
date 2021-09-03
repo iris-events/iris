@@ -76,9 +76,9 @@
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:smallrye/smallrye-async-api.git</connection>
-        <developerConnection>scm:git:git@github.com:smallrye/smallrye-async-api.git</developerConnection>
-        <url>https://github.com/smallrye/smallrye-async-api/</url>
+        <connection>scm:git:git@gitlab.com:globalid/experiments/smallrye-eda.git</connection>
+        <developerConnection>scm:git:git@gitlab.com:globalid/experiments/smallrye-eda.git</developerConnection>
+        <url>https://gitlab.com/globalid/experiments/smallrye-eda</url>
         <tag>HEAD</tag>
     </scm>
 
