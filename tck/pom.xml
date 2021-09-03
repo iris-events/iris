@@ -3,7 +3,7 @@
     <parent>
         <groupId>id.global.events</groupId>
         <artifactId>smallrye-async-api-parent</artifactId>
-        <version>1.0.2</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
     <artifactId>smallrye-async-api-tck</artifactId>
     <name>SmallRye: MicroProfile AsyncAPI TCK</name>
