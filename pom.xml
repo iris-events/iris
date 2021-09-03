@@ -34,6 +34,13 @@
 		<json-simple.version>1.1.1</json-simple.version>
 	</properties>
 
+	<scm>
+		<connection>scm:git:git@gitlab.com:globalid/experiments/maven-eda.git</connection>
+		<developerConnection>scm:git:git@gitlab.com:globalid/experiments/maven-eda.git</developerConnection>
+		<url>https://gitlab.com/globalid/experiments/maven-eda</url>
+		<tag>HEAD</tag>
+	</scm>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
