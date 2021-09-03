@@ -81,7 +81,7 @@
     </scm>
 
     <modules>
-<!--        <module>spec/api</module>-->
+        <module>spec/api</module>
 <!--        <module>spec/tck</module>-->
 
         <module>implementation</module>
@@ -302,11 +302,11 @@
                 <artifactId>smallrye-async-api-spec-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>id.global</groupId>
-                <artifactId>smallrye-async-api-spec-tck</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>id.global</groupId>-->
+<!--                <artifactId>smallrye-async-api-spec-tck</artifactId>-->
+<!--                <version>${project.version}</version>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>id.global</groupId>
                 <artifactId>smallrye-async-api</artifactId>
