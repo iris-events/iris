@@ -18,6 +18,12 @@
     <smallrye.asyncapi.version>1.0.3</smallrye.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
   </properties>
+  <scm>
+    <connection>scm:git:git@gitlab.com:globalid/experiments/quarkus-eda.git</connection>
+    <developerConnection>scm:git:git@gitlab.com:globalid/experiments/quarkus-eda.git</developerConnection>
+    <url>https://gitlab.com/globalid/experiments/quarkus-eda</url>
+    <tag>HEAD</tag>
+  </scm>
   <modules>
     <module>deployment</module>
     <module>runtime</module>
