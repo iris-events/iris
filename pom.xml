@@ -10,7 +10,7 @@
 
 	<groupId>id.global.events</groupId>
 	<artifactId>maven-eda-plugin-parent</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.2</version>
 
 	<packaging>pom</packaging>
 	<name>Event Messaging - Maven Plugins</name>
@@ -37,7 +37,7 @@
 		<connection>scm:git:git@gitlab.com:globalid/experiments/maven-eda.git</connection>
 		<developerConnection>scm:git:git@gitlab.com:globalid/experiments/maven-eda.git</developerConnection>
 		<url>https://gitlab.com/globalid/experiments/maven-eda</url>
-		<tag>HEAD</tag>
+		<tag>v1.0.2</tag>
 	</scm>
 
 	<dependencyManagement>
