@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.EventContext;
 import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public class AmqpConsumerContainerTest {
@@ -25,7 +26,8 @@ public class AmqpConsumerContainerTest {
 
         config.setConsumersDisabled(true);
 
-        AmqpConsumerContainer consumerContainer = new AmqpConsumerContainer(config, new ObjectMapper());
+        AmqpConsumerContainer consumerContainer = new AmqpConsumerContainer(config, new ObjectMapper(),
+                new EventContext());
         consumerContainer.initConsumer();
         AmqpContext amqpContext = new AmqpContext("dummy_queue", "dummy_exchange", null, ExchangeType.DIRECT);
         consumerContainer.addConsumer(null, null, amqpContext, null);

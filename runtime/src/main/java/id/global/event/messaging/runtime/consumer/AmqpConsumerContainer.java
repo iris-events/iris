@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 
 @ApplicationScoped
@@ -33,11 +35,15 @@ public class AmqpConsumerContainer {
 
     private final Map<String, AmqpConsumer> consumerMap;
 
-    public AmqpConsumerContainer(AmqpConfiguration config, ObjectMapper objectMapper) {
-        consumerMap = new HashMap<>();
+    private final EventContext eventContext;
+
+    @Inject
+    public AmqpConsumerContainer(AmqpConfiguration config, ObjectMapper objectMapper, EventContext eventContext) {
+        this.consumerMap = new HashMap<>();
         this.hostName = Common.getHostName();
         this.config = config;
         this.objectMapper = objectMapper;
+        this.eventContext = eventContext;
     }
 
     public void initConsumer() {
@@ -92,7 +98,8 @@ public class AmqpConsumerContainer {
                 methodHandleContext,
                 amqpContext,
                 eventHandlerInstance,
-                objectMapper));
+                objectMapper,
+                eventContext));
     }
 
     public int getNumOfConsumers() {

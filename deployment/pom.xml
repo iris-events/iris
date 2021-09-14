@@ -27,6 +27,11 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jackson-deployment</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

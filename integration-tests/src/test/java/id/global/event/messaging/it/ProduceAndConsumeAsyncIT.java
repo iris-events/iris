@@ -48,8 +48,7 @@ public class ProduceAndConsumeAsyncIT {
             producer.publishDirectAsync(
                     EXCHANGE_ADDITIONAL,
                     Optional.of(EVENT_QUEUE_PRIORITY),
-                    new Event(EVENT_PAYLOAD_NAME, (long) messageToSend),
-                    null);
+                    new Event(EVENT_PAYLOAD_NAME, (long) messageToSend));
         }
 
         Event e = service.getHandledPriorityEvent().get();

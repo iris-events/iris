@@ -14,6 +14,7 @@ import com.rabbitmq.client.Envelope;
 
 import id.global.event.messaging.runtime.consumer.AmqpConsumer;
 import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
@@ -34,7 +35,8 @@ public class AmqpConsumerTest {
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, TEST_METHOD_NAME),
                 new AmqpContext(QUEUE, EXCHANGE, new String[0], ExchangeType.DIRECT),
                 handler,
-                new ObjectMapper());
+                new ObjectMapper(),
+                new EventContext());
 
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);

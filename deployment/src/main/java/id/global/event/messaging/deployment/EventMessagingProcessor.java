@@ -9,6 +9,7 @@ import id.global.event.messaging.runtime.ConsumerConfigRecorder;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -38,6 +39,7 @@ class EventMessagingProcessor {
                 new AdditionalBeanBuildItem.Builder()
                         .addBeanClasses(
                                 AmqpConsumerContainer.class,
+                                EventContext.class,
                                 AmqpProducer.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)

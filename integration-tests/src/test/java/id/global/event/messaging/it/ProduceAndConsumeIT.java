@@ -1,6 +1,6 @@
 package id.global.event.messaging.it;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -47,7 +47,6 @@ public class ProduceAndConsumeIT {
                 Optional.of(EVENT_QUEUE),
                 ExchangeType.DIRECT,
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                null,
                 false);
 
         producer.publish(
@@ -55,7 +54,6 @@ public class ProduceAndConsumeIT {
                 Optional.of(EVENT_QUEUE_PRIORITY),
                 ExchangeType.DIRECT,
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                null,
                 false);
 
         Event e = service.getHandledPriorityEvent().get();
