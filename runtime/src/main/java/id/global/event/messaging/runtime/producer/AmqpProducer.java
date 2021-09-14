@@ -2,7 +2,10 @@ package id.global.event.messaging.runtime.producer;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -11,10 +14,16 @@ import javax.inject.Inject;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConfirmListener;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.ReturnListener;
 
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.context.EventContext;
 
 @ApplicationScoped
 public class AmqpProducer {
@@ -30,8 +39,9 @@ public class AmqpProducer {
     private final Object lock = new Object();
     private final AtomicInteger count = new AtomicInteger(0);
     private boolean connected;
+    private final EventContext eventContext;
 
-    private final ThreadLocal<Channel> channels = new ThreadLocal<Channel>() {
+    private final ThreadLocal<Channel> channels = new ThreadLocal<>() {
         private static final Logger LOG = Logger.getLogger(ThreadLocal.class);
 
         @Override
@@ -41,11 +51,13 @@ public class AmqpProducer {
     };
 
     @Inject
-    public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper) {
+    public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper, EventContext eventContext) {
         pool = Executors.newFixedThreadPool(6); //TODO: set pool according to needs (should this be in configuration?)
         this.amqpConfiguration = configuration;
         this.objectMapper = objectMapper;
         this.hostName = Common.getHostName();
+        this.eventContext = eventContext;
+
         connect();
     }
 
@@ -87,17 +99,36 @@ public class AmqpProducer {
     }
 
     /**
-     *
-     * @param exchange exchange name to which we send message to
-     * @param routingKey routing key to route message to queue
-     * @param type exchange type (DIRECT, FANOUT, TOPIC)
-     * @param message message to be send
-     * @param properties additinal properties for
+     * @param exchange        exchange name to which we send message to
+     * @param routingKey      routing key to route message to queue
+     * @param type            exchange type (DIRECT, FANOUT, TOPIC)
+     * @param message         message to be send
      * @param failImmediately fail immediately on publishing error
      * @return true/false if message was published successfult to broker
      */
     public boolean publish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
-            AMQP.BasicProperties properties, boolean failImmediately) {
+            boolean failImmediately) {
+        AMQP.BasicProperties amqpBasicProperties = eventContext.getAmqpBasicProperties();
+        return routePublish(exchange, routingKey, type, message, failImmediately, amqpBasicProperties);
+    }
+
+    /**
+     * @param exchange        exchange name to which we send message to
+     * @param routingKey      routing key to route message to queue
+     * @param type            exchange type (DIRECT, FANOUT, TOPIC)
+     * @param message         message to be send
+     * @param failImmediately fail immediately on publishing error
+     * @return true/false if message was published successfult to broker
+     * @Param properties BasicProperties for publish
+     */
+    public boolean publish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
+            boolean failImmediately, AMQP.BasicProperties properties) {
+
+        return routePublish(exchange, routingKey, type, message, failImmediately, properties);
+    }
+
+    private boolean routePublish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
+            boolean failImmediately, AMQP.BasicProperties properties) {
         switch (type) {
             case TOPIC -> {
                 if (routingKey.isPresent()) {
@@ -165,48 +196,44 @@ public class AmqpProducer {
     }
 
     /**
-     * @param exchange exchange nam that message will be send to
+     * @param exchange   exchange nam that message will be send to
      * @param routingKey optinal routingKey, if not provided, className of message send will be used
-     * @param message Object/message to be send to exchange
-     * @param properties additional properties for producer
-     * @throws Exception
+     * @param message    Object/message to be send to exchange
      */
-    public void publishDirectAsync(String exchange, Optional<String> routingKey, Object message,
-            AMQP.BasicProperties properties)
+    public void publishDirectAsync(String exchange, Optional<String> routingKey, Object message)
             throws Exception {
+        AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
 
         routingKey = routingKey.filter(s -> !s.isEmpty());
         final byte[] bytes = objectMapper.writeValueAsBytes(message);
         publishMessageAsync(exchange,
                 routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
-                properties,
+                amqpBasicProperties,
                 bytes);
     }
 
     /**
      * @param fanoutExchange exchange name where message will be send
-     * @param message Object/message to be send to exchange
-     * @param properties additional properties for producer
-     * @throws Exception
+     * @param message        Object/message to be send to exchange
      */
-    public void publishFanoutAsync(String fanoutExchange, Object message, AMQP.BasicProperties properties)
+    public void publishFanoutAsync(String fanoutExchange, Object message)
             throws Exception {
         final byte[] bytes = objectMapper.writeValueAsBytes(message);
-        publishMessageAsync(fanoutExchange, "", properties, bytes);
+        AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
+        publishMessageAsync(fanoutExchange, "", amqpBasicProperties, bytes);
     }
 
     /**
-     * @param exchange exchange name where message will be send
+     * @param exchange        exchange name where message will be send
      * @param topicRoutingKey topicRoutingKey for message routing example: log.internal.warn, log.external.warn,
-     *        log.internal.error
-     * @param message Object/message to be send to exchange
-     * @param properties additional properties for producer
-     * @throws Exception
+     *                        log.internal.error
+     * @param message         Object/message to be send to exchange
      */
-    public void publishTopicAsync(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties)
+    public void publishTopicAsync(String exchange, String topicRoutingKey, Object message)
             throws Exception {
         final byte[] bytes = objectMapper.writeValueAsBytes(message);
-        publishMessageAsync(exchange, topicRoutingKey, properties, bytes);
+        AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
+        publishMessageAsync(exchange, topicRoutingKey, amqpBasicProperties, bytes);
     }
 
     private void publishMessageAsync(final String exchange,
@@ -242,6 +269,7 @@ public class AmqpProducer {
 
     private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
             Optional<Channel> channel) throws Exception {
+        // TODO handle optional
         channel.get().basicPublish(exchange, routingKey, properties, bytes);
     }
 
@@ -275,7 +303,8 @@ public class AmqpProducer {
                 }
                 publish(exchange, routingKey, properties, bytes, this.channel);
 
-                if (count.incrementAndGet() == 100 || immediate) { //for every 100 messages that are send wait for all confirmations
+                if (count.incrementAndGet() == 100
+                        || immediate) { //for every 100 messages that are send wait for all confirmations
                     this.channel.get().waitForConfirms(500); //timeout is 500ms (should we change this to longer?
                     count.set(0);
                 }
@@ -286,26 +315,21 @@ public class AmqpProducer {
         }
     }
 
-    private ConfirmListener confirmListener = new ConfirmListener() {
+    private final ConfirmListener confirmListener = new ConfirmListener() {
         @Override
-        public void handleAck(long deliveryTag, boolean multiple) throws IOException {
+        public void handleAck(long deliveryTag, boolean multiple) {
             LOG.info("Message with deliveryTag [" + deliveryTag + "] ACK!" + " Multiple: " + multiple);
         }
 
         @Override
-        public void handleNack(long deliveryTag, boolean multiple) throws IOException {
+        public void handleNack(long deliveryTag, boolean multiple) {
             LOG.warn("Message with deliveryTag [" + deliveryTag + "] NACK!" + " Multiple: " + multiple);
         }
     };
 
     //this will be used if message has "mandatory" flag set
-    private ReturnListener returnListener = new ReturnListener() {
-        @Override
-        public void handleReturn(int replyCode, String replyText, String exchange, String routingKey,
-                AMQP.BasicProperties properties, byte[] body) throws IOException {
-            LOG.error("Message returned! exchange=[" + exchange + "], routingKey=[" + routingKey + "]: replyCode=[" + replyCode
+    private final ReturnListener returnListener = (replyCode, replyText, exchange, routingKey, properties, body) -> LOG
+            .error("Message returned! exchange=[" + exchange + "], routingKey=[" + routingKey + "]: replyCode=[" + replyCode
                     + "] replyMessage=[" + replyText + "]");
-        }
-    };
 
 }

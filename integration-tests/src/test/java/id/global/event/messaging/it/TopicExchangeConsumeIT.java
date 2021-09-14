@@ -48,10 +48,10 @@ public class TopicExchangeConsumeIT {
         LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
         LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
 
-        producer.publishTopicAsync(TOPIC_EXCHANGE, "quick.orange.fox", l1, null);
-        producer.publishTopicAsync(TOPIC_EXCHANGE, "quick.yellow.rabbit", l2, null);
-        producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.blue.snail", l3, null);
-        producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.orange.rabbit", l4, null);
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "quick.orange.fox", l1);
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "quick.yellow.rabbit", l2);
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.blue.snail", l3);
+        producer.publishTopicAsync(TOPIC_EXCHANGE, "lazy.orange.rabbit", l4);
 
         MyLoggingServiceA.completionSignal.get();
         MyLoggingServiceB.completionSignal.get();
@@ -73,10 +73,10 @@ public class TopicExchangeConsumeIT {
         LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
         LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
 
-        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.orange.fox"), ExchangeType.TOPIC, l1, null, true);
-        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.yellow.rabbit"), ExchangeType.TOPIC, l2, null, true);
-        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.blue.snail"), ExchangeType.TOPIC, l3, null, true);
-        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.orange.rabbit"), ExchangeType.TOPIC, l4, null, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.orange.fox"), ExchangeType.TOPIC, l1, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.yellow.rabbit"), ExchangeType.TOPIC, l2, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.blue.snail"), ExchangeType.TOPIC, l3, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.orange.rabbit"), ExchangeType.TOPIC, l4, true);
 
         MyLoggingServiceA.completionSignal.get();
         MyLoggingServiceB.completionSignal.get();
@@ -133,7 +133,7 @@ public class TopicExchangeConsumeIT {
         public void handleLogEvents(LoggingEvent event) {
             synchronized (events) {
                 events.add(event.getLog());
-                if (events.size() == 2) {
+                if (events.size() == 3) {
                     completionSignal.complete("done");
                 }
             }

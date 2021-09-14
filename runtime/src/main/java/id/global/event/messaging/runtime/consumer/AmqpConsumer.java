@@ -13,6 +13,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DeliverCallback;
 
 import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
@@ -20,6 +21,7 @@ public class AmqpConsumer {
     private static final Logger LOG = Logger.getLogger(AmqpConsumer.class.getName());
     private final DeliverCallback callback;
     private final AmqpContext amqpContext;
+    private final EventContext eventContext;
 
     private Channel channel;
 
@@ -28,12 +30,17 @@ public class AmqpConsumer {
             final MethodHandleContext methodHandleContext,
             final AmqpContext amqpContext,
             final Object eventHandlerInstance,
-            final ObjectMapper objectMapper) {
+            final ObjectMapper objectMapper,
+            EventContext eventContext) {
+
+        this.eventContext = eventContext;
+
         Object cast = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
 
         this.amqpContext = amqpContext;
         this.callback = ((consumerTag, message) -> {
             try {
+                this.eventContext.setAmqpBasicProperties(message.getProperties());
                 methodHandle.invoke(cast, objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass()));
             } catch (Throwable throwable) {
                 LOG.error("Could not invoke method handler on queue: " + this.amqpContext.getQueue(), throwable);

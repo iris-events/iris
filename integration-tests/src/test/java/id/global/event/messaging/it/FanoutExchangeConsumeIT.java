@@ -48,7 +48,6 @@ public class FanoutExchangeConsumeIT {
                 Optional.empty(),
                 ExchangeType.FANOUT,
                 new LoggingEvent("this is log", 1L),
-                null,
                 false);
 
         assertEquals("this is log", internalLoggingServiceA.getFuture().get());
@@ -61,7 +60,6 @@ public class FanoutExchangeConsumeIT {
                 Optional.empty(),
                 ExchangeType.FANOUT,
                 new Event("a", 23L),
-                null,
                 false);
 
         CompletableFuture.allOf(service.getFanout1(), service.getFanout2()).join();

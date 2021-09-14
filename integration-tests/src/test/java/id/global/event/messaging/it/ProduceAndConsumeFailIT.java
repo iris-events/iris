@@ -33,7 +33,7 @@ public class ProduceAndConsumeFailIT {
                 Optional.of(EVENT_QUEUE),
                 ExchangeType.DIRECT,
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                null, true);
+                true);
 
         assertFalse(published);
     }
