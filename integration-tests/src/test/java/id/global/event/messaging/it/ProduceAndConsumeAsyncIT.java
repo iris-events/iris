@@ -15,7 +15,8 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.it.events.Event;
-import id.global.event.messaging.runtime.producer.AmqpProducer;
+import id.global.event.messaging.runtime.producer.AmqpAsyncProducer;
+import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -27,7 +28,7 @@ public class ProduceAndConsumeAsyncIT {
     public static final int messageToSend = 100;
 
     @Inject
-    AmqpProducer producer;
+    AmqpAsyncProducer producer;
 
     private final TestHandlerService service;
 
@@ -45,10 +46,12 @@ public class ProduceAndConsumeAsyncIT {
     void basicProduceConsumeAsyncTest() throws Exception {
 
         for (int i = 0; i < messageToSend; i++) {
-            producer.publishDirectAsync(
+            producer.publishAsync(
                     EXCHANGE_ADDITIONAL,
                     Optional.of(EVENT_QUEUE_PRIORITY),
-                    new Event(EVENT_PAYLOAD_NAME, (long) messageToSend));
+                    ExchangeType.DIRECT,
+                    new Event(EVENT_PAYLOAD_NAME, (long) messageToSend),
+                    null);
         }
 
         Event e = service.getHandledPriorityEvent().get();
