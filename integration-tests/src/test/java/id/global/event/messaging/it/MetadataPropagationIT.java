@@ -103,10 +103,11 @@ public class MetadataPropagationIT {
         @MessageHandler(queue = EVENT_QUEUE1, exchange = EXCHANGE)
         public void handle(Event event) {
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            assertEquals(event.getName(), amqpBasicProperties.getCorrelationId());
-            count.incrementAndGet();
-            handledEvent.complete(event);
-            producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE2), ExchangeType.TOPIC, event, true);
+            if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
+                count.incrementAndGet();
+                handledEvent.complete(event);
+                producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE2), ExchangeType.TOPIC, event, true);
+            }
         }
 
         public CompletableFuture<Event> getHandledEvent() {
@@ -138,11 +139,12 @@ public class MetadataPropagationIT {
         public void handle(Event event) {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            assertEquals(event.getName(), amqpBasicProperties.getCorrelationId());
-            count.incrementAndGet();
+            if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
+                count.incrementAndGet();
 
-            handledEvent.complete(event);
-            producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE3), ExchangeType.TOPIC, event, true);
+                handledEvent.complete(event);
+                producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE3), ExchangeType.TOPIC, event, true);
+            }
         }
 
         public CompletableFuture<Event> getHandledEvent() {
@@ -170,10 +172,11 @@ public class MetadataPropagationIT {
         public void handle(Event event) {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            assertEquals(event.getName(), amqpBasicProperties.getCorrelationId());
-            count.incrementAndGet();
+            if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
+                count.incrementAndGet();
 
-            handledEvent.complete(event);
+                handledEvent.complete(event);
+            }
         }
 
         public CompletableFuture<Event> getHandledEvent() {
