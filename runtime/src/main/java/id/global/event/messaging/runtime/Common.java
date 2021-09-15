@@ -35,29 +35,36 @@ public class Common {
     public static ConnectionFactory getConnectionFactory(AmqpConfiguration amqpConfiguration) {
         ConnectionFactory factory = new ConnectionFactory();
 
-        LOG.warn("Building amqp url from configuration:\nurl:" + amqpConfiguration.getUrl() + "\nport:"
-                + amqpConfiguration.getPort() + "\nusername:"
-                + amqpConfiguration.getUsername() + "\nauth:" + amqpConfiguration.isAuthenticated() + "\nssl:"
-                + amqpConfiguration.isSslEnabled());
+        int port = amqpConfiguration.isSslEnabled() ? 5671 : 5672;
+        if (amqpConfiguration.getPort() != 0) {
+            port = amqpConfiguration.getPort();
+        }
+        String protocol = amqpConfiguration.isSslEnabled() ? "amqps" : "amqp";
+
+        LOG.info(String.format("AMQP configuration: protocol=%s, url=%s, port=%s, username=%s, ssl=%s", protocol,
+                amqpConfiguration.getUrl(), port, amqpConfiguration.getUsername(), amqpConfiguration.isSslEnabled()));
+
         try {
             if (amqpConfiguration.isAuthenticated()) {
                 String connectionUrl = String.format("%s://%s:%s@%s:%s%s",
-                        amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
+                        protocol,
                         amqpConfiguration.getUsername(),
                         amqpConfiguration.getPassword(),
                         amqpConfiguration.getUrl(),
-                        amqpConfiguration.getPort(),
+                        port,
                         "/%2f");
 
+                LOG.info("Setting factory URL = " + connectionUrl);
                 factory.setUri(connectionUrl);
 
             } else {
                 String connectionUrl = String.format("%s://%s:%s%s",
-                        amqpConfiguration.isSslEnabled() ? "amqps" : "amqp",
+                        protocol,
                         amqpConfiguration.getUrl(),
-                        amqpConfiguration.getPort(),
+                        port,
                         "/%2f");
 
+                LOG.info("Setting factory URL = " + connectionUrl);
                 factory.setUri(connectionUrl);
             }
             factory.setAutomaticRecoveryEnabled(true);
