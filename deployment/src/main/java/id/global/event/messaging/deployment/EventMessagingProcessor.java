@@ -2,11 +2,13 @@ package id.global.event.messaging.deployment;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import org.jboss.logging.Logger;
 
 import id.global.event.messaging.runtime.ConsumerConfigRecorder;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
+import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -26,15 +28,25 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 
 class EventMessagingProcessor {
 
+    public static class EventMessagingEnabled implements BooleanSupplier {
+
+        AmqpConfiguration config;
+
+        @Override
+        public boolean getAsBoolean() {
+            return config.enabled;
+        }
+    }
+
     private static final String FEATURE = "event-messaging";
     private static final Logger LOG = Logger.getLogger(EventMessagingProcessor.class);
 
-    @BuildStep
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
     void declareAmqpBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
         additionalBeanBuildItemBuildProducer.produce(
                 new AdditionalBeanBuildItem.Builder()
@@ -48,7 +60,7 @@ class EventMessagingProcessor {
                         .build());
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
     void scanForMessageHandlers(CombinedIndexBuildItem index,
             BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
         MessageHandlerScanner scanner = new MessageHandlerScanner(index.getIndex());
@@ -57,7 +69,7 @@ class EventMessagingProcessor {
     }
 
     @Record(ExecutionTime.RUNTIME_INIT)
-    @BuildStep
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
     void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerConfigRecorder consumerConfigRecorder) {
         // init the consumer with config properties
         // this should be moved to its own build step
@@ -65,7 +77,7 @@ class EventMessagingProcessor {
     }
 
     @Record(ExecutionTime.STATIC_INIT)
-    @BuildStep
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
     void declareMessageHandlers(final BeanContainerBuildItem beanContainer,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
             MethodHandleRecorder methodHandleRecorder) {

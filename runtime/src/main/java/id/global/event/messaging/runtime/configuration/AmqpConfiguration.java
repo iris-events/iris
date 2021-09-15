@@ -10,6 +10,11 @@ public final class AmqpConfiguration {
     ConsumerConfiguration configuration;
 
     ProducerConfiguration producerConfiguration;
+    /**
+     * disable initialization of consumers
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean enabled;
 
     /**
      * rabbitmq connection url
@@ -20,7 +25,7 @@ public final class AmqpConfiguration {
     /**
      * rabbitmq connection port
      */
-    @ConfigItem(defaultValue = "5672")
+    @ConfigItem(defaultValue = "0")
     String port;
 
     /**
@@ -46,12 +51,6 @@ public final class AmqpConfiguration {
      */
     @ConfigItem(defaultValue = "false")
     boolean sslEnabled;
-
-    /**
-     * disable initialization of consumers
-     */
-    @ConfigItem(defaultValue = "false")
-    boolean consumersDisabled;
 
     public String getUrl() {
         return url;
@@ -125,12 +124,12 @@ public final class AmqpConfiguration {
         this.authenticated = authenticated;
     }
 
-    public boolean isConsumersDisabled() {
-        return consumersDisabled;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setConsumersDisabled(boolean consumersDisabled) {
-        this.consumersDisabled = consumersDisabled;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
@@ -143,7 +142,7 @@ public final class AmqpConfiguration {
                 ", username='" + username + '\'' +
                 ", authenticated='" + authenticated + '\'' +
                 ", sslEnabled=" + sslEnabled +
-                ", disabled=" + consumersDisabled +
+                ", enabled=" + enabled +
                 '}';
     }
 }
