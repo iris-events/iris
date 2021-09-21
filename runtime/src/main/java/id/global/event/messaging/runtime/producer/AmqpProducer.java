@@ -39,6 +39,7 @@ public class AmqpProducer {
     private final AtomicInteger count = new AtomicInteger(0);
     private boolean connected;
     private final EventContext eventContext;
+    private final long waitTimeout = 2000;
 
     @Inject
     public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper, EventContext eventContext) {
@@ -107,8 +108,8 @@ public class AmqpProducer {
      * @param type exchange type (DIRECT, FANOUT, TOPIC)
      * @param message message to be send
      * @param failImmediately fail immediately on publishing error
+     * @param properties BasicProperties for publish
      * @return true/false if message was published successfult to broker
-     * @Param properties BasicProperties for publish
      */
     public boolean publish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
             boolean failImmediately, AMQP.BasicProperties properties) {
@@ -235,7 +236,7 @@ public class AmqpProducer {
                     publish(exchange, routingKey, properties, bytes, Optional.of(existingChannel));
 
                     if (count.incrementAndGet() == 100 || immediate) { //for every 100 messages that are send wait for all confirmations
-                        existingChannel.waitForConfirms(500); //timeout is 500ms (should we change this to longer?
+                        existingChannel.waitForConfirms(waitTimeout); //timeout is 500ms (should we change this to longer?
                         count.set(0);
                     }
                     return true;

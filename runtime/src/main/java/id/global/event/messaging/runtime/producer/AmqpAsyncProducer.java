@@ -28,10 +28,9 @@ public class AmqpAsyncProducer {
     private final AtomicInteger failCounter = new AtomicInteger(0);
     private boolean connected;
     private final EventContext eventContext;
+    private final long waitTimeout = 2000;
 
     private final ThreadLocal<Channel> channels = new ThreadLocal<>() {
-        private static final Logger LOG = Logger.getLogger(ThreadLocal.class);
-
         @Override
         public Channel get() {
             return super.get();
@@ -93,23 +92,25 @@ public class AmqpAsyncProducer {
         routePublish(exchange, routingKey, type, message, properties);
     }
 
+    public void publishAsync(String exchange, Optional<String> routingKey, ExchangeType type, Object message) {
+
+        routePublish(exchange, routingKey, type, message, null);
+    }
+
     private void routePublish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
             AMQP.BasicProperties properties) {
+        if (properties == null) {
+            properties = this.eventContext.getAmqpBasicProperties();
+        }
         switch (type) {
             case TOPIC -> {
                 if (routingKey.isPresent()) {
                     publishTopicAsync(exchange, routingKey.get(), message, properties);
                 }
             }
-            case DIRECT -> {
-                publishDirectAsync(exchange, routingKey, message, properties);
-            }
-            case FANOUT -> {
-                publishFanoutAsync(exchange, message, properties);
-            }
-            default -> {
-                LOG.error("Exchange type unknown!");
-            }
+            case DIRECT -> publishDirectAsync(exchange, routingKey, message, properties);
+            case FANOUT -> publishFanoutAsync(exchange, message, properties);
+            default -> LOG.error("Exchange type unknown!");
         }
 
     }
@@ -122,8 +123,9 @@ public class AmqpAsyncProducer {
     public void publishDirectAsync(String exchange, Optional<String> routingKey, Object message,
             AMQP.BasicProperties properties) {
         try {
-            AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-
+            if (properties == null) {
+                properties = this.eventContext.getAmqpBasicProperties();
+            }
             routingKey = routingKey.filter(s -> !s.isEmpty());
             final byte[] bytes;
 
@@ -131,7 +133,7 @@ public class AmqpAsyncProducer {
 
             publishMessageAsync(exchange,
                     routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
-                    amqpBasicProperties,
+                    properties,
                     bytes);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -144,9 +146,14 @@ public class AmqpAsyncProducer {
      */
     public void publishFanoutAsync(String fanoutExchange, Object message, AMQP.BasicProperties properties) {
         try {
+
+            if (properties == null) {
+                properties = this.eventContext.getAmqpBasicProperties();
+            }
+
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
-            AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            publishMessageAsync(fanoutExchange, "", amqpBasicProperties, bytes);
+
+            publishMessageAsync(fanoutExchange, "", properties, bytes);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -160,11 +167,12 @@ public class AmqpAsyncProducer {
      */
     public void publishTopicAsync(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties) {
         try {
-
+            if (properties == null) {
+                properties = this.eventContext.getAmqpBasicProperties();
+            }
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
 
-            AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            publishMessageAsync(exchange, topicRoutingKey, amqpBasicProperties, bytes);
+            publishMessageAsync(exchange, topicRoutingKey, properties, bytes);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -172,21 +180,25 @@ public class AmqpAsyncProducer {
 
     private void publishMessageAsync(final String exchange,
             final String routingKey,
-            final AMQP.BasicProperties properties,
+            AMQP.BasicProperties properties,
             final byte[] bytes) {
 
         if (this.connection.isOpen()) {
+            if (properties == null) {
+                properties = this.eventContext.getAmqpBasicProperties();
+            }
+            AMQP.BasicProperties finalProperties = properties;
             CompletableFuture.runAsync(() -> {
                 try {
                     final Channel existing = channels.get();
                     if (existing != null && existing.isOpen()) {
-                        publish(exchange, routingKey, properties, bytes, Optional.of(existing));
-                        existing.waitForConfirms(500);
+                        publish(exchange, routingKey, finalProperties, bytes, Optional.of(existing));
+                        existing.waitForConfirms(waitTimeout);
                     } else {
                         final Channel newChannel = createChannel();
                         newChannel.confirmSelect();
-                        publish(exchange, routingKey, properties, bytes, Optional.of(newChannel));
-                        newChannel.waitForConfirms(500);
+                        publish(exchange, routingKey, finalProperties, bytes, Optional.of(newChannel));
+                        newChannel.waitForConfirms(waitTimeout);
                         channels.set(newChannel);
                     }
                 } catch (Exception e) {

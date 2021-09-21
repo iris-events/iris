@@ -1,4 +1,4 @@
-package id.global.event.messaging.it;
+package id.global.event.messaging.it.async;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -23,18 +23,18 @@ import io.quarkus.test.junit.QuarkusTest;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProduceAndConsumeAsyncIT {
     public static final String EVENT_PAYLOAD_NAME = "name";
-    public static final String EVENT_QUEUE_PRIORITY = "ev_queue";
-    public static final String EXCHANGE_ADDITIONAL = "ev_exchange";
+    public static final String EVENT_QUEUE_PRIORITY = "ev_queue_async";
+    public static final String EXCHANGE_ADDITIONAL = "ev_exchange_async";
     public static final int messageToSend = 100;
 
-    @Inject
-    AmqpAsyncProducer producer;
+    private final AmqpAsyncProducer amqpAsyncProducer;
 
     private final TestHandlerService service;
 
     @Inject
-    public ProduceAndConsumeAsyncIT(TestHandlerService service) {
+    public ProduceAndConsumeAsyncIT(TestHandlerService service, AmqpAsyncProducer producer) {
         this.service = service;
+        this.amqpAsyncProducer = producer;
     }
 
     @BeforeEach
@@ -46,7 +46,7 @@ public class ProduceAndConsumeAsyncIT {
     void basicProduceConsumeAsyncTest() throws Exception {
 
         for (int i = 0; i < messageToSend; i++) {
-            producer.publishAsync(
+            amqpAsyncProducer.publishAsync(
                     EXCHANGE_ADDITIONAL,
                     Optional.of(EVENT_QUEUE_PRIORITY),
                     ExchangeType.DIRECT,

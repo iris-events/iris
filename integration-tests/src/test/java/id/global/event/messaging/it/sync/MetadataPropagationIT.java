@@ -1,4 +1,4 @@
-package id.global.event.messaging.it;
+package id.global.event.messaging.it.sync;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -30,13 +30,10 @@ public class MetadataPropagationIT {
     private static final String EVENT_QUEUE2 = "queue2";
     private static final String EVENT_QUEUE3 = "queue3";
     private static final String EXCHANGE = "EXCHANGE";
+
     @Inject
     AmqpProducer producer1;
 
-    @Inject
-    Service1 s1;
-    @Inject
-    Service2 s2;
     @Inject
     Service3 s3;
 
@@ -69,17 +66,17 @@ public class MetadataPropagationIT {
                         new Event(u2, 0L),
                         false, p2);
             });
-            CompletableFuture.runAsync(() -> {
 
-                producer1.publish(
-                        EXCHANGE,
-                        Optional.of(EVENT_QUEUE1),
-                        ExchangeType.DIRECT,
-                        new Event("asdf", 0L),
-                        false);
-            });
+            CompletableFuture.runAsync(() -> producer1.publish(
+                    EXCHANGE,
+                    Optional.of(EVENT_QUEUE1),
+                    ExchangeType.DIRECT,
+                    new Event("asdf", 0L),
+                    false));
         }
-        Thread.sleep(4000);
+        s3.getHandledEvent().get();
+        assertEquals(10, Service3.count.get());
+        assertEquals(10, Service2.count.get());
         assertEquals(10, Service3.count.get());
     }
 
@@ -96,10 +93,6 @@ public class MetadataPropagationIT {
             this.eventContext = eventContext;
         }
 
-        public void reset() {
-            count.set(0);
-        }
-
         @MessageHandler(queue = EVENT_QUEUE1, exchange = EXCHANGE)
         public void handle(Event event) {
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
@@ -109,11 +102,6 @@ public class MetadataPropagationIT {
                 producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE2), ExchangeType.TOPIC, event, true);
             }
         }
-
-        public CompletableFuture<Event> getHandledEvent() {
-            return handledEvent;
-        }
-
     }
 
     @ApplicationScoped
@@ -131,26 +119,16 @@ public class MetadataPropagationIT {
             this.eventContext = eventContext;
         }
 
-        public void reset() {
-            count.set(0);
-        }
-
         @MessageHandler(queue = EVENT_QUEUE2, exchange = EXCHANGE)
         public void handle(Event event) {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
-
                 handledEvent.complete(event);
                 producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE3), ExchangeType.TOPIC, event, true);
             }
         }
-
-        public CompletableFuture<Event> getHandledEvent() {
-            return handledEvent;
-        }
-
     }
 
     @ApplicationScoped
@@ -164,18 +142,14 @@ public class MetadataPropagationIT {
             this.eventContext = eventContext;
         }
 
-        public void reset() {
-            count.set(0);
-        }
-
         @MessageHandler(queue = EVENT_QUEUE3, exchange = EXCHANGE)
         public void handle(Event event) {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
-                count.incrementAndGet();
-
-                handledEvent.complete(event);
+                if (count.incrementAndGet() == 10) {
+                    handledEvent.complete(event);
+                }
             }
         }
 
