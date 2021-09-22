@@ -1,5 +1,7 @@
 package id.global.event.messaging.test;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
+import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -26,7 +28,6 @@ import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.event.messaging.deployment.MessageHandlerScanner;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
-import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public class MessageHandlerAnnotationScannerTest {
     public static final String FANOUT_EXCHANGE = "fanout_exchange";
@@ -100,11 +101,11 @@ public class MessageHandlerAnnotationScannerTest {
                 Event.class);
 
         MessageHandlerInfoBuildItem fanoutBuildItem = messageHandlerInfoBuildItems.stream()
-                .filter(buildItem -> buildItem.getExchangeType().equals(ExchangeType.FANOUT)).collect(Collectors.toList())
+                .filter(buildItem -> buildItem.getExchangeType().equals(FANOUT)).collect(Collectors.toList())
                 .get(0);
 
         MessageHandlerInfoBuildItem topicBuildItem = messageHandlerInfoBuildItems.stream()
-                .filter(buildItem -> buildItem.getExchangeType().equals(ExchangeType.TOPIC)).collect(Collectors.toList())
+                .filter(buildItem -> buildItem.getExchangeType().equals(TOPIC)).collect(Collectors.toList())
                 .get(0);
 
         assertNotNull(fanoutBuildItem);
@@ -112,8 +113,8 @@ public class MessageHandlerAnnotationScannerTest {
 
         assertEquals(FANOUT_EXCHANGE, fanoutBuildItem.getExchange());
         assertEquals(TOPIC_EXCHANGE, topicBuildItem.getExchange());
-        assertEquals(ExchangeType.FANOUT, fanoutBuildItem.getExchangeType());
-        assertEquals(ExchangeType.TOPIC, topicBuildItem.getExchangeType());
+        assertEquals(FANOUT, fanoutBuildItem.getExchangeType());
+        assertEquals(TOPIC, topicBuildItem.getExchangeType());
 
         assertNull(fanoutBuildItem.getBindingKeys());
         String[] bindingKeys = topicBuildItem.getBindingKeys();

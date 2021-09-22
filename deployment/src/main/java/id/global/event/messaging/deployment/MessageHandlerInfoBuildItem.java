@@ -3,8 +3,8 @@ package id.global.event.messaging.deployment;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
+import id.global.asyncapi.spec.enums.ExchangeType;
 import io.quarkus.builder.item.MultiBuildItem;
-import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final ClassInfo declaringClass;

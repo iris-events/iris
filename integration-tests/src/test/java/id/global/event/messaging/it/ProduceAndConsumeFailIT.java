@@ -1,5 +1,6 @@
 package id.global.event.messaging.it;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Optional;
@@ -11,7 +12,6 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -31,7 +31,7 @@ public class ProduceAndConsumeFailIT {
         boolean published = producer.publish(
                 UNKNOWN_EXCHANGE,
                 Optional.of(EVENT_QUEUE),
-                ExchangeType.DIRECT,
+                DIRECT,
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
                 true);
 
