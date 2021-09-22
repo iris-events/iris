@@ -1,8 +1,6 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,36 +18,24 @@ import org.jboss.jandex.Indexer;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
 import io.smallrye.asyncapi.api.AsyncApiConfigImpl;
 import io.smallrye.asyncapi.api.AsyncApiConstants;
+import io.smallrye.asyncapi.runtime.util.IndexUtil;
 
 public class IndexScannerTestBase {
 
     protected static String pathOf(Class<?> clazz) {
-        return clazz.getName().replace('.', '/').concat(".class");
+        return IndexUtil.pathOf(clazz);
     }
 
     private static InputStream tcclGetResourceAsStream(String path) {
-        return Thread.currentThread()
-                .getContextClassLoader()
-                .getResourceAsStream(path);
+        return IndexUtil.tcclGetResourceAsStream(path);
     }
 
     public static Index indexOf(Class<?>... classes) {
-        Indexer indexer = new Indexer();
-
-        for (Class<?> klazz : classes) {
-            index(indexer, pathOf(klazz));
-        }
-
-        return indexer.complete();
+        return IndexUtil.indexOf(classes);
     }
 
     protected static void index(Indexer indexer, String resName) {
-        try {
-            InputStream stream = tcclGetResourceAsStream(resName);
-            indexer.index(stream);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(ioe);
-        }
+        IndexUtil.index(indexer, resName);
     }
 
     public static AsyncApiConfig emptyConfig() {

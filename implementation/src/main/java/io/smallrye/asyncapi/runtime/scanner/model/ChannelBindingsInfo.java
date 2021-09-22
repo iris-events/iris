@@ -1,5 +1,7 @@
 package io.smallrye.asyncapi.runtime.scanner.model;
 
+import id.global.asyncapi.spec.enums.ExchangeType;
+
 public class ChannelBindingsInfo {
     private String exchange;
     private String queue;

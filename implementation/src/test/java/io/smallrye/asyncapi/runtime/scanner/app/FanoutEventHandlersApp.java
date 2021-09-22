@@ -24,7 +24,7 @@ public class FanoutEventHandlersApp {
         LOG.info("Handle event: " + event);
     }
 
-    @FanoutMessageHandler(exchange = EXCHANGE_V2, eventType = TestEventV2.class)
+    @FanoutMessageHandler(exchange = EXCHANGE_V2, eventClass = TestEventV2.class)
     public void handleEventV1Params(TestEventV2 event, boolean flag) {
         LOG.info("Handle event: " + event + " with flag: " + flag);
     }
