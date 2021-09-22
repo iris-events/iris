@@ -19,17 +19,23 @@ import org.hamcrest.Matchers;
 import org.jboss.jandex.Index;
 import org.junit.Test;
 
+import id.global.asyncapi.spec.enums.EventType;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
+import io.apicurio.datamodels.core.models.common.Schema;
 import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersApp;
+import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersAppWithSentEvent;
 import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersBadExampleApp;
 import io.smallrye.asyncapi.runtime.scanner.app.FanoutEventHandlersApp;
 import io.smallrye.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
+import io.smallrye.asyncapi.runtime.scanner.model.SentEvent;
 import io.smallrye.asyncapi.runtime.scanner.model.TestEventV2;
 
 public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
+
+    public static final String ROLES_ALLOWED = "rolesAllowed";
 
     @Test
     public void eventAppAnnotationShouldGenerateBasicDocument() throws MalformedURLException {
@@ -245,5 +251,104 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(status.enum_.contains("DORMANT"), is(false));
         assertThat(status.enum_.contains("LIVE"), is(false));
         assertThat(status.enum_.contains("DEAD"), is(false));
+    }
+
+    //    @Test
+    //    public void generatedModelClassShouldNotGenerateComponentSchema() {
+    //        Index index = indexOf(EventHandlersAppWithGeneratedEvents.class);
+    //        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+    //        Aai20Document document = scanner.scan();
+    //
+    //        assertThat(document, is(notNullValue()));
+    //        assertThat(document.components.schemas, is(notNullValue()));
+    //        assertThat(document.components.schemas.size(), is(0));
+    //    }
+
+    @Test
+    public void producedEventAnnotatedClassShouldGenerateComponentSchema() {
+        Index index = indexOf(
+                SentEvent.class
+                //                ProducedEvent.class,
+                //                MessageHandler.class,
+                //                TopicMessageHandler.class,
+                //                FanoutMessageHandler.class
+        );
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+
+        assertThat(document, is(notNullValue()));
+        assertThat(document.components.schemas, is(notNullValue()));
+        assertThat(document.components.schemas.size(), is(3));
+        assertThat(document.components.schemas.get("SentEvent"), is(notNullValue()));
+        assertThat(document.components.schemas.get("Status"), is(notNullValue()));
+        assertThat(document.components.schemas.get("User"), is(notNullValue()));
+
+        assertThat(document.components.schemas.get("SentEvent").type, is("object"));
+    }
+
+    @Test
+    public void sameEventProducedAndHandledShouldBeOneSchema() {
+        Index index = indexOf(
+                EventHandlersAppWithSentEvent.class,
+                SentEvent.class
+        );
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+
+        assertThat(document, is(notNullValue()));
+        assertThat(document.components.schemas, is(notNullValue()));
+        assertThat(document.components.schemas.size(), is(3));
+    }
+
+    @Test
+    public void producedAndHandledShouldCreateCorrectChannels() {
+        Index index = indexOf(
+                EventHandlersAppWithSentEvent.class,
+                SentEvent.class
+        );
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+
+        assertThat(document, is(notNullValue()));
+        assertThat(document.channels.size(), is(2));
+
+        assertThat(document.channels.get("/sentEventV1").subscribe, is(notNullValue()));
+        assertThat(document.channels.get("/sentEventV1").subscribe.message.getExtraProperty("type"), is(EventType.INTERNAL));
+        assertThat(((Schema) document.channels.get("/sentEventV1").subscribe.message.payload).$ref,
+                is("#/components/schemas/SentEvent"));
+
+        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish, is(notNullValue()));
+        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.getExtraProperty("type"),
+                is(EventType.EXTERNAL));
+        assertThat(((Schema) document.channels.get("sentEventExchange/sentEventQueue").publish.message.payload).$ref,
+                is("#/components/schemas/SentEvent"));
+    }
+
+    @Test
+    public void eventWithRolesAllowedShouldGenerateMessageProperties() {
+        Index index = indexOf(
+                SentEvent.class
+        );
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+        assertThat(document, is(notNullValue()));
+        assertThat(document.channels.size(), is(1));
+
+        assertThat(
+                document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers.getExtension(ROLES_ALLOWED),
+                is(notNullValue()));
+        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+                .getExtension(ROLES_ALLOWED).name, is(ROLES_ALLOWED));
+        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+                .getExtension(ROLES_ALLOWED).value, is(notNullValue()));
+        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+                .getExtension(ROLES_ALLOWED).value).length, is(3));
+        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+                .getExtension(ROLES_ALLOWED).value)[0], is("ADMIN"));
+        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+                .getExtension(ROLES_ALLOWED).value)[1], is("USER"));
+        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+                .getExtension(ROLES_ALLOWED).value)[2], is("DUMMY"));
+
     }
 }

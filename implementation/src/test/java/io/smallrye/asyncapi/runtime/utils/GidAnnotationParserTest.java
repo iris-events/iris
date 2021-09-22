@@ -9,7 +9,7 @@ import org.junit.Test;
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.TopicMessageHandler;
-import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
+import id.global.asyncapi.spec.enums.ExchangeType;
 import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 
 public class GidAnnotationParserTest {

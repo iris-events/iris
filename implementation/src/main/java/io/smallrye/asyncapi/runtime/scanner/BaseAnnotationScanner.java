@@ -12,6 +12,7 @@ import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import id.global.asyncapi.spec.enums.EventType;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
@@ -19,8 +20,10 @@ import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelBindings;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelItem;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Components;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20HeaderItem;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Message;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Operation;
+import io.apicurio.datamodels.core.models.Extension;
 import io.apicurio.datamodels.core.models.common.Schema;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
 import io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant;
@@ -38,6 +41,7 @@ public abstract class BaseAnnotationScanner {
     public static final String PROP_CHANNELS = "channels";
     public static final String COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
     public static final String PROP_MESSAGE_TYPE = "type";
+    private static final String ROLES_ALLOWED = "rolesAllowed";
 
     protected final AnnotationScannerContext annotationScannerContext;
     protected ClassLoader classLoader = null;
@@ -68,7 +72,7 @@ public abstract class BaseAnnotationScanner {
     }
 
     protected void createChannels(List<ChannelInfo> channelInfos,
-            Map<String, String> messageTypes, Aai20Document asyncApi) {
+            Map<String, EventType> messageTypes, Aai20Document asyncApi) {
         if (asyncApi.channels == null) {
             asyncApi.channels = new HashMap<>();
         }
@@ -89,6 +93,12 @@ public abstract class BaseAnnotationScanner {
 
             operation.message = new Aai20Message(eventKey);
             operation.message.addExtraProperty(PROP_MESSAGE_TYPE, messageTypes.get(eventKey));
+            Extension rolesAllowedExtension = new Extension();
+            rolesAllowedExtension.name = ROLES_ALLOWED;
+            rolesAllowedExtension.value = channelInfo.getRolesAllowed();
+
+            operation.message.headers = new Aai20HeaderItem();
+            operation.message.headers.addExtension(ROLES_ALLOWED, rolesAllowedExtension);
             operation.message._name = eventKey;
             operation.message.name = eventKey;
             operation.message.title = eventKey;

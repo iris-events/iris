@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import id.global.asyncapi.spec.enums.EventType;
+
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
@@ -19,5 +21,15 @@ public @interface FanoutMessageHandler {
     /**
      * Override the event class. If not present the first method parameter class type will be used
      */
-    Class<?> eventType() default Void.class;
+    Class<?> eventClass() default Void.class;
+
+    /**
+     * Wether the event is an internal system event or an external communication event
+     */
+    EventType eventType() default EventType.INTERNAL;
+
+    /**
+     * Defines allowed roles to use this event handler
+     */
+    String[] rolesAllowed() default {};
 }

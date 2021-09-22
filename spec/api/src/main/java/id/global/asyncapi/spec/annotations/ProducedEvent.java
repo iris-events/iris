@@ -7,23 +7,26 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import id.global.asyncapi.spec.enums.EventType;
+import id.global.asyncapi.spec.enums.ExchangeType;
 
-@Target({ ElementType.METHOD })
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface MessageHandler {
-    // new
+public @interface ProducedEvent {
+    /**
+     * To which queue/routingKey this event is published
+     */
     String queue() default Constants.UNASSIGNED;
 
     /**
-     * On which exchange to listen to direct messages
+     * To which exchange this event is published
      */
     String exchange() default "";
 
     /**
-     * Override the event class. If not present the first method parameter class type will be used
+     * Type of exchange this event is published to
      */
-    Class<?> eventClass() default Void.class;
+    ExchangeType exchangeType() default ExchangeType.DIRECT;
 
     /**
      * Wether the event is an internal system event or an external communication event
@@ -31,7 +34,7 @@ public @interface MessageHandler {
     EventType eventType() default EventType.INTERNAL;
 
     /**
-     * Defines allowed roles to use this event handler
+     * Defines allowed roles to produce this event
      */
     String[] rolesAllowed() default {};
 }

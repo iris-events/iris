@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
@@ -46,7 +47,10 @@ import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.asyncapi.spec.annotations.TopicMessageHandler;
+import id.global.asyncapi.spec.enums.EventType;
+import id.global.asyncapi.spec.enums.ExchangeType;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
@@ -71,6 +75,7 @@ import io.smallrye.asyncapi.spec.annotations.EventApp;
  */
 public class GidAnnotationScanner extends BaseAnnotationScanner {
     private static final Logger LOG = Logger.getLogger(GidAnnotationScanner.class);
+    private static final String GENERATED_MODELS_PACKAGE = "id.global.models.";
 
     public static final DotName DOTNAME_EVENT_APP_DEFINITION = DotName.createSimple(EventApp.class.getName());
     private final SchemaGenerator schemaGenerator;
@@ -115,6 +120,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         processEventAppDefinition(annotationScannerContext, asyncApi);
         // Process @MessageHandler
         processMessageHandlerAnnotations(annotationScannerContext, asyncApi);
+        processProducedEventAnnotations(annotationScannerContext, asyncApi);
         processContextDefinitionReferencedSchemas(annotationScannerContext, asyncApi);
 
         return asyncApi;
@@ -123,6 +129,57 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     private Stream<AnnotationInstance> getMethodAnnotations(Class<?> annotationClass, IndexView index) {
         DotName annotationName = DotName.createSimple(annotationClass.getName());
         return index.getAnnotations(annotationName).stream().filter(this::annotatedMethods);
+    }
+
+    private Stream<AnnotationInstance> getClassAnnotations(Class<?> annotationClass, IndexView index) {
+        DotName annotationName = DotName.createSimple(annotationClass.getName());
+        return index.getAnnotations(annotationName).stream().filter(this::annotatedClasses);
+    }
+
+    private void processProducedEventAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
+            throws ClassNotFoundException {
+        List<AnnotationInstance> methodAnnotations = getClassAnnotations(ProducedEvent.class, context.getIndex())
+                .collect(Collectors.toList());
+
+        List<ChannelInfo> channelInfos = new ArrayList<>();
+        Map<String, JsonSchemaInfo> producedEvents = new HashMap<>();
+        Map<String, EventType> messageTypes = new HashMap<>();
+        for (AnnotationInstance anno : methodAnnotations) {
+            ClassInfo classInfo = anno.target().asClass();
+            String className = classInfo.name().toString();
+            String simpleName = classInfo.simpleName();
+            messageTypes.put(simpleName, getEventType(anno));
+
+            producedEvents.put(simpleName, generateProducedEventSchemaInfo(className));
+
+            // CHANNEL INFOS
+            // TODO to support valueWithDefault we need to add our annotations to the index. In
+            // the tests this is trivial, but we need to somehow do it in the GidAnnotationScanner
+            //            ExchangeType exchangeType = ExchangeType
+            //                    .valueOf(anno.valueWithDefault(this.annotationScannerContext.getIndex(), "exchangeType").asEnum());
+
+            String[] rolesAllowed = GidAnnotationParser.getRolesAllowed(anno);
+
+            channelInfos.add(ChannelInfoGenerator.generatePublishChannelInfo(
+                    anno.value("exchange"),
+                    anno.value("queue"),
+                    simpleName,
+                    getExchangeType(anno),
+                    rolesAllowed
+            ));
+        }
+
+        insertComponentSchemas(context, producedEvents, asyncApi);
+
+        // TODO check what's with the types
+
+        createChannels(channelInfos, messageTypes, asyncApi);
+    }
+
+    private ExchangeType getExchangeType(AnnotationInstance anno) {
+        return anno.value("exchangeType") != null ?
+                ExchangeType.fromType(anno.value("exchangeType").asString()) :
+                ExchangeType.DIRECT;
     }
 
     private void processMessageHandlerAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
@@ -137,34 +194,38 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         Map<String, JsonSchemaInfo> incomingEvents = new HashMap<>();
         List<ChannelInfo> channelInfos = new ArrayList<>();
 
-        Map<String, String> messageTypes = new HashMap<>();
+        Map<String, EventType> messageTypes = new HashMap<>();
 
         for (AnnotationInstance methodAnno : methodAnnos) {
+
             DotName annotationName = methodAnno.name();
             List<AnnotationValue> annotationValues = methodAnno.values();
 
             MethodInfo methodInfo = (MethodInfo) methodAnno.target();
-            String type = JandexUtil.stringValue(methodAnno, "type");
 
             List<Type> parameters = methodInfo.parameters();
             Type eventType;
             if (parameters.size() != 1) {
-                if (methodAnno.value("eventType") == null) {
+                if (methodAnno.value("eventClass") == null) {
                     throw new IllegalArgumentException(
-                            "When multiple method parameters present eventType annotation property is required");
+                            "When multiple method parameters present eventClass annotation property is required");
                 }
-                eventType = methodAnno.value("eventType").asClass();
+                eventType = methodAnno.value("eventClass").asClass();
             } else {
                 eventType = parameters.get(0);
             }
-            String simpleName = loadClass(eventType.toString()).getSimpleName();
+            Class<?> eventClass = loadClass(eventType.toString());
+            String simpleName = eventClass.getSimpleName();
+
+            messageTypes.put(simpleName, getEventType(methodAnno));
             incomingEvents.put(simpleName, generateJsonSchemaInfo(annotationName, eventType.toString(), annotationValues));
             channelInfos.add(ChannelInfoGenerator.generateSubscribeChannelInfo(
                     methodAnno.value("exchange"),
                     methodAnno.value("queue"),
                     simpleName,
-                    GidAnnotationParser.getExchangeTypeFromAnnotation(methodAnno.name())));
-            messageTypes.put(simpleName, type);
+                    GidAnnotationParser.getExchangeTypeFromAnnotation(methodAnno.name()),
+                    GidAnnotationParser.getRolesAllowed(methodAnno)
+            ));
         }
 
         insertComponentSchemas(context, incomingEvents, asyncApi);
@@ -205,6 +266,19 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             MergeUtil.merge(document, packageAai);
         }
         return document;
+    }
+
+    private JsonSchemaInfo generateProducedEventSchemaInfo(String className) throws ClassNotFoundException {
+        Class<?> loadedClass = loadClass(className);
+        String classSimpleName = loadedClass.getSimpleName();
+
+        ObjectNode generatedSchema = schemaGenerator.generateSchema(loadedClass);
+        return new JsonSchemaInfo(
+                null,
+                classSimpleName,
+                generatedSchema,
+                null
+        );
     }
 
     private JsonSchemaInfo generateJsonSchemaInfo(DotName annotationName, String className,
@@ -249,5 +323,15 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
         SchemaGeneratorConfig schemaGeneratorConfig = configBuilder.build();
         return new SchemaGenerator(schemaGeneratorConfig);
+    }
+
+    private EventType getEventType(AnnotationInstance annotation) {
+        String type = JandexUtil.stringValue(annotation, "eventType");
+
+        if (type == null) {
+            return EventType.INTERNAL;
+        } else {
+            return EventType.valueOf(type);
+        }
     }
 }

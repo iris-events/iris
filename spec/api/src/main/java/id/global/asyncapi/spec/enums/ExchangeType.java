@@ -1,4 +1,4 @@
-package io.smallrye.asyncapi.runtime.scanner.model;
+package id.global.asyncapi.spec.enums;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,9 +19,10 @@ public enum ExchangeType {
         return type;
     }
 
-    public ExchangeType fromType(String type) {
+    public static ExchangeType fromType(String type) {
         List<ExchangeType> collect = Arrays.stream(ExchangeType.values())
-                .filter(exchangeType -> exchangeType.getType().equals(type)).collect(Collectors.toList());
+                .filter(exchangeType -> exchangeType.getType().equals(type) || exchangeType.toString().equals(type))
+                .collect(Collectors.toList());
         if (collect.isEmpty()) {
             throw new IllegalArgumentException("Unknown type provided");
         }

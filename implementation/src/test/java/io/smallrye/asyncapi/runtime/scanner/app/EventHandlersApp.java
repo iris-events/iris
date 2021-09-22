@@ -27,7 +27,7 @@ public class EventHandlersApp {
         LOG.info("Handle event: " + event);
     }
 
-    @MessageHandler(queue = "testEventV2", eventType = TestEventV2.class)
+    @MessageHandler(queue = "testEventV2", eventClass = TestEventV2.class)
     public void handleEventV1Params(TestEventV2 event, boolean flag) {
         LOG.info("Handle event: " + event + " with flag: " + flag);
     }
