@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.stream.Stream;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -36,7 +37,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     private static final String defaultUrl = "https://schema.internal.globalid.dev";
     private static final String enumTemplate = """
-                %s_%s("%s","%s","%s"),
+                %s_%s("%s","%s","%s","%s"),
             """;
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -180,7 +181,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         String inputLine;
         StringBuilder builder = new StringBuilder();
         try (BufferedReader br =
-                new BufferedReader(new InputStreamReader(url.openStream()))) {
+                     new BufferedReader(new InputStreamReader(url.openStream()))) {
             while ((inputLine = br.readLine()) != null) {
                 builder.append(inputLine);
             }
@@ -252,7 +253,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         schemas.fieldNames().forEachRemaining(fileName -> {
                     try {
-                        generate(fileName);
+                        generate(fileName, channels);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -273,7 +274,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         try {
             String replaceWith = generateChannelSupportData(channels);
             writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         Path pomPath = Paths.get(baseDir)
@@ -303,19 +305,31 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         StringBuilder sb = new StringBuilder();
 
         jsonObject.fields().forEachRemaining(k -> {
-            String exchange = k.getKey().split("/")[0];
-            String routingKey = k.getKey().split("/")[1];
-            String type = k.getValue().path("bindings").path("amqp").path("exchange").path("type").textValue();
 
-            sb.append(
-                    //will output ->  MYEXCHANGE_APTOCARDEVENT_ROOT("MYEXCHANGE","AptoCardEvent_Root","direct"),
-                    String.format(enumTemplate,
-                            exchange.toUpperCase(),
-                            routingKey.toUpperCase(),
-                            exchange,
-                            routingKey,
-                            type)
-            );
+            JsonNode subscribe = k.getValue().get("subscribe");
+
+            if (subscribe != null) {
+                String type = k.getValue().path("bindings").path("amqp").path("exchange").path("type").textValue();
+                String exchangeName = k.getValue().path("bindings").path("amqp").path("exchange").path("name").textValue();
+                String queueName = k.getValue().path("bindings").path("amqp").path("queue").path("name").textValue();
+                String messageName = k.getValue().path("subscribe").path("message").path("name").textValue();
+
+                //TODO: is this correct?
+                String exchange = k.getKey().split("/")[0];
+                String routingKey = k.getKey().split("/")[1];
+
+
+                sb.append(
+                        //will output ->  MYEXCHANGE_APTOCARDEVENT_ROOT("MYEXCHANGE","AptoCardEvent_Root","direct"),
+                        String.format(enumTemplate,
+                                exchange.toUpperCase(),
+                                routingKey.toUpperCase(),
+                                exchange,
+                                routingKey,
+                                type,
+                                messageName)
+                );
+            }
         });
 
         int start = sb.toString().lastIndexOf(",");
@@ -323,23 +337,49 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         return sb.toString();
     }
 
-    public void generate(String fileName) throws IOException {
+
+    private JsonNode getChannelDetails(JsonNode channels, String channelName) {
+
+        JsonNode channelDetails = null;
+        int count = 0;
+
+        for (Iterator<String> it = channels.fieldNames(); it.hasNext(); ) {
+            String next = it.next();
+            String channel = next.toLowerCase().replace("_", "");
+            ;
+            if (channel.endsWith("/" + channelName.toLowerCase())
+
+            ) {
+                channelDetails = channels.get(next);
+                count++;
+            }
+        }
+        if (count != 1) //should find only one annotation
+            return null;
+        return channelDetails;
+    }
+
+
+    public void generate(String fileName, JsonNode channels) throws IOException {
 
         JCodeModel codeModel = new JCodeModel();
 
         Path clientPath = Paths.get(baseDir).resolve(tmpSourceFolder);
         Files.createDirectories(clientPath);
 
+        JsonNode bb = getChannelDetails(channels, fileName);
+
         SchemaMapper mapper = new SchemaMapper(
                 new RuleFactory(
                         JsonSchemaGeneratorConfig.config,
-                        new Jackson2Annotator(JsonSchemaGeneratorConfig.config),
+                        bb != null ? new MetadataAnnotator(bb, JsonSchemaGeneratorConfig.config)
+                                : new Jackson2Annotator(JsonSchemaGeneratorConfig.config),
                         new SchemaStore()),
                 new SchemaGenerator());
 
         Path schemes = Paths.get(baseDir).resolve(tmpSchemaFolder).resolve(fileName);
-        mapper.generate(codeModel, "ClassName", packageName + "." + modelName, schemes.toUri().toURL());
 
+        mapper.generate(codeModel, fileName, packageName + "." + modelName, readSchemaContent(schemes));
         codeModel.build(clientPath.toFile());
     }
 
