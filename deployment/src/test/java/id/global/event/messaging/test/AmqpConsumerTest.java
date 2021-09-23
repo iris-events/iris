@@ -1,5 +1,7 @@
 package id.global.event.messaging.test;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -16,7 +18,6 @@ import id.global.event.messaging.runtime.consumer.AmqpConsumer;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
-import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public class AmqpConsumerTest {
 
@@ -33,7 +34,7 @@ public class AmqpConsumerTest {
         AmqpConsumer consumer = new AmqpConsumer(
                 createHandle(),
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, TEST_METHOD_NAME),
-                new AmqpContext(QUEUE, EXCHANGE, new String[0], ExchangeType.DIRECT),
+                new AmqpContext(QUEUE, EXCHANGE, new String[0], DIRECT),
                 handler,
                 new ObjectMapper(),
                 new EventContext());

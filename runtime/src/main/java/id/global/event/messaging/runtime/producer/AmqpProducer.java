@@ -19,6 +19,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ReturnListener;
 
+import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
