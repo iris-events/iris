@@ -14,6 +14,7 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 
+import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;

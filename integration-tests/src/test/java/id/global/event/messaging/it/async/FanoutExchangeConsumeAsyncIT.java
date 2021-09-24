@@ -1,5 +1,6 @@
 package id.global.event.messaging.it.async;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Optional;
@@ -17,7 +18,6 @@ import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpAsyncProducer;
-import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -47,7 +47,7 @@ public class FanoutExchangeConsumeAsyncIT {
     void fanoutTest() throws Exception {
         producer.publishAsync(EXCHANGE,
                 Optional.empty(),
-                ExchangeType.FANOUT,
+                FANOUT,
                 new LoggingEvent("this is log", 1L),
                 null);
 
@@ -59,7 +59,7 @@ public class FanoutExchangeConsumeAsyncIT {
     void publishMessageToFanout_ShouldReceiveTwoMessages() {
         producer.publishAsync(EXCHANGE_SECOND,
                 Optional.empty(),
-                ExchangeType.FANOUT,
+                FANOUT,
                 new Event("a", 23L),
                 null);
 

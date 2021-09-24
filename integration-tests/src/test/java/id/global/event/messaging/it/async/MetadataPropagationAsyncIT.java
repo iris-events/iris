@@ -1,5 +1,7 @@
 package id.global.event.messaging.it.async;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Optional;
@@ -19,7 +21,6 @@ import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpAsyncProducer;
-import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -52,7 +53,7 @@ public class MetadataPropagationAsyncIT {
             producer1.publishAsync(
                     EXCHANGE,
                     Optional.of(EVENT_QUEUE1),
-                    ExchangeType.DIRECT,
+                    DIRECT,
                     new Event(u1, 0L),
                     p1);
             String u2 = UUID.randomUUID().toString();
@@ -62,14 +63,14 @@ public class MetadataPropagationAsyncIT {
             producer1.publishAsync(
                     EXCHANGE,
                     Optional.of(EVENT_QUEUE1),
-                    ExchangeType.DIRECT,
+                    DIRECT,
                     new Event(u2, 0L),
                     p2);
 
             producer1.publishAsync(
                     EXCHANGE,
                     Optional.of(EVENT_QUEUE1),
-                    ExchangeType.DIRECT,
+                    DIRECT,
                     new Event("asdf", 0L), null);
 
         }
@@ -100,7 +101,7 @@ public class MetadataPropagationAsyncIT {
             if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
                 handledEvent.complete(event);
-                producer.publishAsync(EXCHANGE, Optional.of(EVENT_QUEUE2), ExchangeType.TOPIC, event);
+                producer.publishAsync(EXCHANGE, Optional.of(EVENT_QUEUE2), TOPIC, event);
             }
         }
 
@@ -136,7 +137,7 @@ public class MetadataPropagationAsyncIT {
             if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
                 handledEvent.complete(event);
-                producer.publishAsync(EXCHANGE, Optional.of(EVENT_QUEUE3), ExchangeType.TOPIC, event);
+                producer.publishAsync(EXCHANGE, Optional.of(EVENT_QUEUE3), TOPIC, event);
             }
         }
 

@@ -1,8 +1,8 @@
 package id.global.event.messaging.deployment;
 
-import static io.smallrye.asyncapi.runtime.scanner.model.ExchangeType.DIRECT;
-import static io.smallrye.asyncapi.runtime.scanner.model.ExchangeType.FANOUT;
-import static io.smallrye.asyncapi.runtime.scanner.model.ExchangeType.TOPIC;
+import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
+import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 
 import java.util.List;
 import java.util.function.Predicate;

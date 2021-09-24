@@ -1,5 +1,6 @@
 package id.global.event.messaging.it.sync;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.TestInstance;
 import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -49,10 +49,10 @@ public class TopicExchangeConsumeIT {
         LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
         LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
 
-        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.orange.fox"), ExchangeType.TOPIC, l1, true);
-        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.yellow.rabbit"), ExchangeType.TOPIC, l2, true);
-        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.blue.snail"), ExchangeType.TOPIC, l3, true);
-        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.orange.rabbit"), ExchangeType.TOPIC, l4, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.orange.fox"), TOPIC, l1, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("quick.yellow.rabbit"), TOPIC, l2, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.blue.snail"), TOPIC, l3, true);
+        producer.publish(TOPIC_EXCHANGE, Optional.of("lazy.orange.rabbit"), TOPIC, l4, true);
 
         MyLoggingServiceA.completionSignal.get();
         MyLoggingServiceB.completionSignal.get();

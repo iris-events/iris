@@ -1,5 +1,6 @@
 package id.global.event.messaging.it.sync;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Optional;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.TestInstance;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import id.global.event.messaging.runtime.producer.ExchangeType;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -45,14 +45,14 @@ public class ProduceAndConsumeIT {
         producer.publish(
                 EXCHANGE,
                 Optional.of(EVENT_QUEUE),
-                ExchangeType.DIRECT,
+                DIRECT,
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
                 false);
 
         producer.publish(
                 EXCHANGE,
                 Optional.of(EVENT_QUEUE_PRIORITY),
-                ExchangeType.DIRECT,
+                DIRECT,
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
                 false);
 

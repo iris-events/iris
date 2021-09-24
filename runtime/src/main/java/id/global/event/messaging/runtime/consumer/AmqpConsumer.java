@@ -1,5 +1,8 @@
 package id.global.event.messaging.runtime.consumer;
 
+import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
+import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
+
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 
@@ -15,7 +18,6 @@ import com.rabbitmq.client.DeliverCallback;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
-import io.smallrye.asyncapi.runtime.scanner.model.ExchangeType;
 
 public class AmqpConsumer {
     private static final Logger LOG = Logger.getLogger(AmqpConsumer.class.getName());
@@ -51,7 +53,7 @@ public class AmqpConsumer {
     public void initChannel(Connection connection) throws IOException {
         this.channel = connection.createChannel();
 
-        if (this.amqpContext.getExchangeType().equals(ExchangeType.FANOUT)) {
+        if (this.amqpContext.getExchangeType().equals(FANOUT)) {
             // Fanout consume
             AMQP.Exchange.DeclareOk fanout = this.channel
                     .exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.FANOUT);
@@ -59,7 +61,7 @@ public class AmqpConsumer {
             AMQP.Queue.BindOk bindOk = channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), "");
             this.channel.basicConsume(declareOk.getQueue(), true, this.callback, consumerTag -> {
             });
-        } else if (this.amqpContext.getExchangeType().equals(ExchangeType.TOPIC)) {
+        } else if (this.amqpContext.getExchangeType().equals(TOPIC)) {
             AMQP.Exchange.DeclareOk topic = this.channel
                     .exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.TOPIC);
             AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare("", false, true, false, null);
