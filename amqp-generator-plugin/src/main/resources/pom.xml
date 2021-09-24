@@ -40,6 +40,11 @@
             <artifactId>jackson-annotations</artifactId>
             <version>2.12.3</version>
         </dependency>
+        <dependency>
+            <groupId>id.global.common</groupId>
+            <artifactId>globalid-common</artifactId>
+            <version>1.0.12</version>
+        </dependency>
     </dependencies>
 
     <build>
