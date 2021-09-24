@@ -38,7 +38,7 @@
         <dependency>
             <groupId>id.global.common</groupId>
             <artifactId>globalid-common</artifactId>
-            <version>1.0.12-SNAPSHOT</version>
+            <version>1.0.12</version>
         </dependency>
     </dependencies>
 </project>
