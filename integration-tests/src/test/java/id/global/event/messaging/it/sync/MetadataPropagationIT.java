@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import com.rabbitmq.client.AMQP;
 
 import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.event.messaging.it.events.AnnotatedEvent;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -35,10 +37,20 @@ public class MetadataPropagationIT {
     AmqpProducer producer1;
 
     @Inject
-    Service3 s3;
+    FinalService finalService;
+
+    @Inject
+    AnnotationService annotationService;
 
     @Test
-    void test() throws Exception {
+    void annotatedEventTest_ShouldPublishCorrectly() throws Exception {
+        producer1.publish(new AnnotatedEvent("name", 1L));
+        annotationService.getHandledEvent().get(1, TimeUnit.SECONDS);
+        assertEquals(1, AnnotationService.count.get());
+    }
+
+    @Test
+    void correlationIdTest_ShouldPropagateViaAllServices() throws Exception {
         for (int i = 0; i < 5; i++) {
             CompletableFuture.runAsync(() -> {
                 String u1 = UUID.randomUUID().toString();
@@ -74,10 +86,31 @@ public class MetadataPropagationIT {
                     new Event("asdf", 0L),
                     false));
         }
-        s3.getHandledEvent().get();
-        assertEquals(10, Service3.count.get());
+        finalService.getHandledEvent().get();
+        assertEquals(10, Service1.count.get());
         assertEquals(10, Service2.count.get());
-        assertEquals(10, Service3.count.get());
+        assertEquals(10, FinalService.count.get());
+    }
+
+    @ApplicationScoped
+    public static class AnnotationService {
+        private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+        public static final AtomicInteger count = new AtomicInteger(0);
+
+        @Inject
+        public AnnotationService() {
+        }
+
+        @MessageHandler(queue = "annotated_queue", exchange = "annotated_exchange")
+        public void handle(Event event) {
+            count.incrementAndGet();
+            handledEvent.complete(event);
+        }
+
+        public CompletableFuture<Event> getHandledEvent() {
+            return handledEvent;
+        }
+
     }
 
     @ApplicationScoped
@@ -132,13 +165,13 @@ public class MetadataPropagationIT {
     }
 
     @ApplicationScoped
-    public static class Service3 {
+    public static class FinalService {
         private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         public static final AtomicInteger count = new AtomicInteger(0);
         private final EventContext eventContext;
 
         @Inject
-        public Service3(EventContext eventContext) {
+        public FinalService(EventContext eventContext) {
             this.eventContext = eventContext;
         }
 

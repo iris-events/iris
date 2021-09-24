@@ -12,13 +12,9 @@ import javax.inject.Inject;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConfirmListener;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.ReturnListener;
+import com.rabbitmq.client.*;
 
+import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -86,6 +82,17 @@ public class AmqpProducer {
             }
         }
 
+    }
+
+    public boolean publish(Object message) {
+        EventMetadata m = message.getClass().getAnnotation(EventMetadata.class);
+
+        publish(m.exchange(),
+                Optional.of(m.routingKey()),
+                ExchangeType.valueOf(m.exchangeType().toUpperCase()),
+                message, false);
+
+        return true;
     }
 
     /**
@@ -188,7 +195,8 @@ public class AmqpProducer {
     private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
             Optional<Channel> channel) throws Exception {
         // TODO handle optional
-        channel.get().basicPublish(exchange, routingKey, properties, bytes);
+        channel.get().basicPublish(exchange, routingKey, true, properties, bytes);
+
     }
 
     private Channel createChannel() {
@@ -200,7 +208,31 @@ public class AmqpProducer {
         return null;
     }
 
+    public void addReturnListener(String channelKey, ReturnListener returnListener, ReturnCallback returnCallback) {
+        Channel c = getChannel(channelKey);
+        c.clearReturnListeners();
+        if (returnListener != null)
+            c.addReturnListener(returnListener);
+        if (returnCallback != null)
+            c.addReturnListener(returnCallback);
+    }
+
+    public void addConfirmListeners(String channelKey, ConfirmListener confirmListener) {
+        if (confirmListener != null) {
+            Channel c = getChannel(channelKey);
+            c.clearConfirmListeners();
+            c.addConfirmListener(confirmListener);
+        }
+    }
+
     private Channel getChannel(String channelKey) {
+        if (regularChannels.get(channelKey) != null)
+            return regularChannels.get(channelKey);
+        try {
+            createChannel(channelKey, true);
+        } catch (IOException e) {
+            //            return null;
+        }
         return regularChannels.get(channelKey);
     }
 
@@ -221,7 +253,7 @@ public class AmqpProducer {
     private boolean publishMessage(final String exchange,
             final String routingKey,
             final AMQP.BasicProperties properties,
-            final byte[] bytes, boolean immediate) throws Exception {
+            final byte[] bytes, boolean immediate) {
         synchronized (this.lock) {
 
             if (this.connection.isOpen()) {

@@ -1,14 +1,16 @@
 package id.global.event.messaging.it.events;
 
-public class Event {
+import id.global.common.annotations.EventMetadata;
 
+@EventMetadata(exchange = "annotated_exchange", routingKey = "annotated_queue", exchangeType = "direct")
+public class AnnotatedEvent {
     private String name;
     private Long age;
 
-    public Event() {
+    public AnnotatedEvent() {
     }
 
-    public Event(String name, Long age) {
+    public AnnotatedEvent(String name, Long age) {
         this.name = name;
         this.age = age;
     }
