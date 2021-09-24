@@ -254,8 +254,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         schemas.fieldNames().forEachRemaining(fileName -> {
                     try {
                         generate(fileName, channels);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (IOException e) {
+                        getLog().error("Failed generation of Java class from schema file: "+fileName, e);
                     }
                 }
         );
@@ -275,7 +275,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             String replaceWith = generateChannelSupportData(channels);
             writeFile("Exchanges.java", prepareExchangeTemplate("Exchanges.java", replaceWith), path.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            getLog().error("Failed creating Exchanges.java file! ", e);
         }
 
         Path pomPath = Paths.get(baseDir)
