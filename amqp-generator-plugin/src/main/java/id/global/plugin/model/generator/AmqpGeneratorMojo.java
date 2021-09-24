@@ -227,7 +227,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
     }
 
-    public void drillDown(JsonNode root, String padding) {
+    public void drillDown(JsonNode root) {
         getLog().info("Creating JsonSchema files for model generator!");
         root.fields().forEachRemaining((k) -> writeSchemaFile(k.getKey(), k.getValue().toString()));
     }
@@ -249,7 +249,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         Files.createDirectories(pathSource);
         Files.createDirectories(pathSchema);
 
-        drillDown(schemas, " ");
+        drillDown(schemas);
 
         schemas.fieldNames().forEachRemaining(fileName -> {
                     try {
@@ -311,20 +311,16 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             if (subscribe != null) {
                 String type = k.getValue().path("bindings").path("amqp").path("exchange").path("type").textValue();
                 String exchangeName = k.getValue().path("bindings").path("amqp").path("exchange").path("name").textValue();
-                String queueName = k.getValue().path("bindings").path("amqp").path("queue").path("name").textValue();
+                String routingKey = k.getValue().path("bindings").path("amqp").path("queue").path("name").textValue();
                 String messageName = k.getValue().path("subscribe").path("message").path("name").textValue();
-
-                //TODO: is this correct?
-                String exchange = k.getKey().split("/")[0];
-                String routingKey = k.getKey().split("/")[1];
 
 
                 sb.append(
-                        //will output ->  MYEXCHANGE_APTOCARDEVENT_ROOT("MYEXCHANGE","AptoCardEvent_Root","direct"),
+                        //will output ->  MYEXCHANGE_APTOCARDEVENT_ROOT("MYEXCHANGE","AptoCardEvent_Root","direct","ClassName"),
                         String.format(enumTemplate,
-                                exchange.toUpperCase(),
+                                exchangeName.toUpperCase(),
                                 routingKey.toUpperCase(),
-                                exchange,
+                                exchangeName,
                                 routingKey,
                                 type,
                                 messageName)
@@ -346,7 +342,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         for (Iterator<String> it = channels.fieldNames(); it.hasNext(); ) {
             String next = it.next();
             String channel = next.toLowerCase().replace("_", "");
-            ;
+
             if (channel.endsWith("/" + channelName.toLowerCase())
 
             ) {
