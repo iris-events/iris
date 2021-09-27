@@ -68,8 +68,6 @@ public class FanoutExchangeConsumeAsyncIT {
         assertThat(service.getFanoutCount(), is(2));
     }
 
-    @EventMetadata(exchange = EXCHANGE, routingKey = "", exchangeType = "fanout")
-
     @ApplicationScoped
     public static class MyLoggingServiceA {
         private final CompletableFuture<String> future = new CompletableFuture<>();
