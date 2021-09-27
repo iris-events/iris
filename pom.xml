@@ -14,7 +14,7 @@
   <name>Event Messaging - Parent</name>
   <properties>
     <rabbit.amqp-client.version>5.12.0</rabbit.amqp-client.version>
-    <smallrye.asyncapi.version>1.0.4</smallrye.asyncapi.version>
+    <smallrye.asyncapi.version>1.0.5</smallrye.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
   </properties>
   <scm>
