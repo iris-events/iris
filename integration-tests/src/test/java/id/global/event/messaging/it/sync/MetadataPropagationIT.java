@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -44,53 +45,49 @@ public class MetadataPropagationIT {
     AnnotationService annotationService;
 
     @Test
-    void annotatedEventTest_ShouldPublishCorrectly() throws Exception {
+    @DisplayName("Publish should work OOTB if annotated Event object is provided")
+    void publishAnnotatedEvent() throws Exception {
         producer1.publish(new AnnotatedEvent("name", 1L));
         annotationService.getHandledEvent().get(1, TimeUnit.SECONDS);
         assertEquals(1, AnnotationService.count.get());
     }
 
     @Test
-    void correlationIdTest_ShouldPropagateViaAllServices() throws Exception {
+    @DisplayName("Event published should be accompanied with correlationId to the final service")
+    void publishEventsWithCorrelationIds() throws Exception {
         for (int i = 0; i < 5; i++) {
-            CompletableFuture.runAsync(() -> {
-                String u1 = UUID.randomUUID().toString();
-
-                AMQP.BasicProperties p1 = new AMQP.BasicProperties().builder()
-                        .correlationId(u1)
-                        .build();
-                producer1.publish(
-                        EXCHANGE,
-                        Optional.of(EVENT_QUEUE1),
-                        DIRECT,
-                        new Event(u1, 0L),
-                        false, p1);
-            });
-
-            CompletableFuture.runAsync(() -> {
-                String u2 = UUID.randomUUID().toString();
-                AMQP.BasicProperties p2 = new AMQP.BasicProperties().builder()
-                        .correlationId(u2)
-                        .build();
-                producer1.publish(
-                        EXCHANGE,
-                        Optional.of(EVENT_QUEUE1),
-                        DIRECT,
-                        new Event(u2, 0L),
-                        false, p2);
-            });
-
-            CompletableFuture.runAsync(() -> producer1.publish(
-                    EXCHANGE,
-                    Optional.of(EVENT_QUEUE1),
-                    DIRECT,
-                    new Event("asdf", 0L),
-                    false));
+            final var uuid1 = UUID.randomUUID().toString();
+            final var uuid2 = UUID.randomUUID().toString();
+            publishEvent(uuid1, uuid1);
+            publishEvent(uuid2, uuid2);
+            publishEvent("Event without corelationId");
         }
         finalService.getHandledEvent().get();
         assertEquals(10, Service1.count.get());
         assertEquals(10, Service2.count.get());
         assertEquals(10, FinalService.count.get());
+    }
+
+    private void publishEvent(final String name, final String correlationId) {
+        final var amqpBasicProperties = Optional.ofNullable(correlationId).map(cId -> new AMQP.BasicProperties().builder()
+                .correlationId(correlationId)
+                .build()).orElse(null);
+
+        CompletableFuture.runAsync(() -> producer1.publish(
+                EXCHANGE,
+                Optional.of(EVENT_QUEUE1),
+                DIRECT,
+                new Event(correlationId, 0L),
+                false, amqpBasicProperties));
+    }
+
+    private void publishEvent(final String name) {
+        CompletableFuture.runAsync(() -> producer1.publish(
+                EXCHANGE,
+                Optional.of(EVENT_QUEUE1),
+                DIRECT,
+                new Event(name, 0L),
+                false));
     }
 
     @ApplicationScoped
@@ -103,9 +100,9 @@ public class MetadataPropagationIT {
         }
 
         @MessageHandler(queue = "annotated_queue", exchange = "annotated_exchange")
-        public void handle(Event event) {
+        public void handle(AnnotatedEvent event) {
             count.incrementAndGet();
-            handledEvent.complete(event);
+            handledEvent.complete(new Event());
         }
 
         public CompletableFuture<Event> getHandledEvent() {

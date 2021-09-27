@@ -121,8 +121,8 @@ public class AmqpProducer {
      */
     public boolean publish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
             boolean failImmediately, AMQP.BasicProperties properties) {
-
-        return routePublish(exchange, routingKey, type, message, failImmediately, properties);
+        final var amqpBasicProperties = Optional.ofNullable(properties).orElse(this.eventContext.getAmqpBasicProperties());
+        return routePublish(exchange, routingKey, type, message, failImmediately, amqpBasicProperties);
     }
 
     private boolean routePublish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
@@ -211,18 +211,26 @@ public class AmqpProducer {
 
     public void addReturnListener(String channelKey, ReturnListener returnListener, ReturnCallback returnCallback) {
         Channel c = getChannel(channelKey);
-        c.clearReturnListeners();
-        if (returnListener != null)
-            c.addReturnListener(returnListener);
-        if (returnCallback != null)
-            c.addReturnListener(returnCallback);
+        if (c != null) {
+            c.clearReturnListeners();
+            if (returnListener != null)
+                c.addReturnListener(returnListener);
+            if (returnCallback != null)
+                c.addReturnListener(returnCallback);
+        } else {
+            LOG.error("Cannot add return listeners as channel does not exist! channelKey={" + channelKey + "}");
+        }
     }
 
     public void addConfirmListeners(String channelKey, ConfirmListener confirmListener) {
-        if (confirmListener != null) {
-            Channel c = getChannel(channelKey);
-            c.clearConfirmListeners();
-            c.addConfirmListener(confirmListener);
+        Channel c = getChannel(channelKey);
+        if (c != null) {
+            if (confirmListener != null) {
+                c.clearConfirmListeners();
+                c.addConfirmListener(confirmListener);
+            }
+        } else {
+            LOG.error("Cannot add confirm listeners as channel does not exist! channelKey={" + channelKey + "}");
         }
     }
 
@@ -231,24 +239,19 @@ public class AmqpProducer {
             return regularChannels.get(channelKey);
         try {
             createChannel(channelKey, true);
-        } catch (IOException e) {
-            //            return null;
+        } catch (IOException ignored) {
         }
         return regularChannels.get(channelKey);
     }
 
-    private boolean createChannel(String channelKey, boolean withConfirmations) throws IOException {
+    private void createChannel(String channelKey, boolean withConfirmations) throws IOException {
         Channel ch = createChannel();
-        if (withConfirmations && ch != null) {
-            ch.confirmSelect();
-            ch.addConfirmListener(confirmListener);
-            ch.addReturnListener(returnListener);
-        } else {
-            return false;
+        if (ch != null) {
+            if (withConfirmations) {
+                ch.confirmSelect();
+            }
+            regularChannels.put(channelKey, ch);
         }
-
-        regularChannels.put(channelKey, ch);
-        return true;
     }
 
     private boolean publishMessage(final String exchange,

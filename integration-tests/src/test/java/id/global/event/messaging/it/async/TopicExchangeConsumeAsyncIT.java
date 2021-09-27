@@ -50,10 +50,10 @@ public class TopicExchangeConsumeAsyncIT {
         LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
         LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
 
-        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("quick.orange.fox"), TOPIC, l1, null);
-        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("quick.yellow.rabbit"), TOPIC, l2, null);
-        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("lazy.blue.snail"), TOPIC, l3, null);
-        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("lazy.orange.rabbit"), TOPIC, l4, null);
+        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("quick.orange.fox"), TOPIC, l1);
+        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("quick.yellow.rabbit"), TOPIC, l2);
+        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("lazy.blue.snail"), TOPIC, l3);
+        asyncProducer.publishAsync(TOPIC_EXCHANGE, Optional.of("lazy.orange.rabbit"), TOPIC, l4);
 
         MyLoggingServiceA.completionSignal.get();
         MyLoggingServiceB.completionSignal.get();

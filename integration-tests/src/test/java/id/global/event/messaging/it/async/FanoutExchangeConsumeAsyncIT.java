@@ -1,7 +1,8 @@
 package id.global.event.messaging.it.async;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
+import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpAsyncProducer;
@@ -48,11 +50,10 @@ public class FanoutExchangeConsumeAsyncIT {
         producer.publishAsync(EXCHANGE,
                 Optional.empty(),
                 FANOUT,
-                new LoggingEvent("this is log", 1L),
-                null);
+                new LoggingEvent("this is log", 1L));
 
-        assertEquals("this is log", internalLoggingServiceA.getFuture().get());
-        assertEquals("this is log", internalLoggingServiceB.getFuture().get());
+        assertThat(internalLoggingServiceA.getFuture().get(), is("this is log"));
+        assertThat(internalLoggingServiceB.getFuture().get(), is("this is log"));
     }
 
     @Test
@@ -60,13 +61,14 @@ public class FanoutExchangeConsumeAsyncIT {
         producer.publishAsync(EXCHANGE_SECOND,
                 Optional.empty(),
                 FANOUT,
-                new Event("a", 23L),
-                null);
+                new Event("a", 23L));
 
         CompletableFuture.allOf(service.getFanout1(), service.getFanout2()).join();
 
-        assertEquals(2, service.getFanoutCount());
+        assertThat(service.getFanoutCount(), is(2));
     }
+
+    @EventMetadata(exchange = EXCHANGE, routingKey = "", exchangeType = "fanout")
 
     @ApplicationScoped
     public static class MyLoggingServiceA {

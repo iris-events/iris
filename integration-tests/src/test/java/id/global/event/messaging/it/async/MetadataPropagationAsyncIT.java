@@ -2,7 +2,8 @@ package id.global.event.messaging.it.async;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -45,37 +46,40 @@ public class MetadataPropagationAsyncIT {
     void test() throws Exception {
         for (int i = 0; i < 5; i++) {
 
-            String u1 = UUID.randomUUID().toString();
+            final var uuid1 = UUID.randomUUID().toString();
+            final var uuid2 = UUID.randomUUID().toString();
 
             AMQP.BasicProperties p1 = new AMQP.BasicProperties().builder()
-                    .correlationId(u1)
+                    .correlationId(uuid1)
                     .build();
+
             producer1.publishAsync(
                     EXCHANGE,
                     Optional.of(EVENT_QUEUE1),
                     DIRECT,
-                    new Event(u1, 0L),
+                    new Event(uuid1, 0L),
                     p1);
-            String u2 = UUID.randomUUID().toString();
+
             AMQP.BasicProperties p2 = new AMQP.BasicProperties().builder()
-                    .correlationId(u2)
+                    .correlationId(uuid2)
                     .build();
+
             producer1.publishAsync(
                     EXCHANGE,
                     Optional.of(EVENT_QUEUE1),
                     DIRECT,
-                    new Event(u2, 0L),
+                    new Event(uuid2, 0L),
                     p2);
 
             producer1.publishAsync(
                     EXCHANGE,
                     Optional.of(EVENT_QUEUE1),
                     DIRECT,
-                    new Event("asdf", 0L), null);
+                    new Event("asdf", 0L));
 
         }
         s3.getHandledEvent().get();
-        assertEquals(10, Service3.count.get());
+        assertThat(Service3.count.get(), is(10));
     }
 
     @ApplicationScoped

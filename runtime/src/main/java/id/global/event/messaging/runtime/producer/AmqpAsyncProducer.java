@@ -119,7 +119,7 @@ public class AmqpAsyncProducer {
             }
             case DIRECT -> publishDirectAsync(exchange, routingKey, message, properties);
             case FANOUT -> publishFanoutAsync(exchange, message, properties);
-            default -> LOG.error("Exchange type unknown!");
+            default -> LOG.error("Exchange type unknown! Message will be lost! type={" + type.getType() + "}");
         }
 
     }
@@ -129,12 +129,10 @@ public class AmqpAsyncProducer {
      * @param routingKey optinal routingKey, if not provided, className of message send will be used
      * @param message Object/message to be send to exchange
      */
-    public void publishDirectAsync(String exchange, Optional<String> routingKey, Object message,
+    private void publishDirectAsync(String exchange, Optional<String> routingKey, Object message,
             AMQP.BasicProperties properties) {
         try {
-            if (properties == null) {
-                properties = this.eventContext.getAmqpBasicProperties();
-            }
+            final var amqpBasicProperties = Optional.ofNullable(properties).orElse(this.eventContext.getAmqpBasicProperties());
             routingKey = routingKey.filter(s -> !s.isEmpty());
             final byte[] bytes;
 
@@ -142,7 +140,7 @@ public class AmqpAsyncProducer {
 
             publishMessageAsync(exchange,
                     routingKey.orElse(message.getClass().getSimpleName().toLowerCase()),
-                    properties,
+                    amqpBasicProperties,
                     bytes);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -153,16 +151,13 @@ public class AmqpAsyncProducer {
      * @param fanoutExchange exchange name where message will be send
      * @param message Object/message to be send to exchange
      */
-    public void publishFanoutAsync(String fanoutExchange, Object message, AMQP.BasicProperties properties) {
+    private void publishFanoutAsync(String fanoutExchange, Object message, AMQP.BasicProperties properties) {
         try {
-
-            if (properties == null) {
-                properties = this.eventContext.getAmqpBasicProperties();
-            }
+            final var amqpBasicProperties = Optional.ofNullable(properties).orElse(this.eventContext.getAmqpBasicProperties());
 
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
 
-            publishMessageAsync(fanoutExchange, "", properties, bytes);
+            publishMessageAsync(fanoutExchange, "", amqpBasicProperties, bytes);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -174,14 +169,13 @@ public class AmqpAsyncProducer {
      *        log.internal.error
      * @param message Object/message to be send to exchange
      */
-    public void publishTopicAsync(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties) {
+    private void publishTopicAsync(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties) {
         try {
-            if (properties == null) {
-                properties = this.eventContext.getAmqpBasicProperties();
-            }
+            final var amqpBasicProperties = Optional.ofNullable(properties).orElse(this.eventContext.getAmqpBasicProperties());
+
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
 
-            publishMessageAsync(exchange, topicRoutingKey, properties, bytes);
+            publishMessageAsync(exchange, topicRoutingKey, amqpBasicProperties, bytes);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
