@@ -7,9 +7,9 @@ include:
 test:
   stage: test
   variables:
-    QUARKUS_EDA_RABBIT_HOST: rabbitmq
-    QUARKUS_EDA_RABBIT_USERNAME: user
-    QUARKUS_EDA_RABBIT_PASSWORD: user
+    RABBIT_HOST: rabbitmq
+    RABBIT_USERNAME: user
+    RABBIT_PASSWORD: user
     RABBITMQ_DEFAULT_USER: user
     RABBITMQ_DEFAULT_PASS: user
   script:
