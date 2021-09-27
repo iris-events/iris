@@ -183,7 +183,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
         String schemaOutput = "";
         String mediaType = "";
         if (uploadType.equalsIgnoreCase("json")) {
-            mediaType = "applicatino/json";
+            mediaType = "application/json";
             schemaOutput = AsyncApiSerializer.serialize(schema, Format.JSON);
         } else if (uploadType.equalsIgnoreCase("yaml")) {
             mediaType = "application/x-yaml";
