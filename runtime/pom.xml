@@ -35,6 +35,11 @@
       <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>id.global.common</groupId>
+      <artifactId>globalid-common</artifactId>
+      <version>1.0.12</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

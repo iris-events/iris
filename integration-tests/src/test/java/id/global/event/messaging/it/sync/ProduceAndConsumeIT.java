@@ -1,4 +1,4 @@
-package id.global.event.messaging.it;
+package id.global.event.messaging.it.sync;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;

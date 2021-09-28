@@ -1,28 +1,27 @@
 package id.global.event.messaging.runtime.producer;
 
-import java.io.IOException;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.jboss.logging.Logger;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
-
 import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
+import org.jboss.logging.Logger;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ApplicationScoped
 public class AmqpProducer {
@@ -40,6 +39,7 @@ public class AmqpProducer {
     private final AtomicInteger count = new AtomicInteger(0);
     private boolean connected;
     private final EventContext eventContext;
+    private final long waitTimeout = 2000;
 
     @Inject
     public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper, EventContext eventContext) {
@@ -88,6 +88,17 @@ public class AmqpProducer {
 
     }
 
+    public boolean publish(Object message) {
+        EventMetadata m = message.getClass().getAnnotation(EventMetadata.class);
+
+        publish(m.exchange(),
+                Optional.of(m.routingKey()),
+                ExchangeType.valueOf(m.exchangeType().toUpperCase()),
+                message, false);
+
+        return true;
+    }
+
     /**
      * @param exchange exchange name to which we send message to
      * @param routingKey routing key to route message to queue
@@ -108,13 +119,13 @@ public class AmqpProducer {
      * @param type exchange type (DIRECT, FANOUT, TOPIC)
      * @param message message to be send
      * @param failImmediately fail immediately on publishing error
+     * @param properties BasicProperties for publish
      * @return true/false if message was published successfult to broker
-     * @Param properties BasicProperties for publish
      */
     public boolean publish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
             boolean failImmediately, AMQP.BasicProperties properties) {
-
-        return routePublish(exchange, routingKey, type, message, failImmediately, properties);
+        final var amqpBasicProperties = Optional.ofNullable(properties).orElse(this.eventContext.getAmqpBasicProperties());
+        return routePublish(exchange, routingKey, type, message, failImmediately, amqpBasicProperties);
     }
 
     private boolean routePublish(String exchange, Optional<String> routingKey, ExchangeType type, Object message,
@@ -188,7 +199,8 @@ public class AmqpProducer {
     private void publish(String exchange, String routingKey, AMQP.BasicProperties properties, byte[] bytes,
             Optional<Channel> channel) throws Exception {
         // TODO handle optional
-        channel.get().basicPublish(exchange, routingKey, properties, bytes);
+        channel.get().basicPublish(exchange, routingKey, true, properties, bytes);
+
     }
 
     private Channel createChannel() {
@@ -200,28 +212,58 @@ public class AmqpProducer {
         return null;
     }
 
+    public void addReturnListener(String channelKey, ReturnListener returnListener, ReturnCallback returnCallback) {
+        Channel c = getChannel(channelKey);
+        if (c == null) {
+            LOG.error("Cannot add return listeners as channel does not exist! channelKey={" + channelKey + "}");
+            return;
+        }
+        c.clearReturnListeners();
+        if (returnListener != null) {
+            c.addReturnListener(returnListener);
+        }
+        if (returnCallback != null) {
+            c.addReturnListener(returnCallback);
+        }
+    }
+
+    public void addConfirmListeners(String channelKey, ConfirmListener confirmListener) {
+        Channel c = getChannel(channelKey);
+        if (c == null) {
+            LOG.error("Cannot add confirm listeners as channel does not exist! channelKey={" + channelKey + "}");
+            return;
+        }
+
+        if (confirmListener != null) {
+            c.clearConfirmListeners();
+            c.addConfirmListener(confirmListener);
+        }
+    }
+
     private Channel getChannel(String channelKey) {
+        if (regularChannels.get(channelKey) != null)
+            return regularChannels.get(channelKey);
+        try {
+            createChannel(channelKey, true);
+        } catch (IOException ignored) {
+        }
         return regularChannels.get(channelKey);
     }
 
-    private boolean createChannel(String channelKey, boolean withConfirmations) throws IOException {
+    private void createChannel(String channelKey, boolean withConfirmations) throws IOException {
         Channel ch = createChannel();
-        if (withConfirmations && ch != null) {
-            ch.confirmSelect();
-            ch.addConfirmListener(confirmListener);
-            ch.addReturnListener(returnListener);
-        } else {
-            return false;
+        if (ch != null) {
+            if (withConfirmations) {
+                ch.confirmSelect();
+            }
+            regularChannels.put(channelKey, ch);
         }
-
-        regularChannels.put(channelKey, ch);
-        return true;
     }
 
     private boolean publishMessage(final String exchange,
             final String routingKey,
             final AMQP.BasicProperties properties,
-            final byte[] bytes, boolean immediate) throws Exception {
+            final byte[] bytes, boolean immediate) {
         synchronized (this.lock) {
 
             if (this.connection.isOpen()) {
@@ -236,7 +278,7 @@ public class AmqpProducer {
                     publish(exchange, routingKey, properties, bytes, Optional.of(existingChannel));
 
                     if (count.incrementAndGet() == 100 || immediate) { //for every 100 messages that are send wait for all confirmations
-                        existingChannel.waitForConfirms(500); //timeout is 500ms (should we change this to longer?
+                        existingChannel.waitForConfirms(waitTimeout); //timeout is 500ms (should we change this to longer?
                         count.set(0);
                     }
                     return true;
@@ -250,21 +292,5 @@ public class AmqpProducer {
         }
     }
 
-    private final ConfirmListener confirmListener = new ConfirmListener() {
-        @Override
-        public void handleAck(long deliveryTag, boolean multiple) {
-            LOG.info("Message with deliveryTag [" + deliveryTag + "] ACK!" + " Multiple: " + multiple);
-        }
-
-        @Override
-        public void handleNack(long deliveryTag, boolean multiple) {
-            LOG.warn("Message with deliveryTag [" + deliveryTag + "] NACK!" + " Multiple: " + multiple);
-        }
-    };
-
-    //this will be used if message has "mandatory" flag set
-    private final ReturnListener returnListener = (replyCode, replyText, exchange, routingKey, properties, body) -> LOG
-            .error("Message returned! exchange=[" + exchange + "], routingKey=[" + routingKey + "]: replyCode=[" + replyCode
-                    + "] replyMessage=[" + replyText + "]");
 
 }
