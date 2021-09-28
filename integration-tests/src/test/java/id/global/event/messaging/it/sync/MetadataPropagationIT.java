@@ -60,7 +60,7 @@ public class MetadataPropagationIT {
             final var uuid2 = UUID.randomUUID().toString();
             publishEvent(uuid1, uuid1);
             publishEvent(uuid2, uuid2);
-            publishEvent("Event without corelationId");
+            publishEvent("Event without correlationId");
         }
         finalService.getHandledEvent().get();
         assertEquals(10, Service1.count.get());

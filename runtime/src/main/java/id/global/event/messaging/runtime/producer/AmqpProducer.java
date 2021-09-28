@@ -1,24 +1,27 @@
 package id.global.event.messaging.runtime.producer;
 
-import java.io.IOException;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.jboss.logging.Logger;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.*;
-
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConfirmListener;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.ReturnCallback;
+import com.rabbitmq.client.ReturnListener;
 import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
+import org.jboss.logging.Logger;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ApplicationScoped
 public class AmqpProducer {
@@ -211,26 +214,29 @@ public class AmqpProducer {
 
     public void addReturnListener(String channelKey, ReturnListener returnListener, ReturnCallback returnCallback) {
         Channel c = getChannel(channelKey);
-        if (c != null) {
-            c.clearReturnListeners();
-            if (returnListener != null)
-                c.addReturnListener(returnListener);
-            if (returnCallback != null)
-                c.addReturnListener(returnCallback);
-        } else {
+        if (c == null) {
             LOG.error("Cannot add return listeners as channel does not exist! channelKey={" + channelKey + "}");
+            return;
+        }
+        c.clearReturnListeners();
+        if (returnListener != null) {
+            c.addReturnListener(returnListener);
+        }
+        if (returnCallback != null) {
+            c.addReturnListener(returnCallback);
         }
     }
 
     public void addConfirmListeners(String channelKey, ConfirmListener confirmListener) {
         Channel c = getChannel(channelKey);
-        if (c != null) {
-            if (confirmListener != null) {
-                c.clearConfirmListeners();
-                c.addConfirmListener(confirmListener);
-            }
-        } else {
+        if (c == null) {
             LOG.error("Cannot add confirm listeners as channel does not exist! channelKey={" + channelKey + "}");
+            return;
+        }
+
+        if (confirmListener != null) {
+            c.clearConfirmListeners();
+            c.addConfirmListener(confirmListener);
         }
     }
 
@@ -286,21 +292,5 @@ public class AmqpProducer {
         }
     }
 
-    private final ConfirmListener confirmListener = new ConfirmListener() {
-        @Override
-        public void handleAck(long deliveryTag, boolean multiple) {
-            LOG.info("Message with deliveryTag [" + deliveryTag + "] ACK!" + " Multiple: " + multiple);
-        }
-
-        @Override
-        public void handleNack(long deliveryTag, boolean multiple) {
-            LOG.warn("Message with deliveryTag [" + deliveryTag + "] NACK!" + " Multiple: " + multiple);
-        }
-    };
-
-    //this will be used if message has "mandatory" flag set
-    private final ReturnListener returnListener = (replyCode, replyText, exchange, routingKey, properties, body) -> LOG
-            .error("Message returned! exchange=[" + exchange + "], routingKey=[" + routingKey + "]: replyCode=[" + replyCode
-                    + "] replyMessage=[" + replyText + "]");
 
 }
