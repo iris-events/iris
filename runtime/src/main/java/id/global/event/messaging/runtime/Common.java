@@ -35,10 +35,7 @@ public class Common {
     public static ConnectionFactory getConnectionFactory(AmqpConfiguration amqpConfiguration) {
         ConnectionFactory factory = new ConnectionFactory();
 
-        int port = amqpConfiguration.isSslEnabled() ? 5671 : 5672;
-        if (amqpConfiguration.getPort() != 0) {
-            port = amqpConfiguration.getPort();
-        }
+        int port = amqpConfiguration.getPort();
         String protocol = amqpConfiguration.isSslEnabled() ? "amqps" : "amqp";
 
         LOG.info(String.format("AMQP configuration: protocol=%s, url=%s, port=%s, username=%s, ssl=%s", protocol,
