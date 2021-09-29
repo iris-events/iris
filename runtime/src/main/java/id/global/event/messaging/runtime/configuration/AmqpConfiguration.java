@@ -25,7 +25,7 @@ public final class AmqpConfiguration {
     /**
      * rabbitmq connection port
      */
-    @ConfigItem(defaultValue = "0")
+    @ConfigItem(defaultValue = "5671")
     String port;
 
     /**
@@ -49,7 +49,7 @@ public final class AmqpConfiguration {
     /**
      * use username and password authentication
      */
-    @ConfigItem(defaultValue = "false")
+    @ConfigItem(defaultValue = "true")
     boolean sslEnabled;
 
     public String getUrl() {
