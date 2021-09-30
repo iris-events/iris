@@ -1,31 +1,35 @@
 package id.global.event.messaging.runtime.producer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConfirmListener;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.ReturnCallback;
-import com.rabbitmq.client.ReturnListener;
-import id.global.asyncapi.spec.enums.ExchangeType;
-import id.global.common.annotations.EventMetadata;
-import id.global.event.messaging.runtime.Common;
-import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.context.EventContext;
-import org.jboss.logging.Logger;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.jboss.logging.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConfirmListener;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ReturnCallback;
+import com.rabbitmq.client.ReturnListener;
+
+import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.EventMetadata;
+import id.global.event.messaging.runtime.Common;
+import id.global.event.messaging.runtime.ConnectionFactoryProvider;
+import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.context.EventContext;
+
 @ApplicationScoped
 public class AmqpProducer {
     private static final Logger LOG = Logger.getLogger(AmqpProducer.class.getName());
+    private final ConnectionFactoryProvider connectionFactoryProvider;
     private final AmqpConfiguration amqpConfiguration;
 
     private final ObjectMapper objectMapper;
@@ -42,7 +46,9 @@ public class AmqpProducer {
     private final long waitTimeout = 2000;
 
     @Inject
-    public AmqpProducer(AmqpConfiguration configuration, ObjectMapper objectMapper, EventContext eventContext) {
+    public AmqpProducer(ConnectionFactoryProvider connectionFactoryProvider, AmqpConfiguration configuration,
+            ObjectMapper objectMapper, EventContext eventContext) {
+        this.connectionFactoryProvider = connectionFactoryProvider;
         this.amqpConfiguration = configuration;
         this.objectMapper = objectMapper;
         this.hostName = Common.getHostName();
@@ -62,7 +68,7 @@ public class AmqpProducer {
 
         failCounter.set(0);
 
-        ConnectionFactory factory = Common.getConnectionFactory(amqpConfiguration);
+        final var factory = connectionFactoryProvider.getConnectionFactory();
 
         while (!connected && failCounter.get() < 10) {
             try {
@@ -291,6 +297,5 @@ public class AmqpProducer {
             }
         }
     }
-
 
 }

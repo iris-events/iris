@@ -18,11 +18,11 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ReturnListener;
 
 import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.runtime.Common;
+import id.global.event.messaging.runtime.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
 
@@ -31,6 +31,7 @@ public class AmqpAsyncProducer {
     private final AmqpConfiguration amqpConfiguration;
 
     private final ObjectMapper objectMapper;
+    private final ConnectionFactoryProvider connectionFactoryProvider;
     private Connection connection;
     private final ExecutorService pool;
     private final String hostName;
@@ -47,8 +48,10 @@ public class AmqpAsyncProducer {
     };
 
     @Inject
-    public AmqpAsyncProducer(AmqpConfiguration configuration, ObjectMapper objectMapper,
+    public AmqpAsyncProducer(ConnectionFactoryProvider connectionFactoryProvider, AmqpConfiguration configuration,
+            ObjectMapper objectMapper,
             EventContext eventContext) {
+        this.connectionFactoryProvider = connectionFactoryProvider;
         pool = Executors.newFixedThreadPool(6); //TODO: set pool according to needs (should this be in configuration?)
         this.amqpConfiguration = configuration;
         this.objectMapper = objectMapper;
@@ -69,7 +72,7 @@ public class AmqpAsyncProducer {
 
         failCounter.set(0);
 
-        ConnectionFactory factory = Common.getConnectionFactory(amqpConfiguration);
+        final var factory = connectionFactoryProvider.getConnectionFactory();
 
         while (!connected && failCounter.get() < 10) {
             try {
