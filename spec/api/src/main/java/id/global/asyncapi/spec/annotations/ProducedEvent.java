@@ -16,7 +16,7 @@ public @interface ProducedEvent {
     /**
      * To which queue/routingKey this event is published
      */
-    String queue() default Constants.UNASSIGNED;
+    String queue() default "";
 
     /**
      * To which exchange this event is published
