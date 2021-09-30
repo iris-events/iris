@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 
 import org.jboss.logging.Logger;
 
+import id.global.event.messaging.runtime.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.ConsumerConfigRecorder;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
@@ -54,7 +55,8 @@ class EventMessagingProcessor {
                                 AmqpConsumerContainer.class,
                                 EventContext.class,
                                 AmqpAsyncProducer.class,
-                                AmqpProducer.class)
+                                AmqpProducer.class,
+                                ConnectionFactoryProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
@@ -70,10 +72,13 @@ class EventMessagingProcessor {
 
     @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerConfigRecorder consumerConfigRecorder) {
+    void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerConfigRecorder consumerConfigRecorder,
+            List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
         // init the consumer with config properties
         // this should be moved to its own build step
-        consumerConfigRecorder.initConsumerConfig(beanContainer.getValue());
+        if (!messageHandlerInfoBuildItems.isEmpty()) {
+            consumerConfigRecorder.initConsumerConfig(beanContainer.getValue());
+        }
     }
 
     @Record(ExecutionTime.STATIC_INIT)

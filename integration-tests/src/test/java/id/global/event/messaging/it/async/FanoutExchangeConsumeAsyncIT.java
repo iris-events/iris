@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
-import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.producer.AmqpAsyncProducer;
