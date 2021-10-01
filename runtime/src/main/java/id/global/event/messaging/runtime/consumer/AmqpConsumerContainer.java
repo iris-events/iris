@@ -18,7 +18,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import id.global.event.messaging.runtime.Common;
-import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -28,7 +28,7 @@ public class AmqpConsumerContainer {
     private static final Logger LOG = LoggerFactory.getLogger(AmqpConsumerContainer.class);
     private Connection connection;
     private final ObjectMapper objectMapper;
-    private final AmqpConfiguration config;
+    private final ConnectionFactoryProvider connectionFactoryProvider;
     private final String hostName;
 
     private int retryCount = 0;
@@ -38,16 +38,17 @@ public class AmqpConsumerContainer {
     private final EventContext eventContext;
 
     @Inject
-    public AmqpConsumerContainer(AmqpConfiguration config, ObjectMapper objectMapper, EventContext eventContext) {
+    public AmqpConsumerContainer(ConnectionFactoryProvider connectionFactoryProvider,
+            ObjectMapper objectMapper, EventContext eventContext) {
         this.consumerMap = new HashMap<>();
+        this.connectionFactoryProvider = connectionFactoryProvider;
         this.hostName = Common.getHostName();
-        this.config = config;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
     }
 
     public void initConsumer() {
-        ConnectionFactory factory = Common.getConnectionFactory(config);
+        ConnectionFactory factory = connectionFactoryProvider.getConnectionFactory();
 
         while (!createConnection(factory)) {
             retryCount++;
