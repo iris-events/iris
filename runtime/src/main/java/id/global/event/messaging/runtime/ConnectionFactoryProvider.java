@@ -1,6 +1,7 @@
 package id.global.event.messaging.runtime;
 
-import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -14,64 +15,54 @@ import org.slf4j.LoggerFactory;
 import com.rabbitmq.client.ConnectionFactory;
 
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.exception.AmqpConnectionFactoryException;
 
 @Singleton
 public class ConnectionFactoryProvider {
 
     private static final Logger log = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
 
-    @Inject
     AmqpConfiguration amqpConfiguration;
 
     private ConnectionFactory connectionFactory;
 
+    @Inject
+    public ConnectionFactoryProvider(AmqpConfiguration amqpConfiguration) {
+        this.amqpConfiguration = amqpConfiguration;
+    }
+
     public ConnectionFactory getConnectionFactory() {
         return Optional.ofNullable(connectionFactory).orElseGet(() -> {
-            final var connectionFactory = buildConnection(amqpConfiguration);
+            final var connectionFactory = buildConnectionFactory(amqpConfiguration);
             this.connectionFactory = connectionFactory;
             return connectionFactory;
         });
     }
 
-    private ConnectionFactory buildConnection(AmqpConfiguration amqpConfiguration) {
-        ConnectionFactory factory = new ConnectionFactory();
-
+    private ConnectionFactory buildConnectionFactory(AmqpConfiguration amqpConfiguration) {
         int port = amqpConfiguration.getPort();
-        String protocol = amqpConfiguration.isSslEnabled() ? "amqps" : "amqp";
+        // TODO this should be a configurable property with / as default
+        String vhost = "/";
 
-        log.info(String.format("AMQP configuration: protocol=%s, url=%s, port=%s, username=%s, ssl=%s", protocol,
+        log.info(String.format("AMQP configuration: host=%s, port=%s, username=%s, ssl=%s",
                 amqpConfiguration.getUrl(), port, amqpConfiguration.getUsername(), amqpConfiguration.isSslEnabled()));
 
         try {
-            if (amqpConfiguration.isAuthenticated()) {
-                String connectionUrl = String.format("%s://%s:%s@%s:%s%s",
-                        protocol,
-                        amqpConfiguration.getUsername(),
-                        amqpConfiguration.getPassword(),
-                        amqpConfiguration.getUrl(),
-                        port,
-                        "/%2f");
+            ConnectionFactory connectionFactory = new ConnectionFactory();
 
-                log.info("Setting factory URL = " + connectionUrl);
-                factory.setUri(connectionUrl);
-
-            } else {
-                String connectionUrl = String.format("%s://%s:%s%s",
-                        protocol,
-                        amqpConfiguration.getUrl(),
-                        port,
-                        "/%2f");
-
-                log.info("Setting factory URL = " + connectionUrl);
-                factory.setUri(connectionUrl);
+            connectionFactory.setUsername(URLEncoder.encode(amqpConfiguration.getUsername(), StandardCharsets.UTF_8));
+            connectionFactory.setPassword(URLEncoder.encode(amqpConfiguration.getPassword(), StandardCharsets.UTF_8));
+            connectionFactory.setHost(amqpConfiguration.getUrl());
+            connectionFactory.setPort(port);
+            connectionFactory.setVirtualHost(vhost);
+            if (amqpConfiguration.isSslEnabled()) {
+                connectionFactory.useSslProtocol();
             }
-            factory.setAutomaticRecoveryEnabled(true);
 
-            return factory;
-        } catch (URISyntaxException | NoSuchAlgorithmException | KeyManagementException e) {
-            log.error("Cannot create ConnectionFactory!", e);
-            return null;
+            return connectionFactory;
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            log.error("Could not create AMQP ConnectionFactory!", e);
+            throw new AmqpConnectionFactoryException("Could not create AMQP ConnectionFactory", e);
         }
-
     }
 }
