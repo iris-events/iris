@@ -10,15 +10,15 @@ import com.fasterxml.jackson.annotation.JacksonAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @JacksonAnnotation
-public @interface EventMetadata {
+public @interface ExchangeBindings {
 
-    String exchange() default "";
-
-    String routingKey() default "";
+    String exchangeName() default "";
 
     String exchangeType() default "direct";
 
-    String eventType() default "INTERNAL";
+    boolean exchangeDurable() default true;
 
-    String[] rolesAllowed() default "none";
+    boolean exchangeAutoDelete() default false;
+
+    String exchangeVhost() default "/";
 }

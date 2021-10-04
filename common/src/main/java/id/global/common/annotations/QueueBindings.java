@@ -10,15 +10,16 @@ import com.fasterxml.jackson.annotation.JacksonAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @JacksonAnnotation
-public @interface EventMetadata {
+public @interface QueueBindings {
 
-    String exchange() default "";
+    String queueName() default "";
 
-    String routingKey() default "";
+    boolean queueExclusive() default false;
 
-    String exchangeType() default "direct";
+    boolean queueDurable() default true;
 
-    String eventType() default "INTERNAL";
+    boolean queueAutoDelete() default false;
 
-    String[] rolesAllowed() default "none";
+    String queueVhost() default "/";
 }
+
