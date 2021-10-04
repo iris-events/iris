@@ -13,7 +13,7 @@ import id.global.asyncapi.spec.enums.EventType;
 @Inherited
 public @interface MessageHandler {
     // new
-    String queue() default Constants.UNASSIGNED;
+    String queue() default "";
 
     /**
      * On which exchange to listen to direct messages
