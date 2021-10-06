@@ -1,0 +1,638 @@
+{
+  "info": {
+    "title": "Uphold",
+    "description": "Uphold service",
+    "version": "1.6.3-SNAPSHOT"
+  },
+  "asyncapi": "2.0.0",
+  "id": "urn:id:global:uphold",
+  "channels": {
+    "uphold/apto_event": {
+      "subscribe": {
+        "message": {
+          "_extraProperties": {
+            "type": "INTERNAL"
+          },
+          "headers": {
+            "_extensions": {
+              "rolesAllowed": {
+                "name": "rolesAllowed"
+              }
+            }
+          },
+          "name": "AptoEventWrapper",
+          "title": "AptoEventWrapper",
+          "payload": {
+            "$ref": "#/components/schemas/AptoEventWrapper"
+          }
+        }
+      },
+      "publish": {
+        "message": {
+          "_extraProperties": {
+            "type": "INTERNAL"
+          },
+          "headers": {
+            "_extensions": {
+              "rolesAllowed": {
+                "name": "rolesAllowed"
+              }
+            }
+          },
+          "name": "AptoEventWrapper",
+          "title": "AptoEventWrapper",
+          "payload": {
+            "$ref": "#/components/schemas/AptoEventWrapper"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "uphold",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "apto_event",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "uphold/consent_event": {
+      "subscribe": {
+        "message": {
+          "_extraProperties": {
+            "type": "INTERNAL"
+          },
+          "headers": {
+            "_extensions": {
+              "rolesAllowed": {
+                "name": "rolesAllowed"
+              }
+            }
+          },
+          "name": "ConsentEvent",
+          "title": "ConsentEvent",
+          "payload": {
+            "$ref": "#/components/schemas/ConsentEvent"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "uphold",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "consent_event",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AptoAdjustment": {
+        "type": "object",
+        "properties": {
+          "balance_id": {
+            "type": "string"
+          },
+          "balance_native_id": {
+            "type": "string"
+          },
+          "billing_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "exchange_rate": {
+            "type": "number"
+          },
+          "funding_source_name": {
+            "type": "string"
+          },
+          "funding_source_transaction_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "local_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "native_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "native_fee_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AptoAdjustmentType"
+          }
+        }
+      },
+      "KYCAddressReason": {
+        "type": "string",
+        "enum": [
+          "ADDRESS_COMMERCIAL",
+          "ADDRESS_PO_BOX",
+          "ADDRESS_RISKY",
+          "ADDRESS_UPDATE"
+        ]
+      },
+      "AptoDenomination": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "AptoAuthorizationWrapper": {
+        "type": "object",
+        "properties": {
+          "authorization": {
+            "$ref": "#/components/schemas/AptoAuthorization"
+          }
+        }
+      },
+      "AptoTransactionType": {
+        "type": "string",
+        "enum": [
+          "BALANCE_INQUIRY",
+          "CREDIT",
+          "DEBIT",
+          "DECLINE",
+          "NON_FINANCIAL",
+          "PENDING",
+          "PIN_PURCHASE",
+          "PURCHASE",
+          "REFUND",
+          "REVERSAL",
+          "WITHDRAWAL",
+          "UNSUPPORTED"
+        ]
+      },
+      "AptoTransactionState": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "declined",
+          "complete"
+        ]
+      },
+      "ConsentEvent": {
+        "type": "object",
+        "properties": {
+          "acrc_id": {
+            "type": "string"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "requested_at": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConsentStatus"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        }
+      },
+      "AptoAdjustmentType": {
+        "type": "string",
+        "enum": [
+          "capture",
+          "refund"
+        ]
+      },
+      "KYCStatus": {
+        "type": "string",
+        "enum": [
+          "RESUBMIT_DETAILS",
+          "UPLOAD_FILE",
+          "UNDER_REVIEW",
+          "PASSED",
+          "REJECTED",
+          "TEMPORARY_ERROR",
+          "NOT_CHECKED"
+        ]
+      },
+      "Card": {
+        "type": "object",
+        "properties": {
+          "activated_at": {
+            "type": "string"
+          },
+          "cardholder_id": {
+            "type": "string"
+          },
+          "corporation_id": {
+            "type": "string"
+          },
+          "cvv": {
+            "type": "string"
+          },
+          "expiration": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "issued_at": {
+            "type": "string"
+          },
+          "last_four": {
+            "type": "string"
+          },
+          "livemode": {
+            "type": "boolean"
+          },
+          "network": {
+            "type": "string"
+          },
+          "ordered_status": {
+            "type": "string"
+          },
+          "program_id": {
+            "type": "string"
+          },
+          "shipped_at": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "KYCFileReason": {
+        "type": "string",
+        "enum": [
+          "UNRELATED_FILE",
+          "WRONG_FILE",
+          "BLURRY"
+        ]
+      },
+      "AptoCardOrderedStatus": {
+        "type": "string",
+        "enum": [
+          "AVAILABLE",
+          "ORDERED",
+          "RECEIVED"
+        ]
+      },
+      "AptoEvent": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AptoEventData"
+          },
+          "data_type": {
+            "$ref": "#/components/schemas/DataType"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "AptoCardStatus": {
+        "type": "string",
+        "enum": [
+          "CREATED",
+          "ACTIVATED",
+          "DEACTIVATED",
+          "CLOSED"
+        ]
+      },
+      "ConsentStatus": {
+        "type": "string",
+        "enum": [
+          "inProgress",
+          "userActionRequired",
+          "completed",
+          "declined",
+          "expired"
+        ]
+      },
+      "AptoTransactionEvent": {
+        "type": "object",
+        "properties": {
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AptoAdjustmentWrapper"
+            }
+          },
+          "authorizations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AptoAuthorizationWrapper"
+            }
+          },
+          "billing_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "card_id": {
+            "type": "string"
+          },
+          "card_last_four": {
+            "type": "string"
+          },
+          "card_present": {
+            "type": "boolean"
+          },
+          "cardholder_email": {
+            "type": "string"
+          },
+          "cardholder_first_name": {
+            "type": "string"
+          },
+          "cardholder_id": {
+            "type": "string"
+          },
+          "cardholder_last_name": {
+            "type": "string"
+          },
+          "cashback_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "context": {
+            "type": "string"
+          },
+          "corporation_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "decline_code": {
+            "type": "string"
+          },
+          "decline_reason": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dispute_at": {
+            "type": "string"
+          },
+          "dispute_id": {
+            "type": "string"
+          },
+          "dispute_lost_at": {
+            "type": "string"
+          },
+          "dispute_won_at": {
+            "type": "string"
+          },
+          "ecommerce": {
+            "type": "boolean"
+          },
+          "emv": {
+            "type": "boolean"
+          },
+          "fee_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "funding_source_name": {
+            "type": "string"
+          },
+          "hold_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "id": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          },
+          "international": {
+            "type": "boolean"
+          },
+          "livemode": {
+            "type": "boolean"
+          },
+          "local_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "mcc": {
+            "type": "string"
+          },
+          "mcc_icon": {
+            "type": "string"
+          },
+          "mcc_name": {
+            "type": "string"
+          },
+          "merchant_country": {
+            "type": "string"
+          },
+          "merchant_identifier": {
+            "type": "string"
+          },
+          "merchant_locality": {
+            "type": "string"
+          },
+          "merchant_name": {
+            "type": "string"
+          },
+          "merchant_region": {
+            "type": "string"
+          },
+          "merchant_terminal_identifier": {
+            "type": "string"
+          },
+          "native_balance_amount": {
+            "$ref": "#/components/schemas/AptoDenomination"
+          },
+          "network": {
+            "type": "string"
+          },
+          "settlement_date": {
+            "type": "string"
+          },
+          "shift_stand_in": {
+            "type": "boolean"
+          },
+          "state": {
+            "$ref": "#/components/schemas/AptoTransactionState"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AptoTransactionType"
+          }
+        }
+      },
+      "DataType": {
+        "type": "string",
+        "enum": [
+          "cardholder",
+          "card",
+          "transaction"
+        ]
+      },
+      "AptoEventData": {
+        "type": "object",
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/AptoCardEvent"
+          },
+          "cardholder": {
+            "$ref": "#/components/schemas/Cardholder"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/AptoTransactionEvent"
+          }
+        }
+      },
+      "KYCIdentityReason": {
+        "type": "string",
+        "enum": [
+          "WATCHLIST_MATCH",
+          "SSN_MISMATCH",
+          "SSN_INVALID",
+          "IDENTITY_UPDATE"
+        ]
+      },
+      "AptoEventWrapper": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/AptoEvent"
+          }
+        }
+      },
+      "AptoAuthorization": {
+        "type": "object",
+        "properties": {
+          "decline_code": {
+            "type": "string"
+          },
+          "decline_reason": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "Cardholder": {
+        "type": "object",
+        "properties": {
+          "cards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            }
+          },
+          "corporation_id": {
+            "type": "string"
+          },
+          "custodian_uid": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kyc_address_reason": {
+            "$ref": "#/components/schemas/KYCAddressReason"
+          },
+          "kyc_file_reason": {
+            "$ref": "#/components/schemas/KYCFileReason"
+          },
+          "kyc_identity_reason": {
+            "$ref": "#/components/schemas/KYCIdentityReason"
+          },
+          "kyc_passed_at": {
+            "type": "string"
+          },
+          "kyc_status": {
+            "$ref": "#/components/schemas/KYCStatus"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "livemode": {
+            "type": "boolean"
+          },
+          "phone": {
+            "type": "string"
+          }
+        }
+      },
+      "AptoAdjustmentWrapper": {
+        "type": "object",
+        "properties": {
+          "adjustment": {
+            "$ref": "#/components/schemas/AptoAdjustment"
+          }
+        }
+      },
+      "AptoCardEvent": {
+        "type": "object",
+        "properties": {
+          "cardholder_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "string"
+          },
+          "ordered_status": {
+            "$ref": "#/components/schemas/AptoCardOrderedStatus"
+          },
+          "program_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AptoCardStatus"
+          }
+        }
+      }
+    }
+  }
+}

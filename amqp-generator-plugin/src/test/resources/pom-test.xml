@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <appName>uuuu</appName>
+        <appVersion>2.0.0</appVersion>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+        <java.version>16</java.version>
+    </properties>
+
+    <groupId>id.vojko</groupId>
+    <artifactId>amqp-models-${appName}</artifactId>
+    <version>${appVersion}</version>
+    <name>Models for ${appName}</name>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.5.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.12.3</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>id.global.events</groupId>
+                <artifactId>amqp-generator-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate-amqp-models</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactSource>FILE</artifactSource>
+                    <asyncApiFilename>asyncapi.json</asyncApiFilename>
+                    <asyncApiDirectory>target,generated</asyncApiDirectory>
+                    <modelVersion>${project.version}</modelVersion>
+                    <modelName>${project.artifactId}</modelName>
+                    <packageName>id.global.amqp.models</packageName>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
