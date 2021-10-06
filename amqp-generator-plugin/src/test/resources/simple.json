@@ -1,0 +1,205 @@
+{
+  "info": {
+    "title": "Uphold",
+    "description": "uphold application",
+    "version": "1.5.6-SNAPSHOT"
+  },
+  "asyncapi": "2.0.0",
+  "id": "urn:id:global:uphold",
+  "channels": {
+    "uphold/PublishEvent": {
+      "publish": {
+        "message": {
+          "name": "PublishEvent",
+          "title": "PublishEvent",
+          "payload": {
+            "$ref": "#/components/schemas/PublishEvent"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "uphold",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "apto_event_wrapper",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "uphold/SubscribeEvent": {
+      "subscribe": {
+        "message": {
+          "name": "SubscribeEvent",
+          "title": "SubscribeEvent",
+          "payload": {
+            "$ref": "#/components/schemas/SubscribeEvent"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "uphold",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "uphold_event",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "uphold/SubscribeEventTwo": {
+      "subscribe": {
+        "message": {
+          "name": "SubscribeEventTwo",
+          "title": "SubscribeEventTwo",
+          "payload": {
+            "$ref": "#/components/schemas/SubscribeEventTwo"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "uphold",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "consent_event",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SubscribeEvent": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "null"
+          },
+          "retries": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        }
+      },
+      "ConsentStatus": {
+        "type": "string",
+        "enum": [
+          "inProgress",
+          "userActionRequired",
+          "completed",
+          "declined",
+          "expired"
+        ]
+      },
+      "APublishAEventSub1": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "data_type": {
+            "$ref": "#/components/schemas/DataType"
+          },
+          "vojko_type": {
+            "$ref": "#/components/schemas/VojkoType"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscribeEventTwo": {
+        "type": "object",
+        "properties": {
+          "acrc_id": {
+            "type": "string"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "requested_at": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConsentStatus"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        }
+      },
+      "DataType": {
+        "type": "string",
+        "enum": [
+          "cardholder",
+          "card",
+          "transaction"
+        ]
+      },
+      "VojkoType": {
+        "type": "string",
+        "enum": [
+          "vojko",
+          "trojko",
+          "bojko"
+        ]
+      },
+      "PublishEvent": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/APublishAEventSub1"
+          }
+        }
+      }
+    }
+  }
+}
