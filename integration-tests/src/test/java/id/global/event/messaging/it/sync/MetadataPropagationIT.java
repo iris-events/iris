@@ -33,7 +33,7 @@ public class MetadataPropagationIT {
     private static final String EVENT_QUEUE1 = "queue1";
     private static final String EVENT_QUEUE2 = "queue2";
     private static final String EVENT_QUEUE3 = "queue3";
-    private static final String EXCHANGE = "EXCHANGE";
+    private static final String EXCHANGE = "exchange";
 
     @Inject
     AmqpProducer producer1;
@@ -99,7 +99,7 @@ public class MetadataPropagationIT {
         public AnnotationService() {
         }
 
-        @MessageHandler(queue = "annotated_queue", exchange = "annotated_exchange")
+        @MessageHandler(queue = "annotated-queue", exchange = "annotated-exchange")
         public void handle(AnnotatedEvent event) {
             count.incrementAndGet();
             handledEvent.complete(new Event());

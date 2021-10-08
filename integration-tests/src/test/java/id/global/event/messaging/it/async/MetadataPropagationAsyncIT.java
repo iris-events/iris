@@ -28,10 +28,10 @@ import io.quarkus.test.junit.QuarkusTest;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MetadataPropagationAsyncIT {
 
-    private static final String EVENT_QUEUE1 = "queue1_async";
-    private static final String EVENT_QUEUE2 = "queue2_async";
-    private static final String EVENT_QUEUE3 = "queue3_async";
-    private static final String EXCHANGE = "EXCHANGE_async";
+    private static final String EVENT_QUEUE1 = "queue1-async";
+    private static final String EVENT_QUEUE2 = "queue2-async";
+    private static final String EVENT_QUEUE3 = "queue3-async";
+    private static final String EXCHANGE = "exchange-async";
     @Inject
     AmqpAsyncProducer producer1;
 

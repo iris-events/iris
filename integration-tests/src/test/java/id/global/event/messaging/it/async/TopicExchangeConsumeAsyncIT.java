@@ -23,7 +23,7 @@ import io.quarkus.test.junit.QuarkusTest;
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TopicExchangeConsumeAsyncIT {
-    public static final String TOPIC_EXCHANGE = "topic_test_2222_async";
+    public static final String TOPIC_EXCHANGE = "topic-test-2222-async";
 
     @Inject
     AmqpAsyncProducer asyncProducer;

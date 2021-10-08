@@ -2,7 +2,7 @@ package id.global.event.messaging.it.events;
 
 import id.global.common.annotations.EventMetadata;
 
-@EventMetadata(exchange = "annotated_exchange", routingKey = "annotated_queue", exchangeType = "direct")
+@EventMetadata(exchange = "annotated-exchange", routingKey = "annotated-queue", exchangeType = "direct")
 public class AnnotatedEvent {
     private String name;
     private Long age;

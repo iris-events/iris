@@ -23,8 +23,8 @@ import io.quarkus.test.junit.QuarkusTest;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProduceAndConsumeAsyncIT {
     public static final String EVENT_PAYLOAD_NAME = "name";
-    public static final String EVENT_QUEUE_PRIORITY = "ev_queue_async";
-    public static final String EXCHANGE_ADDITIONAL = "ev_exchange_async";
+    public static final String EVENT_QUEUE_PRIORITY = "ev-queue-async";
+    public static final String EXCHANGE_ADDITIONAL = "ev-exchange-async";
     public static final int messageToSend = 100;
 
     private final AmqpAsyncProducer amqpAsyncProducer;

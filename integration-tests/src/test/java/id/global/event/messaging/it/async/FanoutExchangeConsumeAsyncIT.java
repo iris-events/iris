@@ -41,8 +41,8 @@ public class FanoutExchangeConsumeAsyncIT {
         service.reset();
     }
 
-    private static final String EXCHANGE = "test_fanout_exchange_async";
-    private static final String EXCHANGE_SECOND = "my.fanout.async";
+    private static final String EXCHANGE = "test-fanout-exchange-async";
+    private static final String EXCHANGE_SECOND = "my-fanout-async";
 
     @Test
     void fanoutTest() throws Exception {
