@@ -29,6 +29,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         final var validationRules = new ValidationRules(
                 1,
                 false,
+                false,
                 Set.of(QUEUE_PARAM),
                 Set.of(QUEUE_PARAM));
         final var validator = getAnnotationInstanceValidator(serviceClass,
@@ -39,11 +40,11 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     @Test
     public void validateNonKebabCaseQueueShouldFail() {
-        final var serviceClass = ValidationNotKebabCaseTestService.class;
+        final var serviceClass = ValidationNotOkTestService.class;
         final var annotationClass = MessageHandler.class;
 
         final var annotationInstance = getAnnotationInstance(serviceClass, annotationClass);
-        final var validationRules = new ValidationRules(null, null, null, Set.of(QUEUE_PARAM));
+        final var validationRules = new ValidationRules(null, false, false, null, Set.of(QUEUE_PARAM));
         final var validator = getAnnotationInstanceValidator(
                 serviceClass, validationRules);
 
@@ -56,10 +57,10 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         final var annotationClass = MessageHandler.class;
 
         final var annotationInstance = getAnnotationInstance(serviceClass, annotationClass);
-        final var validationRules = new ValidationRules(1, null, null, null);
+        final var validationRules = new ValidationRules(1, false, false, null, null);
         final var validator = getAnnotationInstanceValidator(
                 serviceClass, validationRules);
-        final var wrongValidationRules = new ValidationRules(3, null, null, null);
+        final var wrongValidationRules = new ValidationRules(3, false, false, null, null);
         final var wrongValidator = getAnnotationInstanceValidator(
                 serviceClass, wrongValidationRules);
 
@@ -74,7 +75,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         final var annotationClass = MessageHandler.class;
 
         final var annotationInstance = getAnnotationInstance(serviceClass, annotationClass);
-        final var validationRules = new ValidationRules(null, false, null, null);
+        final var validationRules = new ValidationRules(null, false, false, null, null);
         final var indexWithEventAsExternalDependency = indexOf(serviceClass);
         final var validator = getAnnotationInstanceValidator(
                 indexWithEventAsExternalDependency, validationRules);
@@ -89,21 +90,22 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         final var annotationClass = MessageHandler.class;
 
         final var annotationInstance = getAnnotationInstance(serviceClass, annotationClass);
-        final var validationRules = new ValidationRules(null, null, Set.of(QUEUE_PARAM), null);
+        final var validationRules = new ValidationRules(null, false, false, Set.of(QUEUE_PARAM), null);
         AnnotationInstanceValidator validator = getAnnotationInstanceValidator(
                 serviceClass, validationRules);
 
         assertDoesNotThrow(() -> validator.validateParamsExist(annotationInstance));
 
         String nonExistentParam = "doesntExist";
-        final var nonExistingParamRules = new ValidationRules(null, null, Set.of(nonExistentParam), null);
+        final var nonExistingParamRules = new ValidationRules(null, false, false, Set.of(nonExistentParam), null);
         final var nonExistingParamValidator = getAnnotationInstanceValidator(
                 serviceClass, nonExistingParamRules);
 
         assertThrows(MessageHandlerValidationException.class,
                 () -> nonExistingParamValidator.validateParamsExist(annotationInstance));
 
-        final var additionalNonExistingParamRules = new ValidationRules(null, null, Set.of(QUEUE_PARAM, nonExistentParam),
+        final var additionalNonExistingParamRules = new ValidationRules(null, false, false,
+                Set.of(QUEUE_PARAM, nonExistentParam),
                 null);
         final var additionalNonExistingParamValidator = getAnnotationInstanceValidator(
                 serviceClass, additionalNonExistingParamRules);
@@ -114,11 +116,11 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     @Test
     public void validateParamsAreKebabCase() {
-        final var validationRules = new ValidationRules(null, null, null, Set.of(QUEUE_PARAM));
+        final var validationRules = new ValidationRules(null, false, false, null, Set.of(QUEUE_PARAM));
         final var validationOkServiceClass = ValidationOKTestService.class;
         final var messageHandlerAnnotationClass = MessageHandler.class;
         final var topicMessageHandlerAnnotationClass = TopicMessageHandler.class;
-        final var validationNonKebabServiceClass = ValidationNotKebabCaseTestService.class;
+        final var validationNonKebabServiceClass = ValidationNotOkTestService.class;
 
         final var validationOkMessageHandlerInstance = getAnnotationInstance(validationOkServiceClass,
                 messageHandlerAnnotationClass);
@@ -132,7 +134,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         final var validator = getAnnotationInstanceValidator(
                 validationOkServiceClass, validationRules);
 
-        final var topicValidationRules = new ValidationRules(null, null, null, Set.of(EXCHANGE_PARAM));
+        final var topicValidationRules = new ValidationRules(null, false, false, null, Set.of(EXCHANGE_PARAM));
         AnnotationInstanceValidator topicValidator = getAnnotationInstanceValidator(
                 validationOkServiceClass, topicValidationRules);
 
@@ -151,6 +153,28 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
                         validationNonKebabTopicMessageHandlerInstance));
     }
 
+    @Test
+    public void validateTopicParameter() {
+        final var validationRules = new ValidationRules(null, false, true, null, null);
+        final var serviceClassOk = ValidationOKTestService.class;
+        final var serviceClassNotOk = ValidationNotOkTestService.class;
+        final var annotationClass = TopicMessageHandler.class;
+
+        AnnotationInstanceValidator validatorOk = getAnnotationInstanceValidator(serviceClassOk,
+                validationRules);
+        AnnotationInstanceValidator validatorNotOk = getAnnotationInstanceValidator(serviceClassNotOk,
+                validationRules);
+
+        assertDoesNotThrow(() -> validatorOk.validateTopicValidity(getAnnotationInstance(serviceClassOk, annotationClass)));
+        assertThrows(MessageHandlerValidationException.class,
+                () -> validatorNotOk.validateTopicValidity(getAnnotationInstance(serviceClassNotOk, annotationClass)));
+
+        assertThrows(MessageHandlerValidationException.class,
+                () -> validatorNotOk.validateTopicValidity(getAnnotationInstance(serviceClassNotOk, annotationClass, 1)));
+        assertThrows(MessageHandlerValidationException.class,
+                () -> validatorNotOk.validateTopicValidity(getAnnotationInstance(serviceClassNotOk, annotationClass, 2)));
+    }
+
     private AnnotationInstanceValidator getAnnotationInstanceValidator(Class<?> serviceClass,
             ValidationRules validationRules) {
         return getAnnotationInstanceValidator(indexOf(serviceClass, Event.class), validationRules);
@@ -161,9 +185,13 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
     }
 
     private AnnotationInstance getAnnotationInstance(Class<?> serviceClass, Class<?> annotationClass) {
+        return getAnnotationInstance(serviceClass, annotationClass, 0);
+    }
+
+    private AnnotationInstance getAnnotationInstance(Class<?> serviceClass, Class<?> annotationClass, int index) {
         return indexOf(serviceClass, Event.class)
                 .getAnnotations(DotName.createSimple(annotationClass.getCanonicalName()))
-                .get(0);
+                .get(index);
     }
 
     private static class ValidationOKTestService {
@@ -172,19 +200,30 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         public void handle(Event event) {
         }
 
-        @TopicMessageHandler(exchange = "kebab-topic-exchange", bindingKeys = "test.*.key")
+        @TopicMessageHandler(exchange = "kebab-topic-exchange", bindingKeys = { "test.*.key", "test.no.wildcard",
+                "testsimple", "test.end.with.wildcard.*" })
         public void handleTopic(Event event) {
         }
+
     }
 
-    private static class ValidationNotKebabCaseTestService {
+    private static class ValidationNotOkTestService {
 
         @MessageHandler(queue = "CamelCaseQueue")
         public void handle(Event event) {
         }
 
-        @TopicMessageHandler(exchange = "NonKebabExchange", bindingKeys = "test.*.key")
+        @TopicMessageHandler(exchange = "NonKebabExchange", bindingKeys = { "wrong.**.key" })
         public void handleTopic(Event event) {
         }
+
+        @TopicMessageHandler(exchange = "NonKebabExchange", bindingKeys = { "WRONG.upper.case" })
+        public void handleTopic2(Event event) {
+        }
+
+        @TopicMessageHandler(exchange = "NonKebabExchange", bindingKeys = { "WRONG.end.with.dot." })
+        public void handleTopic3(Event event) {
+        }
+
     }
 }
