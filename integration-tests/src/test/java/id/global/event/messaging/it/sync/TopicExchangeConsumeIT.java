@@ -23,7 +23,7 @@ import io.quarkus.test.junit.QuarkusTest;
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TopicExchangeConsumeIT {
-    public static final String TOPIC_EXCHANGE = "topic_test_2222";
+    public static final String TOPIC_EXCHANGE = "topic-test-2222";
 
     @Inject
     AmqpProducer producer;

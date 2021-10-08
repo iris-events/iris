@@ -1,4 +1,4 @@
-package id.global.event.messaging.test;
+package id.global.event.messaging.runtime.consumer;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 
@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 
-import id.global.event.messaging.runtime.consumer.AmqpConsumer;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;

@@ -40,7 +40,7 @@ public class FanoutExchangeConsumeIT {
         service.reset();
     }
 
-    private static final String EXCHANGE = "test_fanout_exchange";
+    private static final String EXCHANGE = "test-fanout-exchange";
 
     @Test
     void fanoutTest() throws Exception {
@@ -56,7 +56,7 @@ public class FanoutExchangeConsumeIT {
 
     @Test
     void publishMessageToFanout_ShouldReceiveTwoMessages() {
-        producer.publish("my.fanout",
+        producer.publish("my-fanout",
                 Optional.empty(),
                 FANOUT,
                 new Event("a", 23L),
@@ -120,13 +120,13 @@ public class FanoutExchangeConsumeIT {
             return eventCount.get();
         }
 
-        @FanoutMessageHandler(exchange = "my.fanout")
+        @FanoutMessageHandler(exchange = "my-fanout")
         public void handleFanoutMessage(Event event) {
             eventCount.getAndIncrement();
             fanout1.complete(event);
         }
 
-        @FanoutMessageHandler(exchange = "my.fanout")
+        @FanoutMessageHandler(exchange = "my-fanout")
         public void handleFanoutOtherMessage(Event event) {
             eventCount.getAndIncrement();
             fanout2.complete(event);

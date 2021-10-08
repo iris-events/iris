@@ -24,9 +24,9 @@ import io.quarkus.test.junit.QuarkusTest;
 public class ProduceAndConsumeIT {
     public static final String EVENT_PAYLOAD_NAME = "name";
     public static final long EVENT_PAYLOAD_AGE = 10L;
-    public static final String EVENT_QUEUE = "test_EventQueue";
-    public static final String EVENT_QUEUE_PRIORITY = "test_EventQueue_priority";
-    public static final String EXCHANGE = "test_exchange";
+    public static final String EVENT_QUEUE = "test-event-queue";
+    public static final String EVENT_QUEUE_PRIORITY = "test-event-queue-priority";
+    public static final String EXCHANGE = "test-exchange";
 
     @Inject
     AmqpProducer producer;

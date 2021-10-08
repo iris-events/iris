@@ -7,8 +7,8 @@ import id.global.asyncapi.spec.annotations.MessageHandler;
 @ApplicationScoped
 public class TestHandlerService {
 
-    public static final String EVENT_QUEUE = "EventQueue";
-    public static final String EVENT_QUEUE_PRIORITY = "EventQueue_priority";
+    public static final String EVENT_QUEUE = "event-queue";
+    public static final String EVENT_QUEUE_PRIORITY = "event-queue-priority";
 
     @MessageHandler(queue = EVENT_QUEUE)
     public void handle(Event event) {

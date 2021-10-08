@@ -1,4 +1,4 @@
-package id.global.event.messaging.test;
+package id.global.event.messaging.deployment;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
 import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
@@ -8,34 +8,30 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
-import org.jboss.jandex.Indexer;
 import org.jboss.jandex.Type;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.TopicMessageHandler;
-import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
-import id.global.event.messaging.deployment.MessageHandlerScanner;
-import id.global.event.messaging.deployment.MessageHandlerValidationException;
+import id.global.event.messaging.BaseIndexingTest;
+import id.global.event.messaging.test.Event;
+import id.global.event.messaging.test.TestHandlerService;
 
-public class MessageHandlerAnnotationScannerTest {
-    public static final String FANOUT_EXCHANGE = "fanout_exchange";
-    public static final String TOPIC_EXCHANGE = "topic_exchange";
+public class MessageHandlerScannerTest extends BaseIndexingTest {
+    public static final String FANOUT_EXCHANGE = "fanout-exchange";
+    public static final String TOPIC_EXCHANGE = "topic-exchange";
 
     public static class MessageHandlerService {
-        public static final String EVENT_QUEUE = "EventQueue";
-        public static final String EVENT_QUEUE_PRIORITY = "EventQueue_priority";
+        public static final String EVENT_QUEUE = "event-queue";
+        public static final String EVENT_QUEUE_PRIORITY = "event-queue-priority";
 
         @MessageHandler(queue = EVENT_QUEUE)
         public void handle(Event event) {
@@ -87,12 +83,12 @@ public class MessageHandlerAnnotationScannerTest {
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItem = handleCustomQueueParam.get(0);
         assertNotNull(messageHandlerInfoBuildItem);
         assertEquals("handleCustomQueueParam", messageHandlerInfoBuildItem.getMethodName());
-        assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getQueue());
+        Assertions.assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getQueue());
 
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItemClassName = handle.get(0);
         assertNotNull(messageHandlerInfoBuildItemClassName);
         assertEquals("handle", messageHandlerInfoBuildItemClassName.getMethodName());
-        assertEquals("EventQueue", messageHandlerInfoBuildItemClassName.getQueue());
+        assertEquals("event-queue", messageHandlerInfoBuildItemClassName.getQueue());
     }
 
     @Test
@@ -158,30 +154,4 @@ public class MessageHandlerAnnotationScannerTest {
         return scanner.scanMessageHandlerAnnotations();
     }
 
-    private Index indexOf(Class<?>... classes) {
-        Indexer indexer = new Indexer();
-
-        for (Class<?> klazz : classes) {
-            index(indexer, pathOf(klazz));
-        }
-
-        return indexer.complete();
-    }
-
-    private void index(Indexer indexer, String resName) {
-        try {
-            InputStream stream = tcclGetResourceAsStream(resName);
-            indexer.index(stream);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(ioe);
-        }
-    }
-
-    private InputStream tcclGetResourceAsStream(String path) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
-    }
-
-    private String pathOf(Class<?> clazz) {
-        return clazz.getName().replace('.', '/').concat(".class");
-    }
 }
