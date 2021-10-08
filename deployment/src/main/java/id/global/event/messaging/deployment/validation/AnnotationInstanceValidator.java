@@ -1,14 +1,18 @@
 package id.global.event.messaging.deployment.validation;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
+import id.global.event.messaging.deployment.constants.AnnotationInstanceParams;
 
 public class AnnotationInstanceValidator {
     private static final String KEBAB_CASE_PATTERN = "^([a-z][a-z0-9]*)(-[a-z0-9]+)*$";
+    private static final String TOPIC_PATTERN = "^([*#]|[a-z0-9]+)([.]([*#]|[a-z0-9]+))*$";
 
     protected final IndexView index;
     protected final ValidationRules validationRules;
@@ -25,6 +29,10 @@ public class AnnotationInstanceValidator {
 
         if (!validationRules.allowExternalDependencyParams()) {
             validateMethodParamExternalDependency(annotationInstance);
+        }
+
+        if (validationRules.checkTopicValidity()) {
+            validateTopicValidity(annotationInstance);
         }
     }
 
@@ -75,6 +83,30 @@ public class AnnotationInstanceValidator {
         }
         for (String param : params) {
             validateParamExists(param, annotationInstance);
+        }
+    }
+
+    public void validateTopicValidity(final AnnotationInstance annotationInstance) {
+        final var annotationValue = annotationInstance.value(AnnotationInstanceParams.BINDING_KEYS_PARAM);
+        if (annotationInstance != null) {
+            final var pattern = Pattern.compile(TOPIC_PATTERN);
+            final var methodInfo = annotationInstance.target().asMethod();
+            final var className = methodInfo.declaringClass().name().toString();
+            final var methodName = methodInfo.name();
+
+            List<String> bindingKeys = Arrays.asList(annotationValue.asStringArray());
+
+            bindingKeys.forEach(bindingKey -> {
+                if (!pattern.matcher(bindingKey).matches()) {
+                    throw new MessageHandlerValidationException(
+                            String.format(
+                                    "Binding key \"%s\" on method %s in class %s does not conform to the TOPIC format. "
+                                            + "Can contain only lowercase alphanumerical characters, dots and wildcards (*).",
+                                    bindingKey,
+                                    methodName,
+                                    className));
+                }
+            });
         }
     }
 

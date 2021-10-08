@@ -51,7 +51,8 @@ public class MessageHandlerScanner {
     private Stream<MessageHandlerInfoBuildItem> scanTopicMessageHandlerAnnotations(
             Stream<AnnotationInstance> topicAnnotations) {
         return topicAnnotations.filter(isNotSyntheticPredicate()).map(annotationInstance -> {
-            final var validationRules = getValidationRules(Set.of(EXCHANGE_PARAM, BINDING_KEYS_PARAM), Set.of(EXCHANGE_PARAM));
+            final var validationRules = getValidationRules(true, Set.of(EXCHANGE_PARAM, BINDING_KEYS_PARAM),
+                    Set.of(EXCHANGE_PARAM));
             final var validator = new AnnotationInstanceValidator(index, validationRules);
             validator.validate(annotationInstance);
 
@@ -123,9 +124,16 @@ public class MessageHandlerScanner {
     }
 
     private ValidationRules getValidationRules(final Set<String> requiredParams, final Set<String> kebabCaseOnlyParams) {
+        return getValidationRules(false, requiredParams, kebabCaseOnlyParams);
+    }
+
+    private ValidationRules getValidationRules(boolean checkTopicValidity, final Set<String> requiredParams,
+            final Set<String> kebabCaseOnlyParams) {
         return new ValidationRules(1,
                 false,
+                checkTopicValidity,
                 requiredParams,
                 kebabCaseOnlyParams);
+
     }
 }
