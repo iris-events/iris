@@ -1,9 +1,5 @@
 package id.global.asyncapi.spec.enums;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public enum ExchangeType {
     DIRECT("direct"),
     FANOUT("fanout"),
@@ -20,12 +16,11 @@ public enum ExchangeType {
     }
 
     public static ExchangeType fromType(String type) {
-        List<ExchangeType> collect = Arrays.stream(ExchangeType.values())
-                .filter(exchangeType -> exchangeType.getType().equals(type) || exchangeType.toString().equals(type))
-                .collect(Collectors.toList());
-        if (collect.isEmpty()) {
-            throw new IllegalArgumentException("Unknown type provided");
+        for (ExchangeType exchangeType : ExchangeType.values()) {
+            if (exchangeType.getType().equals(type) || exchangeType.toString().equals(type)) {
+                return exchangeType;
+            }
         }
-        return collect.get(0);
+        throw new IllegalArgumentException(String.format("Unknown type provided %s", type));
     }
 }
