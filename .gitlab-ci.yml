@@ -15,5 +15,5 @@ test:
   script:
     - mvn -s $MAVEN_SETTINGS $MAVEN_CLI_OPTS verify -Dci=$CI_JOB_ID
   services:
-    - name: rabbitmq:3.8.19-alpine
+    - name: rabbitmq:3.8-alpine
       alias: rabbitmq

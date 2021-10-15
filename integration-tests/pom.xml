@@ -17,7 +17,6 @@
     <dependency>
       <groupId>id.global.common</groupId>
       <artifactId>globalid-common</artifactId>
-      <version>1.0.13</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -56,6 +55,7 @@
           <execution>
             <goals>
               <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
           </execution>
           <execution>
@@ -78,7 +78,7 @@
           <skip>${test.skip.docker}</skip>
           <images>
             <image>
-              <name>rabbitmq:3.8.19-alpine</name>
+              <name>rabbitmq:3.8-alpine</name>
               <alias>rabbitmq-quarkus-eda-it</alias>
               <run>
                 <env>

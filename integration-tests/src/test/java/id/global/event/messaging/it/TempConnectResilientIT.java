@@ -14,7 +14,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TempConnectResilientTest {
+public class TempConnectResilientIT {
 
     @Inject
     ConsumerConnectionProvider testConnectionProvider;

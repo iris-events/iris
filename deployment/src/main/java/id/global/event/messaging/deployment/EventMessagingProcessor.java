@@ -7,6 +7,7 @@ import java.util.function.BooleanSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.ConsumerInitRecorder;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
@@ -63,7 +64,8 @@ class EventMessagingProcessor {
                                 AmqpConsumerContainer.class,
                                 EventContext.class,
                                 AmqpProducer.class,
-                                ConnectionFactoryProvider.class)
+                                ConnectionFactoryProvider.class,
+                                EventMetadata.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());

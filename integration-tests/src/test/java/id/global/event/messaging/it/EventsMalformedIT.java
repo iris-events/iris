@@ -25,7 +25,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class EventsMalformedTest {
+public class EventsMalformedIT {
 
     private static final String DIRECT_EXCHANGE = "md-exchange";
     private static final String TOPIC_EXCHANGE = "mt-exchange";
