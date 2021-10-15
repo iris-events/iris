@@ -2,17 +2,20 @@ package id.global.event.messaging.it.sync;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,10 +23,11 @@ import org.junit.jupiter.api.TestInstance;
 import com.rabbitmq.client.AMQP;
 
 import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.event.messaging.it.events.AnnotatedEvent;
+import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
+import id.global.event.messaging.runtime.producer.MetadataInfo;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -36,84 +40,64 @@ public class MetadataPropagationIT {
     private static final String EXCHANGE = "exchange";
 
     @Inject
-    AmqpProducer producer1;
+    AmqpProducer testProducer;
 
     @Inject
     FinalService finalService;
 
     @Inject
-    AnnotationService annotationService;
+    Service1 service1;
+
+    @Inject
+    Service2 service2;
+
+    @BeforeEach
+    void setUp() {
+        finalService.reset();
+        service1.reset();
+        service2.reset();
+    }
 
     @Test
-    @DisplayName("Publish should work OOTB if annotated Event object is provided")
-    void publishAnnotatedEvent() throws Exception {
-        producer1.publish(new AnnotatedEvent("name", 1L));
-        annotationService.getHandledEvent().get(1, TimeUnit.SECONDS);
-        assertEquals(1, AnnotationService.count.get());
+    @DisplayName("Publishing correctly annotated event with extra metadata, should publish correctly")
+    void publishedAnnotatedEventWithMetadata() throws ExecutionException, InterruptedException, TimeoutException {
+        final String uuid = UUID.randomUUID().toString();
+        finalService.setLimit(2);
+        finalService.setLimit(1);
+
+        MetadataInfo metadataInfo = new MetadataInfo(uuid);
+
+        boolean isPublished = testProducer.publish(new AnnotatedEvent1(uuid, 1L), metadataInfo);
+
+        finalService.getHandledEvent().get(2, TimeUnit.SECONDS);
+        assertThat(isPublished, is(true));
+        assertThat(Service1.count.get(), is(1));
+        assertThat(Service2.count.get(), is(1));
+        assertThat(FinalService.count.get(), is(1));
     }
 
     @Test
     @DisplayName("Event published should be accompanied with correlationId to the final service")
-    void publishEventsWithCorrelationIds() throws Exception {
+    void publishPropagatesCorrelationId() throws Exception {
         for (int i = 0; i < 5; i++) {
             final var uuid1 = UUID.randomUUID().toString();
             final var uuid2 = UUID.randomUUID().toString();
+
             publishEvent(uuid1, uuid1);
             publishEvent(uuid2, uuid2);
             publishEvent("Event without correlationId");
         }
         finalService.getHandledEvent().get();
-        assertEquals(10, Service1.count.get());
-        assertEquals(10, Service2.count.get());
-        assertEquals(10, FinalService.count.get());
+        assertThat(Service1.count.get(), is(10));
+        assertThat(Service2.count.get(), is(10));
+        assertThat(FinalService.count.get(), is(10));
     }
 
-    private void publishEvent(final String name, final String correlationId) {
-        final var amqpBasicProperties = Optional.ofNullable(correlationId).map(cId -> new AMQP.BasicProperties().builder()
-                .correlationId(correlationId)
-                .build()).orElse(null);
-
-        CompletableFuture.runAsync(() -> producer1.publish(
-                EXCHANGE,
-                Optional.of(EVENT_QUEUE1),
-                DIRECT,
-                new Event(correlationId, 0L),
-                false, amqpBasicProperties));
-    }
-
-    private void publishEvent(final String name) {
-        CompletableFuture.runAsync(() -> producer1.publish(
-                EXCHANGE,
-                Optional.of(EVENT_QUEUE1),
-                DIRECT,
-                new Event(name, 0L),
-                false));
-    }
-
-    @ApplicationScoped
-    public static class AnnotationService {
-        private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
-        public static final AtomicInteger count = new AtomicInteger(0);
-
-        @Inject
-        public AnnotationService() {
-        }
-
-        @MessageHandler(queue = "annotated-queue", exchange = "annotated-exchange")
-        public void handle(AnnotatedEvent event) {
-            count.incrementAndGet();
-            handledEvent.complete(new Event());
-        }
-
-        public CompletableFuture<Event> getHandledEvent() {
-            return handledEvent;
-        }
-
-    }
-
+    @SuppressWarnings("unused")
     @ApplicationScoped
     public static class Service1 {
-        private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+
+        private CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         public static final AtomicInteger count = new AtomicInteger(0);
         private final AmqpProducer producer;
         private final EventContext eventContext;
@@ -124,21 +108,27 @@ public class MetadataPropagationIT {
             this.eventContext = eventContext;
         }
 
+        public void reset() {
+            count.set(0);
+            handledEvent = new CompletableFuture<>();
+        }
+
         @MessageHandler(queue = EVENT_QUEUE1, exchange = EXCHANGE)
         public void handle(Event event) {
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
+            if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
                 handledEvent.complete(event);
-                producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE2), TOPIC, event, true);
+                producer.publish(event, EXCHANGE, EVENT_QUEUE2, TOPIC);
             }
         }
     }
 
+    @SuppressWarnings("unused")
     @ApplicationScoped
     public static class Service2 {
 
-        private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+        private CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         public static final AtomicInteger count = new AtomicInteger(0);
         private final EventContext eventContext;
 
@@ -150,35 +140,52 @@ public class MetadataPropagationIT {
             this.eventContext = eventContext;
         }
 
+        public void reset() {
+            count.set(0);
+            handledEvent = new CompletableFuture<>();
+        }
+
         @MessageHandler(queue = EVENT_QUEUE2, exchange = EXCHANGE)
         public void handle(Event event) {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
+            if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
                 handledEvent.complete(event);
-                producer.publish(EXCHANGE, Optional.of(EVENT_QUEUE3), TOPIC, event, true);
+                producer.publish(event, EXCHANGE, EVENT_QUEUE3, TOPIC);
             }
         }
     }
 
+    @SuppressWarnings("unused")
     @ApplicationScoped
     public static class FinalService {
-        private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+        private CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         public static final AtomicInteger count = new AtomicInteger(0);
         private final EventContext eventContext;
+        private static int limit = 10;
+
+        private void setLimit(int limit) {
+            FinalService.limit = limit;
+        }
 
         @Inject
         public FinalService(EventContext eventContext) {
             this.eventContext = eventContext;
         }
 
+        public void reset() {
+            count.set(0);
+            FinalService.limit = 10;
+            handledEvent = new CompletableFuture<>();
+        }
+
         @MessageHandler(queue = EVENT_QUEUE3, exchange = EXCHANGE)
         public void handle(Event event) {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
-            if (event.getName().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
-                if (count.incrementAndGet() == 10) {
+            if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
+                if (count.incrementAndGet() == FinalService.limit) {
                     handledEvent.complete(event);
                 }
             }
@@ -188,5 +195,27 @@ public class MetadataPropagationIT {
             return handledEvent;
         }
 
+    }
+
+    @ProducedEvent(exchange = EXCHANGE, queue = EVENT_QUEUE1)
+    private record AnnotatedEvent1(String name, long age) {
+    }
+
+    private void publishEvent(final String name, final String correlationId) {
+        final MetadataInfo metadataInfo = new MetadataInfo(correlationId);
+        CompletableFuture.runAsync(() -> testProducer.publish(
+                new Event(name, 0L),
+                EXCHANGE,
+                EVENT_QUEUE1,
+                DIRECT,
+                metadataInfo));
+    }
+
+    private void publishEvent(final String name) {
+        CompletableFuture.runAsync(() -> testProducer.publish(
+                new Event(name, 0L),
+                EXCHANGE,
+                EVENT_QUEUE1,
+                DIRECT));
     }
 }

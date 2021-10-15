@@ -4,17 +4,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import id.global.event.messaging.runtime.ConnectionFactoryProvider;
-import id.global.event.messaging.runtime.ConsumerConfigRecorder;
+import id.global.event.messaging.runtime.ConsumerInitRecorder;
+import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
+import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
-import id.global.event.messaging.runtime.producer.AmqpAsyncProducer;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
@@ -40,7 +43,7 @@ class EventMessagingProcessor {
     }
 
     private static final String FEATURE = "event-messaging";
-    private static final Logger LOG = Logger.getLogger(EventMessagingProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventMessagingProcessor.class);
 
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     FeatureBuildItem feature() {
@@ -52,9 +55,11 @@ class EventMessagingProcessor {
         additionalBeanBuildItemBuildProducer.produce(
                 new AdditionalBeanBuildItem.Builder()
                         .addBeanClasses(
+                                HostnameProvider.class,
+                                ConsumerConnectionProvider.class,
+                                ProducerConnectionProvider.class,
                                 AmqpConsumerContainer.class,
                                 EventContext.class,
-                                AmqpAsyncProducer.class,
                                 AmqpProducer.class,
                                 ConnectionFactoryProvider.class)
                         .setUnremovable()
@@ -72,12 +77,12 @@ class EventMessagingProcessor {
 
     @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerConfigRecorder consumerConfigRecorder,
+    void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerInitRecorder consumerInitRecorder,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
         // init the consumer with config properties
         // this should be moved to its own build step
         if (!messageHandlerInfoBuildItems.isEmpty()) {
-            consumerConfigRecorder.initConsumerConfig(beanContainer.getValue());
+            consumerInitRecorder.initConsumers(beanContainer.getValue());
         }
     }
 

@@ -12,7 +12,7 @@ import id.global.event.messaging.deployment.constants.AnnotationInstanceParams;
 
 public class AnnotationInstanceValidator {
     private static final String KEBAB_CASE_PATTERN = "^([a-z][a-z0-9]*)(-[a-z0-9]+)*$";
-    private static final String TOPIC_PATTERN = "^([*#]|[a-z0-9]+)([.]([*#]|[a-z0-9]+))*$";
+    private static final String TOPIC_PATTERN = "^([*#]|[a-z0-9-]+)([.]([*#]|[a-z0-9-]+))*$";
 
     protected final IndexView index;
     protected final ValidationRules validationRules;

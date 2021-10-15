@@ -5,7 +5,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import id.global.event.messaging.runtime.context.AmqpContext;
@@ -15,7 +16,8 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class MethodHandleRecorder {
-    private static final Logger LOG = Logger.getLogger(MethodHandleRecorder.class);
+
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandleRecorder.class.getName());
 
     public void registerConsumer(final BeanContainer beanContainer, MethodHandleContext methodHandleContext,
             AmqpContext amqpContext)

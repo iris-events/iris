@@ -1,13 +1,15 @@
 package id.global.event.messaging.runtime.consumer;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,15 +43,15 @@ public class AmqpConsumerTest {
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);
 
-        Assertions.assertFalse(handler.isEventReceived());
-        Assertions.assertNull(handler.getPayload());
+        assertThat(handler.isEventReceived(), is(false));
+        assertThat(handler.getPayload(), is(nullValue()));
 
         consumer.getCallback().handle(
                 "",
                 new Delivery(new Envelope(1L, false, EXCHANGE, ROUTING_KEY), null, eventAsBytes));
 
-        Assertions.assertTrue(handler.isEventReceived());
-        Assertions.assertEquals(PAYLOAD, handler.getPayload());
+        assertThat(handler.isEventReceived(), is(true));
+        assertThat(handler.getPayload(), is(PAYLOAD));
     }
 
     private MethodHandle createHandle() throws NoSuchMethodException, IllegalAccessException {
