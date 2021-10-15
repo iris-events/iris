@@ -7,11 +7,12 @@ import java.util.function.BooleanSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import id.global.event.messaging.runtime.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.ConsumerInitRecorder;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
+import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
@@ -58,6 +59,7 @@ class EventMessagingProcessor {
                                 HostnameProvider.class,
                                 ConsumerConnectionProvider.class,
                                 ProducerConnectionProvider.class,
+                                ProducerChannelService.class,
                                 AmqpConsumerContainer.class,
                                 EventContext.class,
                                 AmqpProducer.class,

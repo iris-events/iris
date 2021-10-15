@@ -17,8 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,7 +34,7 @@ public class EventsMalformedTest {
     private static final String TOPIC_QUEUE = "mt-queue";
 
     @Inject
-    ProducerConnectionProvider producerConnectionProvider;
+    ProducerChannelService producerChannelService;
 
     @Inject
     AmqpConfiguration configuration;
@@ -52,7 +52,7 @@ public class EventsMalformedTest {
                 .thenThrow(new JsonProcessingException("") {
                 });
 
-        AmqpProducer producer = new AmqpProducer(producerConnectionProvider, objectMapper, eventContext, configuration);
+        AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration);
 
         boolean isPublishedTopic = producer.publish(new TopicEventTmp("topic", 1L));
         boolean isPublishedFanout = producer.publish(new FanoutEventTmp("fanout", 1L));
