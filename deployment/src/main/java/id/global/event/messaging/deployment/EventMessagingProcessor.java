@@ -23,6 +23,7 @@ import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
+import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -77,6 +78,12 @@ class EventMessagingProcessor {
         MessageHandlerScanner scanner = new MessageHandlerScanner(index.getIndex());
         List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanner.scanMessageHandlerAnnotations();
         messageHandlerInfoBuildItems.forEach(messageHandlerProducer::produce);
+    }
+
+    @BuildStep
+    UnremovableBeanBuildItem unremovable() {
+        // Any bean that has MyService in its set of bean types is considered unremovable
+        return UnremovableBeanBuildItem.beanClassAnnotation("id.global.asyncapi.spec.annotations");
     }
 
     @Record(ExecutionTime.RUNTIME_INIT)

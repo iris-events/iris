@@ -27,6 +27,9 @@ import id.global.event.messaging.deployment.validation.ValidationRules;
 
 public class MessageHandlerScanner {
     private static final Logger LOG = LoggerFactory.getLogger(MessageHandlerScanner.class);
+    private final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getCanonicalName());
+    private final DotName DOT_NAME_FANOUT_MESSAGE_HANDLER = DotName.createSimple(FanoutMessageHandler.class.getCanonicalName());
+    private final DotName DOT_NAME_TOPIC_MESSAGE_HANDLER = DotName.createSimple(TopicMessageHandler.class.getCanonicalName());
     private final IndexView index;
 
     public MessageHandlerScanner(IndexView index) {
@@ -34,13 +37,10 @@ public class MessageHandlerScanner {
     }
 
     public List<MessageHandlerInfoBuildItem> scanMessageHandlerAnnotations() {
-        final var messageHandlerDotName = DotName.createSimple(MessageHandler.class.getCanonicalName());
-        final var fanoutMessageHandlerDotName = DotName.createSimple(FanoutMessageHandler.class.getCanonicalName());
-        final var topicMessageHandlerDotName = DotName.createSimple(TopicMessageHandler.class.getCanonicalName());
 
-        final var directAnnotations = index.getAnnotations(messageHandlerDotName).stream();
-        final var fanoutAnnotations = index.getAnnotations(fanoutMessageHandlerDotName).stream();
-        final var topicAnnotations = index.getAnnotations(topicMessageHandlerDotName).stream();
+        final var directAnnotations = index.getAnnotations(DOT_NAME_MESSAGE_HANDLER).stream();
+        final var fanoutAnnotations = index.getAnnotations(DOT_NAME_FANOUT_MESSAGE_HANDLER).stream();
+        final var topicAnnotations = index.getAnnotations(DOT_NAME_TOPIC_MESSAGE_HANDLER).stream();
 
         return Stream
                 .concat(Stream.concat(scanDirectMessageHandlerAnnotations(directAnnotations),
