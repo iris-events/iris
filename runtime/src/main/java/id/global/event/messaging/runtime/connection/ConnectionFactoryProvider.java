@@ -1,4 +1,4 @@
-package id.global.event.messaging.runtime;
+package id.global.event.messaging.runtime.connection;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +17,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.exception.AmqpConnectionFactoryException;
 
-//@Singleton
 @ApplicationScoped
 public class ConnectionFactoryProvider {
 

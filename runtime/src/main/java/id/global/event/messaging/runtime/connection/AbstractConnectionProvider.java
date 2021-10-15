@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Connection;
 
-import id.global.event.messaging.runtime.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;

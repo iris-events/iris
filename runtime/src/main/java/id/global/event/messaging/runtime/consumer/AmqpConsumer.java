@@ -56,45 +56,51 @@ public class AmqpConsumer {
         this.channel = connection.createChannel();
 
         if (this.amqpContext.getExchangeType().equals(FANOUT)) {
-            // Fanout consume
-            AMQP.Exchange.DeclareOk fanout = this.channel
-                    .exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.FANOUT);
-            AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare("", false, true, false, null);
-            AMQP.Queue.BindOk bindOk = channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), "");
-            this.channel.basicConsume(declareOk.getQueue(), true, this.callback, consumerTag -> {
-            });
+            declareFanout();
         } else if (this.amqpContext.getExchangeType().equals(TOPIC)) {
-            AMQP.Exchange.DeclareOk topic = this.channel
-                    .exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.TOPIC);
-            AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare("", false, true, false, null);
-
-            if (this.amqpContext.getBindingKeys() == null || this.amqpContext.getBindingKeys().length == 0) {
-                throw new RuntimeException("Binding keys are required when declaring a TOPIC type exchange.");
-            }
-
-            for (String bindingKey : amqpContext.getBindingKeys()) {
-                channel.queueBind(declareOk.getQueue(), amqpContext.getExchange(), bindingKey);
-            }
-            channel.basicConsume(declareOk.getQueue(), this.callback, consumerTag -> {
-            });
+            declareTopic();
         } else {
-            // Normal consume
-            AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare(this.amqpContext.getQueue(), false, false, false, null);
-            if (this.amqpContext.getExchange() != null && !this.amqpContext.getExchange().equals("")) {
-                this.channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.DIRECT);
-                this.channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), declareOk.getQueue());
-            }
-
-            this.channel.basicConsume(this.amqpContext.getQueue(), true, this.callback, consumerTag -> {
-            });
+            declareDirect();
         }
-    }
-
-    public Channel getChannel() {
-        return channel;
     }
 
     public DeliverCallback getCallback() {
         return callback;
+    }
+
+    private void declareDirect() throws IOException {
+        // Normal consume
+        AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare(this.amqpContext.getQueue(), true, false,
+                false, null);
+        if (this.amqpContext.getExchange() != null && !this.amqpContext.getExchange().equals("")) {
+            this.channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.DIRECT, true);
+            this.channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), declareOk.getQueue());
+        }
+
+        this.channel.basicConsume(this.amqpContext.getQueue(), true, this.callback, consumerTag -> {
+        });
+    }
+
+    private void declareTopic() throws IOException {
+        this.channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.TOPIC, true);
+        AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare("", true, true, false, null);
+
+        if (this.amqpContext.getBindingKeys() == null || this.amqpContext.getBindingKeys().length == 0) {
+            throw new RuntimeException("Binding keys are required when declaring a TOPIC type exchange.");
+        }
+
+        for (String bindingKey : amqpContext.getBindingKeys()) {
+            channel.queueBind(declareOk.getQueue(), amqpContext.getExchange(), bindingKey);
+        }
+        channel.basicConsume(declareOk.getQueue(), this.callback, consumerTag -> {
+        });
+    }
+
+    private void declareFanout() throws IOException {
+        this.channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.FANOUT, true);
+        AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare("", true, true, false, null);
+        channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), "");
+        this.channel.basicConsume(declareOk.getQueue(), true, this.callback, consumerTag -> {
+        });
     }
 }

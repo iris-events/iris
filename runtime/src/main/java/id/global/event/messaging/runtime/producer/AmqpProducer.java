@@ -2,7 +2,6 @@ package id.global.event.messaging.runtime.producer;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,8 +24,8 @@ import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.Common;
+import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 
 @ApplicationScoped
@@ -34,19 +33,18 @@ public class AmqpProducer {
     private static final Logger LOG = LoggerFactory.getLogger(AmqpProducer.class);
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
-    private final ProducerConnectionProvider connectionProvider;
+    private final ProducerChannelService channelService;
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
     private final AmqpConfiguration configuration;
 
-    private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
 
     @Inject
-    public AmqpProducer(ProducerConnectionProvider connectionProvider, ObjectMapper objectMapper,
+    public AmqpProducer(ProducerChannelService channelService, ObjectMapper objectMapper,
             EventContext eventContext, AmqpConfiguration configuration) {
-        this.connectionProvider = connectionProvider;
+        this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.configuration = configuration;
@@ -99,7 +97,7 @@ public class AmqpProducer {
 
     public boolean addReturnListener(String channelKey, ReturnListener returnListener, ReturnCallback returnCallback)
             throws IOException {
-        Channel channel = getChannel(channelKey);
+        Channel channel = channelService.getChannel(channelKey);
 
         if (channel == null) {
             LOG.error("Cannot add return listeners as channel does not exist! channelKey=[{}]", channelKey);
@@ -122,7 +120,7 @@ public class AmqpProducer {
     }
 
     public boolean addConfirmListeners(String channelKey, ConfirmListener confirmListener) throws IOException {
-        Channel channel = getChannel(channelKey);
+        Channel channel = channelService.getChannel(channelKey);
 
         if (channel == null) {
             LOG.error("Cannot add confirm listeners as channel does not exist! channelKey=[{}]", channelKey);
@@ -147,19 +145,6 @@ public class AmqpProducer {
             throw new IOException("Publish failed! Channel does not exist!");
         }
         channel.basicPublish(exchange, routingKey, true, properties, bytes);
-    }
-
-    protected Channel getChannel(String channelKey) throws IOException {
-        if (channelMap.get(channelKey) != null) {
-            return channelMap.get(channelKey);
-        }
-
-        Channel channel = connectionProvider.getConnection().createChannel();
-        if (configuration.getConfirmationBatchSize() > 0) {
-            channel.confirmSelect();
-        }
-        channelMap.put(channelKey, channel);
-        return channelMap.get(channelKey);
     }
 
     // TODO this method is quite useless, check calling hierarchy
@@ -270,7 +255,7 @@ public class AmqpProducer {
         synchronized (this.lock) {
             String channelKey = Common.createChannelKey(exchange, routingKey);
             try {
-                Channel channel = getChannel(channelKey);
+                Channel channel = channelService.getChannel(channelKey);
                 publish(exchange, routingKey, properties, bytes, channel);
 
                 if (shouldWaitForConfirmations()) {
