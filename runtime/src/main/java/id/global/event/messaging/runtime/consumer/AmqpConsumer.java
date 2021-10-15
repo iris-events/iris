@@ -6,7 +6,8 @@ import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
@@ -20,7 +21,8 @@ import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 
 public class AmqpConsumer {
-    private static final Logger LOG = Logger.getLogger(AmqpConsumer.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(AmqpConsumer.class);
+
     private final DeliverCallback callback;
     private final AmqpContext amqpContext;
     private final EventContext eventContext;

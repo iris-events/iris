@@ -16,7 +16,8 @@ import java.util.stream.Stream;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.asyncapi.spec.annotations.MessageHandler;
@@ -25,7 +26,7 @@ import id.global.event.messaging.deployment.validation.AnnotationInstanceValidat
 import id.global.event.messaging.deployment.validation.ValidationRules;
 
 public class MessageHandlerScanner {
-    private static final Logger LOG = Logger.getLogger(MessageHandlerScanner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MessageHandlerScanner.class);
     private final IndexView index;
 
     public MessageHandlerScanner(IndexView index) {
@@ -43,7 +44,7 @@ public class MessageHandlerScanner {
 
         return Stream
                 .concat(Stream.concat(scanDirectMessageHandlerAnnotations(directAnnotations),
-                                scanFanoutMessageHandlerAnnotations(fanoutAnnotations)),
+                        scanFanoutMessageHandlerAnnotations(fanoutAnnotations)),
                         scanTopicMessageHandlerAnnotations(topicAnnotations))
                 .collect(Collectors.toList());
     }

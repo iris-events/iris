@@ -16,6 +16,8 @@
     <rabbit.amqp-client.version>5.12.0</rabbit.amqp-client.version>
     <smallrye.asyncapi.version>1.0.5</smallrye.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
+    <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
+    <globalid-common.version>1.0.13</globalid-common.version>
   </properties>
   <scm>
     <connection>scm:git:git@gitlab.com:globalid/experiments/quarkus-eda.git</connection>
@@ -31,6 +33,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>id.global.common</groupId>
+        <artifactId>globalid-common</artifactId>
+        <version>${globalid-common.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.rabbitmq</groupId>
         <artifactId>amqp-client</artifactId>
         <version>${rabbit.amqp-client.version}</version>
@@ -39,6 +46,11 @@
         <groupId>id.global.events</groupId>
         <artifactId>smallrye-async-api</artifactId>
         <version>${smallrye.asyncapi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-retry</artifactId>
+        <version>${resilience4j-retry.version}</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>

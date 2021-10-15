@@ -6,8 +6,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +17,11 @@ import com.rabbitmq.client.ConnectionFactory;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.exception.AmqpConnectionFactoryException;
 
-@Singleton
+//@Singleton
+@ApplicationScoped
 public class ConnectionFactoryProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
 
     AmqpConfiguration amqpConfiguration;
 
@@ -44,7 +45,7 @@ public class ConnectionFactoryProvider {
         // TODO this should be a configurable property with / as default
         String vhost = "/";
 
-        log.info(String.format("AMQP configuration: host=%s, port=%s, username=%s, ssl=%s",
+        LOG.info(String.format("AMQP configuration: host=%s, port=%s, username=%s, ssl=%s",
                 amqpConfiguration.getUrl(), port, amqpConfiguration.getUsername(), amqpConfiguration.isSslEnabled()));
 
         try {
@@ -61,7 +62,7 @@ public class ConnectionFactoryProvider {
 
             return connectionFactory;
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            log.error("Could not create AMQP ConnectionFactory!", e);
+            LOG.error("Could not create AMQP ConnectionFactory!", e);
             throw new AmqpConnectionFactoryException("Could not create AMQP ConnectionFactory", e);
         }
     }

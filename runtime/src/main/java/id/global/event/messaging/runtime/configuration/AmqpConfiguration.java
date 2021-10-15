@@ -7,9 +7,6 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public final class AmqpConfiguration {
 
-    ConsumerConfiguration configuration;
-
-    ProducerConfiguration producerConfiguration;
     /**
      * disable initialization of consumers
      */
@@ -52,6 +49,33 @@ public final class AmqpConfiguration {
     @ConfigItem(defaultValue = "true")
     boolean sslEnabled;
 
+    /**
+     * Connection retry initial backoff interval
+     */
+    @ConfigItem(defaultValue = "1000")
+    long backoffIntervalMillis;
+
+    /**
+     * Connection retry backoff multiplier
+     */
+    @ConfigItem(defaultValue = "1.5")
+    double backoffMultiplier;
+
+    /**
+     * Connection max retries
+     */
+    @ConfigItem(defaultValue = "10")
+    int maxRetries;
+
+    /**
+     * Number of messages to batch for delivery confirmation
+     * <p>
+     * Set to 1 for immediate confirmation of each message.
+     * Set to 0 for no confirmations.
+     */
+    @ConfigItem(defaultValue = "1")
+    long confirmationBatchSize;
+
     public String getUrl() {
         return url;
     }
@@ -92,18 +116,6 @@ public final class AmqpConfiguration {
         this.authenticated = String.valueOf(authenticated);
     }
 
-    public ConsumerConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(ConsumerConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
-    public ProducerConfiguration getProducerConfiguration() {
-        return producerConfiguration;
-    }
-
     public boolean isSslEnabled() {
         return sslEnabled;
     }
@@ -132,17 +144,51 @@ public final class AmqpConfiguration {
         this.enabled = enabled;
     }
 
+    public long getBackoffIntervalMillis() {
+        return backoffIntervalMillis;
+    }
+
+    public void setBackoffIntervalMillis(long backoffIntervalMillis) {
+        this.backoffIntervalMillis = backoffIntervalMillis;
+    }
+
+    public double getBackoffMultiplier() {
+        return backoffMultiplier;
+    }
+
+    public void setBackoffMultiplier(double backoffMultiplier) {
+        this.backoffMultiplier = backoffMultiplier;
+    }
+
+    public int getMaxRetries() {
+        return maxRetries;
+    }
+
+    public void setMaxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
+    }
+
+    public long getConfirmationBatchSize() {
+        return confirmationBatchSize;
+    }
+
+    public void setConfirmationBatchSize(long confirmationBatchSize) {
+        this.confirmationBatchSize = confirmationBatchSize;
+    }
+
     @Override
     public String toString() {
         return "AmqpConfiguration{" +
-                "configuration=" + configuration +
-                ", producerConfiguration=" + producerConfiguration +
+                "enabled=" + enabled +
                 ", url='" + url + '\'' +
                 ", port='" + port + '\'' +
                 ", username='" + username + '\'' +
                 ", authenticated='" + authenticated + '\'' +
                 ", sslEnabled=" + sslEnabled +
-                ", enabled=" + enabled +
+                ", backoffIntervalMillis=" + backoffIntervalMillis +
+                ", backoffMultiplier=" + backoffMultiplier +
+                ", maxRetries=" + maxRetries +
+                ", confirmationBatchSize=" + confirmationBatchSize +
                 '}';
     }
 }
