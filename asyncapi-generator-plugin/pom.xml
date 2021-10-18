@@ -6,11 +6,11 @@
         <groupId>id.global.events</groupId>
         <version>1.0.5-SNAPSHOT</version>
     </parent>
+
     <artifactId>asyncapi-schema-generator-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    
     <name>Maven plugin - Asyncapi schema generator</name>
-    <description>a Maven plugin that can generate AsyncAPI the schema on build</description>
+    <description>Maven plugin for generating AsyncAPI schema within maven build phase.</description>
     
     <properties>
         <sonar.skip>true</sonar.skip>
