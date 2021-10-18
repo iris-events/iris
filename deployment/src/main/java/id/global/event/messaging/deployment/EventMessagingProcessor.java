@@ -11,6 +11,7 @@ import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.ConsumerInitRecorder;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
+import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
@@ -61,6 +62,7 @@ class EventMessagingProcessor {
                                 HostnameProvider.class,
                                 ConsumerConnectionProvider.class,
                                 ProducerConnectionProvider.class,
+                                ConsumerChannelService.class,
                                 ProducerChannelService.class,
                                 AmqpConsumerContainer.class,
                                 EventContext.class,

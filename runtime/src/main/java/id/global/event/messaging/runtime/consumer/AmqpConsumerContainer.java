@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
+import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -24,16 +24,16 @@ import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 public class AmqpConsumerContainer {
     private static final Logger LOG = LoggerFactory.getLogger(AmqpConsumerContainer.class);
 
-    private final ConsumerConnectionProvider connectionProvider;
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
     private final Map<String, AmqpConsumer> consumerMap;
+    private final ConsumerChannelService consumerChannelService;
 
     @Inject
-    public AmqpConsumerContainer(ConsumerConnectionProvider connectionProvider, ObjectMapper objectMapper,
-            EventContext eventContext) {
+    public AmqpConsumerContainer(ObjectMapper objectMapper, EventContext eventContext,
+            ConsumerChannelService consumerChannelService) {
+        this.consumerChannelService = consumerChannelService;
         this.consumerMap = new HashMap<>();
-        this.connectionProvider = connectionProvider;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
     }
@@ -41,7 +41,7 @@ public class AmqpConsumerContainer {
     public void initConsumers() {
         consumerMap.forEach((queueName, consumer) -> {
             try {
-                consumer.initChannel(connectionProvider.getConnection());
+                consumer.initChannel();
             } catch (IOException e) {
                 String msg = String.format("Could not initialize consumer for queue %s", queueName);
                 LOG.error(msg, e);
@@ -56,6 +56,7 @@ public class AmqpConsumerContainer {
                 methodHandle,
                 methodHandleContext,
                 amqpContext,
+                consumerChannelService,
                 eventHandlerInstance,
                 objectMapper,
                 eventContext));
