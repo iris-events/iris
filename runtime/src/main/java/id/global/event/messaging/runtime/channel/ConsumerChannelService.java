@@ -4,12 +4,13 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
+import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 
 @ApplicationScoped
-public class ProducerChannelService extends AbstractChannelService {
+public class ConsumerChannelService extends AbstractChannelService {
+
     @Inject
-    public ProducerChannelService(ProducerConnectionProvider connectionProvider, AmqpConfiguration configuration) {
+    public ConsumerChannelService(ConsumerConnectionProvider connectionProvider, AmqpConfiguration configuration) {
         super(connectionProvider, configuration);
     }
 }

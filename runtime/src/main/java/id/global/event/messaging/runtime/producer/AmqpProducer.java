@@ -97,7 +97,7 @@ public class AmqpProducer {
 
     public boolean addReturnListener(String channelKey, ReturnListener returnListener, ReturnCallback returnCallback)
             throws IOException {
-        Channel channel = channelService.getChannel(channelKey);
+        Channel channel = channelService.getOrCreateChannelById(channelKey);
 
         if (channel == null) {
             LOG.error("Cannot add return listeners as channel does not exist! channelKey=[{}]", channelKey);
@@ -120,7 +120,7 @@ public class AmqpProducer {
     }
 
     public boolean addConfirmListeners(String channelKey, ConfirmListener confirmListener) throws IOException {
-        Channel channel = channelService.getChannel(channelKey);
+        Channel channel = channelService.getOrCreateChannelById(channelKey);
 
         if (channel == null) {
             LOG.error("Cannot add confirm listeners as channel does not exist! channelKey=[{}]", channelKey);
@@ -255,7 +255,7 @@ public class AmqpProducer {
         synchronized (this.lock) {
             String channelKey = Common.createChannelKey(exchange, routingKey);
             try {
-                Channel channel = channelService.getChannel(channelKey);
+                Channel channel = channelService.getOrCreateChannelById(channelKey);
                 publish(exchange, routingKey, properties, bytes, channel);
 
                 if (shouldWaitForConfirmations()) {

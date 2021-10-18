@@ -5,6 +5,7 @@ import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DeliverCallback;
 
+import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -23,27 +24,28 @@ import id.global.event.messaging.runtime.context.MethodHandleContext;
 public class AmqpConsumer {
     private static final Logger LOG = LoggerFactory.getLogger(AmqpConsumer.class);
 
+    private final String channelId;
+
     private final DeliverCallback callback;
     private final AmqpContext amqpContext;
+    private final ConsumerChannelService channelService;
     private final EventContext eventContext;
-
-    private Channel channel;
 
     public AmqpConsumer(
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
             final AmqpContext amqpContext,
+            final ConsumerChannelService channelService,
             final Object eventHandlerInstance,
             final ObjectMapper objectMapper,
             EventContext eventContext) {
-
+        this.channelId = UUID.randomUUID().toString();
         this.eventContext = eventContext;
-
-        Object cast = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
-
+        this.channelService = channelService;
         this.amqpContext = amqpContext;
         this.callback = ((consumerTag, message) -> {
             try {
+                Object cast = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
                 this.eventContext.setAmqpBasicProperties(message.getProperties());
                 methodHandle.invoke(cast, objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass()));
             } catch (Throwable throwable) {
@@ -52,15 +54,15 @@ public class AmqpConsumer {
         });
     }
 
-    public void initChannel(Connection connection) throws IOException {
-        this.channel = connection.createChannel();
+    public void initChannel() throws IOException {
+        Channel channel = channelService.getOrCreateChannelById(this.channelId);
 
         if (this.amqpContext.getExchangeType().equals(FANOUT)) {
-            declareFanout();
+            declareFanout(channel);
         } else if (this.amqpContext.getExchangeType().equals(TOPIC)) {
-            declareTopic();
+            declareTopic(channel);
         } else {
-            declareDirect();
+            declareDirect(channel);
         }
     }
 
@@ -68,22 +70,22 @@ public class AmqpConsumer {
         return callback;
     }
 
-    private void declareDirect() throws IOException {
+    private void declareDirect(Channel channel) throws IOException {
         // Normal consume
-        AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare(this.amqpContext.getQueue(), true, false,
+        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(this.amqpContext.getQueue(), true, false,
                 false, null);
         if (this.amqpContext.getExchange() != null && !this.amqpContext.getExchange().equals("")) {
-            this.channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.DIRECT, true);
-            this.channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), declareOk.getQueue());
+            channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.DIRECT, true);
+            channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), declareOk.getQueue());
         }
 
-        this.channel.basicConsume(this.amqpContext.getQueue(), true, this.callback, consumerTag -> {
+        channel.basicConsume(this.amqpContext.getQueue(), true, this.callback, consumerTag -> {
         });
     }
 
-    private void declareTopic() throws IOException {
-        this.channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.TOPIC, true);
-        AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare("", true, true, false, null);
+    private void declareTopic(Channel channel) throws IOException {
+        channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.TOPIC, true);
+        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare("", true, true, false, null);
 
         if (this.amqpContext.getBindingKeys() == null || this.amqpContext.getBindingKeys().length == 0) {
             throw new RuntimeException("Binding keys are required when declaring a TOPIC type exchange.");
@@ -96,11 +98,11 @@ public class AmqpConsumer {
         });
     }
 
-    private void declareFanout() throws IOException {
-        this.channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.FANOUT, true);
-        AMQP.Queue.DeclareOk declareOk = this.channel.queueDeclare("", true, true, false, null);
+    private void declareFanout(Channel channel) throws IOException {
+        channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.FANOUT, true);
+        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare("", true, true, false, null);
         channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), "");
-        this.channel.basicConsume(declareOk.getQueue(), true, this.callback, consumerTag -> {
+        channel.basicConsume(declareOk.getQueue(), true, this.callback, consumerTag -> {
         });
     }
 }
