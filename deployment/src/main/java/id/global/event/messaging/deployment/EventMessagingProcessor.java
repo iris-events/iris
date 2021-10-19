@@ -13,7 +13,7 @@ import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
-import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.configuration.AmqpBuildConfiguration;
 import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
@@ -38,7 +38,7 @@ class EventMessagingProcessor {
 
     public static class EventMessagingEnabled implements BooleanSupplier {
 
-        AmqpConfiguration config;
+        AmqpBuildConfiguration config;
 
         @Override
         public boolean getAsBoolean() {
