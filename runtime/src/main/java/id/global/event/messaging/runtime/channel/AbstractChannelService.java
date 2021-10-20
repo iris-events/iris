@@ -7,6 +7,7 @@ import com.rabbitmq.client.Channel;
 
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.connection.AbstractConnectionProvider;
+import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 
 public abstract class AbstractChannelService {
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
@@ -28,6 +29,10 @@ public abstract class AbstractChannelService {
         }
 
         Channel channel = connectionProvider.getConnection().createChannel();
+        if (channel == null) {
+            throw new AmqpConnectionException("Could not create channel.");
+        }
+
         if (configuration.getConfirmationBatchSize() > 0) {
             channel.confirmSelect();
         }

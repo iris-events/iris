@@ -3,6 +3,8 @@ package id.global.event.messaging.it.sync;
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.it.events.Event;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -44,38 +47,33 @@ public class DirectTestIT {
     @Test
     @DisplayName("Publish null message, should return false")
     void publishNullMessage() {
-        boolean isPublished = producer.publish(null);
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> producer.send(null));
     }
 
     @Test
     @DisplayName("Publish message with blank exchange")
     public void publishMessage_WithBlankExchange() {
-        boolean isPublished = producer.publish(new Event("blank", 1L), "", "WrongRoutingKey", DIRECT);
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> producer.send(new Event("blank", 1L), "", "WrongRoutingKey", DIRECT));
     }
 
     @Test
     @DisplayName("Two messages published to different queues should be delivered")
     void publishTwoMessagesToDifferentQueues_BothShouldBeDelivered() throws Exception {
 
-        boolean isPublished1 = producer.publish(
+        assertDoesNotThrow(() -> producer.send(
                 new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
                 EXCHANGE,
                 EVENT_QUEUE,
-                DIRECT);
+                DIRECT));
 
-        boolean isPublished2 = producer.publish(
+        assertDoesNotThrow(() -> producer.send(
                 new Event(EVENT_PAYLOAD_NAME_PRIORITY, EVENT_PAYLOAD_AGE),
                 EXCHANGE,
                 EVENT_QUEUE_PRIORITY,
-                DIRECT);
+                DIRECT));
 
         Event priorityEvent = service.getHandledPriorityEvent().get();
         Event event = service.getHandledEvent().get();
-
-        assertThat(isPublished1, is(true));
-        assertThat(isPublished2, is(true));
 
         assertThat(TestHandlerService.count.get(), is(2));
 
@@ -96,12 +94,14 @@ public class DirectTestIT {
             count.set(0);
         }
 
+        @SuppressWarnings("unused")
         @MessageHandler(queue = EVENT_QUEUE, exchange = EXCHANGE)
         public void handle(Event event) {
             count.incrementAndGet();
             handledEvent.complete(event);
         }
 
+        @SuppressWarnings("unused")
         @MessageHandler(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE)
         public void handlePriority(Event event) {
             count.incrementAndGet();

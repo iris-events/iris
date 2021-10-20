@@ -92,8 +92,6 @@ class EventMessagingProcessor {
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerInitRecorder consumerInitRecorder,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
-        // init the consumer with config properties
-        // this should be moved to its own build step
         if (!messageHandlerInfoBuildItems.isEmpty()) {
             consumerInitRecorder.initConsumers(beanContainer.getValue());
         }

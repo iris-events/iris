@@ -3,8 +3,9 @@ package id.global.event.messaging.it.sync;
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,64 +46,52 @@ public class ListenerAndHandlerTestIT {
     void publishToUnknownExchange() {
         Assertions.assertThrows(
                 ShutdownSignalException.class,
-                () -> {
-                    producer.publish(
-                            new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                            UNKNOWN_EXCHANGE,
-                            EVENT_QUEUE,
-                            DIRECT);
-                });
+                () -> producer.send(
+                        new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
+                        UNKNOWN_EXCHANGE,
+                        EVENT_QUEUE,
+                        DIRECT));
     }
 
     @Test
     @DisplayName("Message published that cannot be routed will be lost")
     void publishNonRoutableMessages()
-            throws ExecutionException, InterruptedException, IOException {
+            throws ExecutionException, InterruptedException {
 
         String INVOKE_MESSAGE = "Return Invoked";
 
         CompletableFuture<String> completedSignal = new CompletableFuture<>();
 
-        producer.addReturnListener(EXCHANGE + "_" + UNKNOWN_QUEUE,
-                (replyCode, replyText, exchange, routingKey, properties, body) -> completedSignal.complete(INVOKE_MESSAGE),
-                null);
+        assertDoesNotThrow(() -> producer.addReturnListener(EXCHANGE + "_" + UNKNOWN_QUEUE,
+                (replyCode, replyText, exchange, routingKey, properties, body) -> completedSignal.complete(INVOKE_MESSAGE)));
 
-        boolean published = producer.publish(
-                new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                EXCHANGE,
-                UNKNOWN_QUEUE,
-                DIRECT);
-
-        assertThat(published, is(true));
+        assertDoesNotThrow(
+                () -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE), EXCHANGE, UNKNOWN_QUEUE, DIRECT));
         assertThat(completedSignal.get(), is(INVOKE_MESSAGE));
-
     }
 
     @Test
     @DisplayName("Publishing message to unknown queue with return listener set, should invoke return callback")
-    void publishToUnknownQueue() throws ExecutionException, InterruptedException, IOException {
+    void publishToUnknownQueue() throws ExecutionException, InterruptedException {
 
         CompletableFuture<String> completedSignal = new CompletableFuture<>();
 
-        producer.addReturnListener(EXCHANGE + "_" + UNKNOWN_QUEUE, null, returnMessage -> completedSignal.complete("FAIL"));
+        assertDoesNotThrow(() -> producer.addReturnCallback(EXCHANGE + "_" + UNKNOWN_QUEUE,
+                returnMessage -> completedSignal.complete("FAIL")));
 
-        boolean published = producer.publish(
-                new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                EXCHANGE,
-                UNKNOWN_QUEUE,
-                DIRECT);
+        assertDoesNotThrow(
+                () -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE), EXCHANGE, UNKNOWN_QUEUE, DIRECT));
 
-        assertThat(published, is(true));
         assertThat(completedSignal.get(), is("FAIL"));
     }
 
     @Test
     @DisplayName("Publishing message to known exchange and queue and confirm listener set, should invoke handleAck")
-    void publishInvokeHandleAck() throws ExecutionException, InterruptedException, IOException {
+    void publishInvokeHandleAck() throws ExecutionException, InterruptedException {
 
         CompletableFuture<String> completedSignal = new CompletableFuture<>();
 
-        producer.addConfirmListeners(EXCHANGE + "_" + EVENT_QUEUE, new ConfirmListener() {
+        assertDoesNotThrow(() -> producer.addConfirmListener(EXCHANGE + "_" + EVENT_QUEUE, new ConfirmListener() {
             @Override
             public void handleAck(long deliveryTag, boolean multiple) {
                 completedSignal.complete("ACK");
@@ -112,28 +101,25 @@ public class ListenerAndHandlerTestIT {
             public void handleNack(long deliveryTag, boolean multiple) {
                 completedSignal.complete("NACK");
             }
-        });
+        }));
 
-        boolean published = producer.publish(
-                new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                EXCHANGE,
-                EVENT_QUEUE,
-                DIRECT);
+        assertDoesNotThrow(
+                () -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE), EXCHANGE, EVENT_QUEUE, DIRECT));
 
-        assertThat(published, is(true));
         assertThat(completedSignal.get(), is("ACK"));
     }
 
     @Test
     @DisplayName("Adding NULL as confirm and return listeners should not be accepted.")
-    void testNullListeners() throws IOException {
+    void testNullListeners() {
+        assertThrows(NullPointerException.class,
+                () -> producer.addConfirmListener(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null));
 
-        boolean confirmListenerAdded = producer.addConfirmListeners(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null);
-        boolean returnListenerAdded = producer.addReturnListener(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null, null);
+        assertThrows(NullPointerException.class,
+                () -> producer.addReturnListener(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null));
 
-        assertThat(confirmListenerAdded, is(false));
-        assertThat(returnListenerAdded, is(false));
-
+        assertThrows(NullPointerException.class,
+                () -> producer.addReturnCallback(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null));
     }
 
     @SuppressWarnings("unused")
