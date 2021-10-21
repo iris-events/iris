@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.TestInstance;
 import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.it.events.LoggingEvent;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -52,7 +54,7 @@ public class FanoutTestIT {
     void publishFanout() throws Exception {
 
         LoggingEvent event = new LoggingEvent("INFO: 1337", 1L);
-        producer.publish(event, EXCHANGE, "", FANOUT);
+        producer.send(event, EXCHANGE, "", FANOUT);
 
         assertThat(loggingServiceA.getFuture().get(), samePropertyValuesAs(event));
         assertThat(loggingServiceB.getFuture().get(), samePropertyValuesAs(event));
@@ -61,10 +63,10 @@ public class FanoutTestIT {
     @Test
     @DisplayName("Event published to FANOUT; one service all consumers should receive event")
     void publishFanoutOneService()
-            throws ExecutionException, InterruptedException {
+            throws ExecutionException, InterruptedException, AmqpSendException, IOException {
         Event event = new Event("Fanout Event", 23L);
 
-        producer.publish(event, MY_FANOUT_EXCHANGE, "", FANOUT);
+        producer.send(event, MY_FANOUT_EXCHANGE, "", FANOUT);
 
         CompletableFuture.allOf(fanoutService.getFanout1(), fanoutService.getFanout2())
                 .join();

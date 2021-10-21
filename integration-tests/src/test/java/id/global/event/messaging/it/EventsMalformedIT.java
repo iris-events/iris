@@ -1,12 +1,11 @@
 package id.global.event.messaging.it;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -54,13 +53,15 @@ public class EventsMalformedIT {
 
         AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration);
 
-        boolean isPublishedTopic = producer.publish(new TopicEventTmp("topic", 1L));
-        boolean isPublishedFanout = producer.publish(new FanoutEventTmp("fanout", 1L));
-        boolean isPublishedDirect = producer.publish(new DirectEventTmp("direct", 1L));
-
-        assertThat(isPublishedDirect, is(false));
-        assertThat(isPublishedTopic, is(false));
-        assertThat(isPublishedFanout, is(false));
+        Assertions.assertThrows(JsonProcessingException.class, () -> {
+            producer.send(new TopicEventTmp("topic", 1L));
+        });
+        Assertions.assertThrows(JsonProcessingException.class, () -> {
+            producer.send(new FanoutEventTmp("fanout", 1L));
+        });
+        Assertions.assertThrows(JsonProcessingException.class, () -> {
+            producer.send(new DirectEventTmp("direct", 1L));
+        });
     }
 
     @ProducedEvent(exchange = DIRECT_EXCHANGE, queue = DIRECT_QUEUE)

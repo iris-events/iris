@@ -1,7 +1,7 @@
 package id.global.event.messaging.it.sync;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -22,6 +22,7 @@ import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.it.events.LoggingEvent;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -37,7 +38,7 @@ public class AnnotatedEventsTestIT {
      * That requires decoupling all the rabbit ConnectionFactory, Connection, Channel etc. logic from the AmqpProducer so it can
      * be easily mocked.
      *
-     * Currently checking of annotationService results will be removed, as this will only test returns from amqpProducer publish
+     * Currently checking of annotationService results will be removed, as this will only test returns from amqpProducer send
      */
 
     private static final String ANNOTATED_QUEUE = "annotated-queue";
@@ -67,44 +68,50 @@ public class AnnotatedEventsTestIT {
     @Test
     @DisplayName("Event without annotations should not be published successfully.")
     void publishMessageWithoutAnnotations() {
-        boolean isPublished = testProducer.publish(new Event("name", 1L));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> {
+            testProducer.send(new Event("name", 1L));
+        });
     }
 
     @Test
     @DisplayName("Published correctly annotated event to DIRECT exchange should succeed")
     void publishDirect() {
         DirectEvent publishedEvent = new DirectEvent("name", 1L);
-        boolean isPublished = testProducer.publish(publishedEvent);
-        assertThat(isPublished, is(true));
+        assertDoesNotThrow(() -> {
+            testProducer.send(publishedEvent);
+        });
     }
 
     @Test
     @DisplayName("Published annotated event with missing exchange name to DIRECT exchange should fail")
     void publishDirectMissingExchange() {
-        boolean isPublished = testProducer.publish(new DirectEventEmptyExchange("name", 1L));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> {
+            testProducer.send(new DirectEventEmptyExchange("name", 1L));
+        });
     }
 
     @Test
     @DisplayName("Published annotated event with missing routing key to DIRECT exchange should fail")
     void publishDirectNoRoutingKey() {
-        boolean isPublished = testProducer.publish(new DirectEventEmptyRoutingKey("name", 1L));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> {
+            testProducer.send(new DirectEventEmptyRoutingKey("name", 1L));
+        });
     }
 
     @Test
     @DisplayName("Published correctly annotated event to FANOUT exchange should succeed")
     void publishFanout() {
-        boolean isPublished = testProducer.publish(new FanoutEvent("name", 1L));
-        assertThat(isPublished, is(true));
+        assertDoesNotThrow(() -> {
+            testProducer.send(new FanoutEvent("name", 1L));
+        });
     }
 
     @Test
     @DisplayName("Published annotated event with missing exchange name to FANOUT exchange should fail")
     void publishFanoutMissingExchange() {
-        boolean isPublished = testProducer.publish(new FanoutEventWrongEmptyExchange("name", 1L));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> {
+            testProducer.send(new FanoutEventWrongEmptyExchange("name", 1L));
+        });
     }
 
     @Test
@@ -112,33 +119,39 @@ public class AnnotatedEventsTestIT {
     void publishFanoutWithRoutingKey() {
         // Publish should ignore routing key in case of FANOUT exchange
         // TODO check if there is a warning logged in this case
-        boolean isPublished = testProducer.publish(new FanoutEventWrongRoutingKey("name", 1L));
-        assertThat(isPublished, is(true));
+        assertDoesNotThrow(() -> {
+            testProducer.send(new FanoutEventWrongRoutingKey("name", 1L));
+        });
     }
 
     @Test
     @DisplayName("Published correctly annotated events to TOPIC exchange should succeed")
     void publishTopic() {
-        boolean isPublished = testProducer.publish(new TopicEventOne("name_one", 1L)); //will not be received
-        boolean isPublishedTwo = testProducer.publish(new TopicEventTwo("name_two", 1L)); //will be received once
-        boolean isPublishedThree = testProducer.publish(new TopicEventThree("name_three", 1L)); //will be received twice
-        assertThat(isPublished, is(true));
-        assertThat(isPublishedTwo, is(true));
-        assertThat(isPublishedThree, is(true));
+        assertDoesNotThrow(() -> {
+            testProducer.send(new TopicEventOne("name_one", 1L)); //will not be received
+        });
+        assertDoesNotThrow(() -> {
+            testProducer.send(new TopicEventTwo("name_two", 1L)); //will be received once
+        });
+        assertDoesNotThrow(() -> {
+            testProducer.send(new TopicEventThree("name_three", 1L)); //will be received twice
+        });
     }
 
     @Test
     @DisplayName("Published annotated event with missing exchange name to TOPIC exchange should fail")
     void publishTopicMissingExchange() {
-        boolean isPublished = testProducer.publish(new TopicEventWrongEmptyExchange("name", 1L));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> {
+            testProducer.send(new TopicEventWrongEmptyExchange("name", 1L));
+        });
     }
 
     @Test
     @DisplayName("Published annotated event without routing/binding key to TOPIC exchange should fail")
     void publishTopicMissingRoutingKey() {
-        boolean isPublished = testProducer.publish(new TopicEventWrongRoutingKey("name", 1L));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> {
+            testProducer.send(new TopicEventWrongRoutingKey("name", 1L));
+        });
     }
 
     @SuppressWarnings("unused")

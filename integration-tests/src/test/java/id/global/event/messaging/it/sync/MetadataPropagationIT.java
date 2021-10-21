@@ -4,7 +4,10 @@ import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -26,6 +29,7 @@ import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.context.EventContext;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.MetadataInfo;
 import io.quarkus.test.junit.QuarkusTest;
@@ -59,7 +63,7 @@ public class MetadataPropagationIT {
     }
 
     @Test
-    @DisplayName("Publishing correctly annotated event with extra metadata, should publish correctly")
+    @DisplayName("Publishing correctly annotated event with extra metadata, should send correctly")
     void publishedAnnotatedEventWithMetadata() throws ExecutionException, InterruptedException, TimeoutException {
         final String uuid = UUID.randomUUID().toString();
         finalService.setLimit(2);
@@ -67,10 +71,11 @@ public class MetadataPropagationIT {
 
         MetadataInfo metadataInfo = new MetadataInfo(uuid);
 
-        boolean isPublished = testProducer.publish(new AnnotatedEvent1(uuid, 1L), metadataInfo);
+        assertDoesNotThrow(() -> {
+            testProducer.send(new AnnotatedEvent1(uuid, 1L), metadataInfo);
+        });
 
         finalService.getHandledEvent().get(2, TimeUnit.SECONDS);
-        assertThat(isPublished, is(true));
         assertThat(Service1.count.get(), is(1));
         assertThat(Service2.count.get(), is(1));
         assertThat(FinalService.count.get(), is(1));
@@ -114,12 +119,12 @@ public class MetadataPropagationIT {
         }
 
         @MessageHandler(queue = EVENT_QUEUE1, exchange = EXCHANGE)
-        public void handle(Event event) {
+        public void handle(Event event) throws AmqpSendException, IOException {
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
                 handledEvent.complete(event);
-                producer.publish(event, EXCHANGE, EVENT_QUEUE2, TOPIC);
+                producer.send(event, EXCHANGE, EVENT_QUEUE2, TOPIC);
             }
         }
     }
@@ -146,13 +151,13 @@ public class MetadataPropagationIT {
         }
 
         @MessageHandler(queue = EVENT_QUEUE2, exchange = EXCHANGE)
-        public void handle(Event event) {
+        public void handle(Event event) throws AmqpSendException, IOException {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
                 handledEvent.complete(event);
-                producer.publish(event, EXCHANGE, EVENT_QUEUE3, TOPIC);
+                producer.send(event, EXCHANGE, EVENT_QUEUE3, TOPIC);
             }
         }
     }
@@ -203,19 +208,31 @@ public class MetadataPropagationIT {
 
     private void publishEvent(final String name, final String correlationId) {
         final MetadataInfo metadataInfo = new MetadataInfo(correlationId);
-        CompletableFuture.runAsync(() -> testProducer.publish(
-                new Event(name, 0L),
-                EXCHANGE,
-                EVENT_QUEUE1,
-                DIRECT,
-                metadataInfo));
+        CompletableFuture.runAsync(() -> {
+            try {
+                testProducer.send(
+                        new Event(name, 0L),
+                        EXCHANGE,
+                        EVENT_QUEUE1,
+                        DIRECT,
+                        metadataInfo);
+            } catch (AmqpSendException | IOException e) {
+                fail();
+            }
+        });
     }
 
     private void publishEvent(final String name) {
-        CompletableFuture.runAsync(() -> testProducer.publish(
-                new Event(name, 0L),
-                EXCHANGE,
-                EVENT_QUEUE1,
-                DIRECT));
+        CompletableFuture.runAsync(() -> {
+            try {
+                testProducer.send(
+                        new Event(name, 0L),
+                        EXCHANGE,
+                        EVENT_QUEUE1,
+                        DIRECT);
+            } catch (AmqpSendException | IOException e) {
+                fail();
+            }
+        });
     }
 }

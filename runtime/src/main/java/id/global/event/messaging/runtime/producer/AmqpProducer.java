@@ -1,6 +1,7 @@
 package id.global.event.messaging.runtime.producer;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,7 +13,6 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -27,6 +27,7 @@ import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
 
 @ApplicationScoped
 public class AmqpProducer {
@@ -50,14 +51,13 @@ public class AmqpProducer {
         this.configuration = configuration;
     }
 
-    public boolean publish(final Object message) {
-        return publish(message, null);
+    public void send(final Object message) throws AmqpSendException, IOException {
+        send(message, null);
     }
 
-    public boolean publish(final Object message, final MetadataInfo metadataInfo) {
+    public void send(final Object message, final MetadataInfo metadataInfo) throws AmqpSendException, IOException {
         if (message == null) {
-            LOG.warn("Null message cannot be published!");
-            return false;
+            throw new AmqpSendException("Null message can not be published!");
         }
 
         Optional<ProducedEvent> producedEventMetadata = Optional.ofNullable(
@@ -71,212 +71,86 @@ public class AmqpProducer {
         final var exchangeType = getExchangeType(producedEventMetadata, eventMetadata);
 
         if (optionalExchange.isEmpty()) {
-            LOG.warn("Could not publish message with empty or null exchange");
-            return false;
+            throw new AmqpSendException("Could not send message to empty or null exchange.");
         }
 
-        return routePublish(optionalExchange.get(), routingKey, exchangeType, message,
-                amqpBasicProperties);
+        publish(message, optionalExchange.get(), routingKey, amqpBasicProperties, exchangeType);
     }
 
-    public boolean publish(final Object message, @NotNull final String exchange, final String routingKey,
-            final ExchangeType exchangeType) {
+    public void send(final Object message, @NotNull final String exchange, final String routingKey,
+            final ExchangeType exchangeType) throws AmqpSendException, IOException {
 
         AMQP.BasicProperties amqpBasicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(null);
 
-        return publishWithProperties(message, exchange, routingKey, exchangeType, amqpBasicProperties);
+        publishWithProperties(message, exchange, routingKey, exchangeType, amqpBasicProperties);
     }
 
-    public boolean publish(final Object message, @NotNull final String exchange, final String routingKey,
-            final ExchangeType exchangeType,
-            MetadataInfo metadataInfo) {
+    public void send(final Object message, @NotNull final String exchange, final String routingKey,
+            final ExchangeType exchangeType, MetadataInfo metadataInfo) throws AmqpSendException, IOException {
         AMQP.BasicProperties amqpBasicProperties = getAmqpBasicProperties(metadataInfo);
-        return publishWithProperties(message, exchange, routingKey, exchangeType, amqpBasicProperties);
+        publishWithProperties(message, exchange, routingKey, exchangeType, amqpBasicProperties);
     }
 
-    public boolean addReturnListener(String channelKey, ReturnListener returnListener, ReturnCallback returnCallback)
-            throws IOException {
+    public void addReturnListener(@NotNull String channelKey, @NotNull ReturnListener returnListener) throws IOException {
+        Objects.requireNonNull(returnListener, "Return listener can not be null");
+
         Channel channel = channelService.getOrCreateChannelById(channelKey);
-
-        if (channel == null) {
-            LOG.error("Cannot add return listeners as channel does not exist! channelKey=[{}]", channelKey);
-            return false;
-        }
-
-        if (returnListener == null && returnCallback == null) {
-            LOG.error("Cannot add return listeners no return listener was provided!");
-            return false;
-        }
-
         channel.clearReturnListeners();
-        if (returnListener != null) {
-            channel.addReturnListener(returnListener);
-        }
-        if (returnCallback != null) {
-            channel.addReturnListener(returnCallback);
-        }
-        return true;
+        channel.addReturnListener(returnListener);
     }
 
-    public boolean addConfirmListeners(String channelKey, ConfirmListener confirmListener) throws IOException {
+    public void addReturnCallback(@NotNull String channelKey, @NotNull ReturnCallback returnCallback) throws IOException {
+        Objects.requireNonNull(returnCallback, "Return callback can not be null");
+
         Channel channel = channelService.getOrCreateChannelById(channelKey);
+        channel.clearReturnListeners();
+        channel.addReturnListener(returnCallback);
+    }
 
-        if (channel == null) {
-            LOG.error("Cannot add confirm listeners as channel does not exist! channelKey=[{}]", channelKey);
-            return false;
-        }
+    public void addConfirmListener(@NotNull String channelKey, @NotNull ConfirmListener confirmListener) throws IOException {
+        Objects.requireNonNull(confirmListener, "Confirm listener can not be null");
 
-        if (confirmListener == null) {
-            LOG.error("Cannot add confirm listeners as confirm listener was not provided!");
-            return false;
-        }
-
+        Channel channel = channelService.getOrCreateChannelById(channelKey);
         channel.clearConfirmListeners();
         channel.addConfirmListener(confirmListener);
-
-        return true;
     }
 
-    private void publish(final String exchange, final String routingKey, final AMQP.BasicProperties properties,
-            final byte[] bytes,
-            final Channel channel) throws IOException {
-        if (channel == null) {
-            throw new IOException("Publish failed! Channel does not exist!");
-        }
-        channel.basicPublish(exchange, routingKey, true, properties, bytes);
-    }
+    private void publish(@NotNull Object message, @NotNull String exchange, String routingKey, AMQP.BasicProperties properties,
+            ExchangeType exchangeType)
+            throws IOException, AmqpSendException {
 
-    // TODO this method is quite useless, check calling hierarchy
-    private boolean routePublish(@NotNull String exchange, String routingKey, @NotNull ExchangeType type,
-            @NotNull Object message,
-            AMQP.BasicProperties properties) {
-        switch (type) {
-            case TOPIC -> {
-                return publishTopic(exchange, routingKey, message, properties);
-            }
-            case DIRECT -> {
-                return publishDirect(exchange, routingKey, message, properties);
-            }
-            case FANOUT -> {
-                return publishFanout(exchange, message, properties);
-            }
-            default -> {
-                LOG.warn("Exchange type={} unknown! Message will be lost!", type);
-                return false;
+        SendMessageValidator.validate(exchange, routingKey, exchangeType);
+
+        final byte[] bytes = objectMapper.writeValueAsBytes(message);
+        synchronized (this.lock) {
+            String channelKey = Common.createChannelKey(exchange, routingKey);
+            Channel channel = channelService.getOrCreateChannelById(channelKey);
+            channel.basicPublish(exchange, routingKey, true, properties, bytes);
+
+            if (shouldWaitForConfirmations()) {
+                waitForConfirmations(channel);
             }
         }
     }
 
-    private boolean publishWithProperties(final Object message, final String exchange, final String routingKey,
+    private void publishWithProperties(final Object message, @NotNull final String exchange, final String routingKey,
             final ExchangeType exchangeType,
-            final AMQP.BasicProperties amqpBasicProperties) {
-
-        String exchangeO = Optional.ofNullable(exchange).orElse("");
+            final AMQP.BasicProperties amqpBasicProperties) throws AmqpSendException, IOException {
         String routingKeyO = Optional.ofNullable(routingKey).orElse("");
         ExchangeType exchangeTypeO = Optional.ofNullable(exchangeType).orElse(ExchangeType.DIRECT);
 
-        if (exchangeO.isBlank()) {
-            return false;
-        }
-
-        return routePublish(exchangeO, routingKeyO, exchangeTypeO, message,
-                amqpBasicProperties);
+        publish(message, exchange, routingKeyO, amqpBasicProperties, exchangeTypeO);
     }
 
-    private boolean publishDirect(String exchange, String routingKey, Object message,
-            AMQP.BasicProperties properties) {
-        if (isNullOrEmpty(exchange)) {
-            LOG.warn("Could not publish message to DIRECT exchange with empty exchange parameter.");
-            return false;
-        }
-
-        if (isNullOrEmpty(routingKey)) {
-            LOG.warn("Could not publish message to DIRECT exchange with empty routingKey parameter.");
-            return false;
-        }
-
-        try {
-            final byte[] bytes = objectMapper.writeValueAsBytes(message);
-            return publishMessage(exchange,
-                    routingKey,
-                    properties,
-                    bytes);
-        } catch (JsonProcessingException e) {
-            LOG.error("Sending message to exchange=[{}] with routingKey=[{}] failed!", exchange, routingKey, e);
-            return false;
-        }
-    }
-
-    private boolean publishTopic(String exchange, String topicRoutingKey, Object message, AMQP.BasicProperties properties) {
-        if (isNullOrEmpty(exchange)) {
-            LOG.warn("Could not publish message to TOPIC exchange with empty exchange parameter.");
-            return false;
-        }
-        if (isNullOrEmpty(topicRoutingKey)) {
-            LOG.warn("Could not publish message to TOPIC exchange with empty routingKey parameter.");
-            return false;
-        }
-
-        try {
-            final byte[] bytes = objectMapper.writeValueAsBytes(message);
-            return publishMessage(exchange,
-                    topicRoutingKey,
-                    properties,
-                    bytes);
-        } catch (JsonProcessingException e) {
-            LOG.error("Sending message to exchange=[{}] with routingKey=[{}] failed!", exchange, topicRoutingKey, e);
-            return false;
-        }
-    }
-
-    private boolean publishFanout(String fanoutExchange, Object message, AMQP.BasicProperties properties) {
-        if (isNullOrEmpty(fanoutExchange)) {
-            LOG.warn("Could not publish message to FANOUT exchange with empty exchange parameter.");
-            return false;
-        }
-
-        try {
-            final byte[] bytes = objectMapper.writeValueAsBytes(message);
-            return publishMessage(fanoutExchange,
-                    "",
-                    properties,
-                    bytes);
-        } catch (JsonProcessingException e) {
-            LOG.error("Sending to fanout exchange=[{}]] failed! ", fanoutExchange, e);
-            return false;
-        }
-    }
-
-    private boolean publishMessage(final String exchange,
-            final String routingKey,
-            final AMQP.BasicProperties properties,
-            final byte[] bytes) {
-        synchronized (this.lock) {
-            String channelKey = Common.createChannelKey(exchange, routingKey);
-            try {
-                Channel channel = channelService.getOrCreateChannelById(channelKey);
-                publish(exchange, routingKey, properties, bytes, channel);
-
-                if (shouldWaitForConfirmations()) {
-                    waitForConfirmations(channel);
-                }
-            } catch (IOException e) {
-                LOG.error("Exception while publishing message", e);
-                return false;
-            }
-            return true;
-        }
-    }
-
-    private void waitForConfirmations(Channel channel) {
+    private void waitForConfirmations(Channel channel) throws AmqpSendException {
         try {
             channel.waitForConfirms(WAIT_TIMEOUT_MILLIS);
         } catch (InterruptedException | TimeoutException e) {
-            LOG.error("Waiting for channel confirmations failed.", e);
-            // TODO this should be properly handled with a custom exeption and the client should then decide what to do in this case
+            throw new AmqpSendException("Exception waiting for confirmations.", e);
+        } finally {
+            count.set(0);
         }
-        count.set(0);
     }
 
     private AMQP.BasicProperties getAmqpBasicProperties(MetadataInfo metadataInfo) {
@@ -306,9 +180,5 @@ public class AmqpProducer {
     private boolean shouldWaitForConfirmations() {
         return configuration.getConfirmationBatchSize() > 0
                 && count.incrementAndGet() == configuration.getConfirmationBatchSize();
-    }
-
-    private boolean isNullOrEmpty(String string) {
-        return string == null || string.isBlank();
     }
 }

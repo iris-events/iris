@@ -51,10 +51,10 @@ public class TopicTestIT {
         LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
         LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
 
-        producer.publish(l1, TOPIC_EXCHANGE, "quick.orange.fox", TOPIC);
-        producer.publish(l2, TOPIC_EXCHANGE, "quick.yellow.rabbit", TOPIC);
-        producer.publish(l3, TOPIC_EXCHANGE, "lazy.blue.snail", TOPIC);
-        producer.publish(l4, TOPIC_EXCHANGE, "lazy.orange.rabbit", TOPIC);
+        producer.send(l1, TOPIC_EXCHANGE, "quick.orange.fox", TOPIC);
+        producer.send(l2, TOPIC_EXCHANGE, "quick.yellow.rabbit", TOPIC);
+        producer.send(l3, TOPIC_EXCHANGE, "lazy.blue.snail", TOPIC);
+        producer.send(l4, TOPIC_EXCHANGE, "lazy.orange.rabbit", TOPIC);
 
         MyLoggingServiceA.completionSignal.get();
         MyLoggingServiceB.completionSignal.get();

@@ -5,6 +5,8 @@ import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
 import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -32,6 +34,7 @@ import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.it.events.LoggingEvent;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -39,7 +42,7 @@ import io.quarkus.test.junit.QuarkusTest;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AnnotatedEventTestOverrideIT {
     /*
-     * TODO this test should also be converted to a unit test where it tests only the overrides on the AmqpProducer publish
+     * TODO this test should also be converted to a unit test where it tests only the overrides on the AmqpProducer send
      * method
      *
      * same as for AnnotatedEventsTestIT, refactoring of AmqpProducer (decoupling of rabbitmq stuff) is needed.
@@ -94,39 +97,44 @@ public class AnnotatedEventTestOverrideIT {
     @MethodSource("publishTypes")
     @DisplayName("Published annotated event without exchange name to DIRECT exchange with overrides should fail")
     public void publishTest(Object event, String exchange, String queue, ExchangeType exchangeType, boolean shouldPublish) {
-        boolean isPublished = testProducer.publish(event, exchange, queue, exchangeType);
-        assertThat(isPublished, is(shouldPublish));
+        if (shouldPublish) {
+            assertDoesNotThrow(() -> testProducer.send(event, exchange, queue, exchangeType));
+        } else {
+            assertThrows(AmqpSendException.class, () -> testProducer.send(event, exchange, queue, exchangeType));
+        }
     }
 
     @Test
     @DisplayName("Published correctly annotated event to DIRECT exchange with overrides should succeed")
     public void publishDirect() throws Exception {
-        boolean isPublished = testProducer.publish(new DirectEvent(NAME, AGE_1),
+        assertDoesNotThrow(() -> testProducer.send(new DirectEvent(NAME, AGE_1),
                 OVERRIDE_ANNOTATED_EXCHANGE,
                 OVERRIDE_ANNOTATED_QUEUE,
-                DIRECT);
+                DIRECT));
         annotationService.getCompletionSignal().get(2, TimeUnit.SECONDS);
         assertThat(annotationService.getCount(), is(1));
-        assertThat(isPublished, is(true));
     }
 
     @Test
     @DisplayName("Published correctly annotated events to TOPIC exchange with overrides should succeed")
     public void publishTopic() throws ExecutionException, InterruptedException, TimeoutException {
-        boolean isPublished = testProducer.publish(new TopicEventOne("name_one", AGE_1), OVERRIDE_TOPIC_EXCHANGE,
-                OVERRIDE_TOPIC1,
-                TOPIC); //will not be received
-        boolean isPublishedTwo = testProducer.publish(new TopicEventOne("name_two", AGE_1), OVERRIDE_TOPIC_EXCHANGE,
-                OVERRIDE_TOPIC2,
-                TOPIC); //will be received once
-        boolean isPublishedThree = testProducer.publish(new TopicEventThree("name_three", AGE_1), OVERRIDE_TOPIC_EXCHANGE,
-                OVERRIDE_TOPIC3,
-                TOPIC); //will be received twice
+        assertDoesNotThrow(() -> {
+            testProducer.send(new TopicEventOne("name_one", AGE_1), OVERRIDE_TOPIC_EXCHANGE,
+                    OVERRIDE_TOPIC1,
+                    TOPIC); //will not be received
+        });
+        assertDoesNotThrow(() -> {
+            testProducer.send(new TopicEventOne("name_two", AGE_1), OVERRIDE_TOPIC_EXCHANGE,
+                    OVERRIDE_TOPIC2,
+                    TOPIC); //will be received once
+        });
+        assertDoesNotThrow(() -> {
+            testProducer.send(new TopicEventThree("name_three", AGE_1), OVERRIDE_TOPIC_EXCHANGE,
+                    OVERRIDE_TOPIC3,
+                    TOPIC); //will be received twice
+        });
         String firstEventContent = topicService.getCompletionSignalOne().get(2, TimeUnit.SECONDS);
         String thirdEventContent = topicService.getCompletionSignalTwo().get(2, TimeUnit.SECONDS);
-        assertThat(isPublished, is(true));
-        assertThat(isPublishedTwo, is(true));
-        assertThat(isPublishedThree, is(true));
         assertThat(firstEventContent, is("name_one"));
         assertThat(thirdEventContent, is("name_three"));
         assertThat(topicService.getCount(), is(3));
@@ -135,16 +143,14 @@ public class AnnotatedEventTestOverrideIT {
     @Test
     @DisplayName("Published annotated event without exchange name to TOPIC exchange with overrides should fail")
     public void publishTopicMissingExchange() {
-        boolean isPublished = testProducer.publish(new TopicEventWrongEmptyExchange(NAME, AGE_1));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> testProducer.send(new TopicEventWrongEmptyExchange(NAME, AGE_1)));
         assertThat(topicService.getCount(), is(0));
     }
 
     @Test
     @DisplayName("Published annotated event without routing/binding key to TOPIC exchange with overrides should fail")
     public void publishTopicMissingRoutingKey() {
-        boolean isPublished = testProducer.publish(new TopicEventWrongRoutingKey(NAME, AGE_1));
-        assertThat(isPublished, is(false));
+        assertThrows(AmqpSendException.class, () -> testProducer.send(new TopicEventWrongRoutingKey(NAME, AGE_1)));
         assertThat(topicService.getCount(), is(0));
     }
 
