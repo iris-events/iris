@@ -19,7 +19,7 @@ import org.hamcrest.Matchers;
 import org.jboss.jandex.Index;
 import org.junit.Test;
 
-import id.global.asyncapi.spec.enums.EventType;
+import id.global.asyncapi.spec.enums.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
@@ -31,15 +31,14 @@ import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersBadExampleApp;
 import io.smallrye.asyncapi.runtime.scanner.app.FanoutEventHandlersApp;
 import io.smallrye.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
 import io.smallrye.asyncapi.runtime.scanner.model.SentEvent;
-import io.smallrye.asyncapi.runtime.scanner.model.TestEventV2;
 
 public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     public static final String ROLES_ALLOWED = "rolesAllowed";
 
     @Test
-    public void eventAppAnnotationShouldGenerateBasicDocument() throws MalformedURLException {
-        Index index = indexOf(EventHandlersApp.class);
+    public void eventAppAnnotationShouldGenerateBasicDocument() {
+        Index index = getEventHandlersAppIndex();
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -56,14 +55,14 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void generatedMessagesShouldHaveTitles() {
-        Index index = indexOf(EventHandlersApp.class);
+        Index index = getEventHandlersAppIndex();
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
         assertThat(document.components.schemas, notNullValue());
         assertThat(document.channels, notNullValue());
-        assertThat(document.channels.size(), is(6));
+        assertThat(document.channels.size(), is(5));
 
         document.channels.forEach((key, value) -> {
             AaiOperation subscribe = value.subscribe;
@@ -84,7 +83,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void generatedIdShouldConformToUri() {
-        Index index = indexOf(EventHandlersApp.class);
+        Index index = getEventHandlersAppIndex();
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -105,14 +104,14 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void messageHandlerAnnotationsShouldGenerateChannelsAndSchemas() {
-        Index index = indexOf(EventHandlersApp.class);
+        Index index = getEventHandlersAppIndex();
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
         assertThat(document.components.schemas, notNullValue());
         assertThat(document.channels, notNullValue());
-        assertThat(document.channels.size(), is(6));
+        assertThat(document.channels.size(), is(5));
 
         Set<Map.Entry<String, AaiChannelItem>> channelEntries = document.channels.entrySet();
         List<Map.Entry<String, AaiChannelItem>> publishChannels = channelEntries.stream()
@@ -123,8 +122,8 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 .collect(Collectors.toList());
 
         assertThat(publishChannels.size(), is(0));
-        assertThat(subscribeChannels.size(), is(6));
-        assertThat(document.components.schemas.size(), is(7));
+        assertThat(subscribeChannels.size(), is(5));
+        assertThat(document.components.schemas.size(), is(9));
 
         Map.Entry<String, AaiChannelItem> defaultTestEventV1Entry = subscribeChannels.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey().equals("/defaultTestEventV1"))
@@ -173,25 +172,26 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void fanoutMessageHandlerAnnotationsShouldGenerateChannelsAndSchemas() {
-        Index index = indexOf(FanoutEventHandlersApp.class);
+        Index index = indexOf(FanoutEventHandlersApp.class,
+                FanoutEventHandlersApp.TestEventV1.class,
+                FanoutEventHandlersApp.TestEventV2.class);
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
         assertThat(document.components.schemas, notNullValue());
         assertThat(document.channels, notNullValue());
-
         assertThat(document.components.schemas.size(), is(6));
-        assertThat(document.channels.size(), is(3));
+        assertThat(document.channels.size(), is(2));
     }
 
     @Test
-    public void excludingPackagesFromSchemasShouldNotIncludeThemInFinalDocument() throws ClassNotFoundException {
-        Index index = indexOf(EventHandlersApp.class);
+    public void excludingPackagesFromSchemasShouldNotIncludeThemInFinalDocument() {
+        Index index = getEventHandlersAppIndex();
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
-        assertThat(document.components.schemas.size(), is(7));
+        assertThat(document.components.schemas.size(), is(9));
         assertThat(document.components.schemas.get("JsonNode"), notNullValue());
 
         Set<String> excludedPrefixes = new HashSet<>();
@@ -202,17 +202,19 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 index);
         Aai20Document documentWithExclude = scannerWithExclude.scan();
 
-        assertThat(documentWithExclude.components.schemas.size(), is(5));
+        assertThat(documentWithExclude.components.schemas.size(), is(7));
 
         // Finding JsonNode under components.schemas is NOT expected
         assertThat(documentWithExclude.components.schemas.get("JsonNode"), nullValue());
-        assertThat(documentWithExclude.components.schemas.get(TestEventV2.class.getSimpleName()).properties.get("payload").type,
+        assertThat(
+                documentWithExclude.components.schemas.get(EventHandlersApp.TestEventV2.class.getSimpleName()).properties.get(
+                        "payload").type,
                 is("null"));
     }
 
     @Test
     public void hashMapEvent() {
-        Index index = indexOf(EventHandlersBadExampleApp.class);
+        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class);
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -223,7 +225,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void hashMapEventExcludeFromSchemas() {
-        Index index = indexOf(EventHandlersBadExampleApp.class);
+        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class);
         Set<String> excludedPrefixes = new HashSet<>();
         excludedPrefixes.add("java.util");
 
@@ -237,7 +239,10 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void enumValuesShouldNotIgnoreJsonProperty() {
-        Index index = indexOf(EventHandlersApp.class);
+        Index index = indexOf(
+                EventHandlersAppWithSentEvent.class,
+                EventHandlersAppWithSentEvent.SentEvent.class
+        );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -290,7 +295,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
     public void sameEventProducedAndHandledShouldBeOneSchema() {
         Index index = indexOf(
                 EventHandlersAppWithSentEvent.class,
-                SentEvent.class
+                EventHandlersAppWithSentEvent.SentEvent.class
         );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -304,7 +309,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
     public void producedAndHandledShouldCreateCorrectChannels() {
         Index index = indexOf(
                 EventHandlersAppWithSentEvent.class,
-                SentEvent.class
+                EventHandlersAppWithSentEvent.SentEvent.class
         );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -313,13 +318,13 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.channels.size(), is(2));
 
         assertThat(document.channels.get("/sentEventV1").subscribe, is(notNullValue()));
-        assertThat(document.channels.get("/sentEventV1").subscribe.message.getExtraProperty("type"), is(EventType.INTERNAL));
+        assertThat(document.channels.get("/sentEventV1").subscribe.message.getExtraProperty("scope"), is(Scope.INTERNAL));
         assertThat(((Schema) document.channels.get("/sentEventV1").subscribe.message.payload).$ref,
                 is("#/components/schemas/SentEvent"));
 
         assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish, is(notNullValue()));
-        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.getExtraProperty("type"),
-                is(EventType.EXTERNAL));
+        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.getExtraProperty("scope"),
+                is(Scope.EXTERNAL));
         assertThat(((Schema) document.channels.get("sentEventExchange/sentEventQueue").publish.message.payload).$ref,
                 is("#/components/schemas/SentEvent"));
     }
@@ -350,5 +355,14 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
                 .getExtension(ROLES_ALLOWED).value)[2], is("DUMMY"));
 
+    }
+
+    private Index getEventHandlersAppIndex() {
+        return indexOf(EventHandlersApp.class,
+                EventHandlersApp.TestEventV1.class,
+                EventHandlersApp.TestEventV2.class,
+                EventHandlersApp.FrontendTestEventV1.class,
+                EventHandlersApp.TopicTestEventV1.class,
+                EventHandlersApp.FanoutTestEventV1.class);
     }
 }

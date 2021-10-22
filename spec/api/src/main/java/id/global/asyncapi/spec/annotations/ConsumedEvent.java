@@ -6,35 +6,33 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import id.global.asyncapi.spec.enums.Scope;
 import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.asyncapi.spec.enums.Scope;
 
 @Target({ ElementType.TYPE, ElementType.RECORD_COMPONENT })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface ProducedEvent {
+public @interface ConsumedEvent {
     /**
-     * To which queue/routingKey this event is published
+     * On which queue to listen for these events. If not specified generated from event class name.
      */
     String queue() default "";
 
     /**
-     * To which exchange this event is published
+     * On which exchange to listen to for direct event messages. If not specified, default exchange is used.
      */
     String exchange() default "";
 
-    /**
-     * Type of exchange this event is published to
-     */
     ExchangeType exchangeType() default ExchangeType.DIRECT;
+
+    /**
+     * Bindings keys for topic messages. @see <a href="https://www.rabbitmq.com/tutorials/tutorial-five-python.html">Rabbitmq
+     * Topics</a>
+     */
+    String[] bindingKeys() default {};
 
     /**
      * Wether the event is an internal system event or an external communication event
      */
     Scope scope() default Scope.INTERNAL;
-
-    /**
-     * Defines allowed roles to produce this event
-     */
-    String[] rolesAllowed() default {};
 }

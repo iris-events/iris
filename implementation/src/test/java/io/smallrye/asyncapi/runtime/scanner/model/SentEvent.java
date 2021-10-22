@@ -1,15 +1,17 @@
 package io.smallrye.asyncapi.runtime.scanner.model;
 
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.EventType;
 import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.asyncapi.spec.enums.Scope;
 
 @ProducedEvent(
         exchange = "sentEventExchange",
         queue = "sentEventQueue",
-        eventType = EventType.EXTERNAL,
+        scope = Scope.EXTERNAL,
         exchangeType = ExchangeType.DIRECT,
         rolesAllowed = { "ADMIN", "USER", "DUMMY" })
+@ConsumedEvent(queue = "sentEventV1")
 public class SentEvent {
     private int id;
     private String status;

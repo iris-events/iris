@@ -12,7 +12,7 @@ import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.asyncapi.spec.enums.EventType;
+import id.global.asyncapi.spec.enums.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
@@ -40,7 +40,7 @@ public abstract class BaseAnnotationScanner {
     public static final String PROP_SERVERS = "servers";
     public static final String PROP_CHANNELS = "channels";
     public static final String COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
-    public static final String PROP_MESSAGE_TYPE = "type";
+    public static final String PROP_MESSAGE_SCOPE = "scope";
     private static final String ROLES_ALLOWED = "rolesAllowed";
 
     protected final AnnotationScannerContext annotationScannerContext;
@@ -71,8 +71,7 @@ public abstract class BaseAnnotationScanner {
         return Objects.equals(annotation.target().kind(), AnnotationTarget.Kind.CLASS);
     }
 
-    protected void createChannels(List<ChannelInfo> channelInfos,
-            Map<String, EventType> messageTypes, Aai20Document asyncApi) {
+    protected void createChannels(List<ChannelInfo> channelInfos, Map<String, Scope> messageScopes, Aai20Document asyncApi) {
         if (asyncApi.channels == null) {
             asyncApi.channels = new HashMap<>();
         }
@@ -92,7 +91,7 @@ public abstract class BaseAnnotationScanner {
             }
 
             operation.message = new Aai20Message(eventKey);
-            operation.message.addExtraProperty(PROP_MESSAGE_TYPE, messageTypes.get(eventKey));
+            operation.message.addExtraProperty(PROP_MESSAGE_SCOPE, messageScopes.get(eventKey));
             Extension rolesAllowedExtension = new Extension();
             rolesAllowedExtension.name = ROLES_ALLOWED;
             rolesAllowedExtension.value = channelInfo.getRolesAllowed();

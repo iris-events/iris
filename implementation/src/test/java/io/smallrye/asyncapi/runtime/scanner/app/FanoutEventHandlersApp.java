@@ -1,10 +1,15 @@
 package io.smallrye.asyncapi.runtime.scanner.app;
 
+import java.util.Map;
+
 import org.jboss.logging.Logger;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
-import io.smallrye.asyncapi.runtime.scanner.model.TestEventV1;
-import io.smallrye.asyncapi.runtime.scanner.model.TestEventV2;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
+import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.enums.ExchangeType;
+import io.smallrye.asyncapi.runtime.scanner.model.User;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import io.smallrye.asyncapi.spec.annotations.info.Info;
 
@@ -17,20 +22,26 @@ public class FanoutEventHandlersApp {
     public static final String ID = "FanoutEventHandlersAppTest";
     public static final String EXCHANGE_V1 = "fanout_exchange_v1";
     public static final String EXCHANGE_V2 = "fanout_exchange_v2";
-    public static final String EXCHANGE_V3 = "fanout_exchange_v3";
 
-    @FanoutMessageHandler(exchange = EXCHANGE_V1)
+    @MessageHandler
     public void handleEventV1(TestEventV1 event) {
         LOG.info("Handle event: " + event);
     }
 
-    @FanoutMessageHandler(exchange = EXCHANGE_V2, eventClass = TestEventV2.class)
+    @MessageHandler
     public void handleEventV1Params(TestEventV2 event, boolean flag) {
         LOG.info("Handle event: " + event + " with flag: " + flag);
     }
 
-    @FanoutMessageHandler(exchange = EXCHANGE_V3)
-    public void handleEventV1OnExchangeV3(TestEventV1 event) {
-        LOG.info("Handle event: " + event);
-    }
+    @ConsumedEvent(exchange = EXCHANGE_V1, exchangeType = ExchangeType.FANOUT)
+    public record TestEventV1(int id, String status, User user){}
+
+    @ConsumedEvent(exchange = EXCHANGE_V2, exchangeType = ExchangeType.FANOUT)
+    public record TestEventV2(
+            int id,
+            String name,
+            String surname,
+            User user,
+            JsonNode payload,
+            Map<String, String> someMap){}
 }

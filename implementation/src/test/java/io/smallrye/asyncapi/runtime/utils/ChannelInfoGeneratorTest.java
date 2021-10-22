@@ -1,11 +1,12 @@
 package io.smallrye.asyncapi.runtime.utils;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.jboss.jandex.AnnotationValue;
 import org.junit.Test;
 
 import id.global.asyncapi.spec.enums.ExchangeType;
@@ -18,14 +19,12 @@ public class ChannelInfoGeneratorTest {
     @Test
     public void channelInfoGeneratorShouldGenerateCorrectInfoAndBindings() {
         String exchange = "testExchange";
-        AnnotationValue exchangeValue = AnnotationValue.createStringValue("exchange", exchange);
         String queue = "testQueue";
-        AnnotationValue queueValue = AnnotationValue.createStringValue("queue", queue);
         String eventClass = "EventClassName";
         ExchangeType exchangeType = ExchangeType.DIRECT;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
-                .generateSubscribeChannelInfo(exchangeValue, queueValue, eventClass, exchangeType, new String[0]);
+                .generateSubscribeChannelInfo(exchange, queue, eventClass, exchangeType, new String[0]);
 
         assertNotNull(channelInfo);
         assertEquals(eventClass, channelInfo.getEventKey());
@@ -46,14 +45,14 @@ public class ChannelInfoGeneratorTest {
     @Test
     public void channelInfoGeneratorShouldUseEventNameIfQueueMissing() {
         String exchange = "testExchange";
-        AnnotationValue exchangeValue = AnnotationValue.createStringValue("exchange", exchange);
         String eventClass = "EventClassName";
+        String queueName = "event-class-name";
         ExchangeType exchangeType = ExchangeType.DIRECT;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
-                .generateSubscribeChannelInfo(exchangeValue, null, eventClass, exchangeType, new String[0]);
+                .generateSubscribeChannelInfo(exchange, queueName, eventClass, exchangeType, new String[0]);
 
-        assertEquals(eventClass, channelInfo.getBindingsInfo().getQueue());
+        assertThat(channelInfo.getBindingsInfo().getQueue(), is(queueName));
+        assertThat(channelInfo.getEventKey(), is(eventClass));
     }
-
 }

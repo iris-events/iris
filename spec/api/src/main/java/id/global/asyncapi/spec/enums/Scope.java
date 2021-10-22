@@ -1,5 +1,5 @@
 package id.global.asyncapi.spec.enums;
 
-public enum EventType {
+public enum Scope {
     INTERNAL, EXTERNAL
 }
