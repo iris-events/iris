@@ -18,6 +18,8 @@
     <hamcrest.version>2.2</hamcrest.version>
     <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
     <globalid-common.version>1.0.13</globalid-common.version>
+    <quarkus-narayana-jta.version>2.2.1.Final</quarkus-narayana-jta.version>
+    <quarkus-narayana-jta-deployment.version>2.2.1.Final</quarkus-narayana-jta-deployment.version>
   </properties>
   <scm>
     <connection>scm:git:git@gitlab.com:globalid/experiments/quarkus-eda.git</connection>
@@ -51,6 +53,16 @@
         <groupId>io.github.resilience4j</groupId>
         <artifactId>resilience4j-retry</artifactId>
         <version>${resilience4j-retry.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-narayana-jta</artifactId>
+        <version>${quarkus-narayana-jta.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-narayana-jta-deployment</artifactId>
+        <version>${quarkus-narayana-jta-deployment.version}</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
