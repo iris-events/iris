@@ -15,13 +15,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.asyncapi.spec.enums.ExchangeType;
-import id.global.event.messaging.it.events.Event;
-import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -71,6 +68,9 @@ public class AnnotatedEventsTestIT {
         assertThrows(AmqpSendException.class, () -> {
             testProducer.send(new Event("name", 1L));
         });
+    }
+
+    public record Event(String name, Long age) {
     }
 
     @Test
@@ -165,7 +165,7 @@ public class AnnotatedEventsTestIT {
         public AnnotationService() {
         }
 
-        @MessageHandler(queue = ANNOTATED_QUEUE, exchange = ANNOTATED_EXCHANGE)
+        @MessageHandler
         public void handle(DirectEvent event) {
             count.incrementAndGet();
             handledEvent.complete(event);
@@ -192,8 +192,8 @@ public class AnnotatedEventsTestIT {
 
         private final CompletableFuture<String> future = new CompletableFuture<>();
 
-        @FanoutMessageHandler(exchange = ANNOTATED_EXCHANGE_FANOUT)
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(FanoutLoggingEvent event) {
             future.complete(event.log());
         }
 
@@ -209,18 +209,14 @@ public class AnnotatedEventsTestIT {
 
         private final CompletableFuture<String> future = new CompletableFuture<>();
 
-        @FanoutMessageHandler(exchange = ANNOTATED_EXCHANGE_FANOUT)
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(FanoutLoggingEvent event) {
             future.complete(event.log());
         }
 
         public CompletableFuture<String> getFuture() {
             return future;
         }
-
-    }
-
-    private record ReceivedEvent(String name, long age) {
 
     }
 
@@ -234,14 +230,14 @@ public class AnnotatedEventsTestIT {
 
         private CountDownLatch countDownLatch = new CountDownLatch(99);
 
-        @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = SOMETHING_NOTHING)
-        public void handleLogEventsOne(ReceivedEvent event) {
+        @MessageHandler
+        public void handleLogEventsOne(TopicReceivedEventOne event) {
             count.incrementAndGet();
             futureOne.complete(event.name());
         }
 
-        @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = SOMETHING)
-        public void handleLogEventsTwo(ReceivedEvent event) {
+        @MessageHandler
+        public void handleLogEventsTwo(TopicReceivedEventTwo event) {
             count.incrementAndGet();
             countDownLatch.countDown();
             if ((countDownLatch.getCount()) == 0) {
@@ -270,7 +266,20 @@ public class AnnotatedEventsTestIT {
 
     }
 
+    @ConsumedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, exchangeType = ExchangeType.FANOUT)
+    public record FanoutLoggingEvent(String log, Long level) {
+    }
+
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = ExchangeType.TOPIC, bindingKeys = SOMETHING_NOTHING)
+    private record TopicReceivedEventOne(String name, long age) {
+    }
+
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = ExchangeType.TOPIC, bindingKeys = SOMETHING)
+    private record TopicReceivedEventTwo(String name, long age) {
+    }
+
     @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = ANNOTATED_QUEUE)
+    @ConsumedEvent(queue = ANNOTATED_QUEUE, exchange = ANNOTATED_EXCHANGE)
     private record DirectEvent(String name, Long age) {
     }
 

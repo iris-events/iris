@@ -17,8 +17,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -72,7 +72,7 @@ public class DirectTestIT {
                 EVENT_QUEUE_PRIORITY,
                 DIRECT));
 
-        Event priorityEvent = service.getHandledPriorityEvent().get();
+        PrioritizedEvent priorityEvent = service.getHandledPriorityEvent().get();
         Event event = service.getHandledEvent().get();
 
         assertThat(TestHandlerService.count.get(), is(2));
@@ -86,7 +86,7 @@ public class DirectTestIT {
     @ApplicationScoped
     public static class TestHandlerService {
         private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
-        private final CompletableFuture<Event> handledPriorityEvent = new CompletableFuture<>();
+        private final CompletableFuture<PrioritizedEvent> handledPriorityEvent = new CompletableFuture<>();
 
         public static final AtomicInteger count = new AtomicInteger(0);
 
@@ -95,15 +95,15 @@ public class DirectTestIT {
         }
 
         @SuppressWarnings("unused")
-        @MessageHandler(queue = EVENT_QUEUE, exchange = EXCHANGE)
+        @MessageHandler
         public void handle(Event event) {
             count.incrementAndGet();
             handledEvent.complete(event);
         }
 
         @SuppressWarnings("unused")
-        @MessageHandler(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE)
-        public void handlePriority(Event event) {
+        @MessageHandler
+        public void handlePriority(PrioritizedEvent event) {
             count.incrementAndGet();
             handledPriorityEvent.complete(event);
         }
@@ -112,9 +112,16 @@ public class DirectTestIT {
             return handledEvent;
         }
 
-        public CompletableFuture<Event> getHandledPriorityEvent() {
+        public CompletableFuture<PrioritizedEvent> getHandledPriorityEvent() {
             return handledPriorityEvent;
         }
     }
 
+    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE)
+    public record Event(String name, Long age) {
+    }
+
+    @ConsumedEvent(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE)
+    public record PrioritizedEvent(String name, Long age) {
+    }
 }

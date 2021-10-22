@@ -12,8 +12,9 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.junit.jupiter.api.Test;
 
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.TopicMessageHandler;
+import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.BaseIndexingTest;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 import id.global.event.messaging.test.Event;
@@ -22,17 +23,17 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     @Test
     void validateWithRules() {
-        final var serviceClass = ValidationOKTestService.class;
-        final var annotationClass = MessageHandler.class;
+        final var eventClass = ValidDirectEvent.class;
+        final var annotationClass = ConsumedEvent.class;
 
-        final var annotationInstance = getAnnotationInstance(serviceClass, annotationClass);
+        final var annotationInstance = getAnnotationInstance(eventClass, annotationClass);
         final var validationRules = new ValidationRules(
                 1,
                 false,
                 false,
                 Set.of(QUEUE_PARAM),
                 Set.of(QUEUE_PARAM));
-        final var validator = getAnnotationInstanceValidator(serviceClass,
+        final var validator = getAnnotationInstanceValidator(eventClass,
                 validationRules);
 
         assertDoesNotThrow(() -> validator.validate(annotationInstance));
@@ -40,13 +41,13 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     @Test
     public void validateNonKebabCaseQueueShouldFail() {
-        final var serviceClass = ValidationNotOkTestService.class;
-        final var annotationClass = MessageHandler.class;
+        final var eventClass = CameCaseDirectEvent.class;
+        final var annotationClass = ConsumedEvent.class;
 
-        final var annotationInstance = getAnnotationInstance(serviceClass, annotationClass);
+        final var annotationInstance = getAnnotationInstance(eventClass, annotationClass);
         final var validationRules = new ValidationRules(null, false, false, null, Set.of(QUEUE_PARAM));
         final var validator = getAnnotationInstanceValidator(
-                serviceClass, validationRules);
+                eventClass, validationRules);
 
         assertThrows(MessageHandlerValidationException.class, () -> validator.validateParamsAreKebabCase(annotationInstance));
     }
@@ -86,8 +87,8 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     @Test
     public void validateParamsExist() {
-        final var serviceClass = ValidationOKTestService.class;
-        final var annotationClass = MessageHandler.class;
+        final var serviceClass = ValidDirectEvent.class;
+        final var annotationClass = ConsumedEvent.class;
 
         final var annotationInstance = getAnnotationInstance(serviceClass, annotationClass);
         final var validationRules = new ValidationRules(null, false, false, Set.of(QUEUE_PARAM), null);
@@ -117,32 +118,33 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
     @Test
     public void validateParamsAreKebabCase() {
         final var validationRules = new ValidationRules(null, false, false, null, Set.of(QUEUE_PARAM));
-        final var validationOkServiceClass = ValidationOKTestService.class;
-        final var messageHandlerAnnotationClass = MessageHandler.class;
-        final var topicMessageHandlerAnnotationClass = TopicMessageHandler.class;
-        final var validationNonKebabServiceClass = ValidationNotOkTestService.class;
+        final var consumedEventAnnotationClass = ConsumedEvent.class;
+        final var validationOkEventClass = ValidDirectEvent.class;
+        final var validationNonKebabEventClass = CameCaseDirectEvent.class;
+        final var validationOkTopicEventClass = ValidTopicEvent.class;
+        final var validationNonKebabTopicEventClass = NonKebabExchangeTopicEvent.class;
 
-        final var validationOkMessageHandlerInstance = getAnnotationInstance(validationOkServiceClass,
-                messageHandlerAnnotationClass);
-        final var validationOkTopicMessageHandlerInstance = getAnnotationInstance(validationOkServiceClass,
-                topicMessageHandlerAnnotationClass);
-        final var validationNonKebabMessageHandlerInstance = getAnnotationInstance(validationNonKebabServiceClass,
-                messageHandlerAnnotationClass);
-        final var validationNonKebabTopicMessageHandlerInstance = getAnnotationInstance(validationNonKebabServiceClass,
-                topicMessageHandlerAnnotationClass);
+        final var validationOkMessageHandlerInstance = getAnnotationInstance(validationOkEventClass,
+                consumedEventAnnotationClass);
+        final var validationOkTopicMessageHandlerInstance = getAnnotationInstance(validationOkTopicEventClass,
+                consumedEventAnnotationClass);
+        final var validationNonKebabMessageHandlerInstance = getAnnotationInstance(validationNonKebabEventClass,
+                consumedEventAnnotationClass);
+        final var validationNonKebabTopicMessageHandlerInstance = getAnnotationInstance(validationNonKebabTopicEventClass,
+                consumedEventAnnotationClass);
 
         final var validator = getAnnotationInstanceValidator(
-                validationOkServiceClass, validationRules);
+                validationOkEventClass, validationRules);
 
         final var topicValidationRules = new ValidationRules(null, false, false, null, Set.of(EXCHANGE_PARAM));
         AnnotationInstanceValidator topicValidator = getAnnotationInstanceValidator(
-                validationOkServiceClass, topicValidationRules);
+                validationOkEventClass, topicValidationRules);
 
         AnnotationInstanceValidator nonKebabMessageHandlerValidator = getAnnotationInstanceValidator(
-                validationNonKebabServiceClass, validationRules);
+                validationNonKebabEventClass, validationRules);
 
         AnnotationInstanceValidator nonKebabTopicMessageHandlerValidator = getAnnotationInstanceValidator(
-                validationNonKebabServiceClass, topicValidationRules);
+                validationNonKebabEventClass, topicValidationRules);
 
         assertDoesNotThrow(() -> validator.validateParamsAreKebabCase(validationOkMessageHandlerInstance));
         assertDoesNotThrow(() -> topicValidator.validateParamsAreKebabCase(validationOkTopicMessageHandlerInstance));
@@ -156,23 +158,27 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
     @Test
     public void validateTopicParameter() {
         final var validationRules = new ValidationRules(null, false, true, null, null);
-        final var serviceClassOk = ValidationOKTestService.class;
-        final var serviceClassNotOk = ValidationNotOkTestService.class;
-        final var annotationClass = TopicMessageHandler.class;
+        final var topicEventClassOk = ValidTopicEvent.class;
+        final var topicEventClassNotOk = NonKebabExchangeTopicEvent.class;
+        final var uppercaseBindingKeyTopicEventClass = UppercaseBindingKeyTopicEvent.class;
+        final var dotEndingBindingKeyTopicEventClass = DotEndingBindingKeyTopicEvent.class;
+        final var annotationClass = ConsumedEvent.class;
 
-        AnnotationInstanceValidator validatorOk = getAnnotationInstanceValidator(serviceClassOk,
+        AnnotationInstanceValidator validatorOk = getAnnotationInstanceValidator(topicEventClassOk,
                 validationRules);
-        AnnotationInstanceValidator validatorNotOk = getAnnotationInstanceValidator(serviceClassNotOk,
+        AnnotationInstanceValidator validatorNotOk = getAnnotationInstanceValidator(topicEventClassNotOk,
                 validationRules);
 
-        assertDoesNotThrow(() -> validatorOk.validateTopicValidity(getAnnotationInstance(serviceClassOk, annotationClass)));
+        assertDoesNotThrow(() -> validatorOk.validateTopicValidity(getAnnotationInstance(topicEventClassOk, annotationClass)));
         assertThrows(MessageHandlerValidationException.class,
-                () -> validatorNotOk.validateTopicValidity(getAnnotationInstance(serviceClassNotOk, annotationClass)));
+                () -> validatorNotOk.validateTopicValidity(getAnnotationInstance(topicEventClassNotOk, annotationClass)));
 
         assertThrows(MessageHandlerValidationException.class,
-                () -> validatorNotOk.validateTopicValidity(getAnnotationInstance(serviceClassNotOk, annotationClass, 1)));
+                () -> validatorNotOk
+                        .validateTopicValidity(getAnnotationInstance(uppercaseBindingKeyTopicEventClass, annotationClass)));
         assertThrows(MessageHandlerValidationException.class,
-                () -> validatorNotOk.validateTopicValidity(getAnnotationInstance(serviceClassNotOk, annotationClass, 2)));
+                () -> validatorNotOk
+                        .validateTopicValidity(getAnnotationInstance(dotEndingBindingKeyTopicEventClass, annotationClass)));
     }
 
     private AnnotationInstanceValidator getAnnotationInstanceValidator(Class<?> serviceClass,
@@ -185,45 +191,47 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
     }
 
     private AnnotationInstance getAnnotationInstance(Class<?> serviceClass, Class<?> annotationClass) {
-        return getAnnotationInstance(serviceClass, annotationClass, 0);
-    }
-
-    private AnnotationInstance getAnnotationInstance(Class<?> serviceClass, Class<?> annotationClass, int index) {
         return indexOf(serviceClass, Event.class)
                 .getAnnotations(DotName.createSimple(annotationClass.getCanonicalName()))
-                .get(index);
+                .get(0);
     }
 
     private static class ValidationOKTestService {
 
-        @MessageHandler(queue = "kebab-case-queue")
-        public void handle(Event event) {
+        @MessageHandler
+        public void handle(ValidDirectEvent event) {
         }
 
-        @TopicMessageHandler(exchange = "kebab-topic-exchange", bindingKeys = { "test.*.key", "test.no.wildcard",
-                "testsimple", "test.end.with.wildcard.*" })
-        public void handleTopic(Event event) {
+        @MessageHandler
+        public void handleTopic(ValidTopicEvent event) {
         }
 
     }
 
-    private static class ValidationNotOkTestService {
+    @ConsumedEvent(queue = "kebab-case-queue")
+    public record ValidDirectEvent() {
+    }
 
-        @MessageHandler(queue = "CamelCaseQueue")
-        public void handle(Event event) {
-        }
+    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "test.*.key",
+            "test.no.wildcard",
+            "testsimple", "test.end.with.wildcard.*" })
+    public record ValidTopicEvent() {
+    }
 
-        @TopicMessageHandler(exchange = "NonKebabExchange", bindingKeys = { "wrong.**.key" })
-        public void handleTopic(Event event) {
-        }
+    @ConsumedEvent(queue = "CamelCaseQueue")
+    public record CameCaseDirectEvent() {
+    }
 
-        @TopicMessageHandler(exchange = "NonKebabExchange", bindingKeys = { "WRONG.upper.case" })
-        public void handleTopic2(Event event) {
-        }
+    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "NonKebabExchange", bindingKeys = { "wrong.**.key" })
+    public record NonKebabExchangeTopicEvent() {
+    }
 
-        @TopicMessageHandler(exchange = "NonKebabExchange", bindingKeys = { "WRONG.end.with.dot." })
-        public void handleTopic3(Event event) {
-        }
+    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "WRONG.upper.case" })
+    public record UppercaseBindingKeyTopicEvent() {
+    }
 
+    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "kebab-topic-exchange", bindingKeys = {
+            "wrong.end.with.dot." })
+    public record DotEndingBindingKeyTopicEvent() {
     }
 }

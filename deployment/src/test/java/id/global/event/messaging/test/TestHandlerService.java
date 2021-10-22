@@ -10,13 +10,13 @@ public class TestHandlerService {
     public static final String EVENT_QUEUE = "event-queue";
     public static final String EVENT_QUEUE_PRIORITY = "event-queue-priority";
 
-    @MessageHandler(queue = EVENT_QUEUE)
+    @MessageHandler
     public void handle(Event event) {
         System.out.println("Handling event");
     }
 
-    @MessageHandler(queue = EVENT_QUEUE_PRIORITY)
-    public void handlePriority(Event event) {
+    @MessageHandler
+    public void handlePriority(PriorityQueueEvent event) {
         System.out.println("Handling priority event");
     }
 

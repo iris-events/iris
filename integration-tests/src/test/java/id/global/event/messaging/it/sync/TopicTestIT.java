@@ -16,8 +16,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.asyncapi.spec.annotations.TopicMessageHandler;
-import id.global.event.messaging.it.events.LoggingEvent;
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
+import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -46,10 +46,10 @@ public class TopicTestIT {
 
         //messages can be consumed in order
 
-        LoggingEvent l1 = new LoggingEvent("Quick orange fox", 1L);
-        LoggingEvent l2 = new LoggingEvent("Quick yellow rabbit", 2L);
-        LoggingEvent l3 = new LoggingEvent("Lazy blue snail", 3L);
-        LoggingEvent l4 = new LoggingEvent("Lazy orange rabbit", 4L);
+        ServiceALoggingEvent l1 = new ServiceALoggingEvent("Quick orange fox", 1L);
+        ServiceALoggingEvent l2 = new ServiceALoggingEvent("Quick yellow rabbit", 2L);
+        ServiceALoggingEvent l3 = new ServiceALoggingEvent("Lazy blue snail", 3L);
+        ServiceALoggingEvent l4 = new ServiceALoggingEvent("Lazy orange rabbit", 4L);
 
         producer.send(l1, TOPIC_EXCHANGE, "quick.orange.fox", TOPIC);
         producer.send(l2, TOPIC_EXCHANGE, "quick.yellow.rabbit", TOPIC);
@@ -81,8 +81,8 @@ public class TopicTestIT {
             completionSignal = new CompletableFuture<>();
         }
 
-        @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = { "*.orange.*" })
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(ServiceALoggingEvent event) {
             synchronized (events) {
                 events.add(event.log());
                 if (events.size() == 2) {
@@ -108,8 +108,8 @@ public class TopicTestIT {
             completionSignal = new CompletableFuture<>();
         }
 
-        @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = { "*.*.rabbit", "lazy.#" })
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(ServiceBLoggingEvent event) {
             synchronized (events) {
                 events.add(event.log());
                 if (events.size() == 3) {
@@ -119,4 +119,11 @@ public class TopicTestIT {
         }
     }
 
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    public record ServiceALoggingEvent(String log, Long level) {
+    }
+
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.*.rabbit", "lazy.#" })
+    public record ServiceBLoggingEvent(String log, Long level) {
+    }
 }

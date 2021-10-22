@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.IndexView;
 
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
@@ -23,9 +24,12 @@ public class AnnotationInstanceValidator {
     }
 
     public void validate(final AnnotationInstance annotationInstance) {
-        validateMethodParamCount(annotationInstance);
         validateParamsExist(annotationInstance);
         validateParamsAreKebabCase(annotationInstance);
+
+        if (isMethodAnnotation(annotationInstance)) {
+            validateMethodParamCount(annotationInstance);
+        }
 
         if (!validationRules.allowExternalDependencyParams()) {
             validateMethodParamExternalDependency(annotationInstance);
@@ -53,6 +57,10 @@ public class AnnotationInstanceValidator {
     }
 
     public void validateMethodParamExternalDependency(final AnnotationInstance annotationInstance) {
+        if (!isMethodAnnotation(annotationInstance)) {
+            return;
+        }
+
         final var methodInfo = annotationInstance.target().asMethod();
         final var parameterType = methodInfo.parameters().get(0);
         final var classByName = index.getClassByName(parameterType.name());
@@ -88,51 +96,96 @@ public class AnnotationInstanceValidator {
 
     public void validateTopicValidity(final AnnotationInstance annotationInstance) {
         final var annotationValue = annotationInstance.value(AnnotationInstanceParams.BINDING_KEYS_PARAM);
-        if (annotationInstance != null) {
-            final var pattern = Pattern.compile(TOPIC_PATTERN);
-            final var methodInfo = annotationInstance.target().asMethod();
-            final var className = methodInfo.declaringClass().name().toString();
-            final var methodName = methodInfo.name();
+        if (annotationValue == null) {
+            return;
+        }
 
-            List<String> bindingKeys = Arrays.asList(annotationValue.asStringArray());
+        final var pattern = Pattern.compile(TOPIC_PATTERN);
+        final var classInfo = annotationInstance.target().asClass();
+        final var className = classInfo.toString();
 
-            bindingKeys.forEach(bindingKey -> {
-                if (!pattern.matcher(bindingKey).matches()) {
+        List<String> bindingKeys = Arrays.asList(annotationValue.asStringArray());
+
+        bindingKeys.stream()
+                .filter(bindingKey -> !pattern.matcher(bindingKey).matches())
+                .findAny()
+                .ifPresent(bindingKey -> {
                     throw new MessageHandlerValidationException(
                             String.format(
-                                    "Binding key \"%s\" on method %s in class %s does not conform to the TOPIC format. "
+                                    "Binding key \"%s\" on  event annotation in class %s does not conform to the TOPIC format. "
                                             + "Can contain only lowercase alphanumerical characters, dots and wildcards (*).",
                                     bindingKey,
-                                    methodName,
                                     className));
-                }
-            });
-        }
+                });
     }
 
     public void validateParamIsKebabCase(final String param, final AnnotationInstance annotationInstance) {
         final var annotationValue = annotationInstance.value(param);
-        final var matchesKebabCase = Pattern.compile(KEBAB_CASE_PATTERN).matcher(annotationValue.asString())
+        final var matchesKebabCase = Pattern.compile(KEBAB_CASE_PATTERN)
+                .matcher(annotationValue.asString())
                 .matches();
 
-        if (!matchesKebabCase) {
-            final var methodInfo = annotationInstance.target().asMethod();
-            final var className = methodInfo.declaringClass().name().toString();
-            final var methodName = methodInfo.name();
-            throw new MessageHandlerValidationException(
-                    String.format("Parameter \"%s\" on method %s in class %s is not formatted in kebab case.",
-                            annotationValue.name(), methodName, className));
+        if (matchesKebabCase) {
+            return;
         }
+
+        if (isMethodAnnotation(annotationInstance)) {
+            final MethodAnnotationDetails methodAnnotationDetails = getMethodAnnotationDetails(annotationInstance);
+            throw new MessageHandlerValidationException(
+                    String.format("Parameter \"%s\" of method %s in class %s is not formatted in kebab case.",
+                            param, methodAnnotationDetails.methodName(), methodAnnotationDetails.methodDeclarationClassName()));
+        }
+
+        if (isClassAnnotation(annotationInstance)) {
+            final var classAnnotationDetails = getClassAnnotationDetails(annotationInstance);
+            throw new MessageHandlerValidationException(
+                    String.format("Parameter \"%s\" of annotation %s on class %s is not formatted in kebab case.",
+                            param, classAnnotationDetails.annotationClassName(), classAnnotationDetails.eventClassName()));
+        }
+
+        throw new IllegalArgumentException("Unsupported annotation target kind: " + annotationInstance.target().kind());
     }
 
     private void validateParamExists(final String param, final AnnotationInstance annotationInstance) {
-        if (annotationInstance.value(param) == null) {
-            final var methodInfo = annotationInstance.target().asMethod();
+        if (annotationInstance.value(param) != null) {
+            return;
+        }
+
+        if (isMethodAnnotation(annotationInstance)) {
+            final MethodAnnotationDetails methodAnnotationDetails = getMethodAnnotationDetails(annotationInstance);
             throw new MessageHandlerValidationException(
                     String.format("Parameter \"%s\" missing on MessageHandler annotation on %s::%s",
-                            param,
-                            methodInfo.declaringClass(),
-                            methodInfo.name()));
+                            param, methodAnnotationDetails.methodDeclarationClassName(), methodAnnotationDetails.methodName()));
         }
+
+        if (isClassAnnotation(annotationInstance)) {
+            final ClassAnnotationDetails classAnnotationDetails = getClassAnnotationDetails(annotationInstance);
+            throw new MessageHandlerValidationException(
+                    String.format("Parameter \"%s\" missing in annotation %s on class %s class",
+                            param, classAnnotationDetails.annotationClassName(), classAnnotationDetails.eventClassName()));
+        }
+
+        throw new IllegalArgumentException("Unsupported annotation target kind: " + annotationInstance.target().kind());
+    }
+
+    private boolean isClassAnnotation(final AnnotationInstance annotationInstance) {
+        return annotationInstance.target().kind().equals(AnnotationTarget.Kind.CLASS);
+    }
+
+    private boolean isMethodAnnotation(final AnnotationInstance annotationInstance) {
+        return annotationInstance.target().kind().equals(AnnotationTarget.Kind.METHOD);
+    }
+
+    private MethodAnnotationDetails getMethodAnnotationDetails(final AnnotationInstance annotationInstance) {
+        final var methodInfo = annotationInstance.target().asMethod();
+        final var className = methodInfo.declaringClass().name();
+        final var methodName = methodInfo.name();
+        return new MethodAnnotationDetails(methodName, className);
+    }
+
+    private ClassAnnotationDetails getClassAnnotationDetails(final AnnotationInstance annotationInstance) {
+        final var className = annotationInstance.target().asClass().name();
+        final var annotationClassName = annotationInstance.name();
+        return new ClassAnnotationDetails(annotationClassName, className);
     }
 }
