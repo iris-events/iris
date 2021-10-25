@@ -10,7 +10,7 @@
 
 	<groupId>id.global.events</groupId>
 	<artifactId>maven-eda-plugin-parent</artifactId>
-	<version>1.0.5</version>
+	<version>1.0.6-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Event Messaging - Maven Plugins</name>
@@ -21,7 +21,7 @@
 	</modules>
 
 	<properties>
-		<version.smallrye.async.api>1.0.5</version.smallrye.async.api>
+		<version.smallrye.async.api>1.0.6-SNAPSHOT</version.smallrye.async.api>
 		<maven.version>3.8.1</maven.version>
 		<maven-plugin-annotations.version>3.6.1</maven-plugin-annotations.version>
 		<maven-project.version>2.2.1</maven-project.version>
