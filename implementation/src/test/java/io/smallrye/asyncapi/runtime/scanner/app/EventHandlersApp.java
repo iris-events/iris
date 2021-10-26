@@ -27,8 +27,8 @@ public class EventHandlersApp {
     }
 
     @MessageHandler
-    public void handleEventV1Params(TestEventV2 event, boolean flag) {
-        LOG.info("Handle event: " + event + " with flag: " + flag);
+    public void handleEventV1Params(TestEventV2 event) {
+        LOG.info("Handle event: " + event + " with JsonNode and Map");
     }
 
     @MessageHandler
@@ -46,11 +46,11 @@ public class EventHandlersApp {
         LOG.info("Handling fanout event");
     }
 
-    @ConsumedEvent(queue = "defaultTestEventV1")
+    @ConsumedEvent(queue = "default-test-event-v1")
     public record TestEventV1(int id, String status, User user) {
     }
 
-    @ConsumedEvent(queue = "testEventV2")
+    @ConsumedEvent(queue = "test-event-v2")
     public record TestEventV2(
             int id,
             String name,
@@ -60,16 +60,16 @@ public class EventHandlersApp {
             Map<String, String> someMap) {
     }
 
-    @ConsumedEvent(queue = "feTestEventV1")
+    @ConsumedEvent(queue = "fe-test-event-v1")
     public record FrontendTestEventV1(int id, String status, User user) {
     }
 
-    @ConsumedEvent(exchange = "test_topic_exchange", exchangeType = ExchangeType.TOPIC, bindingKeys = { "*.*.rabbit",
+    @ConsumedEvent(exchange = "test-topic-exchange", exchangeType = ExchangeType.TOPIC, bindingKeys = { "*.*.rabbit",
             "fast.orange.*" })
     public record TopicTestEventV1(int id, String status, User user) {
     }
 
-    @ConsumedEvent(exchange = "test_fanout_exchange", exchangeType = ExchangeType.FANOUT)
+    @ConsumedEvent(exchange = "test-fanout-exchange", exchangeType = ExchangeType.FANOUT)
     public record FanoutTestEventV1(int id, String status, User user) {
     }
 }

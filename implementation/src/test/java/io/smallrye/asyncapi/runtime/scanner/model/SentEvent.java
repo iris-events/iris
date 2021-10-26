@@ -6,12 +6,12 @@ import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.asyncapi.spec.enums.Scope;
 
 @ProducedEvent(
-        exchange = "sentEventExchange",
-        queue = "sentEventQueue",
+        exchange = "sent-event-exchange",
+        queue = "sent-event-queue",
         scope = Scope.EXTERNAL,
         exchangeType = ExchangeType.DIRECT,
         rolesAllowed = { "ADMIN", "USER", "DUMMY" })
-@ConsumedEvent(queue = "sentEventV1")
+@ConsumedEvent(queue = "sent-event-v1")
 public class SentEvent {
     private int id;
     private String status;

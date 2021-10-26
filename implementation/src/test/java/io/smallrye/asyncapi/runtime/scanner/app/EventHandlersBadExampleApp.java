@@ -22,7 +22,7 @@ public class EventHandlersBadExampleApp {
         LOG.info("Handle hash map event: " + event);
     }
 
-    @ConsumedEvent(queue = "hashmapQueue")
+    @ConsumedEvent(queue = "hashmap-queue")
     public record MapEvent(Map<String, Object> mapProperty) {
     }
 }

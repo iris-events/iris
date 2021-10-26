@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
@@ -126,7 +125,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.components.schemas.size(), is(9));
 
         Map.Entry<String, AaiChannelItem> defaultTestEventV1Entry = subscribeChannels.stream()
-                .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey().equals("/defaultTestEventV1"))
+                .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey().equals("/default-test-event-v1"))
                 .collect(Collectors.toList()).get(0);
 
         assertThat(defaultTestEventV1Entry.getValue(), notNullValue());
@@ -158,7 +157,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(((GidAai20AmqpChannelBindings) defaultTestEventV1Entry.getValue().bindings.amqp).getQueue().get("vhost"),
                 is("/"));
         assertThat(((GidAai20AmqpChannelBindings) defaultTestEventV1Entry.getValue().bindings.amqp).getQueue().get("name"),
-                is("defaultTestEventV1"));
+                is("default-test-event-v1"));
         assertThat(
                 ((GidAai20AmqpChannelBindings) defaultTestEventV1Entry.getValue().bindings.amqp).getQueue().get("autoDelete"),
                 is(false));
@@ -317,15 +316,15 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document, is(notNullValue()));
         assertThat(document.channels.size(), is(2));
 
-        assertThat(document.channels.get("/sentEventV1").subscribe, is(notNullValue()));
-        assertThat(document.channels.get("/sentEventV1").subscribe.message.getExtraProperty("scope"), is(Scope.INTERNAL));
-        assertThat(((Schema) document.channels.get("/sentEventV1").subscribe.message.payload).$ref,
+        assertThat(document.channels.get("/sent-event-v1").subscribe, is(notNullValue()));
+        assertThat(document.channels.get("/sent-event-v1").subscribe.message.getExtraProperty("scope"), is(Scope.INTERNAL));
+        assertThat(((Schema) document.channels.get("/sent-event-v1").subscribe.message.payload).$ref,
                 is("#/components/schemas/SentEvent"));
 
-        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish, is(notNullValue()));
-        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.getExtraProperty("scope"),
+        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish, is(notNullValue()));
+        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish.message.getExtraProperty("scope"),
                 is(Scope.EXTERNAL));
-        assertThat(((Schema) document.channels.get("sentEventExchange/sentEventQueue").publish.message.payload).$ref,
+        assertThat(((Schema) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.payload).$ref,
                 is("#/components/schemas/SentEvent"));
     }
 
@@ -340,19 +339,20 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.channels.size(), is(1));
 
         assertThat(
-                document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers.getExtension(ROLES_ALLOWED),
+                document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers.getExtension(
+                        ROLES_ALLOWED),
                 is(notNullValue()));
-        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
                 .getExtension(ROLES_ALLOWED).name, is(ROLES_ALLOWED));
-        assertThat(document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
                 .getExtension(ROLES_ALLOWED).value, is(notNullValue()));
-        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
                 .getExtension(ROLES_ALLOWED).value).length, is(3));
-        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
                 .getExtension(ROLES_ALLOWED).value)[0], is("ADMIN"));
-        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
                 .getExtension(ROLES_ALLOWED).value)[1], is("USER"));
-        assertThat(((String[]) document.channels.get("sentEventExchange/sentEventQueue").publish.message.headers
+        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
                 .getExtension(ROLES_ALLOWED).value)[2], is("DUMMY"));
 
     }

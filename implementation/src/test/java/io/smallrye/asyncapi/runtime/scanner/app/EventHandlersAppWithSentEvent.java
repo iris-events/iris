@@ -25,12 +25,12 @@ public class EventHandlersAppWithSentEvent {
     }
 
     @ProducedEvent(
-            exchange = "sentEventExchange",
-            queue = "sentEventQueue",
+            exchange = "sent-event-exchange",
+            queue = "sent-event-queue",
             scope = Scope.EXTERNAL,
             exchangeType = ExchangeType.DIRECT,
             rolesAllowed = { "ADMIN", "USER", "DUMMY" })
-    @ConsumedEvent(queue = "sentEventV1")
+    @ConsumedEvent(queue = "sent-event-v1")
     public record SentEvent(int id, String status, User user) {
     }
 
