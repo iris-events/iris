@@ -21,7 +21,7 @@
 	</modules>
 
 	<properties>
-		<version.smallrye.async.api>1.0.6-SNAPSHOT</version.smallrye.async.api>
+		<version.smallrye.async.api>1.0.5</version.smallrye.async.api>
 		<maven.version>3.8.1</maven.version>
 		<maven-plugin-annotations.version>3.6.1</maven-plugin-annotations.version>
 		<maven-project.version>2.2.1</maven-project.version>
@@ -37,7 +37,7 @@
 		<connection>scm:git:git@gitlab.com:globalid/experiments/maven-eda.git</connection>
 		<developerConnection>scm:git:git@gitlab.com:globalid/experiments/maven-eda.git</developerConnection>
 		<url>https://gitlab.com/globalid/experiments/maven-eda</url>
-		<tag>v1.0.5</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencyManagement>
