@@ -161,7 +161,7 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
                 () -> scanService(TestHandlerService.class));
         assertNotNull(messageHandlerValidationException);
         String expectedMessage = String.format(
-                "MessageHandler annotated method %s::%s can not have external dependency classes as parameters",
+                "MessageHandler annotated method %s::%s can not have external dependency classes as parameters.",
                 TestHandlerService.class.getName(), "handle");
         assertEquals(expectedMessage, messageHandlerValidationException.getMessage());
     }
