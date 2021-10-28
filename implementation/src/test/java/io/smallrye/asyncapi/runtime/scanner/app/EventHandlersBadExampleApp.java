@@ -1,9 +1,11 @@
 package io.smallrye.asyncapi.runtime.scanner.app;
 
+import java.util.Map;
+
 import org.jboss.logging.Logger;
 
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
-import io.smallrye.asyncapi.runtime.scanner.model.MapEvent;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import io.smallrye.asyncapi.spec.annotations.info.Info;
 
@@ -15,8 +17,12 @@ public class EventHandlersBadExampleApp {
     public static final String VERSION = "1.0.0";
     public static final String ID = "EventHandlersAppTest";
 
-    @MessageHandler(queue = "hashmapQueue")
+    @MessageHandler
     public void handleHashMapEvent(MapEvent event) {
         LOG.info("Handle hash map event: " + event);
+    }
+
+    @ConsumedEvent(queue = "hashmap-queue")
+    public record MapEvent(Map<String, Object> mapProperty) {
     }
 }

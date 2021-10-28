@@ -16,12 +16,18 @@
 
 package io.smallrye.asyncapi.runtime.scanner;
 
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getEventScope;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getExchange;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getExchangeType;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getQueue;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,12 +51,10 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.annotations.TopicMessageHandler;
-import id.global.asyncapi.spec.enums.EventType;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.asyncapi.spec.enums.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
@@ -78,6 +82,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     private static final String GENERATED_MODELS_PACKAGE = "id.global.models.";
 
     public static final DotName DOTNAME_EVENT_APP_DEFINITION = DotName.createSimple(EventApp.class.getName());
+    public static final DotName DOTNAME_CONSUMED_EVENT = DotName.createSimple(ConsumedEvent.class.getName());
     private final SchemaGenerator schemaGenerator;
 
     /**
@@ -143,28 +148,25 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
         List<ChannelInfo> channelInfos = new ArrayList<>();
         Map<String, JsonSchemaInfo> producedEvents = new HashMap<>();
-        Map<String, EventType> messageTypes = new HashMap<>();
+        Map<String, Scope> messageScopes = new HashMap<>();
         for (AnnotationInstance anno : methodAnnotations) {
             ClassInfo classInfo = anno.target().asClass();
             String className = classInfo.name().toString();
-            String simpleName = classInfo.simpleName();
-            messageTypes.put(simpleName, getEventType(anno));
+            String classSimpleName = classInfo.simpleName();
 
-            producedEvents.put(simpleName, generateProducedEventSchemaInfo(className));
+            messageScopes.put(classSimpleName, getEventScope(anno));
+            producedEvents.put(classSimpleName, generateProducedEventSchemaInfo(className));
 
-            // CHANNEL INFOS
-            // TODO to support valueWithDefault we need to add our annotations to the index. In
-            // the tests this is trivial, but we need to somehow do it in the GidAnnotationScanner
-            //            ExchangeType exchangeType = ExchangeType
-            //                    .valueOf(anno.valueWithDefault(this.annotationScannerContext.getIndex(), "exchangeType").asEnum());
-
-            String[] rolesAllowed = GidAnnotationParser.getRolesAllowed(anno);
+            final var queue = getQueue(anno, classSimpleName);
+            final var exchange = getExchange(anno);
+            final var exchangeType = getExchangeType(anno);
+            final var rolesAllowed = GidAnnotationParser.getRolesAllowed(anno);
 
             channelInfos.add(ChannelInfoGenerator.generatePublishChannelInfo(
-                    anno.value("exchange"),
-                    anno.value("queue"),
-                    simpleName,
-                    getExchangeType(anno),
+                    exchange,
+                    queue,
+                    classSimpleName,
+                    exchangeType,
                     rolesAllowed
             ));
         }
@@ -173,59 +175,46 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
         // TODO check what's with the types
 
-        createChannels(channelInfos, messageTypes, asyncApi);
-    }
-
-    private ExchangeType getExchangeType(AnnotationInstance anno) {
-        return anno.value("exchangeType") != null ?
-                ExchangeType.fromType(anno.value("exchangeType").asString()) :
-                ExchangeType.DIRECT;
+        createChannels(channelInfos, messageScopes, asyncApi);
     }
 
     private void processMessageHandlerAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
             throws ClassNotFoundException {
-        Stream<AnnotationInstance> directAnnotations = getMethodAnnotations(MessageHandler.class, context.getIndex());
-        Stream<AnnotationInstance> fanoutAnnotations = getMethodAnnotations(FanoutMessageHandler.class, context.getIndex());
-        Stream<AnnotationInstance> topicAnnotations = getMethodAnnotations(TopicMessageHandler.class, context.getIndex());
 
-        Stream<AnnotationInstance> concat = Stream.concat(directAnnotations, fanoutAnnotations);
-        List<AnnotationInstance> methodAnnos = Stream.concat(concat, topicAnnotations).collect(Collectors.toList());
+        final var methodAnnotationInstances = getMethodAnnotations(MessageHandler.class,
+                context.getIndex()).collect(Collectors.toList());
 
-        Map<String, JsonSchemaInfo> incomingEvents = new HashMap<>();
-        List<ChannelInfo> channelInfos = new ArrayList<>();
+        final var incomingEvents = new HashMap<String, JsonSchemaInfo>();
+        final var channelInfos = new ArrayList<ChannelInfo>();
+        final var messageTypes = new HashMap<String, Scope>();
 
-        Map<String, EventType> messageTypes = new HashMap<>();
+        for (AnnotationInstance annotationInstance : methodAnnotationInstances) {
 
-        for (AnnotationInstance methodAnno : methodAnnos) {
+            final var annotationName = annotationInstance.name();
+            final var annotationValues = annotationInstance.values();
+            final var methodInfo = (MethodInfo) annotationInstance.target();
+            final var methodParameters = methodInfo.parameters();
 
-            DotName annotationName = methodAnno.name();
-            List<AnnotationValue> annotationValues = methodAnno.values();
+            final var eventAnnotation = getEventAnnotation(methodParameters, context.getIndex());
+            final var eventClass = eventAnnotation.target().asClass();
+            final var eventClassSimpleName = eventClass.simpleName();
 
-            MethodInfo methodInfo = (MethodInfo) methodAnno.target();
+            final var queue = getQueue(eventAnnotation, eventClassSimpleName);
+            final var exchange = getExchange(eventAnnotation);
+            final var exchangeType = getExchangeType(eventAnnotation);
+            final var scope = getEventScope(eventAnnotation);
 
-            List<Type> parameters = methodInfo.parameters();
-            Type eventType;
-            if (parameters.size() != 1) {
-                if (methodAnno.value("eventClass") == null) {
-                    throw new IllegalArgumentException(
-                            "When multiple method parameters present eventClass annotation property is required");
-                }
-                eventType = methodAnno.value("eventClass").asClass();
-            } else {
-                eventType = parameters.get(0);
-            }
-            Class<?> eventClass = loadClass(eventType.toString());
-            String simpleName = eventClass.getSimpleName();
+            final var jsonSchemaInfo = generateJsonSchemaInfo(annotationName, eventClass.name().toString(), annotationValues);
+            final var subscribeChannelInfo = ChannelInfoGenerator.generateSubscribeChannelInfo(
+                    exchange,
+                    queue,
+                    eventClassSimpleName,
+                    exchangeType,
+                    GidAnnotationParser.getRolesAllowed(annotationInstance));
 
-            messageTypes.put(simpleName, getEventType(methodAnno));
-            incomingEvents.put(simpleName, generateJsonSchemaInfo(annotationName, eventType.toString(), annotationValues));
-            channelInfos.add(ChannelInfoGenerator.generateSubscribeChannelInfo(
-                    methodAnno.value("exchange"),
-                    methodAnno.value("queue"),
-                    simpleName,
-                    GidAnnotationParser.getExchangeTypeFromAnnotation(methodAnno.name()),
-                    GidAnnotationParser.getRolesAllowed(methodAnno)
-            ));
+            messageTypes.put(eventClassSimpleName, scope);
+            incomingEvents.put(eventClassSimpleName, jsonSchemaInfo);
+            channelInfos.add(subscribeChannelInfo);
         }
 
         insertComponentSchemas(context, incomingEvents, asyncApi);
@@ -325,13 +314,26 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return new SchemaGenerator(schemaGeneratorConfig);
     }
 
-    private EventType getEventType(AnnotationInstance annotation) {
-        String type = JandexUtil.stringValue(annotation, "eventType");
+    private AnnotationInstance getEventAnnotation(final List<Type> parameters,
+            final FilteredIndexView index) {
 
-        if (type == null) {
-            return EventType.INTERNAL;
-        } else {
-            return EventType.valueOf(type);
+        final var consumedEventTypes = parameters.stream()
+                .map(Type::name)
+                .map(index::getClassByName)
+                .filter(Objects::nonNull)
+                .map(classInfo -> classInfo.classAnnotation(DOTNAME_CONSUMED_EVENT))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (consumedEventTypes.isEmpty()) {
+            throw new IllegalArgumentException("Consumed Event not found");
         }
+
+        if (consumedEventTypes.size() > 1) {
+            throw new IllegalArgumentException(
+                    "Multiple consumed Events detected. Message handler can only handle one event type.");
+        }
+
+        return consumedEventTypes.get(0);
     }
 }
