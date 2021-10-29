@@ -18,11 +18,11 @@ import org.jboss.jandex.Type;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.event.messaging.BaseIndexingTest;
 import id.global.event.messaging.test.Event;
+import id.global.event.messaging.test.PriorityQueueEvent;
 import id.global.event.messaging.test.TestHandlerService;
 
 public class MessageHandlerScannerTest extends BaseIndexingTest {
@@ -30,33 +30,42 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
     public static final String TOPIC_EXCHANGE = "topic-exchange";
 
     public static class MessageHandlerService {
-        public static final String EVENT_QUEUE = "event-queue";
-        public static final String EVENT_QUEUE_PRIORITY = "event-queue-priority";
 
-        @MessageHandler(queue = EVENT_QUEUE)
+        @MessageHandler
         public void handle(Event event) {
             System.out.println("Handling event");
         }
 
-        @MessageHandler(queue = EVENT_QUEUE_PRIORITY)
-        public void handleCustomQueueParam(Event event) {
+        @MessageHandler
+        public void handleCustomQueueParam(PriorityQueueEvent event) {
             System.out.println("Handling priority event");
         }
 
-        @FanoutMessageHandler(exchange = FANOUT_EXCHANGE)
-        public void handleFanout(Event event) {
+        @MessageHandler
+        public void handleFanout(FanoutEvent event) {
             System.out.println("Handling fanout event");
         }
 
-        @TopicMessageHandler(exchange = TOPIC_EXCHANGE, bindingKeys = { "lazy.yellow", "*.*.rabbit" })
-        public void handleTopic(Event event) {
+        @MessageHandler
+        public void handleTopic(TopicEvent event) {
             System.out.println("Handling topic event");
         }
+    }
+
+    @ConsumedEvent(exchange = FANOUT_EXCHANGE, exchangeType = FANOUT)
+    public record FanoutEvent() {
+    }
+
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "lazy.yellow", "*.*.rabbit" })
+    public record TopicEvent() {
     }
 
     @Test
     public void messageHandlerScannerShouldScanServiceAnnotations() {
         final List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanService(MessageHandlerService.class,
+                PriorityQueueEvent.class,
+                FanoutEvent.class,
+                TopicEvent.class,
                 Event.class);
 
         assertNotNull(messageHandlerInfoBuildItems);
@@ -66,6 +75,9 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
     @Test
     public void messageHandlerScannerShouldScanQueueParameter() {
         final List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanService(MessageHandlerService.class,
+                PriorityQueueEvent.class,
+                FanoutEvent.class,
+                TopicEvent.class,
                 Event.class);
 
         final List<MessageHandlerInfoBuildItem> handleCustomQueueParam = messageHandlerInfoBuildItems.stream()
@@ -94,6 +106,9 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
     @Test
     public void messageHandlerScannerShoudScanFanoutAndTopicExchanges() {
         final List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanService(MessageHandlerService.class,
+                PriorityQueueEvent.class,
+                FanoutEvent.class,
+                TopicEvent.class,
                 Event.class);
 
         MessageHandlerInfoBuildItem fanoutBuildItem = messageHandlerInfoBuildItems.stream()
@@ -122,6 +137,9 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
     @Test
     public void messageHandlerScannerShouldScanParameterClass() {
         final List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanService(TestHandlerService.class,
+                PriorityQueueEvent.class,
+                FanoutEvent.class,
+                TopicEvent.class,
                 Event.class);
 
         assertEquals(2, messageHandlerInfoBuildItems.size());
@@ -143,7 +161,7 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
                 () -> scanService(TestHandlerService.class));
         assertNotNull(messageHandlerValidationException);
         String expectedMessage = String.format(
-                "MessageHandler annotated method %s::%s can not have external dependency classes as parameters",
+                "MessageHandler annotated method %s::%s can not have external dependency classes as parameters.",
                 TestHandlerService.class.getName(), "handle");
         assertEquals(expectedMessage, messageHandlerValidationException.getMessage());
     }

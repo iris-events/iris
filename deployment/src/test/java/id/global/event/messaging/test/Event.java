@@ -1,20 +1,8 @@
 package id.global.event.messaging.test;
 
-public class Event {
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
+import id.global.asyncapi.spec.enums.ExchangeType;
 
-    private final String name;
-    private final Long age;
-
-    public Event(String name, Long age) {
-        this.name = name;
-        this.age = age;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Long getAge() {
-        return age;
-    }
+@ConsumedEvent(exchange = "exchange", exchangeType = ExchangeType.DIRECT, queue = "event-queue")
+public record Event(String name, Long age) {
 }

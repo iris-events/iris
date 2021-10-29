@@ -65,14 +65,14 @@ public class EventsMalformedIT {
     }
 
     @ProducedEvent(exchange = DIRECT_EXCHANGE, queue = DIRECT_QUEUE)
-    private record TopicEventTmp(String name, long age) {
-    }
-
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, queue = TOPIC_QUEUE, exchangeType = ExchangeType.FANOUT)
     private record DirectEventTmp(String name, long age) {
     }
 
-    @ProducedEvent(exchange = FANOUT_EXCHANGE, exchangeType = ExchangeType.TOPIC)
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, queue = TOPIC_QUEUE, exchangeType = ExchangeType.TOPIC)
+    private record TopicEventTmp(String name, long age) {
+    }
+
+    @ProducedEvent(exchange = FANOUT_EXCHANGE, exchangeType = ExchangeType.FANOUT)
     private record FanoutEventTmp(String name, long age) {
     }
 }

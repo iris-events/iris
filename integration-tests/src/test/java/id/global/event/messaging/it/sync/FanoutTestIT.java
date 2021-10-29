@@ -18,9 +18,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
-import id.global.event.messaging.it.events.Event;
-import id.global.event.messaging.it.events.LoggingEvent;
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
+import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -53,7 +52,7 @@ public class FanoutTestIT {
     @DisplayName("Event published to FANOUT; two services all consumers should receive event")
     void publishFanout() throws Exception {
 
-        LoggingEvent event = new LoggingEvent("INFO: 1337", 1L);
+        FanoutLoggingEvent event = new FanoutLoggingEvent("INFO: 1337", 1L);
         producer.send(event, EXCHANGE, "", FANOUT);
 
         assertThat(loggingServiceA.getFuture().get(), samePropertyValuesAs(event));
@@ -64,7 +63,7 @@ public class FanoutTestIT {
     @DisplayName("Event published to FANOUT; one service all consumers should receive event")
     void publishFanoutOneService()
             throws ExecutionException, InterruptedException, AmqpSendException, IOException {
-        Event event = new Event("Fanout Event", 23L);
+        FanoutEvent event = new FanoutEvent("Fanout Event", 23L);
 
         producer.send(event, MY_FANOUT_EXCHANGE, "", FANOUT);
 
@@ -80,14 +79,14 @@ public class FanoutTestIT {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class LoggingServiceA {
-        private final CompletableFuture<LoggingEvent> future = new CompletableFuture<>();
+        private final CompletableFuture<FanoutLoggingEvent> future = new CompletableFuture<>();
 
-        @FanoutMessageHandler(exchange = EXCHANGE)
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(FanoutLoggingEvent event) {
             future.complete(event);
         }
 
-        public CompletableFuture<LoggingEvent> getFuture() {
+        public CompletableFuture<FanoutLoggingEvent> getFuture() {
             return future;
         }
     }
@@ -95,14 +94,14 @@ public class FanoutTestIT {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class LoggingServiceB {
-        private final CompletableFuture<LoggingEvent> future = new CompletableFuture<>();
+        private final CompletableFuture<FanoutLoggingEvent> future = new CompletableFuture<>();
 
-        @FanoutMessageHandler(exchange = EXCHANGE)
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(FanoutLoggingEvent event) {
             future.complete(event);
         }
 
-        public CompletableFuture<LoggingEvent> getFuture() {
+        public CompletableFuture<FanoutLoggingEvent> getFuture() {
             return future;
         }
     }
@@ -111,19 +110,19 @@ public class FanoutTestIT {
     @ApplicationScoped
     public static class FanoutService {
 
-        private CompletableFuture<Event> fanout1 = new CompletableFuture<>();
-        private CompletableFuture<Event> fanout2 = new CompletableFuture<>();
+        private CompletableFuture<FanoutEvent> fanout1 = new CompletableFuture<>();
+        private CompletableFuture<FanoutEvent> fanout2 = new CompletableFuture<>();
 
         public void reset() {
             fanout1 = new CompletableFuture<>();
             fanout2 = new CompletableFuture<>();
         }
 
-        public CompletableFuture<Event> getFanout1() {
+        public CompletableFuture<FanoutEvent> getFanout1() {
             return fanout1;
         }
 
-        public CompletableFuture<Event> getFanout2() {
+        public CompletableFuture<FanoutEvent> getFanout2() {
             return fanout2;
         }
 
@@ -133,18 +132,32 @@ public class FanoutTestIT {
             return eventCount.get();
         }
 
-        @FanoutMessageHandler(exchange = MY_FANOUT_EXCHANGE)
-        public void handleFanoutMessage(Event event) {
+        @MessageHandler
+        public void handleFanoutMessage(FanoutEvent event) {
             eventCount.getAndIncrement();
             fanout1.complete(event);
         }
 
-        @FanoutMessageHandler(exchange = MY_FANOUT_EXCHANGE)
-        public void handleFanoutOtherMessage(Event event) {
+        @MessageHandler
+        public void handleFanoutOtherMessage(FanoutEvent event) {
             eventCount.getAndIncrement();
             fanout2.complete(event);
         }
 
+    }
+
+    public record Event(String name, Long age) {
+    }
+
+    public record LoggingEvent(String log, Long level) {
+    }
+
+    @ConsumedEvent(exchange = EXCHANGE, exchangeType = FANOUT)
+    public record FanoutLoggingEvent(String log, Long level) {
+    }
+
+    @ConsumedEvent(exchange = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
+    public record FanoutEvent(String log, Long level) {
     }
 
 }

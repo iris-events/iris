@@ -25,9 +25,10 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.AMQP;
 
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.event.messaging.it.events.Event;
+import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -102,7 +103,7 @@ public class MetadataPropagationIT {
     @ApplicationScoped
     public static class Service1 {
 
-        private CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+        private CompletableFuture<Service1Event> handledEvent = new CompletableFuture<>();
         public static final AtomicInteger count = new AtomicInteger(0);
         private final AmqpProducer producer;
         private final EventContext eventContext;
@@ -118,8 +119,8 @@ public class MetadataPropagationIT {
             handledEvent = new CompletableFuture<>();
         }
 
-        @MessageHandler(queue = EVENT_QUEUE1, exchange = EXCHANGE)
-        public void handle(Event event) throws AmqpSendException, IOException {
+        @MessageHandler
+        public void handle(Service1Event event) throws AmqpSendException, IOException {
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
@@ -133,7 +134,7 @@ public class MetadataPropagationIT {
     @ApplicationScoped
     public static class Service2 {
 
-        private CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+        private CompletableFuture<Service2Event> handledEvent = new CompletableFuture<>();
         public static final AtomicInteger count = new AtomicInteger(0);
         private final EventContext eventContext;
 
@@ -150,8 +151,8 @@ public class MetadataPropagationIT {
             handledEvent = new CompletableFuture<>();
         }
 
-        @MessageHandler(queue = EVENT_QUEUE2, exchange = EXCHANGE)
-        public void handle(Event event) throws AmqpSendException, IOException {
+        @MessageHandler
+        public void handle(Service2Event event) throws AmqpSendException, IOException {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
@@ -165,7 +166,7 @@ public class MetadataPropagationIT {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class FinalService {
-        private CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+        private CompletableFuture<FinalServiceEvent> handledEvent = new CompletableFuture<>();
         public static final AtomicInteger count = new AtomicInteger(0);
         private final EventContext eventContext;
         private static int limit = 10;
@@ -185,8 +186,8 @@ public class MetadataPropagationIT {
             handledEvent = new CompletableFuture<>();
         }
 
-        @MessageHandler(queue = EVENT_QUEUE3, exchange = EXCHANGE)
-        public void handle(Event event) {
+        @MessageHandler
+        public void handle(FinalServiceEvent event) {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
@@ -196,13 +197,28 @@ public class MetadataPropagationIT {
             }
         }
 
-        public CompletableFuture<Event> getHandledEvent() {
+        public CompletableFuture<FinalServiceEvent> getHandledEvent() {
             return handledEvent;
         }
 
     }
 
-    @ProducedEvent(exchange = EXCHANGE, queue = EVENT_QUEUE1)
+    public record Event(String name, Long age) {
+    }
+
+    @ConsumedEvent(queue = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
+    public record Service1Event(String name, Long age) {
+    }
+
+    @ConsumedEvent(queue = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
+    public record Service2Event(String name, Long age) {
+    }
+
+    @ConsumedEvent(queue = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
+    public record FinalServiceEvent(String name, Long age) {
+    }
+
+    @ProducedEvent(exchange = EXCHANGE, queue = EVENT_QUEUE1, exchangeType = DIRECT)
     private record AnnotatedEvent1(String name, long age) {
     }
 

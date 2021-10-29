@@ -21,8 +21,8 @@ import org.junit.jupiter.api.TestInstance;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ShutdownSignalException;
 
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.event.messaging.it.events.Event;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -133,7 +133,7 @@ public class ListenerAndHandlerTestIT {
             count.set(0);
         }
 
-        @MessageHandler(queue = EVENT_QUEUE, exchange = EXCHANGE)
+        @MessageHandler
         public void handle(Event event) {
             count.incrementAndGet();
             handledEvent.complete(event);
@@ -142,7 +142,10 @@ public class ListenerAndHandlerTestIT {
         public CompletableFuture<Event> getHandledEvent() {
             return handledEvent;
         }
+    }
 
+    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    public record Event(String name, Long age) {
     }
 
 }

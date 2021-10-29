@@ -27,13 +27,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import id.global.asyncapi.spec.annotations.FanoutMessageHandler;
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.annotations.TopicMessageHandler;
 import id.global.asyncapi.spec.enums.ExchangeType;
-import id.global.event.messaging.it.events.Event;
-import id.global.event.messaging.it.events.LoggingEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -165,7 +162,7 @@ public class AnnotatedEventTestOverrideIT {
         public AnnotationService() {
         }
 
-        @MessageHandler(queue = OVERRIDE_ANNOTATED_QUEUE, exchange = OVERRIDE_ANNOTATED_EXCHANGE)
+        @MessageHandler
         public void handle(DirectEvent event) {
             count.incrementAndGet();
             completedSignal.complete(new Event("completed", AGE_1));
@@ -190,8 +187,8 @@ public class AnnotatedEventTestOverrideIT {
     @ApplicationScoped
     public static class FirstFanoutService {
 
-        @FanoutMessageHandler(exchange = OVERRIDE_ANNOTATED_EXCHANGE_FANOUT)
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(FanoutLoggingEvent event) {
         }
     }
 
@@ -199,8 +196,8 @@ public class AnnotatedEventTestOverrideIT {
     @ApplicationScoped
     public static class SecondFanoutService {
 
-        @FanoutMessageHandler(exchange = OVERRIDE_ANNOTATED_EXCHANGE_FANOUT)
-        public void handleLogEvents(LoggingEvent event) {
+        @MessageHandler
+        public void handleLogEvents(FanoutLoggingEvent event) {
         }
     }
 
@@ -214,14 +211,14 @@ public class AnnotatedEventTestOverrideIT {
 
         private CountDownLatch countDownLatch = new CountDownLatch(99);
 
-        @TopicMessageHandler(exchange = OVERRIDE_TOPIC_EXCHANGE, bindingKeys = OVERRIDE_SOMETHING_NOTHING)
-        public void handleLogEventsOne(ReceivedEvent event) {
+        @MessageHandler
+        public void handleLogEventsOne(TopicReceivedEventOne event) {
             count.incrementAndGet();
             completionSignalOne.complete(event.name());
         }
 
-        @TopicMessageHandler(exchange = OVERRIDE_TOPIC_EXCHANGE, bindingKeys = OVERRIDE_SOMETHING)
-        public void handleLogEventsTwo(ReceivedEvent event) {
+        @MessageHandler
+        public void handleLogEventsTwo(TopicReceivedEventTwo event) {
             count.incrementAndGet();
             countDownLatch.countDown();
             if ((countDownLatch.getCount()) == 0) {
@@ -250,7 +247,23 @@ public class AnnotatedEventTestOverrideIT {
 
     }
 
+    public record Event(String name, Long age) {
+    }
+
+    @ConsumedEvent(exchange = OVERRIDE_ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
+    public record FanoutLoggingEvent(String log, Long level) {
+    }
+
+    @ConsumedEvent(exchange = OVERRIDE_TOPIC_EXCHANGE, exchangeType = ExchangeType.TOPIC, bindingKeys = OVERRIDE_SOMETHING_NOTHING)
+    private record TopicReceivedEventOne(String name, long age) {
+    }
+
+    @ConsumedEvent(exchange = OVERRIDE_TOPIC_EXCHANGE, exchangeType = ExchangeType.TOPIC, bindingKeys = OVERRIDE_SOMETHING)
+    private record TopicReceivedEventTwo(String name, long age) {
+    }
+
     @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = ANNOTATED_QUEUE)
+    @ConsumedEvent(queue = OVERRIDE_ANNOTATED_QUEUE, exchange = OVERRIDE_ANNOTATED_EXCHANGE, exchangeType = DIRECT)
     private record DirectEvent(String name, Long age) {
     }
 
