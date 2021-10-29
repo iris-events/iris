@@ -82,13 +82,6 @@ public class AnnotatedEventsTestIT {
         });
     }
 
-    @Test
-    @DisplayName("Published annotated event with missing exchange name to DIRECT exchange should fail")
-    void publishDirectMissingExchange() {
-        assertThrows(AmqpSendException.class, () -> {
-            testProducer.send(new DirectEventEmptyExchange("name", 1L));
-        });
-    }
 
     @Test
     @DisplayName("Published annotated event with missing routing key to DIRECT exchange should fail")
@@ -103,14 +96,6 @@ public class AnnotatedEventsTestIT {
     void publishFanout() {
         assertDoesNotThrow(() -> {
             testProducer.send(new FanoutEvent("name", 1L));
-        });
-    }
-
-    @Test
-    @DisplayName("Published annotated event with missing exchange name to FANOUT exchange should fail")
-    void publishFanoutMissingExchange() {
-        assertThrows(AmqpSendException.class, () -> {
-            testProducer.send(new FanoutEventWrongEmptyExchange("name", 1L));
         });
     }
 
@@ -135,14 +120,6 @@ public class AnnotatedEventsTestIT {
         });
         assertDoesNotThrow(() -> {
             testProducer.send(new TopicEventThree("name_three", 1L)); //will be received twice
-        });
-    }
-
-    @Test
-    @DisplayName("Published annotated event with missing exchange name to TOPIC exchange should fail")
-    void publishTopicMissingExchange() {
-        assertThrows(AmqpSendException.class, () -> {
-            testProducer.send(new TopicEventWrongEmptyExchange("name", 1L));
         });
     }
 
@@ -279,20 +256,12 @@ public class AnnotatedEventsTestIT {
     }
 
     @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = ANNOTATED_QUEUE)
-    @ConsumedEvent(queue = ANNOTATED_QUEUE, exchange = ANNOTATED_EXCHANGE)
+    @ConsumedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = ExchangeType.DIRECT, queue = ANNOTATED_QUEUE)
     private record DirectEvent(String name, Long age) {
     }
 
-    @ProducedEvent(queue = ANNOTATED_QUEUE)
-    private record DirectEventEmptyExchange(String name, Long age) {
-    }
-
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = EMPTY)
+    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = ExchangeType.DIRECT, queue = EMPTY)
     private record DirectEventEmptyRoutingKey(String name, Long age) {
-    }
-
-    @ProducedEvent(queue = ANNOTATED_QUEUE, exchangeType = ExchangeType.TOPIC)
-    private record TopicEventWrongEmptyExchange(String name, Long age) {
     }
 
     @ProducedEvent(exchange = TOPIC_EXCHANGE, queue = "nothing.a.nothing", exchangeType = ExchangeType.TOPIC)
@@ -313,10 +282,6 @@ public class AnnotatedEventsTestIT {
 
     @ProducedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, queue = EMPTY, exchangeType = ExchangeType.FANOUT)
     private record FanoutEvent(String name, Long age) {
-    }
-
-    @ProducedEvent(queue = ANNOTATED_QUEUE_FANOUT, exchangeType = ExchangeType.FANOUT)
-    private record FanoutEventWrongEmptyExchange(String name, Long age) {
     }
 
     @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = EMPTY, exchangeType = ExchangeType.TOPIC)

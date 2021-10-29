@@ -8,7 +8,7 @@ import org.jboss.jandex.AnnotationInstance;
 
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 
-public abstract class AbstractAnnotationInstanceValidator {
+abstract class AbstractAnnotationInstanceValidator {
     static final String KEBAB_CASE_PATTERN = "^([a-z][a-z0-9]*)(-[a-z0-9]+)*$";
     static final String TOPIC_PATTERN = "^([*#]|[a-z0-9-]+)([.]([*#]|[a-z0-9-]+))*$";
     private final ValidationRules validationRules;
@@ -17,7 +17,8 @@ public abstract class AbstractAnnotationInstanceValidator {
         this.validationRules = validationRules;
     }
 
-    protected abstract MessageHandlerValidationException createMissingParamsException(final AnnotationInstance annotationInstance,
+    protected abstract MessageHandlerValidationException createMissingParamsException(
+            final AnnotationInstance annotationInstance,
             final Set<String> missingParams);
 
     protected abstract MessageHandlerValidationException createNonKebabCaseParamsFoundException(

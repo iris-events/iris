@@ -11,7 +11,7 @@ import org.jboss.jandex.DotName;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 import id.global.event.messaging.deployment.constants.AnnotationInstanceParams;
 
-public class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
+class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
     private final ValidationRules validationRules;
 
     public ClassAnnotationValidator(final ValidationRules validationRules) {
@@ -22,10 +22,7 @@ public class ClassAnnotationValidator extends AbstractAnnotationInstanceValidato
     @Override
     public void validate(final AnnotationInstance annotationInstance) {
         super.validate(annotationInstance);
-
-        if (validationRules.checkTopicValidity()) {
-            validateTopicValidity(annotationInstance);
-        }
+        validateBindingKeysValidity(annotationInstance);
     }
 
     @Override
@@ -48,7 +45,7 @@ public class ClassAnnotationValidator extends AbstractAnnotationInstanceValidato
                         nonKebabCaseParamsString, annotationInstance.name(), getTargetClassName(annotationInstance)));
     }
 
-    private void validateTopicValidity(final AnnotationInstance annotationInstance) {
+    private void validateBindingKeysValidity(final AnnotationInstance annotationInstance) {
         final var annotationValue = annotationInstance.value(AnnotationInstanceParams.BINDING_KEYS_PARAM);
         if (annotationValue == null) {
             return;

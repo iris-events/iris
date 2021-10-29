@@ -9,7 +9,7 @@ import org.jboss.jandex.MethodInfo;
 
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 
-public class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
+class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
     private final IndexView index;
     private final ValidationRules validationRules;
 

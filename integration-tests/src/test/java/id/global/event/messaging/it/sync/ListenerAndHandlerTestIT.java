@@ -144,7 +144,7 @@ public class ListenerAndHandlerTestIT {
         }
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE)
+    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 

@@ -28,6 +28,7 @@ import com.rabbitmq.client.AMQP;
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -205,19 +206,19 @@ public class MetadataPropagationIT {
     public record Event(String name, Long age) {
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE1, exchange = EXCHANGE)
+    @ConsumedEvent(queue = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Service1Event(String name, Long age) {
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE2, exchange = EXCHANGE)
+    @ConsumedEvent(queue = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Service2Event(String name, Long age) {
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE3, exchange = EXCHANGE)
+    @ConsumedEvent(queue = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
     public record FinalServiceEvent(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = EXCHANGE, queue = EVENT_QUEUE1)
+    @ProducedEvent(exchange = EXCHANGE, queue = EVENT_QUEUE1, exchangeType = DIRECT)
     private record AnnotatedEvent1(String name, long age) {
     }
 

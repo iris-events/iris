@@ -117,11 +117,11 @@ public class DirectTestIT {
         }
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE)
+    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE,exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE)
+    @ConsumedEvent(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
     public record PrioritizedEvent(String name, Long age) {
     }
 }

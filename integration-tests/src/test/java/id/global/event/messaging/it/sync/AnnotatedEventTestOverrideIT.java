@@ -263,7 +263,7 @@ public class AnnotatedEventTestOverrideIT {
     }
 
     @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = ANNOTATED_QUEUE)
-    @ConsumedEvent(queue = OVERRIDE_ANNOTATED_QUEUE, exchange = OVERRIDE_ANNOTATED_EXCHANGE)
+    @ConsumedEvent(queue = OVERRIDE_ANNOTATED_QUEUE, exchange = OVERRIDE_ANNOTATED_EXCHANGE, exchangeType = DIRECT)
     private record DirectEvent(String name, Long age) {
     }
 

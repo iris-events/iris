@@ -45,7 +45,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @MethodSource
         public void validateParamCountIsCorrect(Class<?> serviceClass, int paramCount) {
             final var annotationInstance = getAnnotationInstance(MESSAGE_HANDLER_ANNOTATION_CLASS, serviceClass);
-            final var validationRules = new ValidationRules(paramCount, true, false, null, null);
+            final var validationRules = new ValidationRules(paramCount, true, null, null);
             final var validator = getValidatorService(validationRules, serviceClass);
 
             assertDoesNotThrow(() -> validator.validate(annotationInstance));
@@ -63,7 +63,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @MethodSource
         public void validateParamsCountIsNotCorrect(Class<?> serviceClass, int paramCount) {
             final var annotationInstance = getAnnotationInstance(MESSAGE_HANDLER_ANNOTATION_CLASS, serviceClass);
-            final var validationRules = new ValidationRules(paramCount, true, false, null, null);
+            final var validationRules = new ValidationRules(paramCount, true, null, null);
             final var validator = getValidatorService(validationRules, serviceClass);
 
             final var exception = assertThrows(MessageHandlerValidationException.class,
@@ -85,7 +85,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         public void validateParamsExist() {
             final var serviceClass = DirectEventHandlerService.class;
             final var requiredParams = Set.of(ROLES_ALLOWED_PARAM);
-            final var validationRules = new ValidationRules(null, true, false, requiredParams, null);
+            final var validationRules = new ValidationRules(null, true, requiredParams, null);
             final var annotationInstance = getAnnotationInstance(MESSAGE_HANDLER_ANNOTATION_CLASS, serviceClass);
             final var validator = getValidatorService(validationRules, serviceClass);
 
@@ -96,7 +96,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         public void validateParamsAreMissing() {
             final var serviceClass = TopicEventHandlerService.class;
             final var requiredParam = ROLES_ALLOWED_PARAM;
-            final var validationRules = new ValidationRules(null, true, false, Set.of(requiredParam), null);
+            final var validationRules = new ValidationRules(null, true, Set.of(requiredParam), null);
             final var annotationInstance = getAnnotationInstance(MESSAGE_HANDLER_ANNOTATION_CLASS, serviceClass);
             final var validator = getValidatorService(validationRules, serviceClass);
 
@@ -113,7 +113,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
             final var annotationClass = MessageHandler.class;
 
             final var annotationInstance = getAnnotationInstance(annotationClass, serviceClass);
-            final var validationRules = new ValidationRules(null, false, false, null, null);
+            final var validationRules = new ValidationRules(null, false, null, null);
             final var indexWithEventAsExternalDependency = indexOf(serviceClass);
             final var validator = getValidatorService(indexWithEventAsExternalDependency, validationRules);
 
@@ -136,7 +136,6 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
             final var validationRules = new ValidationRules(
                     1,
                     false,
-                    false,
                     Set.of(QUEUE_PARAM),
                     Set.of(QUEUE_PARAM));
 
@@ -148,7 +147,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @ParameterizedTest
         @MethodSource
         public void validateConsumedEventParamsExist(Class<?> eventClass, Set<String> requiredParams) {
-            final var validationRules = new ValidationRules(null, false, false, requiredParams, null);
+            final var validationRules = new ValidationRules(null, false, requiredParams, null);
             final var annotationInstance = getAnnotationInstance(CONSUMED_EVENT_ANNOTATION_CLASS, eventClass);
             final var validator = getValidatorService(validationRules, eventClass);
 
@@ -168,7 +167,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
                 Set<String> missingRequiredParams) {
             final var requiredParams = Stream.concat(existingRequiredParams.stream(), missingRequiredParams.stream())
                     .collect(toSet());
-            final var validationRules = new ValidationRules(null, false, false, requiredParams, null);
+            final var validationRules = new ValidationRules(null, false, requiredParams, null);
             final var annotationInstance = getAnnotationInstance(CONSUMED_EVENT_ANNOTATION_CLASS, eventClass);
             final var validator = getValidatorService(validationRules, eventClass);
 
@@ -192,7 +191,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @ParameterizedTest
         @MethodSource
         public void validateConsumedEventParamsAreKebabCase(Class<?> eventClass, Set<String> requiredKebabCaseParams) {
-            final var validationRules = new ValidationRules(null, false, false, null, requiredKebabCaseParams);
+            final var validationRules = new ValidationRules(null, false, null, requiredKebabCaseParams);
             final var annotationInstance = getAnnotationInstance(CONSUMED_EVENT_ANNOTATION_CLASS, eventClass);
             final var validator = getValidatorService(validationRules, eventClass);
 
@@ -209,7 +208,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @ParameterizedTest
         @MethodSource
         public void validateConsumedEventParamsAreNotKebabCase(Class<?> eventClass, Set<String> requiredKebabCaseParams) {
-            final var validationRules = new ValidationRules(null, false, false, null, requiredKebabCaseParams);
+            final var validationRules = new ValidationRules(null, false, null, requiredKebabCaseParams);
             final var annotationInstance = getAnnotationInstance(CONSUMED_EVENT_ANNOTATION_CLASS, eventClass);
             final var validator = getValidatorService(validationRules, eventClass);
 
@@ -232,7 +231,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
                 UppercaseBindingKeyTopicEvent.class,
                 DotEndingBindingKeyTopicEvent.class })
         public void validateBindingKeysAreInValidFormat(Class<?> eventClass) {
-            final var validationRules = new ValidationRules(null, false, true, null, null);
+            final var validationRules = new ValidationRules(null, false, null, null);
             final var annotationInstance = getAnnotationInstance(CONSUMED_EVENT_ANNOTATION_CLASS, eventClass);
             final var validator = getValidatorService(validationRules, eventClass);
 

@@ -5,8 +5,8 @@ import static id.global.event.messaging.deployment.constants.AnnotationInstanceP
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_TYPE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.QUEUE_PARAM;
+import static java.util.Collections.emptySet;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,8 +20,6 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
@@ -30,7 +28,6 @@ import id.global.event.messaging.deployment.validation.AnnotationInstanceValidat
 import id.global.event.messaging.deployment.validation.ValidationRules;
 
 public class MessageHandlerScanner {
-    private static final Logger LOG = LoggerFactory.getLogger(MessageHandlerScanner.class);
     private final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getCanonicalName());
     private final DotName DOT_NAME_CONSUMED_EVENT = DotName.createSimple(ConsumedEvent.class.getCanonicalName());
     private final IndexView index;
@@ -40,23 +37,24 @@ public class MessageHandlerScanner {
     }
 
     public List<MessageHandlerInfoBuildItem> scanMessageHandlerAnnotations() {
+        final var methodAnnotations = index.getAnnotations(DOT_NAME_MESSAGE_HANDLER).stream();
 
-        final var directAnnotations = index.getAnnotations(DOT_NAME_MESSAGE_HANDLER).stream();
-
-        return scanDirectMessageHandlerAnnotations(directAnnotations).collect(Collectors.toList());
+        return scanMessageHandlerAnnotations(methodAnnotations).collect(Collectors.toList());
     }
 
-    private Stream<MessageHandlerInfoBuildItem> scanDirectMessageHandlerAnnotations(
-            Stream<AnnotationInstance> directAnnotations) {
-        return directAnnotations.filter(isNotSyntheticPredicate()).map(annotationInstance -> {
-            final var validationRules = getValidationRules(Collections.emptySet(), Collections.emptySet());
-            final var validator = new AnnotationInstanceValidator(index, validationRules);
-            validator.validate(annotationInstance);
+    private Stream<MessageHandlerInfoBuildItem> scanMessageHandlerAnnotations(Stream<AnnotationInstance> directAnnotations) {
 
-            final var methodInfo = annotationInstance.target().asMethod();
+        final AnnotationInstanceValidator messageHandlerValidator = getMessageHandlerValidator();
+        final AnnotationInstanceValidator eventValidator = getEventValidator();
+
+        return directAnnotations.filter(isNotSyntheticPredicate()).map(methodAnnotation -> {
+            messageHandlerValidator.validate(methodAnnotation);
+            final var methodInfo = methodAnnotation.target().asMethod();
             final var methodParameters = methodInfo.parameters();
 
             final var eventAnnotation = getEventAnnotation(methodParameters, index);
+            eventValidator.validate(eventAnnotation);
+
             final var queue = Optional.ofNullable(eventAnnotation.value(QUEUE_PARAM))
                     .map(AnnotationValue::asString)
                     .orElse(null);
@@ -86,22 +84,26 @@ public class MessageHandlerScanner {
         return annotationInstance -> !annotationInstance.target().asMethod().isSynthetic();
     }
 
-    private ValidationRules getValidationRules(final Set<String> requiredParams, final Set<String> kebabCaseOnlyParams) {
-        return getValidationRules(false, requiredParams, kebabCaseOnlyParams);
+    private AnnotationInstanceValidator getEventValidator() {
+        final var eventValidationRules = getValidationRules(Set.of(EXCHANGE_PARAM, EXCHANGE_TYPE_PARAM),
+                Set.of(EXCHANGE_PARAM, QUEUE_PARAM));
+        return new AnnotationInstanceValidator(index, eventValidationRules);
     }
 
-    private ValidationRules getValidationRules(boolean checkTopicValidity, final Set<String> requiredParams,
-            final Set<String> kebabCaseOnlyParams) {
+    private AnnotationInstanceValidator getMessageHandlerValidator() {
+        final var methodValidationRules = getValidationRules(emptySet(), emptySet());
+        return new AnnotationInstanceValidator(index, methodValidationRules);
+    }
+
+    private ValidationRules getValidationRules(final Set<String> requiredParams, final Set<String> kebabCaseOnlyParams) {
         return new ValidationRules(1,
                 false,
-                checkTopicValidity,
                 requiredParams,
                 kebabCaseOnlyParams);
 
     }
 
-    private AnnotationInstance getEventAnnotation(final List<Type> parameters,
-            final IndexView index) {
+    private AnnotationInstance getEventAnnotation(final List<Type> parameters, final IndexView index) {
 
         final var consumedEventTypes = parameters.stream()
                 .map(Type::name)
