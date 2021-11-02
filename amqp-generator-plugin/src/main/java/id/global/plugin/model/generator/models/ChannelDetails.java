@@ -1,5 +1,10 @@
 package id.global.plugin.model.generator.models;
 
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class ChannelDetails {
@@ -7,15 +12,14 @@ public class ChannelDetails {
     String channelName;
     String subscribeEventName;
     String publishEventName;
-    ChannelSectionTypes containedSections;
     JsonNode node;
+    private final String SUBSCRIBE = "subscribe";
+    private final String PUBLISH = "publish";
 
-    public ChannelDetails(String channelName, String subscribeEventName, String publishEventName,
-            ChannelSectionTypes containedSections, JsonNode node) {
+    public ChannelDetails(String channelName, String subscribeEventName, String publishEventName, JsonNode node) {
         this.channelName = channelName;
         this.subscribeEventName = subscribeEventName;
         this.publishEventName = publishEventName;
-        this.containedSections = containedSections;
         this.node = node;
     }
 
@@ -42,6 +46,20 @@ public class ChannelDetails {
         return publishEventName;
     }
 
+
+    public Map.Entry<String, List<String>>  getSectionsForChannelEvent() {
+        if (subscribeEventName.isBlank() && publishEventName.isBlank()) {
+            return new AbstractMap.SimpleEntry<>("", Collections.emptyList());
+        }
+        if (!subscribeEventName.isBlank() && !publishEventName.isBlank()) {
+            return new AbstractMap.SimpleEntry<>(publishEventName, List.of(PUBLISH,SUBSCRIBE));
+        } else if (!subscribeEventName.isBlank()) {
+            return new AbstractMap.SimpleEntry<>(subscribeEventName, List.of(SUBSCRIBE));
+        } else {
+            return new AbstractMap.SimpleEntry<>(publishEventName, List.of(PUBLISH));
+        }
+    }
+
     public void setPublishEventName(String publishEventName) {
         this.publishEventName = publishEventName;
     }
@@ -52,13 +70,5 @@ public class ChannelDetails {
 
     public void setNode(JsonNode node) {
         this.node = node;
-    }
-
-    public ChannelSectionTypes getContainedSections() {
-        return containedSections;
-    }
-
-    public void setContainedSections(ChannelSectionTypes containedSections) {
-        this.containedSections = containedSections;
     }
 }
