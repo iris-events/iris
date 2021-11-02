@@ -1,4 +1,4 @@
-package id.global.common.annotations;
+package id.global.common.annotations.amqp;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,16 +10,15 @@ import com.fasterxml.jackson.annotation.JacksonAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @JacksonAnnotation
-public @interface QueueBindings {
+public @interface ExchangeBindings {
 
-    String queueName() default "";
+    String exchangeName() default "";
 
-    boolean queueExclusive() default false;
+    String exchangeType() default "direct";
 
-    boolean queueDurable() default true;
+    boolean exchangeDurable() default true;
 
-    boolean queueAutoDelete() default false;
+    boolean exchangeAutoDelete() default false;
 
-    String queueVhost() default "/";
+    String exchangeVhost() default "/";
 }
-
