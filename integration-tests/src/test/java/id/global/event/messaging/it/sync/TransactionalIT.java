@@ -1,21 +1,11 @@
 package id.global.event.messaging.it.sync;
 
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.event.messaging.runtime.exception.AmqpSendException;
-import id.global.event.messaging.runtime.exception.AmqpTransactionException;
-import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
-import id.global.event.messaging.runtime.producer.AmqpProducer;
-import id.global.event.messaging.runtime.producer.Message;
-import id.global.event.messaging.runtime.tx.TransactionCallback;
-import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +15,24 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
+import id.global.asyncapi.spec.annotations.ConsumedEvent;
+import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
+import id.global.event.messaging.runtime.exception.AmqpTransactionException;
+import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
+import id.global.event.messaging.runtime.producer.AmqpProducer;
+import id.global.event.messaging.runtime.producer.Message;
+import id.global.event.messaging.runtime.tx.TransactionCallback;
+import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -190,7 +193,7 @@ public class TransactionalIT {
         }
 
         @SuppressWarnings("unused")
-        @MessageHandler(queue = EVENT_QUEUE, exchange = EXCHANGE)
+        @MessageHandler
         public void handle(TestEvent event) {
             futures.get(event.seq).complete(event);
         }
@@ -247,6 +250,7 @@ public class TransactionalIT {
 
     }
 
+    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     private record TestEvent(int seq) {
 
     }

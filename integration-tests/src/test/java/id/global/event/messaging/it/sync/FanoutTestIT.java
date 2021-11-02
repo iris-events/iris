@@ -62,7 +62,7 @@ public class FanoutTestIT {
     @Test
     @DisplayName("Event published to FANOUT; one service all consumers should receive event")
     void publishFanoutOneService()
-            throws ExecutionException, InterruptedException, AmqpSendException, IOException {
+            throws ExecutionException, InterruptedException, AmqpSendException, AmqpTransactionException {
         FanoutEvent event = new FanoutEvent("Fanout Event", 23L);
 
         producer.send(event, MY_FANOUT_EXCHANGE, "", FANOUT);

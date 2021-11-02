@@ -27,7 +27,6 @@ import com.rabbitmq.client.AMQP;
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
@@ -120,7 +119,7 @@ public class MetadataPropagationIT {
         }
 
         @MessageHandler
-        public void handle(Service1Event event) throws AmqpSendException, IOException {
+        public void handle(Service1Event event) throws AmqpSendException, AmqpTransactionException {
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
@@ -152,7 +151,7 @@ public class MetadataPropagationIT {
         }
 
         @MessageHandler
-        public void handle(Service2Event event) throws AmqpSendException, IOException {
+        public void handle(Service2Event event) throws AmqpSendException, AmqpTransactionException {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
