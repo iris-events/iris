@@ -7,7 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -28,9 +27,9 @@ import com.rabbitmq.client.AMQP;
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
+import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.MetadataInfo;
 import io.quarkus.test.junit.QuarkusTest;
@@ -120,7 +119,7 @@ public class MetadataPropagationIT {
         }
 
         @MessageHandler
-        public void handle(Service1Event event) throws AmqpSendException, IOException {
+        public void handle(Service1Event event) throws AmqpSendException, AmqpTransactionException {
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
                 count.incrementAndGet();
@@ -152,7 +151,7 @@ public class MetadataPropagationIT {
         }
 
         @MessageHandler
-        public void handle(Service2Event event) throws AmqpSendException, IOException {
+        public void handle(Service2Event event) throws AmqpSendException, AmqpTransactionException {
 
             AMQP.BasicProperties amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             if (event.name().equalsIgnoreCase(amqpBasicProperties.getCorrelationId())) {
@@ -232,7 +231,7 @@ public class MetadataPropagationIT {
                         EVENT_QUEUE1,
                         DIRECT,
                         metadataInfo);
-            } catch (AmqpSendException | IOException e) {
+            } catch (AmqpSendException | AmqpTransactionException e) {
                 fail();
             }
         });
@@ -246,7 +245,7 @@ public class MetadataPropagationIT {
                         EXCHANGE,
                         EVENT_QUEUE1,
                         DIRECT);
-            } catch (AmqpSendException | IOException e) {
+            } catch (AmqpSendException | AmqpTransactionException e) {
                 fail();
             }
         });

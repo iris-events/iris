@@ -82,7 +82,6 @@ public class AnnotatedEventsTestIT {
         });
     }
 
-
     @Test
     @DisplayName("Published annotated event with missing routing key to DIRECT exchange should fail")
     void publishDirectNoRoutingKey() {

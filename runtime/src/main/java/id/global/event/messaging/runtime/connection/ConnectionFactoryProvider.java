@@ -1,7 +1,5 @@
 package id.global.event.messaging.runtime.connection;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -50,8 +48,8 @@ public class ConnectionFactoryProvider {
         try {
             ConnectionFactory connectionFactory = new ConnectionFactory();
 
-            connectionFactory.setUsername(URLEncoder.encode(amqpConfiguration.getUsername(), StandardCharsets.UTF_8));
-            connectionFactory.setPassword(URLEncoder.encode(amqpConfiguration.getPassword(), StandardCharsets.UTF_8));
+            connectionFactory.setUsername(amqpConfiguration.getUsername());
+            connectionFactory.setPassword((amqpConfiguration.getPassword()));
             connectionFactory.setHost(amqpConfiguration.getUrl());
             connectionFactory.setPort(port);
             connectionFactory.setVirtualHost(vhost);

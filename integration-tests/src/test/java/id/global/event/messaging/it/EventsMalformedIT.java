@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import javax.inject.Inject;
+import javax.transaction.TransactionManager;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +20,7 @@ import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -41,9 +43,12 @@ public class EventsMalformedIT {
     @Inject
     EventContext eventContext;
 
+    @Inject
+    TransactionManager transactionManager;
+
     @Test
-    @DisplayName("JsonProcessingException while serializing events should fail publishing.")
-    public void jsonExceptionWhenPublish() throws JsonProcessingException {
+    @DisplayName("Exception while serializing events should fail publishing.")
+    public void exceptionWhenPublish() throws JsonProcessingException {
 
         ObjectMapper objectMapper = mock(ObjectMapper.class);
 
@@ -51,15 +56,16 @@ public class EventsMalformedIT {
                 .thenThrow(new JsonProcessingException("") {
                 });
 
-        AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration);
+        AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration,
+                transactionManager);
 
-        Assertions.assertThrows(JsonProcessingException.class, () -> {
+        Assertions.assertThrows(AmqpSendException.class, () -> {
             producer.send(new TopicEventTmp("topic", 1L));
         });
-        Assertions.assertThrows(JsonProcessingException.class, () -> {
+        Assertions.assertThrows(AmqpSendException.class, () -> {
             producer.send(new FanoutEventTmp("fanout", 1L));
         });
-        Assertions.assertThrows(JsonProcessingException.class, () -> {
+        Assertions.assertThrows(AmqpSendException.class, () -> {
             producer.send(new DirectEventTmp("direct", 1L));
         });
     }

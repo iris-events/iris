@@ -4,9 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import org.junit.jupiter.api.Test;
 
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
@@ -56,7 +53,7 @@ class ConnectionFactoryProviderTest {
         final var factoryProvider = new ConnectionFactoryProvider(amqpConfiguration);
         final var connectionFactory = factoryProvider.getConnectionFactory();
 
-        assertThat(connectionFactory.getUsername(), is(URLEncoder.encode(username, StandardCharsets.UTF_8)));
-        assertThat(connectionFactory.getPassword(), is(URLEncoder.encode(password, StandardCharsets.UTF_8)));
+        assertThat(connectionFactory.getUsername(), is(username));
+        assertThat(connectionFactory.getPassword(), is(password));
     }
 }
