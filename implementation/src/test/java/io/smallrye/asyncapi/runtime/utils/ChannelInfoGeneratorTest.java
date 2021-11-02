@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ExchangeType;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
 import io.smallrye.asyncapi.runtime.util.ChannelInfoGenerator;

@@ -12,14 +12,16 @@ public class JsonSchemaInfo {
     private String eventSimpleName;
     private final ObjectNode generatedSchema;
     private final List<AnnotationValue> annotationValues;
+    private final boolean isGeneratedClass;
 
     public JsonSchemaInfo(DotName annotationName, String eventSimpleName, ObjectNode generatedSchema,
-            List<AnnotationValue> annotationValues) {
+            List<AnnotationValue> annotationValues, boolean isGeneratedClass) {
 
         this.annotationName = annotationName;
         this.eventSimpleName = eventSimpleName;
         this.generatedSchema = generatedSchema;
         this.annotationValues = annotationValues;
+        this.isGeneratedClass = isGeneratedClass;
     }
 
     public DotName getAnnotationName() {
@@ -36,5 +38,9 @@ public class JsonSchemaInfo {
 
     public List<AnnotationValue> getAnnotationValues() {
         return annotationValues;
+    }
+
+    public boolean isGeneratedClass() {
+        return isGeneratedClass;
     }
 }

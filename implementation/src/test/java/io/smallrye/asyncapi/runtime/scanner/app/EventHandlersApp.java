@@ -6,9 +6,10 @@ import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.GlobalIdGenerated;
+import id.global.common.annotations.amqp.MessageHandler;
 import io.smallrye.asyncapi.runtime.scanner.model.User;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import io.smallrye.asyncapi.spec.annotations.info.Info;
@@ -46,11 +47,16 @@ public class EventHandlersApp {
         LOG.info("Handling fanout event");
     }
 
-    @ConsumedEvent(queue = "default-test-event-v1")
+    @MessageHandler
+    public void handleOutsideGeneratedEvent(GeneratedTestEvent event) {
+        LOG.info("Handling event generated in an external service");
+    }
+
+    @ConsumedEvent(routingKey = "default-test-event-v1")
     public record TestEventV1(int id, String status, User user) {
     }
 
-    @ConsumedEvent(queue = "test-event-v2")
+    @ConsumedEvent(routingKey = "test-event-v2")
     public record TestEventV2(
             int id,
             String name,
@@ -60,7 +66,7 @@ public class EventHandlersApp {
             Map<String, String> someMap) {
     }
 
-    @ConsumedEvent(queue = "fe-test-event-v1")
+    @ConsumedEvent(routingKey = "fe-test-event-v1")
     public record FrontendTestEventV1(int id, String status, User user) {
     }
 
@@ -71,5 +77,11 @@ public class EventHandlersApp {
 
     @ConsumedEvent(exchange = "test-fanout-exchange", exchangeType = ExchangeType.FANOUT)
     public record FanoutTestEventV1(int id, String status, User user) {
+    }
+
+    @GlobalIdGenerated
+    @ConsumedEvent(exchange = "test-generated-exchange", exchangeType = ExchangeType.TOPIC)
+    public record GeneratedTestEvent(int id, String status) {
+
     }
 }

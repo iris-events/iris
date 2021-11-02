@@ -1,5 +1,6 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -8,11 +9,14 @@ import java.util.Objects;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.asyncapi.spec.enums.Scope;
+import id.global.common.annotations.amqp.GlobalIdGenerated;
+import id.global.common.annotations.amqp.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
@@ -28,6 +32,7 @@ import io.apicurio.datamodels.core.models.common.Schema;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
 import io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant;
 import io.smallrye.asyncapi.runtime.io.schema.SchemaReader;
+import io.smallrye.asyncapi.runtime.scanner.model.AaiSchemaAdditionalProperties;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
@@ -58,7 +63,12 @@ public abstract class BaseAnnotationScanner {
         } else {
             filteredIndexView = new FilteredIndexView(index, config);
         }
-        this.annotationScannerContext = new AnnotationScannerContext(config, filteredIndexView, new Aai20Document());
+
+        final var generatedClassAnnotations = filteredIndexView.getAnnotations(
+                DotName.createSimple(GlobalIdGenerated.class.getName()));
+
+        this.annotationScannerContext = new AnnotationScannerContext(config, filteredIndexView, new Aai20Document(),
+                generatedClassAnnotations);
     }
 
     public abstract Aai20Document scan();
@@ -157,8 +167,16 @@ public abstract class BaseAnnotationScanner {
                 }
             }
             AaiSchema aaiSchema = SchemaReader.readSchema(jsonSchemaInfo.getGeneratedSchema(), true);
+
+            aaiSchema.additionalProperties = new AaiSchemaAdditionalProperties(jsonSchemaInfo.isGeneratedClass());
+
             asyncApi.components.schemas.put(s, aaiSchema);
         });
     }
 
+    protected boolean isGeneratedClass(ClassInfo eventClass) {
+        return annotationScannerContext.getGeneratedClassAnnotations().stream()
+                .filter(annotationInstance -> annotationInstance.target().kind().equals(AnnotationTarget.Kind.CLASS))
+                .anyMatch(annotationInstance -> annotationInstance.target().asClass().name().equals(eventClass.name()));
+    }
 }

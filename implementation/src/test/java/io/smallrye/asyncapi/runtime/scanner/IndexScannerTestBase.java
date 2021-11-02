@@ -19,6 +19,7 @@ import io.smallrye.asyncapi.api.AsyncApiConfig;
 import io.smallrye.asyncapi.api.AsyncApiConfigImpl;
 import io.smallrye.asyncapi.api.AsyncApiConstants;
 import io.smallrye.asyncapi.runtime.util.IndexUtil;
+import io.smallrye.asyncapi.spec.AAIConfig;
 
 public class IndexScannerTestBase {
 
@@ -48,12 +49,6 @@ public class IndexScannerTestBase {
         String collect = excludePackagePrefixes.stream().collect(Collectors.joining(","));
 
         properties.put(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, collect);
-        return dynamicConfig(properties);
-    }
-
-    public static AsyncApiConfig scanDependenciesDisableConfig() {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(AsyncApiConstants.SCAN_DEPENDENCIES_DISABLE, true);
         return dynamicConfig(properties);
     }
 

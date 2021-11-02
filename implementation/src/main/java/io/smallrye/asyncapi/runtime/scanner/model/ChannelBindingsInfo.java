@@ -1,6 +1,6 @@
 package io.smallrye.asyncapi.runtime.scanner.model;
 
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ExchangeType;
 
 public class ChannelBindingsInfo {
     private String exchange;

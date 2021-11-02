@@ -60,6 +60,7 @@
         <version.maven-plugin-annotations>3.6.1</version.maven-plugin-annotations>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <version.jackson>2.12.4</version.jackson>
+        <globalid-common.version>1.0.14</globalid-common.version>
     </properties>
 
     <licenses>
@@ -91,6 +92,13 @@
 
     <dependencyManagement>
         <dependencies>
+<!--            GlobalId common-->
+            <dependency>
+                <groupId>id.global.common</groupId>
+                <artifactId>globalid-common</artifactId>
+                <version>${globalid-common.version}</version>
+            </dependency>
+
             <!-- MP Config -->
             <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
@@ -310,11 +318,6 @@
                 <artifactId>smallrye-async-api-spec-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>id.global</groupId>-->
-<!--                <artifactId>smallrye-async-api-spec-tck</artifactId>-->
-<!--                <version>${project.version}</version>-->
-<!--            </dependency>-->
             <dependency>
                 <groupId>id.global</groupId>
                 <artifactId>smallrye-async-api</artifactId>

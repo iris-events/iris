@@ -5,11 +5,11 @@ import java.util.Optional;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
-import id.global.asyncapi.spec.enums.ExchangeType;
-import id.global.asyncapi.spec.enums.Scope;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.Scope;
 
 public class GidAnnotationParser {
-    private static final String METHOD_NAME_QUEUE = "queue";
+    private static final String METHOD_NAME_ROUTING_KEY = "routingKey";
     private static final String METHOD_NAME_EXCHANGE = "exchange";
     private static final String METHOD_NAME_EXCHANGE_TYPE = "exchangeType";
     private static final String METHOD_NAME_SCOPE = "scope";
@@ -21,7 +21,7 @@ public class GidAnnotationParser {
     private static final String[] DEFAULT_ROLES_ALLOWED = new String[0];
 
     public static String getQueue(AnnotationInstance annotation, final String eventClassSimpleName) {
-        return JandexUtil.optionalStringValue(annotation, METHOD_NAME_QUEUE)
+        return JandexUtil.optionalStringValue(annotation, METHOD_NAME_ROUTING_KEY)
                 .orElse(camelToKebabCase(eventClassSimpleName));
     }
 

@@ -14,11 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.processing.Generated;
+
 import org.hamcrest.Matchers;
 import org.jboss.jandex.Index;
 import org.junit.Test;
 
-import id.global.asyncapi.spec.enums.Scope;
+import id.global.common.annotations.amqp.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
@@ -28,6 +30,7 @@ import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersApp;
 import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersAppWithSentEvent;
 import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersBadExampleApp;
 import io.smallrye.asyncapi.runtime.scanner.app.FanoutEventHandlersApp;
+import io.smallrye.asyncapi.runtime.scanner.model.AaiSchemaAdditionalProperties;
 import io.smallrye.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
 import io.smallrye.asyncapi.runtime.scanner.model.SentEvent;
 
@@ -61,7 +64,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
         assertThat(document.components.schemas, notNullValue());
         assertThat(document.channels, notNullValue());
-        assertThat(document.channels.size(), is(5));
+        assertThat(document.channels.size(), is(6));
 
         document.channels.forEach((key, value) -> {
             AaiOperation subscribe = value.subscribe;
@@ -110,7 +113,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
         assertThat(document.components.schemas, notNullValue());
         assertThat(document.channels, notNullValue());
-        assertThat(document.channels.size(), is(5));
+        assertThat(document.channels.size(), is(6));
 
         Set<Map.Entry<String, AaiChannelItem>> channelEntries = document.channels.entrySet();
         List<Map.Entry<String, AaiChannelItem>> publishChannels = channelEntries.stream()
@@ -121,8 +124,8 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 .collect(Collectors.toList());
 
         assertThat(publishChannels.size(), is(0));
-        assertThat(subscribeChannels.size(), is(5));
-        assertThat(document.components.schemas.size(), is(9));
+        assertThat(subscribeChannels.size(), is(6));
+        assertThat(document.components.schemas.size(), is(10));
 
         Map.Entry<String, AaiChannelItem> defaultTestEventV1Entry = subscribeChannels.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey().equals("/default-test-event-v1"))
@@ -190,7 +193,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
-        assertThat(document.components.schemas.size(), is(9));
+        assertThat(document.components.schemas.size(), is(10));
         assertThat(document.components.schemas.get("JsonNode"), notNullValue());
 
         Set<String> excludedPrefixes = new HashSet<>();
@@ -201,7 +204,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 index);
         Aai20Document documentWithExclude = scannerWithExclude.scan();
 
-        assertThat(documentWithExclude.components.schemas.size(), is(7));
+        assertThat(documentWithExclude.components.schemas.size(), is(8));
 
         // Finding JsonNode under components.schemas is NOT expected
         assertThat(documentWithExclude.components.schemas.get("JsonNode"), nullValue());
@@ -257,26 +260,9 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(status.enum_.contains("DEAD"), is(false));
     }
 
-    //    @Test
-    //    public void generatedModelClassShouldNotGenerateComponentSchema() {
-    //        Index index = indexOf(EventHandlersAppWithGeneratedEvents.class);
-    //        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
-    //        Aai20Document document = scanner.scan();
-    //
-    //        assertThat(document, is(notNullValue()));
-    //        assertThat(document.components.schemas, is(notNullValue()));
-    //        assertThat(document.components.schemas.size(), is(0));
-    //    }
-
     @Test
     public void producedEventAnnotatedClassShouldGenerateComponentSchema() {
-        Index index = indexOf(
-                SentEvent.class
-                //                ProducedEvent.class,
-                //                MessageHandler.class,
-                //                TopicMessageHandler.class,
-                //                FanoutMessageHandler.class
-        );
+        Index index = indexOf(SentEvent.class);
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -288,6 +274,22 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document.components.schemas.get("User"), is(notNullValue()));
 
         assertThat(document.components.schemas.get("SentEvent").type, is("object"));
+    }
+
+    @Test
+    public void generatedEventShouldBeFlagged() {
+        Index index = getEventHandlersAppIndex();
+
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
+        Aai20Document document = scanner.scan();
+
+        assertThat(document, is(notNullValue()));
+        assertThat(document.components.schemas, is(notNullValue()));
+        String generatedTestEventName = EventHandlersApp.GeneratedTestEvent.class.getSimpleName();
+        assertThat(document.components.schemas.get(generatedTestEventName), is(notNullValue()));
+        Object additionalPropertiesObj = document.components.schemas.get(generatedTestEventName).additionalProperties;
+        assertThat(additionalPropertiesObj, is(notNullValue()));
+        assertThat(((AaiSchemaAdditionalProperties) additionalPropertiesObj).isGeneratedClass(), is(true));
     }
 
     @Test
@@ -363,6 +365,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.TestEventV2.class,
                 EventHandlersApp.FrontendTestEventV1.class,
                 EventHandlersApp.TopicTestEventV1.class,
-                EventHandlersApp.FanoutTestEventV1.class);
+                EventHandlersApp.FanoutTestEventV1.class,
+                EventHandlersApp.GeneratedTestEvent.class);
     }
 }

@@ -4,8 +4,8 @@ import java.util.Map;
 
 import org.jboss.logging.Logger;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import io.smallrye.asyncapi.spec.annotations.info.Info;
 
@@ -22,7 +22,7 @@ public class EventHandlersBadExampleApp {
         LOG.info("Handle hash map event: " + event);
     }
 
-    @ConsumedEvent(queue = "hashmap-queue")
+    @ConsumedEvent(routingKey = "hashmap-queue")
     public record MapEvent(Map<String, Object> mapProperty) {
     }
 }
