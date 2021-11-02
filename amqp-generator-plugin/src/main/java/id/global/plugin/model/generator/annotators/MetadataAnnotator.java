@@ -1,7 +1,13 @@
 package id.global.plugin.model.generator.annotators;
 
+import static id.global.plugin.model.generator.utils.StringConstants.EMPTY_STRING;
+
 import java.util.Optional;
 
+import org.apache.maven.monitor.logging.DefaultLog;
+import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.logging.console.ConsoleLogger;
+import org.eclipse.sisu.inject.Logs;
 import org.jsonschema2pojo.GenerationConfig;
 import org.jsonschema2pojo.Jackson2Annotator;
 
@@ -14,11 +20,13 @@ import id.global.common.annotations.QueueBindings;
 
 public class MetadataAnnotator extends Jackson2Annotator {
 
+    private final Log log;
     private final JsonNode channel;
 
     public MetadataAnnotator(JsonNode node, GenerationConfig generationConfig) {
         super(generationConfig);
         this.channel = node;
+        this.log = new DefaultLog(new ConsoleLogger());
     }
 
     // NOTE: 3. 10. 21 https://github.com/asyncapi/bindings/tree/master/amqp
@@ -27,6 +35,12 @@ public class MetadataAnnotator extends Jackson2Annotator {
         super.typeInfo(clazz, schema);
 
         JsonNode bindingsAmqp = channel.path("bindings").path("amqp");
+
+        if(bindingsAmqp.toString().equalsIgnoreCase(EMPTY_STRING)) {
+            log.warn("There is no AMQP section in asyncapi document!");
+            return;
+        }
+
         JsonNode bindingsExchange = bindingsAmqp.path("exchange");
         JsonNode bindingsQueue = bindingsAmqp.path("queue");
         JsonNode subscribeMessage = channel.path("subscribe").path("message");

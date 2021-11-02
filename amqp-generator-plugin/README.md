@@ -13,7 +13,7 @@ This maven plugin allows you to generate models from AsyncAPI Schema on build.
 | asyncApiDirectory | no  |   |  target,generated | artifactSource=FILE ; path should be seperated with ","  |
 | modelVersion| yes  |   |   | modelVersion should use ${project.version}  |
 | modelName|  yes |   |   | ModelName should use ${project.artifactId}  |
-| packageName |  no |   | "id.global.models"  | Package name will be used with modelName  |
+| packageName |  no |   | "id.global.amqp.models"  | Package name will be used with modelName  |
 | skip| no  |   | false  |  Skip generation process |
 
 
@@ -38,7 +38,7 @@ Sample usage:
       <asyncApiDirectory>target,generated</asyncApiDirectory>
       <modelVersion>${project.version}</modelVersion>
       <modelName>${project.artifactId}</modelName>
-      <packageName>id.global.models</packageName>
+      <packageName>id.global.amqp.models</packageName>
       <skip>false</skip>
   </configuration>
 </plugin>

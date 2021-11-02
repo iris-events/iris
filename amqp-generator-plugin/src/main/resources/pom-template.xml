@@ -8,9 +8,8 @@
         <version>4</version>
     </parent>
     <properties>
-        <!--        <maven.deploy.skip>false</maven.deploy.skip>-->
-        <appName>${APPLICATION_NAME}</appName>
-        <appVersion>${APPLICATION_VERSION}</appVersion>
+        <appName>APPLICATION_NAME</appName>
+        <appVersion>APPLICATION_VERSION</appVersion>
     </properties>
 
 
@@ -36,24 +35,4 @@
             <version>1.0.13</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <finalName>${project.artifactId}</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

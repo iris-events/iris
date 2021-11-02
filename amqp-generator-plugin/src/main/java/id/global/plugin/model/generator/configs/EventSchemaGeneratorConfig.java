@@ -49,6 +49,26 @@ public class EventSchemaGeneratorConfig {
         public boolean isUseBigDecimals() {
             return true;
         }
+
+        @Override
+        public boolean isIncludeJsr305Annotations() {
+            return true;
+        }
+
+        @Override
+        public boolean isIncludeJsr303Annotations() {
+            return true;
+        }
+
+        @Override
+        public boolean isIncludeConstructors() {
+            return true;
+        }
+
+        @Override
+        public boolean isIncludeRequiredPropertiesConstructor() {
+            return true;
+        }
     };
 
     public static final GenerationConfig classConfig = new DefaultGenerationConfig() {
@@ -97,5 +117,24 @@ public class EventSchemaGeneratorConfig {
             return true;
         }
 
+        @Override
+        public boolean isIncludeJsr305Annotations() {
+            return true;
+        }
+
+        @Override
+        public boolean isIncludeJsr303Annotations() {
+            return true;
+        }
+
+        @Override
+        public boolean isIncludeConstructors() {
+            return true;
+        }
+
+        @Override
+        public boolean isIncludeRequiredPropertiesConstructor() {
+            return true;
+        }
     };
 }

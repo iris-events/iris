@@ -89,18 +89,19 @@ public class GraphUtils {
         return list;
     }
 
-    public static List<String> get(Map<String, List<String>> map) {
+    public static List<String> getClassChains(Map<String, List<String>> map) {
         List<String> list = prepareListFromMap(map);
 
-        List<String> s = list.stream()
+        List<String> distinctNodes = list.stream()
                 .flatMap(str -> Arrays.stream(str.split(",")))
                 .distinct()
                 .collect(Collectors.toList());
 
-        Graph graph = new Graph(list.size());
+        Graph graph = new Graph(distinctNodes.size());
+
         list.forEach(l -> {
             String[] edges = l.split(",");
-            graph.addEdge(s.indexOf(edges[0]), s.indexOf(edges[1]));
+            graph.addEdge(distinctNodes.indexOf(edges[0]), distinctNodes.indexOf(edges[1]));
         });
 
         List<String> res = new ArrayList<>();
