@@ -2,4 +2,4 @@ include:
   - project: 'globalid/infrastructure/gitlab-ci'
     ref: master
     file:
-      - '/templates/java-lib-jdk-16.yml'
+      - '/templates/java-lib-current.yml'
