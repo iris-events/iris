@@ -131,7 +131,7 @@ public class OkHttpClientEngine implements ClientHttpEngine {
 
         return new RequestBody() {
             @Override
-            public long contentLength() throws IOException {
+            public long contentLength() {
                 return buffer.size();
             }
 
@@ -148,7 +148,7 @@ public class OkHttpClientEngine implements ClientHttpEngine {
     }
 
     private ClientResponse createResponse(ClientInvocation request, final Response response) {
-        ClientResponse clientResponse = new ClientResponse(request.getClientConfiguration()) {
+        ClientResponse clientResponse = new ClientResponse(request.getClientConfiguration(), request.getTracingLogger()) {
             private InputStream stream;
 
             @Override
