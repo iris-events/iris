@@ -15,6 +15,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Application;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,7 +26,9 @@ import com.rabbitmq.client.AMQP;
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
@@ -66,18 +69,42 @@ public class MetadataPropagationIT {
     @InjectMock
     HostnameProvider hostnameProvider;
 
+    @InjectMock
+    EventAppInfoProvider eventAppInfoProvider;
+
+    @AfterEach
+    void cleanup() {
+        finalService.reset();
+        Mockito.reset(eventAppInfoProvider, hostnameProvider);
+    }
+
     @Test
     @DisplayName("Event published should be accompanied with correlationId to the final service")
     void publishPropagatesCorrelationId() throws Exception {
         final var correlationId = UUID.randomUUID().toString();
-        final var finalHostname = UUID.randomUUID().toString();
+
         Mockito.when(correlationIdProvider.getCorrelationId()).thenReturn(correlationId);
-        Mockito.when(hostnameProvider.getHostName()).thenReturn("first-hostname", "second-hostname", finalHostname);
 
         producer.send(new Event1());
 
         final var basicProperties = finalService.getEventContext().get();
         assertThat(basicProperties.getCorrelationId(), is(correlationId));
+    }
+
+    @Test
+    @DisplayName("Event published should be accompanied with custom headers to the final service")
+    void publishPropagatesCustomHeaders() throws Exception {
+        final var finalHostname = UUID.randomUUID().toString();
+        final var firstServiceId = UUID.randomUUID().toString();
+        final var finalServiceId = UUID.randomUUID().toString();
+
+        Mockito.when(eventAppInfoProvider.getEventAppContext())
+                .thenReturn(getEventAppContext(firstServiceId), getEventAppContext(finalServiceId));
+        Mockito.when(hostnameProvider.getHostName()).thenReturn("first-hostname", "first-hostname", finalHostname);
+
+        producer.send(new Event1());
+
+        final var basicProperties = finalService.getEventContext().get();
 
         final var headers = basicProperties.getHeaders();
         assertThat(headers.keySet(),
@@ -86,9 +113,13 @@ public class MetadataPropagationIT {
                         HEADER_CURRENT_SERVICE_ID,
                         HEADER_INSTANCE_ID));
 
-        assertThat(headers.get(HEADER_ORIGIN_SERVICE_ID).toString(), is(APP_ID));
-        assertThat(headers.get(HEADER_CURRENT_SERVICE_ID).toString(), is(APP_ID));
+        assertThat(headers.get(HEADER_ORIGIN_SERVICE_ID).toString(), is(firstServiceId));
+        assertThat(headers.get(HEADER_CURRENT_SERVICE_ID).toString(), is(finalServiceId));
         assertThat(headers.get(HEADER_INSTANCE_ID).toString(), is(finalHostname));
+    }
+
+    private EventAppContext getEventAppContext(final String firstServiceInstanceId) {
+        return new EventAppContext(firstServiceInstanceId, null, null);
     }
 
     @SuppressWarnings("unused")
@@ -128,7 +159,7 @@ public class MetadataPropagationIT {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class FinalService {
-        private final CompletableFuture<AMQP.BasicProperties> basicPropertiesCompletableFuture = new CompletableFuture<>();
+        private CompletableFuture<AMQP.BasicProperties> basicPropertiesCompletableFuture = new CompletableFuture<>();
         private final EventContext eventContext;
 
         @Inject
@@ -140,6 +171,10 @@ public class MetadataPropagationIT {
         public void handle(Event3 event) {
             final var amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             basicPropertiesCompletableFuture.complete(amqpBasicProperties);
+        }
+
+        public void reset() {
+            basicPropertiesCompletableFuture = new CompletableFuture<>();
         }
 
         public CompletableFuture<AMQP.BasicProperties> getEventContext() {

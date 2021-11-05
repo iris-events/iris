@@ -51,6 +51,7 @@ public class AmqpProducer {
     public static final String HEADER_ORIGIN_SERVICE_ID = "X-Origin-Service-Id";
     public static final String HEADER_CURRENT_SERVICE_ID = "X-Current-Service-Id";
     public static final String HEADER_INSTANCE_ID = "X-Instance-Id";
+    public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
     private final ProducerChannelService channelService;
@@ -87,7 +88,6 @@ public class AmqpProducer {
     }
 
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
-        final var optionalEventAppContext = eventAppInfoProvider.getEventAppContext();
         if (message == null) {
             throw new AmqpSendException("Null message can not be published!");
         }
@@ -215,24 +215,26 @@ public class AmqpProducer {
     }
 
     private AMQP.BasicProperties getOrCreateAmqpBasicProperties() {
+        final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
+        final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
-                .orElse(createAmqpBasicProperties());
+                .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildServiceAndInstanceAwareBasicProperties(basicProperties);
+        return buildServiceAndInstanceAwareBasicProperties(basicProperties, serviceId);
     }
 
-    private AMQP.BasicProperties buildServiceAndInstanceAwareBasicProperties(final AMQP.BasicProperties basicProperties) {
-        final var headers = new HashMap<>(basicProperties.getHeaders());
-        eventAppInfoProvider.getEventAppContext()
-                .ifPresent(eventAppContext -> headers.put(HEADER_CURRENT_SERVICE_ID, eventAppContext.getId()));
+    private AMQP.BasicProperties buildServiceAndInstanceAwareBasicProperties(final AMQP.BasicProperties basicProperties,
+            final String serviceId) {
         final var hostName = hostnameProvider.getHostName();
+
+        final var headers = new HashMap<>(basicProperties.getHeaders());
+        headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
         headers.put(HEADER_INSTANCE_ID, hostName);
 
         return basicProperties.builder().headers(headers).build();
     }
 
-    private AMQP.BasicProperties createAmqpBasicProperties() {
-        final var serviceId = eventAppInfoProvider.getEventAppContext().map(EventAppContext::getId).orElse("N/A");
+    private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
         return new AMQP.BasicProperties().builder()
                 .correlationId(correlationIdProvider.getCorrelationId())
                 .headers(Map.of(HEADER_ORIGIN_SERVICE_ID, serviceId))

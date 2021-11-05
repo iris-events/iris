@@ -1,7 +1,5 @@
 package id.global.event.messaging.runtime;
 
-import java.util.Optional;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import id.global.event.messaging.runtime.context.EventAppContext;
@@ -18,7 +16,7 @@ public class EventAppInfoProvider {
         this.eventAppContext = eventAppContext;
     }
 
-    public Optional<EventAppContext> getEventAppContext() {
-        return Optional.ofNullable(eventAppContext);
+    public EventAppContext getEventAppContext() {
+        return eventAppContext;
     }
 }
