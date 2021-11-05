@@ -19,6 +19,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -53,24 +54,16 @@ public class DirectTestIT {
     @Test
     @DisplayName("Publish message with blank exchange")
     public void publishMessage_WithBlankExchange() {
-        assertThrows(AmqpSendException.class, () -> producer.send(new Event("blank", 1L), "", "WrongRoutingKey", DIRECT));
+        assertThrows(AmqpSendException.class, () -> producer.send(new BlankExchangeEvent("blank", 1L)));
     }
 
     @Test
     @DisplayName("Two messages published to different queues should be delivered")
     void publishTwoMessagesToDifferentQueues_BothShouldBeDelivered() throws Exception {
 
-        assertDoesNotThrow(() -> producer.send(
-                new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                EXCHANGE,
-                EVENT_QUEUE,
-                DIRECT));
+        assertDoesNotThrow(() -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
 
-        assertDoesNotThrow(() -> producer.send(
-                new Event(EVENT_PAYLOAD_NAME_PRIORITY, EVENT_PAYLOAD_AGE),
-                EXCHANGE,
-                EVENT_QUEUE_PRIORITY,
-                DIRECT));
+        assertDoesNotThrow(() -> producer.send(new PrioritizedEvent(EVENT_PAYLOAD_NAME_PRIORITY, EVENT_PAYLOAD_AGE)));
 
         PrioritizedEvent priorityEvent = service.getHandledPriorityEvent().get();
         Event event = service.getHandledEvent().get();
@@ -117,11 +110,18 @@ public class DirectTestIT {
         }
     }
 
+    @ProducedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
+    @ProducedEvent(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
     @ConsumedEvent(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
     public record PrioritizedEvent(String name, Long age) {
+
+    }
+
+    @ProducedEvent(queue = EVENT_QUEUE, exchangeType = DIRECT)
+    public record BlankExchangeEvent(String name, Long age) {
     }
 }

@@ -33,6 +33,7 @@ import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.Common;
+import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -43,7 +44,7 @@ import id.global.event.messaging.runtime.tx.TransactionCallback;
 
 @ApplicationScoped
 public class AmqpProducer {
-    private static final Logger LOG = LoggerFactory.getLogger(AmqpProducer.class);
+    private static final Logger log = LoggerFactory.getLogger(AmqpProducer.class);
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
     private final ProducerChannelService channelService;
@@ -51,6 +52,8 @@ public class AmqpProducer {
     private final EventContext eventContext;
     private final AmqpConfiguration configuration;
     private final TransactionManager transactionManager;
+    private final CorrelationIdProvider correlationIdProvider;
+    private final HostnameProvider hostnameProvider;
 
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
@@ -60,22 +63,21 @@ public class AmqpProducer {
     private TransactionCallback transactionCallback;
 
     @Inject
-    public AmqpProducer(ProducerChannelService channelService, ObjectMapper objectMapper,
-            EventContext eventContext, AmqpConfiguration configuration, TransactionManager transactionManager) {
+    public AmqpProducer(ProducerChannelService channelService, ObjectMapper objectMapper, EventContext eventContext,
+            AmqpConfiguration configuration, TransactionManager transactionManager,
+            CorrelationIdProvider correlationIdProvider, HostnameProvider hostnameProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.configuration = configuration;
         this.transactionManager = transactionManager;
+        this.correlationIdProvider = correlationIdProvider;
+        this.hostnameProvider = hostnameProvider;
 
         this.transactionDelayedMessages = new HashMap<>();
     }
 
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
-        send(message, null);
-    }
-
-    public void send(final Object message, final MetadataInfo metadataInfo) throws AmqpSendException, AmqpTransactionException {
         if (message == null) {
             throw new AmqpSendException("Null message can not be published!");
         }
@@ -84,8 +86,7 @@ public class AmqpProducer {
                 message.getClass().getAnnotation(ProducedEvent.class));
         Optional<EventMetadata> eventMetadata = Optional.ofNullable(message.getClass().getAnnotation(EventMetadata.class));
 
-        final AMQP.BasicProperties amqpBasicProperties = getAmqpBasicProperties(metadataInfo);
-
+        final var amqpBasicProperties = getAmqpBasicProperties();
         final var optionalExchange = getExchange(producedEventMetadata, eventMetadata);
         final var routingKey = getRoutingKey(producedEventMetadata, eventMetadata);
         final var exchangeType = getExchangeType(producedEventMetadata, eventMetadata);
@@ -95,21 +96,6 @@ public class AmqpProducer {
         }
 
         publish(message, optionalExchange.get(), routingKey, amqpBasicProperties, exchangeType);
-    }
-
-    public void send(final Object message, @NotNull final String exchange, final String routingKey,
-            final ExchangeType exchangeType) throws AmqpSendException, AmqpTransactionException {
-
-        AMQP.BasicProperties amqpBasicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
-                .orElse(null);
-
-        publishWithProperties(message, exchange, routingKey, exchangeType, amqpBasicProperties);
-    }
-
-    public void send(final Object message, @NotNull final String exchange, final String routingKey,
-            final ExchangeType exchangeType, MetadataInfo metadataInfo) throws AmqpSendException, AmqpTransactionException {
-        AMQP.BasicProperties amqpBasicProperties = getAmqpBasicProperties(metadataInfo);
-        publishWithProperties(message, exchange, routingKey, exchangeType, amqpBasicProperties);
     }
 
     public void addReturnListener(@NotNull String channelKey, @NotNull ReturnListener returnListener) throws IOException {
@@ -208,15 +194,6 @@ public class AmqpProducer {
         }
     }
 
-    private void publishWithProperties(final Object message, @NotNull final String exchange, final String routingKey,
-            final ExchangeType exchangeType,
-            final AMQP.BasicProperties amqpBasicProperties) throws AmqpSendException, AmqpTransactionException {
-        String routingKeyO = Optional.ofNullable(routingKey).orElse("");
-        ExchangeType exchangeTypeO = Optional.ofNullable(exchangeType).orElse(ExchangeType.DIRECT);
-
-        publish(message, exchange, routingKeyO, amqpBasicProperties, exchangeTypeO);
-    }
-
     private void waitForConfirmations(Channel channel) throws AmqpSendException {
         try {
             channel.waitForConfirms(WAIT_TIMEOUT_MILLIS);
@@ -227,12 +204,9 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getAmqpBasicProperties(MetadataInfo metadataInfo) {
-        return Optional.ofNullable(metadataInfo)
-                .map(info -> new AMQP.BasicProperties().builder()
-                        .correlationId(info.correlationId())
-                        .build())
-                .or(() -> Optional.ofNullable(eventContext.getAmqpBasicProperties())).orElse(null);
+    private AMQP.BasicProperties getAmqpBasicProperties() {
+        return Optional.ofNullable(eventContext.getAmqpBasicProperties())
+                .orElse(new AMQP.BasicProperties().builder().correlationId(correlationIdProvider.getCorrelationId()).build());
     }
 
     private ExchangeType getExchangeType(Optional<ProducedEvent> producedEventMetadata, Optional<EventMetadata> eventMetadata) {
@@ -276,7 +250,7 @@ public class AmqpProducer {
                     transactionCallback.afterTxPublish();
                 }
             } catch (IOException | AmqpSendException e) {
-                LOG.error("Exception completing send transaction.", e);
+                log.error("Exception completing send transaction.", e);
                 throw new AmqpTransactionRuntimeException("Exception completing send transaction");
             }
         }
