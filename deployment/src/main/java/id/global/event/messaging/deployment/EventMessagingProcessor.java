@@ -8,7 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import id.global.common.annotations.EventMetadata;
+import id.global.event.messaging.deployment.scanner.EventAppScanner;
+import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.ConsumerInitRecorder;
+import id.global.event.messaging.runtime.EventAppInfoProvider;
+import id.global.event.messaging.runtime.EventAppRecorder;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
@@ -66,6 +70,7 @@ class EventMessagingProcessor {
                                 ConsumerChannelService.class,
                                 ProducerChannelService.class,
                                 AmqpConsumerContainer.class,
+                                EventAppInfoProvider.class,
                                 EventContext.class,
                                 AmqpProducer.class,
                                 ConnectionFactoryProvider.class,
@@ -125,5 +130,17 @@ class EventMessagingProcessor {
                 LOG.error("Could not record method handle", e);
             }
         });
+    }
+
+    @Record(ExecutionTime.STATIC_INIT)
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void provideEventAppContext(final BeanContainerBuildItem beanContainer, final CombinedIndexBuildItem index,
+            final EventAppRecorder eventAppRecorder) {
+
+        final var eventAppScanner = new EventAppScanner(index.getIndex());
+        final var optionalEventAppContext = eventAppScanner.findEventAppContext();
+
+        optionalEventAppContext.ifPresent(
+                eventAppContext -> eventAppRecorder.registerEventAppContext(beanContainer.getValue(), eventAppContext));
     }
 }

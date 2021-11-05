@@ -1,4 +1,4 @@
-package id.global.event.messaging.deployment;
+package id.global.event.messaging.deployment.scanner;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.BINDING_KEYS_PARAM;
@@ -24,6 +24,7 @@ import org.jboss.jandex.Type;
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.event.messaging.deployment.validation.AnnotationInstanceValidator;
 import id.global.event.messaging.deployment.validation.ValidationRules;
 

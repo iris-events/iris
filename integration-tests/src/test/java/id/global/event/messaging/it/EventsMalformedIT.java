@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
@@ -54,6 +55,9 @@ public class EventsMalformedIT {
     @Inject
     HostnameProvider hostnameProvider;
 
+    @Inject
+    EventAppInfoProvider eventAppInfoProvider;
+
     @Test
     @DisplayName("Exception while serializing events should fail publishing.")
     public void exceptionWhenPublish() throws JsonProcessingException {
@@ -65,7 +69,7 @@ public class EventsMalformedIT {
                 });
 
         AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration,
-                transactionManager, correlationIdProvider, hostnameProvider);
+                transactionManager, correlationIdProvider, hostnameProvider, eventAppInfoProvider);
 
         Assertions.assertThrows(AmqpSendException.class, () -> {
             producer.send(new TopicEventTmp("topic", 1L));

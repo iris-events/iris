@@ -33,9 +33,11 @@ import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.asyncapi.spec.enums.ExchangeType;
 import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.runtime.Common;
+import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
@@ -45,6 +47,10 @@ import id.global.event.messaging.runtime.tx.TransactionCallback;
 @ApplicationScoped
 public class AmqpProducer {
     private static final Logger log = LoggerFactory.getLogger(AmqpProducer.class);
+
+    public static final String HEADER_ORIGIN_SERVICE_ID = "X-Origin-Service-Id";
+    public static final String HEADER_CURRENT_SERVICE_ID = "X-Current-Service-Id";
+    public static final String HEADER_INSTANCE_ID = "X-Instance-Id";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
     private final ProducerChannelService channelService;
@@ -54,6 +60,7 @@ public class AmqpProducer {
     private final TransactionManager transactionManager;
     private final CorrelationIdProvider correlationIdProvider;
     private final HostnameProvider hostnameProvider;
+    private final EventAppInfoProvider eventAppInfoProvider;
 
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
@@ -65,7 +72,8 @@ public class AmqpProducer {
     @Inject
     public AmqpProducer(ProducerChannelService channelService, ObjectMapper objectMapper, EventContext eventContext,
             AmqpConfiguration configuration, TransactionManager transactionManager,
-            CorrelationIdProvider correlationIdProvider, HostnameProvider hostnameProvider) {
+            CorrelationIdProvider correlationIdProvider, HostnameProvider hostnameProvider,
+            EventAppInfoProvider eventAppInfoProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -73,11 +81,13 @@ public class AmqpProducer {
         this.transactionManager = transactionManager;
         this.correlationIdProvider = correlationIdProvider;
         this.hostnameProvider = hostnameProvider;
+        this.eventAppInfoProvider = eventAppInfoProvider;
 
         this.transactionDelayedMessages = new HashMap<>();
     }
 
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
+        final var optionalEventAppContext = eventAppInfoProvider.getEventAppContext();
         if (message == null) {
             throw new AmqpSendException("Null message can not be published!");
         }
@@ -86,7 +96,7 @@ public class AmqpProducer {
                 message.getClass().getAnnotation(ProducedEvent.class));
         Optional<EventMetadata> eventMetadata = Optional.ofNullable(message.getClass().getAnnotation(EventMetadata.class));
 
-        final var amqpBasicProperties = getAmqpBasicProperties();
+        final var amqpBasicProperties = getOrCreateAmqpBasicProperties();
         final var optionalExchange = getExchange(producedEventMetadata, eventMetadata);
         final var routingKey = getRoutingKey(producedEventMetadata, eventMetadata);
         final var exchangeType = getExchangeType(producedEventMetadata, eventMetadata);
@@ -204,9 +214,29 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getAmqpBasicProperties() {
-        return Optional.ofNullable(eventContext.getAmqpBasicProperties())
-                .orElse(new AMQP.BasicProperties().builder().correlationId(correlationIdProvider.getCorrelationId()).build());
+    private AMQP.BasicProperties getOrCreateAmqpBasicProperties() {
+        final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
+                .orElse(createAmqpBasicProperties());
+
+        return buildServiceAndInstanceAwareBasicProperties(basicProperties);
+    }
+
+    private AMQP.BasicProperties buildServiceAndInstanceAwareBasicProperties(final AMQP.BasicProperties basicProperties) {
+        final var headers = new HashMap<>(basicProperties.getHeaders());
+        eventAppInfoProvider.getEventAppContext()
+                .ifPresent(eventAppContext -> headers.put(HEADER_CURRENT_SERVICE_ID, eventAppContext.getId()));
+        final var hostName = hostnameProvider.getHostName();
+        headers.put(HEADER_INSTANCE_ID, hostName);
+
+        return basicProperties.builder().headers(headers).build();
+    }
+
+    private AMQP.BasicProperties createAmqpBasicProperties() {
+        final var serviceId = eventAppInfoProvider.getEventAppContext().map(EventAppContext::getId).orElse("N/A");
+        return new AMQP.BasicProperties().builder()
+                .correlationId(correlationIdProvider.getCorrelationId())
+                .headers(Map.of(HEADER_ORIGIN_SERVICE_ID, serviceId))
+                .build();
     }
 
     private ExchangeType getExchangeType(Optional<ProducedEvent> producedEventMetadata, Optional<EventMetadata> eventMetadata) {
