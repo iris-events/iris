@@ -2,11 +2,11 @@ package io.smallrye.asyncapi.runtime.scanner.app;
 
 import org.jboss.logging.Logger;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
-import id.global.asyncapi.spec.enums.Scope;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
+import id.global.common.annotations.amqp.Scope;
 import io.smallrye.asyncapi.runtime.scanner.model.User;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import io.smallrye.asyncapi.spec.annotations.info.Info;
@@ -26,11 +26,11 @@ public class EventHandlersAppWithSentEvent {
 
     @ProducedEvent(
             exchange = "sent-event-exchange",
-            queue = "sent-event-queue",
+            routingKey = "sent-event-queue",
             scope = Scope.EXTERNAL,
             exchangeType = ExchangeType.DIRECT,
             rolesAllowed = { "ADMIN", "USER", "DUMMY" })
-    @ConsumedEvent(queue = "sent-event-v1")
+    @ConsumedEvent(routingKey = "sent-event-v1")
     public record SentEvent(int id, String status, User user) {
     }
 

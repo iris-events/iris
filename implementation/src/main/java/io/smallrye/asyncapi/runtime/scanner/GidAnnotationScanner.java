@@ -51,10 +51,10 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.Scope;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
+import id.global.common.annotations.amqp.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
@@ -155,7 +155,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             String classSimpleName = classInfo.simpleName();
 
             messageScopes.put(classSimpleName, getEventScope(anno));
-            producedEvents.put(classSimpleName, generateProducedEventSchemaInfo(className));
+            producedEvents.put(classSimpleName, generateProducedEventSchemaInfo(classInfo));
 
             final var queue = getQueue(anno, classSimpleName);
             final var exchange = getExchange(anno);
@@ -204,7 +204,14 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var exchangeType = getExchangeType(eventAnnotation);
             final var scope = getEventScope(eventAnnotation);
 
-            final var jsonSchemaInfo = generateJsonSchemaInfo(annotationName, eventClass.name().toString(), annotationValues);
+            final var isGeneratedClass = isGeneratedClass(eventClass);
+
+            final var jsonSchemaInfo = generateJsonSchemaInfo(
+                    annotationName,
+                    eventClass.name().toString(),
+                    annotationValues,
+                    isGeneratedClass);
+
             final var subscribeChannelInfo = ChannelInfoGenerator.generateSubscribeChannelInfo(
                     exchange,
                     queue,
@@ -257,21 +264,23 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return document;
     }
 
-    private JsonSchemaInfo generateProducedEventSchemaInfo(String className) throws ClassNotFoundException {
-        Class<?> loadedClass = loadClass(className);
-        String classSimpleName = loadedClass.getSimpleName();
+    private JsonSchemaInfo generateProducedEventSchemaInfo(ClassInfo classInfo) throws ClassNotFoundException {
+        final var className = classInfo.name().toString();
+        final var loadedClass = loadClass(className);
+        final var classSimpleName = loadedClass.getSimpleName();
+        final var isGeneratedClass = isGeneratedClass(classInfo);
 
         ObjectNode generatedSchema = schemaGenerator.generateSchema(loadedClass);
         return new JsonSchemaInfo(
                 null,
                 classSimpleName,
                 generatedSchema,
-                null
-        );
+                null,
+                isGeneratedClass);
     }
 
     private JsonSchemaInfo generateJsonSchemaInfo(DotName annotationName, String className,
-            List<AnnotationValue> annotationValues) throws ClassNotFoundException {
+            List<AnnotationValue> annotationValues, boolean isGeneratedClass) throws ClassNotFoundException {
         Class<?> loadedClass = loadClass(className);
         String eventSimpleName = loadedClass.getSimpleName();
         ObjectNode generatedSchema = schemaGenerator.generateSchema(loadedClass);
@@ -279,7 +288,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 annotationName,
                 eventSimpleName,
                 generatedSchema,
-                annotationValues);
+                annotationValues,
+                isGeneratedClass);
     }
 
     private Class<?> loadClass(String className) throws ClassNotFoundException {

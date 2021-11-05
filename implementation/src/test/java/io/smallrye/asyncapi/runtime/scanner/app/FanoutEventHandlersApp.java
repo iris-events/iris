@@ -6,9 +6,9 @@ import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.MessageHandler;
 import io.smallrye.asyncapi.runtime.scanner.model.User;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import io.smallrye.asyncapi.spec.annotations.info.Info;

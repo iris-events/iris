@@ -1,7 +1,10 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.jboss.jandex.AnnotationInstance;
 
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
@@ -12,12 +15,14 @@ public class AnnotationScannerContext {
     private final FilteredIndexView index;
     private final Aai20Document asyncApi;
     private final Map<String, AaiSchema> definitionSchemaMap;
+    private final Collection<AnnotationInstance> generatedClassAnnotations;
 
     public AnnotationScannerContext(AsyncApiConfig config, FilteredIndexView index,
-            Aai20Document asyncApi) {
+            Aai20Document asyncApi, Collection<AnnotationInstance> generatedClassAnnotations) {
         this.config = config;
         this.index = index;
         this.asyncApi = asyncApi;
+        this.generatedClassAnnotations = generatedClassAnnotations;
 
         this.definitionSchemaMap = new LinkedHashMap<>();
     }
@@ -44,5 +49,9 @@ public class AnnotationScannerContext {
 
     public void clearDefinitionSchemaMap() {
         definitionSchemaMap.clear();
+    }
+
+    public Collection<AnnotationInstance> getGeneratedClassAnnotations() {
+        return generatedClassAnnotations;
     }
 }

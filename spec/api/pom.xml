@@ -14,6 +14,11 @@
     <name>SmallRye: MicroProfile AsyncAPI Spec</name>
 
     <dependencies>
+        <dependency>
+            <groupId>id.global.common</groupId>
+            <artifactId>globalid-common</artifactId>
+        </dependency>
+
         <!-- MP Config Spec -->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>

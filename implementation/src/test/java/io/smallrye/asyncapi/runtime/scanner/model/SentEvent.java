@@ -1,17 +1,21 @@
 package io.smallrye.asyncapi.runtime.scanner.model;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
-import id.global.asyncapi.spec.enums.Scope;
+import javax.annotation.Generated;
+
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.ProducedEvent;
+import id.global.common.annotations.amqp.Scope;
 
 @ProducedEvent(
         exchange = "sent-event-exchange",
-        queue = "sent-event-queue",
+        routingKey = "sent-event-queue",
         scope = Scope.EXTERNAL,
         exchangeType = ExchangeType.DIRECT,
         rolesAllowed = { "ADMIN", "USER", "DUMMY" })
-@ConsumedEvent(queue = "sent-event-v1")
+@ConsumedEvent(routingKey = "sent-event-v1")
+@Generated("")
+@javax.annotation.processing.Generated("")
 public class SentEvent {
     private int id;
     private String status;

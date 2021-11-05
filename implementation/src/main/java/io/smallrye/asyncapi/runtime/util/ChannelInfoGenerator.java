@@ -1,6 +1,6 @@
 package io.smallrye.asyncapi.runtime.util;
 
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ExchangeType;
 import io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
