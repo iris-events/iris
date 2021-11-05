@@ -70,7 +70,7 @@ public class MetadataPropagationIT {
         private final AmqpProducer producer;
 
         @Inject
-        public Service1(EventContext eventContext, AmqpProducer producer) {
+        public Service1(AmqpProducer producer) {
             this.producer = producer;
         }
 
