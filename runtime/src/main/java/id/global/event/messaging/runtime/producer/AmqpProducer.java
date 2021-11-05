@@ -225,8 +225,8 @@ public class AmqpProducer {
 
     private AMQP.BasicProperties buildServiceAndInstanceAwareBasicProperties(final AMQP.BasicProperties basicProperties,
             final String serviceId) {
-        final var hostName = hostnameProvider.getHostName();
 
+        final var hostName = hostnameProvider.getHostName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
         headers.put(HEADER_INSTANCE_ID, hostName);
