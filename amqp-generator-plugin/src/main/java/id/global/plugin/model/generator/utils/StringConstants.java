@@ -14,9 +14,12 @@ public class StringConstants {
     public static final String EMPTY_STRING = "";
     public static final String HASH = "#";
     public static final String COMPONENTS_SCHEMAS = "/components/schemas/";
+    public static final String PAYLOAD = "payload";
+    public static final String SCHEMAS = "schemas";
+    public static final String MODELS = "models";
 
     public static final String REF_REGEX = """
-            ("\\$ref"\\s*:\\s*("(.*?)"}))(?!\\w)
+            ("\\$ref"\\s*:\\s*"(.*?)"\\s*})(?!\\w)
             """
             .trim();
 

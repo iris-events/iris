@@ -218,6 +218,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Can't compute index", e);
         }
+        // TODO we need to add javax.* annotations to index somewhere here!
         if (!scanDependenciesDisable()) {
             List<IndexView> indexes = new ArrayList<>();
             indexes.add(moduleIndex);

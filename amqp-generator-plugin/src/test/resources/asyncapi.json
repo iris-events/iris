@@ -7,6 +7,28 @@
   "asyncapi": "2.0.0",
   "id": "urn:id:global:uphold",
   "channels": {
+    "external/generated-event": {
+      "subscribe": {
+        "message" : {
+          "_extraProperties": {
+            "type": "INTERNAL"
+          },
+          "headers": {
+            "_extensions": {
+              "rolesAllowed": {
+                "name": "rolesAllowed"
+              }
+            }
+          },
+          "name": "ExternalEvent",
+          "title": "ExternalEvent",
+          "payload": {
+            "$ref": "#/components/schemas/ExternalEvent"
+          }
+
+        }
+      }
+    },
     "uphold/apto_event": {
       "subscribe": {
         "message": {
@@ -533,6 +555,20 @@
           "event": {
             "$ref": "#/components/schemas/AptoEvent"
           }
+        },
+        "additionalProperties": {
+          "isGeneratedEvent": false
+        }
+      },
+      "ExternalEvent": {
+        "type": "object",
+        "properties": {
+          "stringProperty": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "isGeneratedEvent": true
         }
       },
       "AptoAuthorization": {

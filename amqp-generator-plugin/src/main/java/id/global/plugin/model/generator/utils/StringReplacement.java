@@ -1,10 +1,12 @@
 package id.global.plugin.model.generator.utils;
 
+import static id.global.plugin.model.generator.utils.StringConstants.PAYLOAD;
+
 public class StringReplacement {
 
     public static final String JAVA_TYPE_TEMPLATE = """
             "type": "object",
-            "javaType": "%s.%s.%s"
+            "javaType": "%s.%s.%s.%s"
             }
             """
             .trim();
@@ -17,8 +19,7 @@ public class StringReplacement {
         return String.format(REF_FILE_TEMPLATE, fileLocation);
     }
 
-
     public static String getReplacementForRef(final String name, final String packageName, final String modelName) {
-        return String.format(JAVA_TYPE_TEMPLATE, packageName, modelName, name);
+        return String.format(JAVA_TYPE_TEMPLATE, packageName, modelName, PAYLOAD, name);
     }
 }
