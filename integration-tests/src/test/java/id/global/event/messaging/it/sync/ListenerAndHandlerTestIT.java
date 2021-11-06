@@ -23,6 +23,7 @@ import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -44,13 +45,8 @@ public class ListenerAndHandlerTestIT {
     @Test
     @DisplayName("Event published to unknown exchange should fail!")
     void publishToUnknownExchange() {
-        Assertions.assertThrows(
-                ShutdownSignalException.class,
-                () -> producer.send(
-                        new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE),
-                        UNKNOWN_EXCHANGE,
-                        EVENT_QUEUE,
-                        DIRECT));
+        Assertions.assertThrows(ShutdownSignalException.class,
+                () -> producer.send(new UnknownExchangeEvent(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
     }
 
     @Test
@@ -66,7 +62,7 @@ public class ListenerAndHandlerTestIT {
                 (replyCode, replyText, exchange, routingKey, properties, body) -> completedSignal.complete(INVOKE_MESSAGE)));
 
         assertDoesNotThrow(
-                () -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE), EXCHANGE, UNKNOWN_QUEUE, DIRECT));
+                () -> producer.send(new UnknownQueueEvent(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
         assertThat(completedSignal.get(), is(INVOKE_MESSAGE));
     }
 
@@ -80,7 +76,7 @@ public class ListenerAndHandlerTestIT {
                 returnMessage -> completedSignal.complete("FAIL")));
 
         assertDoesNotThrow(
-                () -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE), EXCHANGE, UNKNOWN_QUEUE, DIRECT));
+                () -> producer.send(new UnknownQueueEvent(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
 
         assertThat(completedSignal.get(), is("FAIL"));
     }
@@ -103,8 +99,7 @@ public class ListenerAndHandlerTestIT {
             }
         }));
 
-        assertDoesNotThrow(
-                () -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE), EXCHANGE, EVENT_QUEUE, DIRECT));
+        assertDoesNotThrow(() -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
 
         assertThat(completedSignal.get(), is("ACK"));
     }
@@ -144,8 +139,16 @@ public class ListenerAndHandlerTestIT {
         }
     }
 
+    @ProducedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
+    @ProducedEvent(exchange = UNKNOWN_EXCHANGE, exchangeType = DIRECT, queue = EVENT_QUEUE)
+    public record UnknownExchangeEvent(String name, Long age) {
+    }
+
+    @ProducedEvent(exchange = EXCHANGE, exchangeType = DIRECT, queue = UNKNOWN_QUEUE)
+    public record UnknownQueueEvent(String name, Long age) {
+    }
 }

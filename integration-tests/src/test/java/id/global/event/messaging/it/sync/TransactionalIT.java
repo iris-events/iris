@@ -26,6 +26,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
@@ -207,13 +208,13 @@ public class TransactionalIT {
         }
 
         public void send(int i) throws AmqpSendException, AmqpTransactionException {
-            producer.send(new TestEvent(i), EXCHANGE, EVENT_QUEUE, DIRECT);
+            producer.send(new TestEvent(i));
         }
 
         @Transactional
         public void sendTransactional(boolean throwException) throws AmqpSendException, AmqpTransactionException {
             for (int i = 0; i < EXPECTED_MESSAGES; i++) {
-                producer.send(new TestEvent(i), EXCHANGE, EVENT_QUEUE, DIRECT);
+                producer.send(new TestEvent(i));
             }
 
             if (throwException) {
@@ -224,7 +225,7 @@ public class TransactionalIT {
         @Transactional
         public void sendTransactionalCustomCallback(boolean throwException) throws AmqpTransactionException, AmqpSendException {
             for (int i = 0; i < EXPECTED_MESSAGES; i++) {
-                producer.send(new TestEvent(i), EXCHANGE, EVENT_QUEUE, DIRECT);
+                producer.send(new TestEvent(i));
             }
 
             if (throwException) {
@@ -250,6 +251,7 @@ public class TransactionalIT {
 
     }
 
+    @ProducedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     private record TestEvent(int seq) {
 

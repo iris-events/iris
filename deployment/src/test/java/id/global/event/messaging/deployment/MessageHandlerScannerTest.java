@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.event.messaging.BaseIndexingTest;
+import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.test.Event;
 import id.global.event.messaging.test.PriorityQueueEvent;
 import id.global.event.messaging.test.TestHandlerService;

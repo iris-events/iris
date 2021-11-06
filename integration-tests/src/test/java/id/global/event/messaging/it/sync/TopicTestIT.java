@@ -18,6 +18,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -46,15 +47,15 @@ public class TopicTestIT {
 
         //messages can be consumed in order
 
-        ServiceALoggingEvent l1 = new ServiceALoggingEvent("Quick orange fox", 1L);
-        ServiceALoggingEvent l2 = new ServiceALoggingEvent("Quick yellow rabbit", 2L);
-        ServiceALoggingEvent l3 = new ServiceALoggingEvent("Lazy blue snail", 3L);
-        ServiceALoggingEvent l4 = new ServiceALoggingEvent("Lazy orange rabbit", 4L);
+        ServiceALoggingEvent1 l1 = new ServiceALoggingEvent1("Quick orange fox", 1L);
+        ServiceALoggingEvent2 l2 = new ServiceALoggingEvent2("Quick yellow rabbit", 2L);
+        ServiceALoggingEvent3 l3 = new ServiceALoggingEvent3("Lazy blue snail", 3L);
+        ServiceALoggingEvent4 l4 = new ServiceALoggingEvent4("Lazy orange rabbit", 4L);
 
-        producer.send(l1, TOPIC_EXCHANGE, "quick.orange.fox", TOPIC);
-        producer.send(l2, TOPIC_EXCHANGE, "quick.yellow.rabbit", TOPIC);
-        producer.send(l3, TOPIC_EXCHANGE, "lazy.blue.snail", TOPIC);
-        producer.send(l4, TOPIC_EXCHANGE, "lazy.orange.rabbit", TOPIC);
+        producer.send(l1);
+        producer.send(l2);
+        producer.send(l3);
+        producer.send(l4);
 
         MyLoggingServiceA.completionSignal.get();
         MyLoggingServiceB.completionSignal.get();
@@ -82,7 +83,7 @@ public class TopicTestIT {
         }
 
         @MessageHandler
-        public void handleLogEvents(ServiceALoggingEvent event) {
+        public void handleLogEvents(ServiceALoggingEvent1 event) {
             synchronized (events) {
                 events.add(event.log());
                 if (events.size() == 2) {
@@ -119,8 +120,24 @@ public class TopicTestIT {
         }
     }
 
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "quick.orange.fox")
     @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
-    public record ServiceALoggingEvent(String log, Long level) {
+    public record ServiceALoggingEvent1(String log, Long level) {
+    }
+
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "quick.yellow.rabbit")
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    public record ServiceALoggingEvent2(String log, Long level) {
+    }
+
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "lazy.blue.snail")
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    public record ServiceALoggingEvent3(String log, Long level) {
+    }
+
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "lazy.orange.rabbit")
+    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    public record ServiceALoggingEvent4(String log, Long level) {
     }
 
     @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.*.rabbit", "lazy.#" })

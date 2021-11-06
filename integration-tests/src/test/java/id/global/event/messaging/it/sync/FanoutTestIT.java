@@ -19,6 +19,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.asyncapi.spec.annotations.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -53,7 +54,7 @@ public class FanoutTestIT {
     void publishFanout() throws Exception {
 
         FanoutLoggingEvent event = new FanoutLoggingEvent("INFO: 1337", 1L);
-        producer.send(event, EXCHANGE, "", FANOUT);
+        producer.send(event);
 
         assertThat(loggingServiceA.getFuture().get(), samePropertyValuesAs(event));
         assertThat(loggingServiceB.getFuture().get(), samePropertyValuesAs(event));
@@ -65,7 +66,7 @@ public class FanoutTestIT {
             throws ExecutionException, InterruptedException, AmqpSendException, AmqpTransactionException {
         FanoutEvent event = new FanoutEvent("Fanout Event", 23L);
 
-        producer.send(event, MY_FANOUT_EXCHANGE, "", FANOUT);
+        producer.send(event);
 
         CompletableFuture.allOf(fanoutService.getFanout1(), fanoutService.getFanout2())
                 .join();
@@ -149,13 +150,12 @@ public class FanoutTestIT {
     public record Event(String name, Long age) {
     }
 
-    public record LoggingEvent(String log, Long level) {
-    }
-
+    @ProducedEvent(exchange = EXCHANGE, exchangeType = FANOUT)
     @ConsumedEvent(exchange = EXCHANGE, exchangeType = FANOUT)
     public record FanoutLoggingEvent(String log, Long level) {
     }
 
+    @ProducedEvent(exchange = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
     @ConsumedEvent(exchange = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
     public record FanoutEvent(String log, Long level) {
     }
