@@ -38,7 +38,8 @@ public final class EventAppContext {
         this.description = description;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "EventAppContext{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
