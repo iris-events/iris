@@ -95,6 +95,7 @@ public class EventAppRecorderIT {
     public record Event() {
     }
 
+    @SuppressWarnings("unused")
     @EventApp(id = APP_ID, info = @Info(description = APP_DESCRIPTION, title = APP_TITLE))
     public static class TestApplication extends Application {
     }

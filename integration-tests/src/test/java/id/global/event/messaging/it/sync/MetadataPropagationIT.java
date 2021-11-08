@@ -1,11 +1,7 @@
 package id.global.event.messaging.it.sync;
 
 import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
-import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_CURRENT_SERVICE_ID;
-import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_INSTANCE_ID;
-import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_ORIGIN_SERVICE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 import java.util.UUID;
@@ -13,7 +9,6 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Application;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,9 +21,7 @@ import com.rabbitmq.client.AMQP;
 import id.global.asyncapi.spec.annotations.ConsumedEvent;
 import id.global.asyncapi.spec.annotations.MessageHandler;
 import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
-import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
@@ -36,8 +29,6 @@ import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.CorrelationIdProvider;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import io.smallrye.asyncapi.spec.annotations.EventApp;
-import io.smallrye.asyncapi.spec.annotations.info.Info;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -47,9 +38,6 @@ public class MetadataPropagationIT {
     private static final String EVENT_QUEUE2 = "queue2";
     private static final String EVENT_QUEUE3 = "queue3";
     private static final String EXCHANGE = "exchange";
-    public static final String APP_ID = "test-quarkus-eda";
-    public static final String APP_DESCRIPTION = "Quarkus EDA test application";
-    public static final String APP_TITLE = "Quarkus EDA";
 
     @Inject
     AmqpProducer producer;
@@ -69,13 +57,10 @@ public class MetadataPropagationIT {
     @InjectMock
     HostnameProvider hostnameProvider;
 
-    @InjectMock
-    EventAppInfoProvider eventAppInfoProvider;
-
     @AfterEach
     void cleanup() {
         finalService.reset();
-        Mockito.reset(eventAppInfoProvider, hostnameProvider);
+        Mockito.reset(hostnameProvider);
     }
 
     @Test
@@ -89,37 +74,6 @@ public class MetadataPropagationIT {
 
         final var basicProperties = finalService.getEventContext().get();
         assertThat(basicProperties.getCorrelationId(), is(correlationId));
-    }
-
-    @Test
-    @DisplayName("Event published should be accompanied with custom headers to the final service")
-    void publishPropagatesCustomHeaders() throws Exception {
-        final var finalHostname = UUID.randomUUID().toString();
-        final var firstServiceId = UUID.randomUUID().toString();
-        final var finalServiceId = UUID.randomUUID().toString();
-
-        Mockito.when(eventAppInfoProvider.getEventAppContext())
-                .thenReturn(getEventAppContext(firstServiceId), getEventAppContext(finalServiceId));
-        Mockito.when(hostnameProvider.getHostName()).thenReturn("first-hostname", "first-hostname", finalHostname);
-
-        producer.send(new Event1());
-
-        final var basicProperties = finalService.getEventContext().get();
-
-        final var headers = basicProperties.getHeaders();
-        assertThat(headers.keySet(),
-                containsInAnyOrder(
-                        HEADER_ORIGIN_SERVICE_ID,
-                        HEADER_CURRENT_SERVICE_ID,
-                        HEADER_INSTANCE_ID));
-
-        assertThat(headers.get(HEADER_ORIGIN_SERVICE_ID).toString(), is(firstServiceId));
-        assertThat(headers.get(HEADER_CURRENT_SERVICE_ID).toString(), is(finalServiceId));
-        assertThat(headers.get(HEADER_INSTANCE_ID).toString(), is(finalHostname));
-    }
-
-    private EventAppContext getEventAppContext(final String firstServiceInstanceId) {
-        return new EventAppContext(firstServiceInstanceId, null, null);
     }
 
     @SuppressWarnings("unused")
@@ -196,9 +150,4 @@ public class MetadataPropagationIT {
     @ProducedEvent(queue = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event3() {
     }
-
-    @EventApp(id = APP_ID, info = @Info(description = APP_DESCRIPTION, title = APP_TITLE))
-    public class TestApplication extends Application {
-    }
-
 }

@@ -147,9 +147,6 @@ public class FanoutTestIT {
 
     }
 
-    public record Event(String name, Long age) {
-    }
-
     @ProducedEvent(exchange = EXCHANGE, exchangeType = FANOUT)
     @ConsumedEvent(exchange = EXCHANGE, exchangeType = FANOUT)
     public record FanoutLoggingEvent(String log, Long level) {
