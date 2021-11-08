@@ -51,17 +51,12 @@ public class EventSchemaGeneratorConfig {
         }
 
         @Override
-        public boolean isIncludeJsr305Annotations() {
+        public boolean isIncludeConstructors() {
             return true;
         }
 
         @Override
         public boolean isIncludeJsr303Annotations() {
-            return true;
-        }
-
-        @Override
-        public boolean isIncludeConstructors() {
             return true;
         }
 
@@ -118,17 +113,12 @@ public class EventSchemaGeneratorConfig {
         }
 
         @Override
-        public boolean isIncludeJsr305Annotations() {
+        public boolean isIncludeConstructors() {
             return true;
         }
 
         @Override
         public boolean isIncludeJsr303Annotations() {
-            return true;
-        }
-
-        @Override
-        public boolean isIncludeConstructors() {
             return true;
         }
 

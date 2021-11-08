@@ -1,13 +1,12 @@
 package id.global.plugin.model.generator;
 
 import static id.global.plugin.model.generator.utils.StringConstants.COMMA;
-import static id.global.plugin.model.generator.utils.StringConstants.COMPONENTS_SCHEMAS;
 import static id.global.plugin.model.generator.utils.StringConstants.DOT;
 import static id.global.plugin.model.generator.utils.StringConstants.DOT_REGEX;
 import static id.global.plugin.model.generator.utils.StringConstants.EMPTY_STRING;
 import static id.global.plugin.model.generator.utils.StringConstants.FORWARD_SLASH;
-import static id.global.plugin.model.generator.utils.StringConstants.HASH;
 import static id.global.plugin.model.generator.utils.StringConstants.JAVA_TYPE;
+import static id.global.plugin.model.generator.utils.StringConstants.PAYLOAD;
 import static id.global.plugin.model.generator.utils.StringConstants.POM_TEMPLATE_XML;
 import static id.global.plugin.model.generator.utils.StringConstants.POM_XML;
 import static id.global.plugin.model.generator.utils.StringConstants.PUBLISH;
@@ -20,7 +19,6 @@ import static java.util.stream.Collectors.joining;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -28,10 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -68,12 +68,16 @@ import id.global.plugin.model.generator.models.ArtifactSource;
 import id.global.plugin.model.generator.models.ChannelDetails;
 import id.global.plugin.model.generator.models.JsonSchemaWrapper;
 import id.global.plugin.model.generator.utils.FileInteractor;
+import id.global.plugin.model.generator.utils.JsonUtils;
 import id.global.plugin.model.generator.utils.PathResolver;
+import id.global.plugin.model.generator.utils.SchemaFileGenerator;
 
 @Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)
 public class AmqpGeneratorMojo extends AbstractMojo {
 
     private static final String defaultUrl = "https://schema.internal.globalid.dev";
+    public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
+    public static final String IS_GENERATED_EVENT = "isGeneratedEvent";
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
@@ -114,8 +118,11 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private final BinaryOperator<String> first = (first, second) -> first;
     private final BinaryOperator<String> last = (first, second) -> second;
 
-    private final Map<String, List<String>> mainEventsNames = new HashMap<>();
+    private final Set<String> eventClassNames = new HashSet<>();
     private final Map<String, ChannelDetails> channelDetails = new HashMap<>();
+
+    private SchemaFileGenerator schemaFileGenerator;
+    private JsonUtils jsonUtils;
 
     public void execute() throws MojoExecutionException {
         this.log = getLog();
@@ -125,14 +132,16 @@ public class AmqpGeneratorMojo extends AbstractMojo {
             return;
         }
 
-        modelName = getCleanModelName(modelName);
+        this.schemaFileGenerator = new SchemaFileGenerator(this.log, this.pathResolver, this.fileInteractor, objectMapper);
+        this.jsonUtils = new JsonUtils(this.objectMapper, this.log);
 
-        fileInteractor.cleanUpDirectories(pathResolver.getWorkingDirectory()); //always try to do cleanup
+        modelName = getCleanModelName(modelName);
+        fileInteractor.cleanUpDirectories(pathResolver.getWorkingDirectory());
 
         if (artifactSource == ArtifactSource.FILE) {
             generateFromFile();
         } else if (artifactSource == ArtifactSource.APICURIO) {
-            generateFromApiCurio(apicurioUrl, modelName, modelVersion);
+            generateFromApicurio(apicurioUrl, modelName, modelVersion);
         } else {
             throw new MojoExecutionException("Execute failed! Artifact source location not known!");
         }
@@ -140,51 +149,58 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         log.info("Models generated successfully!");
     }
 
-    private void createBaseSchemaFile(final String fileName, final String content) {
+    private void manipulateAndGenerateFromJson(final String jsonContent) {
 
-        Path path = pathResolver.getSchemasDirectory()
-                .resolve(fileName);
+        log.info("Parsing AsyncApi definition!");
 
-        replaceAndSaveSchemaFiles(content, path);
+        var asyncApiJsonNode = jsonUtils.getJsonNodeFromString(jsonContent);
+        var channelsJsonNode = asyncApiJsonNode.get("channels");
+        var componentsJsonNode = asyncApiJsonNode.get("components");
+        var schemasJsonNode = removeGeneratedClassSchemas(componentsJsonNode.get("schemas"));
 
+        fileInteractor.initializeDirectories();
+
+        channelDetails.putAll(createChannelDetailsMap(channelsJsonNode));
+        eventClassNames.addAll(findEventClassNames(channelDetails, schemasJsonNode));
+
+        schemaFileGenerator.createSchemaFiles(schemasJsonNode, eventClassNames);
+
+        rewriteRefsInSchemaFiles(pathResolver.getSchemasDirectory());
+
+        //preparation of supporting structure for correct java classes generation
+
+        List<String> baseClasses = extractBaseClasses(schemasJsonNode);
+
+        List<JsonSchemaWrapper> baseClassesSchemasWithContent = extractSchemaContentForClasses(baseClasses);
+
+        Map<String, String> javaTypeLocationToCanonicalName = extractJavaTypeLocationToCanonicalName(
+                baseClassesSchemasWithContent);
+
+        Map<String, List<String>> parentToChildClassesRelation
+                = extractParentToChildRelationsStructure(javaTypeLocationToCanonicalName);
+
+        List<AbstractMap.SimpleEntry<String, Integer>> parentToChildCount
+                = extractParentToChildrenCount(baseClassesSchemasWithContent);
+
+        List<String> classChains = GraphUtils.getClassChains(parentToChildClassesRelation);
+
+        List<String> filteredClassChains = sortAndFilterClassChains(classChains);
+
+        generateJavaClasses(parentToChildClassesRelation, parentToChildCount, filteredClassChains);
     }
 
-    private void createEventSchemaFile(final List<String> prefix, final String fileName, final String content) {
-        prefix.forEach(single -> {
-            Path path = pathResolver.getSchemasDirectory()
-                    .resolve(single)
-                    .resolve(fileName);
+    private Set<String> findEventClassNames(final Map<String, ChannelDetails> channelDetails,
+            JsonNode schemasJsonNode) {
+        var eventClassNames = new HashSet<String>();
 
-            replaceAndSaveSchemaFiles(content, path);
+        channelDetails.forEach((channel, channelDetail) -> {
+            String eventName = getEventNameFromChannelDetails(channelDetail);
+            if (schemasJsonNode.has(eventName)) {
+                eventClassNames.add(eventName);
+            }
         });
-    }
 
-    private void replaceAndSaveSchemaFiles(final String content, final Path path) {
-        Path schemaPath = pathResolver.getSchemasDirectory();
-
-        String contentReplaces = content
-                .replace(HASH, EMPTY_STRING)
-                .replace(COMPONENTS_SCHEMAS, schemaPath.toUri().toString());
-
-        fileInteractor.writeFile(path, contentReplaces);
-    }
-
-    private void createSchemaFiles(final JsonNode schemas, final Map<String, List<String>> exclude) {
-        log.info("Creating JsonSchema files for model generator!");
-        schemas.fields()
-                .forEachRemaining((schema) -> {
-                    var schemaName = schema.getKey();
-                    var schemaContent = schema.getValue().toString();
-                    createSchemaFileFromContent(exclude, schemaName, schemaContent);
-                });
-    }
-
-    private void createSchemaFileFromContent(final Map<String, List<String>> exclude, final String schemaName, final String schemaContent) {
-        var optionalExclude = Optional.ofNullable(exclude.get(schemaName));
-
-        optionalExclude.ifPresentOrElse(
-                exclusions -> createEventSchemaFile(exclusions, schemaName, schemaContent),
-                () -> createBaseSchemaFile(schemaName, schemaContent));
+        return eventClassNames;
     }
 
     private SchemaMapper createSchemaMapper(final GenerationConfig config, final Jackson2Annotator annotator) {
@@ -194,29 +210,23 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         );
     }
 
-    private void generate(final String fileName) {
+    private void generate(final String fileName, String subdirectory) {
+        var classPackageName = generatePackageName(subdirectory);
+        var annotator = getJackson2Annotator(fileName, eventClassNames);
+        var config = getConfigurationByLocation(subdirectory);
+        var schemaMapper = createSchemaMapper(config, annotator);
+        var schemaPath = getSchemaFilePath(fileName, subdirectory);
 
-        List<String> locationForGeneratedClasses = Optional.ofNullable(mainEventsNames.get(fileName))
-                .orElse(List.of(EMPTY_STRING));
-
-        locationForGeneratedClasses.forEach(locationForGeneratedClass -> {
-            var classPackageName = generatePackageName(locationForGeneratedClass);
-            var annotator = getJackson2Annotator(fileName, locationForGeneratedClass);
-            var config = getConfigurationByLocation(locationForGeneratedClass);
-            var schemaMapper = createSchemaMapper(config, annotator);
-            var schemaPath = getSchemaFilePath(fileName, locationForGeneratedClass);
-
-            try {
-                var schemaContent = fileInteractor.readFile(schemaPath);
-                var codeModel = new JCodeModel();
-                var destinationDirectory =  pathResolver.getSourceDirectory().toFile();
-                schemaMapper.generate(codeModel, fileName, classPackageName, schemaContent);
-                codeModel.build(destinationDirectory);
-            } catch (IOException e) {
-                log.error("There was an error in Mapper or CodeModel.", e);
-                throw new RuntimeException(e);
-            }
-        });
+        try {
+            var schemaContent = fileInteractor.readFile(schemaPath);
+            var codeModel = new JCodeModel();
+            var destinationDirectory = pathResolver.getSourceDirectory().toFile();
+            schemaMapper.generate(codeModel, fileName, classPackageName, schemaContent);
+            codeModel.build(destinationDirectory);
+        } catch (IOException e) {
+            log.error("There was an error in Mapper or CodeModel.", e);
+            throw new RuntimeException(e);
+        }
     }
 
     private Path getSchemaFilePath(String fileName, String locationForGeneratedClass) {
@@ -232,10 +242,10 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 EventSchemaGeneratorConfig.eventConfig;
     }
 
-    private Jackson2Annotator getJackson2Annotator(String fileName, String locationForGeneratedClass) {
+    private Jackson2Annotator getJackson2Annotator(String fileName, Set<String> mainEventNames) {
         Jackson2Annotator annotator = new Jackson2Annotator(EventSchemaGeneratorConfig.classConfig);
 
-        if (!locationForGeneratedClass.isBlank()) {
+        if (mainEventNames.contains(fileName)) {
             Optional<ChannelDetails> ch = Optional.of(
                     channelDetails.entrySet().stream()
                             .filter(nonEmptyChannelSection())
@@ -252,7 +262,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
     private Predicate<Map.Entry<String, ChannelDetails>> hasMainEvent(String fileName) {
         return entry -> entry.getValue().publishEventName().equalsIgnoreCase(fileName)
-                        || entry.getValue().subscribeEventName().equalsIgnoreCase(fileName);
+                || entry.getValue().subscribeEventName().equalsIgnoreCase(fileName);
     }
 
     private Predicate<Map.Entry<String, ChannelDetails>> nonEmptyChannelSection() {
@@ -296,31 +306,25 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         return modelName.toLowerCase().replace("-", "_");
     }
 
-    private Path resolveAsyncApiFilePath() {
-        String[] pathSpliced = asyncApiDirectory.split(COMMA); //separate directory via , to be platform independent
+    private Map<String, ChannelDetails> createChannelDetailsMap(JsonNode channelsJsonNode) {
+        Map<String, ChannelDetails> channelDetailsMap = new HashMap<>();
 
-        String asyncApiFileLocation = Arrays.stream(pathSpliced)
-                .collect(joining(FileSystems.getDefault().getSeparator()));
+        channelsJsonNode.fields().forEachRemaining(entry -> {
+            String channelName = entry.getKey();
+            JsonNode channelDetailsNode = entry.getValue();
 
-        Path asyncApiPath = pathResolver.getRootDirectory().resolve(asyncApiFileLocation);
+            String subscribeEventName = getEventNameFromDetails(channelDetailsNode, SUBSCRIBE);
+            String publishEventName = getEventNameFromDetails(channelDetailsNode, PUBLISH);
 
-        return asyncApiPath.resolve(asyncApiFilename);
-    }
+            channelDetailsMap.put(channelName,
+                    new ChannelDetails(
+                            channelName,
+                            subscribeEventName,
+                            publishEventName,
+                            channelDetailsNode));
+        });
 
-    private void prepareChannelDetails(Map.Entry<String, JsonNode> entry) {
-
-        String channelName = entry.getKey();
-        JsonNode channelDetailsNode = entry.getValue();
-
-        String subscribeEventName = getEventNameFromDetails(channelDetailsNode, SUBSCRIBE);
-        String publishEventName = getEventNameFromDetails(channelDetailsNode, PUBLISH);
-
-        this.channelDetails.put(channelName,
-                new ChannelDetails(
-                        channelName,
-                        subscribeEventName,
-                        publishEventName,
-                        channelDetailsNode));
+        return channelDetailsMap;
     }
 
     private String getEventNameFromDetails(JsonNode channelDetailsNode, String channelType) {
@@ -334,34 +338,40 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 .orElse(EMPTY_STRING);
     }
 
+    private String getEventNameFromChannelDetails(ChannelDetails channelDetails) {
+        String eventName = channelDetails.subscribeEventName();
+        if (eventName == null || eventName.isBlank()) {
+            eventName = channelDetails.publishEventName();
+        }
+        return eventName;
+    }
+
     private void rewriteRefsInSchemaFiles(Path schemasPath) {
 
         try {
             HashMap<String, String> schemaNamesToLocation = new HashMap<>();
 
-            Files.list(schemasPath)
+            Files.list(schemasPath.resolve(PAYLOAD))
                     .map(Path::toFile)
                     .filter(File::isFile)
                     .forEach(file -> schemaNamesToLocation.put(file.getName(), file.getAbsolutePath()));
 
-            Stream<File> publishFiles = getFileListInPath(schemasPath, PUBLISH).stream();
-            Stream<File> subscribeFiles = getFileListInPath(schemasPath, SUBSCRIBE).stream();
-
-            //rewrite event schemas
-            Stream.concat(publishFiles, subscribeFiles)
+            Files.list(schemasPath)
+                    .map(Path::toFile)
                     .forEach(file -> {
-                        String fileContent = fileInteractor.readFile(Path.of(file.toURI()));
-                        schemaNamesToLocation.entrySet().stream()
-                                .filter(entry -> fileContent.contains(entry.getValue()))
-                                .forEach(entry -> replaceFileContent(file, fileContent, entry));
+                        if (file.isFile()) {
+                            String fileContent = fileInteractor.readFile(Path.of(file.toURI()));
+                            schemaNamesToLocation.entrySet().stream()
+                                    .filter(entry -> fileContent.contains(entry.getValue()))
+                                    .forEach(entry -> replaceFileContent(file, fileContent, entry));
+                        }
                     });
 
             //rewrite base schemas
-            Files.list(schemasPath)
+            Stream.concat(Files.list(schemasPath), Files.list(schemasPath.resolve(PAYLOAD)))
                     .map(Path::toFile)
                     .filter(File::isFile)
                     .forEach(this::replaceAllRefs);
-
         } catch (IOException e) {
             log.error("Problem rewriting refs in schema files!");
             throw new RuntimeException(e);
@@ -375,17 +385,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
             if (matcher.find()) {
                 var toReplace = matcher.group(0);
-                var name = Arrays.stream(matcher.group(3).split(FORWARD_SLASH))
+                var name = Arrays.stream(matcher.group(2).split(FORWARD_SLASH))
                         .reduce((first, second) -> second).orElse(EMPTY_STRING);
                 fileContent = fileContent.replace(toReplace, getReplacementForRef(name, packageName, modelName));
             }
         }
-        fileInteractor.writeFile(Path.of(file.toURI()), getFormattedJson(fileContent));
-    }
-
-    private String getFormattedJson(String content) {
-        var node = getJsonNodeFromString(content);
-        return node.toPrettyString();
+        fileInteractor.writeFile(Path.of(file.toURI()), jsonUtils.getFormattedJson(fileContent));
     }
 
     private void replaceFileContent(File file, String fileContent, Map.Entry<String, String> nameWithLocation) {
@@ -396,75 +401,32 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         String toReplace = getRefToBeReplaced(fileLocation);
 
         String replacementContent = fileContent.replace(toReplace, replaceWith);
-        fileInteractor.writeFile(Path.of(file.toURI()), getFormattedJson(replacementContent));
+        fileInteractor.writeFile(Path.of(file.toURI()), jsonUtils.getFormattedJson(replacementContent));
     }
 
-    private List<File> getFileListInPath(Path schemaPath, String subFolder) throws IOException {
-        return Files.list(schemaPath.resolve(subFolder))
-                .map(Path::toFile)
-                .collect(Collectors.toList());
+    private JsonNode removeGeneratedClassSchemas(JsonNode schemas) {
+        ObjectNode filteredSchemas = objectMapper.createObjectNode();
+
+        if (schemas instanceof ObjectNode) {
+            schemas.fields()
+                    .forEachRemaining((schema) -> {
+                        if (!schema.getValue().has(ADDITIONAL_PROPERTIES) ||
+                                !schema.getValue().get(ADDITIONAL_PROPERTIES).has(IS_GENERATED_EVENT) ||
+                                !schema.getValue().get(ADDITIONAL_PROPERTIES).get(IS_GENERATED_EVENT).booleanValue()) {
+                            filteredSchemas.set(schema.getKey(), schema.getValue());
+                        }
+                    });
+        }
+        return filteredSchemas;
     }
 
-    private void manipulateAndGenerateFromJson(final String jsonContent) {
-
-        log.info("Parsing AsyncApi definition!");
-
-        var asyncApiJsonNode = getJsonNodeFromString(jsonContent);
-        var channelsJsonNode = asyncApiJsonNode.get("channels");
-        var componentsJsonNode = asyncApiJsonNode.get("components");
-        var schemasJsonNode = componentsJsonNode.get("schemas");
-
-        fileInteractor.initializeDirectories();
-
-        //manipulation of schema files
-
-        channelsJsonNode
-                .fields()
-                .forEachRemaining(this::prepareChannelDetails);
-
-        prepareMainEventsFromChannels(channelDetails, mainEventsNames);
-
-        createSchemaFiles(schemasJsonNode, mainEventsNames);
-
-        rewriteRefsInSchemaFiles(pathResolver.getSchemasDirectory());
-
-        //preparation of supporting structure for correct java classes generation
-
-        List<String> baseClasses
-                = extractBaseClasses(schemasJsonNode);
-
-        List<JsonSchemaWrapper> baseClassesSchemasWithContent
-                = extractSchemaContentForClasses(baseClasses);
-
-        Map<String, String> javaTypeLocationToCanonicalName
-                = extractJavaTypeLocationToCanonicalName(baseClassesSchemasWithContent);
-
-        Map<String, List<String>> parentToChildClassesRelation
-                = extractParentToChildRelationsStructure(javaTypeLocationToCanonicalName);
-
-        List<AbstractMap.SimpleEntry<String, Integer>> parentToChildCount
-                = extractParentToChildrenCount(baseClassesSchemasWithContent);
-
-        List<String> classChains
-                = GraphUtils.getClassChains(parentToChildClassesRelation);
-
-        List<String> filteredClassChains
-                = sortAndFilterClassChains(classChains);
-
-        //generation of concrete classes
-
-        generateJavaClasses(parentToChildClassesRelation, parentToChildCount, filteredClassChains);
-
-    }
-
-    private void generateJavaClasses(
-            Map<String, List<String>> parentToChildClassesRelation,
+    private void generateJavaClasses(Map<String, List<String>> parentToChildClassesRelation,
             List<AbstractMap.SimpleEntry<String, Integer>> parentToChildCount,
             List<String> filteredClassChains) {
 
         List<String> alreadyGeneratedClasses = new ArrayList<>();
 
-        generateMainEvents(mainEventsNames);
+        generateMainEvents(eventClassNames);
 
         generateChildClasses(parentToChildClassesRelation, parentToChildCount);
 
@@ -479,13 +441,20 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         parentToChildCount.stream()
                 .filter(entry -> entry.getValue() == 0)
                 .map(AbstractMap.SimpleEntry::getKey)
-                .forEach(this::generate);
+                .forEach(entry -> {
+                    generate(entry, PAYLOAD);
+                });
     }
 
     private void generateChildClassesByChain(List<String> filteredClassChains, List<String> alreadyGeneratedClasses) {
         filteredClassChains.forEach(classChain ->
                 Arrays.stream(classChain.split(COMMA))
-                        .forEach(className -> skipOrGenerate(className, alreadyGeneratedClasses)));
+                        .forEach(className -> {
+                            if (!alreadyGeneratedClasses.contains(className)) {
+                                generate(className, PAYLOAD);
+                                alreadyGeneratedClasses.add(className);
+                            }
+                        }));
     }
 
     private void generateChildClasses(Map<String, List<String>> parentToChildClassesRelation,
@@ -495,7 +464,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .forEach(entry -> {
 
-                    generate(entry.getKey());
+                    generate(entry.getKey(), PAYLOAD);
 
                     List<String> childClasses = Optional.ofNullable(parentToChildClassesRelation.get(entry.getKey()))
                             .orElseGet(Collections::emptyList)
@@ -504,7 +473,9 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                             .collect(Collectors.toList());
 
                     if (!childClasses.isEmpty())
-                        childClasses.forEach(this::generate);
+                        childClasses.forEach(childClass -> {
+                            generate(childClass, PAYLOAD);
+                        });
                 });
     }
 
@@ -556,8 +527,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private List<JsonSchemaWrapper> extractSchemaContentForClasses(List<String> baseClasses) {
         return baseClasses.stream()
                 .map(baseClassName -> {
-                    var jsonString = fileInteractor.readFile(pathResolver.getSchemasDirectory().resolve(baseClassName));
-                    var jsonSchemaNode = getJsonNodeFromString(jsonString);
+                    var jsonString = fileInteractor.readFile(pathResolver.getSchemaPayloadsDirectory().resolve(baseClassName));
+                    var jsonSchemaNode = jsonUtils.getJsonNodeFromString(jsonString);
                     return new JsonSchemaWrapper(baseClassName, jsonString, jsonSchemaNode);
                 }).collect(Collectors.toList());
     }
@@ -565,42 +536,17 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private List<String> extractBaseClasses(JsonNode schemas) {
         List<String> baseClasses = new ArrayList<>();
         schemas.fieldNames().forEachRemaining(schemaName -> {
-            if (mainEventsNames.get(schemaName) == null) { //exclude main event
+            if (!eventClassNames.contains(schemaName)) {
                 baseClasses.add(schemaName);
             }
         });
         return baseClasses;
     }
 
-    private void generateMainEvents(Map<String, List<String>> mainEvents) {
-        mainEvents.keySet()
-                .forEach(this::generate);
-    }
-
-    private void prepareMainEventsFromChannels(final Map<String, ChannelDetails> channelDetails,
-            Map<String, List<String>> mainEventsNameList) {
-        channelDetails.forEach((channel, channelDetail) -> {
-            Map.Entry<String, List<String>> eventNameWithSectionsLocations = channelDetail.getSectionsForChannelEvent();
-            if (!eventNameWithSectionsLocations.getKey().isBlank()) {
-                mainEventsNameList.put(eventNameWithSectionsLocations.getKey(), eventNameWithSectionsLocations.getValue());
-            }
+    private void generateMainEvents(Set<String> mainEvents) {
+        mainEvents.forEach(event -> {
+            generate(event, "");
         });
-    }
-
-    private void skipOrGenerate(String className, List<String> alreadyGeneratedClasses) {
-        if (!alreadyGeneratedClasses.contains(className)) {
-            generate(className);
-            alreadyGeneratedClasses.add(className);
-        }
-    }
-
-    private JsonNode getJsonNodeFromString(String json) {
-        try {
-            return objectMapper.readTree(json);
-        } catch (Exception e) {
-            log.error("Failed to parse json string!", e);
-            throw new RuntimeException(e);
-        }
     }
 
     private void createPathToJavaTypeProperty(final String currentPath, final JsonNode schema,
@@ -627,14 +573,12 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     }
 
     private void generateFromFile() {
-        Optional.of(resolveAsyncApiFilePath())
+        Optional.of(pathResolver.resolveAsyncApiFilePath(asyncApiDirectory, asyncApiFilename))
                 .map(fileInteractor::readFile)
                 .ifPresent(this::manipulateAndGenerateFromJson);
-
     }
 
-    private void generateFromApiCurio(final String baseUrl, String serviceName, String artifactVersion) {
-
+    private void generateFromApicurio(final String baseUrl, String serviceName, String artifactVersion) {
         String apicurioUrl = Optional.of(baseUrl)
                 .filter(Predicate.not(String::isBlank))
                 .orElse(defaultUrl);
@@ -645,5 +589,4 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 .filter(content -> !content.isBlank())
                 .ifPresent(this::manipulateAndGenerateFromJson);
     }
-
 }

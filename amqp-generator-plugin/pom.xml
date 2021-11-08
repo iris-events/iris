@@ -13,7 +13,7 @@
 
     <properties>
         <maven-compat.version>3.8.1</maven-compat.version>
-        <globalid-common.version>1.0.13</globalid-common.version>
+        <globalid-common.version>1.0.14</globalid-common.version>
         <junit-jupiter-engine.version>5.8.1</junit-jupiter-engine.version>
         <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
         <maven-resolver-api.version>1.3.1</maven-resolver-api.version>

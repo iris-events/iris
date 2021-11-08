@@ -1,5 +1,7 @@
 package id.global.plugin.model.generator.utils;
 
+import static id.global.plugin.model.generator.utils.StringConstants.PAYLOAD;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,9 +123,6 @@ public class FileInteractor {
                 pathResolver.getSourceDirectory());
 
         createDirectories(
-                pathResolver.getSchemasDirectory().resolve("subscribe"));
-
-        createDirectories(
-                pathResolver.getSchemasDirectory().resolve("publish"));
+                pathResolver.getSchemasDirectory().resolve(PAYLOAD));
     }
 }
