@@ -1,6 +1,6 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
+import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -16,9 +16,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -120,22 +120,22 @@ public class TopicTestIT {
         }
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "quick.orange.fox")
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.orange.fox")
     @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
     public record ServiceALoggingEvent1(String log, Long level) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "quick.yellow.rabbit")
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.yellow.rabbit")
     @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
     public record ServiceALoggingEvent2(String log, Long level) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "lazy.blue.snail")
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.blue.snail")
     @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
     public record ServiceALoggingEvent3(String log, Long level) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, queue = "lazy.orange.rabbit")
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.orange.rabbit")
     @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
     public record ServiceALoggingEvent4(String log, Long level) {
     }

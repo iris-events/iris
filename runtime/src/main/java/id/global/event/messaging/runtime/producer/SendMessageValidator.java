@@ -1,9 +1,9 @@
 package id.global.event.messaging.runtime.producer;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
-import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ExchangeType;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 
 class SendMessageValidator {

@@ -29,9 +29,8 @@ import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 
-import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
-import id.global.common.annotations.EventMetadata;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
@@ -94,12 +93,11 @@ public class AmqpProducer {
 
         Optional<ProducedEvent> producedEventMetadata = Optional.ofNullable(
                 message.getClass().getAnnotation(ProducedEvent.class));
-        Optional<EventMetadata> eventMetadata = Optional.ofNullable(message.getClass().getAnnotation(EventMetadata.class));
 
         final var amqpBasicProperties = getOrCreateAmqpBasicProperties();
-        final var optionalExchange = getExchange(producedEventMetadata, eventMetadata);
-        final var routingKey = getRoutingKey(producedEventMetadata, eventMetadata);
-        final var exchangeType = getExchangeType(producedEventMetadata, eventMetadata);
+        final var optionalExchange = getExchange(producedEventMetadata);
+        final var routingKey = getRoutingKey(producedEventMetadata);
+        final var exchangeType = getExchangeType(producedEventMetadata);
 
         if (optionalExchange.isEmpty()) {
             throw new AmqpSendException("Could not send message to empty or null exchange.");
@@ -241,20 +239,16 @@ public class AmqpProducer {
                 .build();
     }
 
-    private ExchangeType getExchangeType(Optional<ProducedEvent> producedEventMetadata, Optional<EventMetadata> eventMetadata) {
-        return eventMetadata.map(metadata -> ExchangeType.fromType(metadata.exchangeType().toUpperCase()))
-                .or(() -> producedEventMetadata.map(ProducedEvent::exchangeType)).orElse(ExchangeType.DIRECT);
+    private ExchangeType getExchangeType(Optional<ProducedEvent> producedEventMetadata) {
+        return producedEventMetadata.map(ProducedEvent::exchangeType).orElse(ExchangeType.DIRECT);
     }
 
-    private String getRoutingKey(Optional<ProducedEvent> producedEventMetadata,
-            Optional<EventMetadata> eventMetadata) {
-        return eventMetadata.map(EventMetadata::routingKey).or(() -> producedEventMetadata.map(ProducedEvent::queue))
-                .orElse(null);
+    private String getRoutingKey(Optional<ProducedEvent> producedEventMetadata) {
+        return producedEventMetadata.map(ProducedEvent::routingKey).orElse(null);
     }
 
-    private Optional<String> getExchange(Optional<ProducedEvent> producedEventMetadata, Optional<EventMetadata> eventMetadata) {
-        return eventMetadata.map(EventMetadata::exchange)
-                .or(() -> producedEventMetadata.map(ProducedEvent::exchange));
+    private Optional<String> getExchange(Optional<ProducedEvent> producedEventMetadata) {
+        return producedEventMetadata.map(ProducedEvent::exchange);
     }
 
     private boolean shouldWaitForConfirmations() {

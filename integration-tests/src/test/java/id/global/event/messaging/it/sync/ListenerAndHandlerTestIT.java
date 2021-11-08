@@ -1,6 +1,6 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -21,9 +21,9 @@ import org.junit.jupiter.api.TestInstance;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ShutdownSignalException;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -139,16 +139,16 @@ public class ListenerAndHandlerTestIT {
         }
     }
 
-    @ProducedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = UNKNOWN_EXCHANGE, exchangeType = DIRECT, queue = EVENT_QUEUE)
+    @ProducedEvent(exchange = UNKNOWN_EXCHANGE, exchangeType = DIRECT, routingKey = EVENT_QUEUE)
     public record UnknownExchangeEvent(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = EXCHANGE, exchangeType = DIRECT, queue = UNKNOWN_QUEUE)
+    @ProducedEvent(exchange = EXCHANGE, exchangeType = DIRECT, routingKey = UNKNOWN_QUEUE)
     public record UnknownQueueEvent(String name, Long age) {
     }
 }

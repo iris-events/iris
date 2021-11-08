@@ -1,7 +1,7 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
-import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
+import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
+import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;

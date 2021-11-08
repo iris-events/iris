@@ -1,6 +1,6 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
+import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
@@ -17,9 +17,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;

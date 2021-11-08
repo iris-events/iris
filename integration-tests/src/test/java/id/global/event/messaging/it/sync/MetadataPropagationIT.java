@@ -1,6 +1,6 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -18,9 +18,9 @@ import org.mockito.Mockito;
 
 import com.rabbitmq.client.AMQP;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
@@ -136,18 +136,18 @@ public class MetadataPropagationIT {
         }
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(queue = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event1() {
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(queue = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event2() {
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(queue = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event3() {
     }
 }

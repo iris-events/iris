@@ -1,8 +1,9 @@
 package id.global.event.messaging.test;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 
-@ConsumedEvent(exchange = "exchange", exchangeType = ExchangeType.DIRECT, queue = "event-queue")
+import id.global.common.annotations.amqp.ConsumedEvent;
+
+@ConsumedEvent(exchange = "exchange", exchangeType = DIRECT, routingKey = "event-queue")
 public record Event(String name, Long age) {
 }

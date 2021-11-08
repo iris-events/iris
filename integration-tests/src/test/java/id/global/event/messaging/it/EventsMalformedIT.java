@@ -1,5 +1,7 @@
 package id.global.event.messaging.it;
 
+import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
+import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,8 +17,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
@@ -82,15 +83,15 @@ public class EventsMalformedIT {
         });
     }
 
-    @ProducedEvent(exchange = DIRECT_EXCHANGE, queue = DIRECT_QUEUE)
+    @ProducedEvent(exchange = DIRECT_EXCHANGE, routingKey = DIRECT_QUEUE)
     private record DirectEventTmp(String name, long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, queue = TOPIC_QUEUE, exchangeType = ExchangeType.TOPIC)
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = TOPIC_QUEUE, exchangeType = TOPIC)
     private record TopicEventTmp(String name, long age) {
     }
 
-    @ProducedEvent(exchange = FANOUT_EXCHANGE, exchangeType = ExchangeType.FANOUT)
+    @ProducedEvent(exchange = FANOUT_EXCHANGE, exchangeType = FANOUT)
     private record FanoutEventTmp(String name, long age) {
     }
 }

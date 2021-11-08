@@ -1,10 +1,10 @@
 package id.global.event.messaging.deployment.scanner;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.BINDING_KEYS_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_TYPE_PARAM;
-import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.QUEUE_PARAM;
+import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY;
 import static java.util.Collections.emptySet;
 
 import java.util.List;
@@ -21,9 +21,9 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.event.messaging.deployment.validation.AnnotationInstanceValidator;
 import id.global.event.messaging.deployment.validation.ValidationRules;
@@ -56,7 +56,7 @@ public class MessageHandlerScanner {
             final var eventAnnotation = getEventAnnotation(methodParameters, index);
             eventValidator.validate(eventAnnotation);
 
-            final var queue = Optional.ofNullable(eventAnnotation.value(QUEUE_PARAM))
+            final var routingKey = Optional.ofNullable(eventAnnotation.value(ROUTING_KEY))
                     .map(AnnotationValue::asString)
                     .orElse(null);
             final var exchange = Optional.ofNullable(eventAnnotation.value(EXCHANGE_PARAM))
@@ -74,7 +74,7 @@ public class MessageHandlerScanner {
                     methodInfo.declaringClass(),
                     methodInfo.parameters().get(0),
                     methodInfo.name(),
-                    queue,
+                    routingKey,
                     exchange,
                     bindingKeys,
                     exchangeType);
@@ -87,7 +87,7 @@ public class MessageHandlerScanner {
 
     private AnnotationInstanceValidator getEventValidator() {
         final var eventValidationRules = getValidationRules(Set.of(EXCHANGE_PARAM, EXCHANGE_TYPE_PARAM),
-                Set.of(EXCHANGE_PARAM, QUEUE_PARAM));
+                Set.of(EXCHANGE_PARAM, ROUTING_KEY));
         return new AnnotationInstanceValidator(index, eventValidationRules);
     }
 
