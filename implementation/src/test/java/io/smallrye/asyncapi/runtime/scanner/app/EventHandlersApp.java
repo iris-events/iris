@@ -1,5 +1,9 @@
 package io.smallrye.asyncapi.runtime.scanner.app;
 
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
+import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
+
 import java.util.Map;
 
 import org.jboss.logging.Logger;
@@ -7,7 +11,6 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import id.global.common.annotations.amqp.ConsumedEvent;
-import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
 import id.global.common.annotations.amqp.MessageHandler;
 import io.smallrye.asyncapi.runtime.scanner.model.User;
@@ -52,11 +55,11 @@ public class EventHandlersApp {
         LOG.info("Handling event generated in an external service");
     }
 
-    @ConsumedEvent(routingKey = "default-test-event-v1")
+    @ConsumedEvent(bindingKeys = "default-test-event-v1", exchangeType = DIRECT)
     public record TestEventV1(int id, String status, User user) {
     }
 
-    @ConsumedEvent(routingKey = "test-event-v2")
+    @ConsumedEvent(bindingKeys = "test-event-v2", exchangeType = DIRECT)
     public record TestEventV2(
             int id,
             String name,
@@ -66,21 +69,25 @@ public class EventHandlersApp {
             Map<String, String> someMap) {
     }
 
-    @ConsumedEvent(routingKey = "fe-test-event-v1")
+    @ConsumedEvent(bindingKeys = "fe-test-event-v1", exchangeType = DIRECT)
     public record FrontendTestEventV1(int id, String status, User user) {
     }
 
-    @ConsumedEvent(exchange = "test-topic-exchange", exchangeType = ExchangeType.TOPIC, bindingKeys = { "*.*.rabbit",
+    @ConsumedEvent(exchange = "test-topic-exchange", exchangeType = TOPIC, bindingKeys = { "*.*.rabbit",
             "fast.orange.*" })
     public record TopicTestEventV1(int id, String status, User user) {
     }
 
-    @ConsumedEvent(exchange = "test-fanout-exchange", exchangeType = ExchangeType.FANOUT)
+    @ConsumedEvent(exchange = "test-fanout-exchange", exchangeType = FANOUT)
     public record FanoutTestEventV1(int id, String status, User user) {
     }
 
+    @ConsumedEvent(exchangeType = DIRECT)
+    public record EventDefaults(int id) {
+    }
+
     @GlobalIdGenerated
-    @ConsumedEvent(exchange = "test-generated-exchange", exchangeType = ExchangeType.TOPIC)
+    @ConsumedEvent(exchange = "test-generated-exchange", exchangeType = TOPIC)
     public record GeneratedTestEvent(int id, String status) {
 
     }

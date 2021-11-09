@@ -1,5 +1,7 @@
 package io.smallrye.asyncapi.runtime.scanner.app;
 
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+
 import java.util.Map;
 
 import org.jboss.logging.Logger;
@@ -22,7 +24,7 @@ public class EventHandlersBadExampleApp {
         LOG.info("Handle hash map event: " + event);
     }
 
-    @ConsumedEvent(routingKey = "hashmap-queue")
+    @ConsumedEvent(bindingKeys = "hashmap-queue", exchangeType = DIRECT)
     public record MapEvent(Map<String, Object> mapProperty) {
     }
 }
