@@ -6,32 +6,40 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Amqp producible event. Events annotated with this annotation should be used as a parameter in an Amqp producer send method.
+ */
 @Target({ ElementType.TYPE, ElementType.RECORD_COMPONENT })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface ProducedEvent {
     /**
-     * To which routingKey/routingKey this event is published
+     * Type of exchange this event gets published to. If the exchange doesn't exist it should be created.
+     * This parameter is required.
      */
-    String routingKey() default "";
+    ExchangeType exchangeType();
 
     /**
-     * To which exchange this event is published
+     * Defines the exchange to publish this event message to. If not specified, the exchange should be generated from the annotated class info.
+     * If the exchange doesn't exist it should be created.
      */
     String exchange() default "";
 
     /**
-     * Type of exchange this event is published to
+     * Defines the routing of this message on the specified exchange. If not specified, the routing key should be generated from the annotated class info.
+     *
+     * @see ConsumedEvent#bindingKeys()
+     * @see <a href="https://www.rabbitmq.com/tutorials/tutorial-four-java.html">Rabbitmq Routing Tutorial for Java clients</a>
      */
-    ExchangeType exchangeType() default ExchangeType.DIRECT;
-
-    /**
-     * Wether the event is an internal system event or an external communication event
-     */
-    Scope scope() default Scope.INTERNAL;
+    String routingKey() default "";
 
     /**
      * Defines allowed roles to produce this event
      */
     String[] rolesAllowed() default {};
+
+    /**
+     * Wether the event is an internal system event or an external communication event
+     */
+    Scope scope() default Scope.INTERNAL;
 }
