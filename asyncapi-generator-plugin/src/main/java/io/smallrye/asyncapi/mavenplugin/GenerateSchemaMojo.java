@@ -1,5 +1,7 @@
 package io.smallrye.asyncapi.mavenplugin;
 
+import static io.smallrye.asyncapi.mavenplugin.MapManipulator.addToPropertyMap;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
