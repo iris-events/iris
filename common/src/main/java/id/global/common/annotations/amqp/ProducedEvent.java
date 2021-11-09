@@ -20,13 +20,15 @@ public @interface ProducedEvent {
     ExchangeType exchangeType();
 
     /**
-     * Defines the exchange to publish this event message to. If not specified, the exchange should be generated from the annotated class info.
+     * Defines the exchange to publish this event message to. If not specified, the exchange should be generated from the
+     * annotated class info.
      * If the exchange doesn't exist it should be created.
      */
     String exchange() default "";
 
     /**
-     * Defines the routing of this message on the specified exchange. If not specified, the routing key should be generated from the annotated class info.
+     * Defines the routing of this message on the specified exchange. If not specified, the routing key should be generated from
+     * the annotated class info.
      *
      * @see ConsumedEvent#bindingKeys()
      * @see <a href="https://www.rabbitmq.com/tutorials/tutorial-four-java.html">Rabbitmq Routing Tutorial for Java clients</a>
