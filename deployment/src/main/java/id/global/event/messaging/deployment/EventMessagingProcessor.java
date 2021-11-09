@@ -7,7 +7,6 @@ import java.util.function.BooleanSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import id.global.common.annotations.EventMetadata;
 import id.global.event.messaging.deployment.scanner.EventAppScanner;
 import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.ConsumerInitRecorder;
@@ -74,8 +73,7 @@ class EventMessagingProcessor {
                                 EventContext.class,
                                 AmqpProducer.class,
                                 ConnectionFactoryProvider.class,
-                                CorrelationIdProvider.class,
-                                EventMetadata.class)
+                                CorrelationIdProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
@@ -117,7 +115,7 @@ class EventMessagingProcessor {
 
                 MethodHandleContext methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
                         col.getMethodName());
-                AmqpContext amqpContext = new AmqpContext(col.getQueue(), col.getExchange(), col.getBindingKeys(),
+                AmqpContext amqpContext = new AmqpContext(col.getRoutingKey(), col.getExchange(), col.getBindingKeys(),
                         col.getExchangeType());
 
                 LOG.info("Registering handler. Handler class = " + handlerClass.getName() +

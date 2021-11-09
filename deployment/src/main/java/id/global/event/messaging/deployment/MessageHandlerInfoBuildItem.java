@@ -3,14 +3,14 @@ package id.global.event.messaging.deployment;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ExchangeType;
 import io.quarkus.builder.item.MultiBuildItem;
 
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final ClassInfo declaringClass;
     private final Type parameterType;
     private final String exchange;
-    private final String queue;
+    private final String routingKey;
     private final String methodName;
     private final ExchangeType exchangeType;
     private final String[] bindingKeys;
@@ -19,14 +19,14 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             final ClassInfo declaringClass,
             final Type parameterType,
             final String methodName,
-            final String queue,
+            final String routingKey,
             final String exchange,
             final String[] bindingKeys,
             final ExchangeType exchangeType) {
         this.declaringClass = declaringClass;
         this.parameterType = parameterType;
         this.exchange = exchange;
-        this.queue = queue;
+        this.routingKey = routingKey;
         this.methodName = methodName;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -44,8 +44,8 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return exchange;
     }
 
-    public String getQueue() {
-        return queue;
+    public String getRoutingKey() {
+        return routingKey;
     }
 
     public String getMethodName() {
@@ -66,7 +66,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 "declaringClass=" + declaringClass +
                 ", parameterType=" + parameterType +
                 ", exchange='" + exchange + '\'' +
-                ", queue='" + queue + '\'' +
+                ", queue='" + routingKey + '\'' +
                 ", methodName='" + methodName + '\'' +
                 '}';
     }

@@ -1,10 +1,11 @@
 package id.global.event.messaging.deployment.validation;
 
+import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.BINDING_KEYS_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_TYPE_PARAM;
-import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.QUEUE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROLES_ALLOWED_PARAM;
+import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -27,9 +28,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.BaseIndexingTest;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 
@@ -136,8 +136,8 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
             final var validationRules = new ValidationRules(
                     1,
                     false,
-                    Set.of(QUEUE_PARAM),
-                    Set.of(QUEUE_PARAM));
+                    Set.of(ROUTING_KEY),
+                    Set.of(ROUTING_KEY));
 
             final var validator = getValidatorService(validationRules, eventClass);
 
@@ -157,7 +157,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @SuppressWarnings("unused")
         private static Stream<Arguments> validateConsumedEventParamsExist() {
             return Stream.of(
-                    Arguments.of(ValidDirectEvent.class, Set.of(QUEUE_PARAM)),
+                    Arguments.of(ValidDirectEvent.class, Set.of(ROUTING_KEY)),
                     Arguments.of(ValidTopicEvent.class, Set.of(EXCHANGE_TYPE_PARAM, EXCHANGE_PARAM, BINDING_KEYS_PARAM)));
         }
 
@@ -182,7 +182,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         private static Stream<Arguments> validateConsumedEventParamsMissing() {
             return Stream.of(
                     Arguments.of(ValidDirectEvent.class, emptySet(), Set.of("doesNotExist")),
-                    Arguments.of(ValidDirectEvent.class, Set.of(QUEUE_PARAM), Set.of("doesNotExist")),
+                    Arguments.of(ValidDirectEvent.class, Set.of(ROUTING_KEY), Set.of("doesNotExist")),
                     Arguments.of(ValidDirectEvent.class, emptySet(), Set.of("doesNotExist", "anotherParamWhichDoesNotExist")),
                     Arguments.of(ValidTopicEvent.class, Set.of(EXCHANGE_TYPE_PARAM, EXCHANGE_PARAM, BINDING_KEYS_PARAM),
                             Set.of("doesNotExists")));
@@ -201,7 +201,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @SuppressWarnings("unused")
         private static Stream<Arguments> validateConsumedEventParamsAreKebabCase() {
             return Stream.of(
-                    Arguments.of(ValidDirectEvent.class, Set.of(QUEUE_PARAM)),
+                    Arguments.of(ValidDirectEvent.class, Set.of(ROUTING_KEY)),
                     Arguments.of(ValidTopicEvent.class, Set.of(EXCHANGE_PARAM)));
         }
 
@@ -222,7 +222,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @SuppressWarnings("unused")
         private static Stream<Arguments> validateConsumedEventParamsAreNotKebabCase() {
             return Stream.of(
-                    Arguments.of(CamelCaseDirectEvent.class, Set.of(QUEUE_PARAM)),
+                    Arguments.of(CamelCaseDirectEvent.class, Set.of(ROUTING_KEY)),
                     Arguments.of(NonKebabExchangeTopicEvent.class, Set.of(EXCHANGE_PARAM)));
         }
 
@@ -284,33 +284,33 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     }
 
-    @ConsumedEvent(queue = "kebab-case-queue")
+    @ConsumedEvent(routingKey = "kebab-case-queue")
     public record ValidDirectEvent() {
     }
 
-    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "test.*.key",
+    @ConsumedEvent(exchangeType = TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "test.*.key",
             "test.no.wildcard",
             "testsimple", "test.end.with.wildcard.*" })
     public record ValidTopicEvent() {
     }
 
-    @ConsumedEvent(queue = "CamelCaseQueue")
+    @ConsumedEvent(routingKey = "CamelCaseQueue")
     public record CamelCaseDirectEvent() {
     }
 
-    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "NonKebabExchange", bindingKeys = { "wrong.**.key" })
+    @ConsumedEvent(exchangeType = TOPIC, exchange = "NonKebabExchange", bindingKeys = { "wrong.**.key" })
     public record NonKebabExchangeTopicEvent() {
     }
 
-    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "wrong.**.key" })
+    @ConsumedEvent(exchangeType = TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "wrong.**.key" })
     public record DoubleAsteriskBindingKey() {
     }
 
-    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "WRONG.upper.case" })
+    @ConsumedEvent(exchangeType = TOPIC, exchange = "kebab-topic-exchange", bindingKeys = { "WRONG.upper.case" })
     public record UppercaseBindingKeyTopicEvent() {
     }
 
-    @ConsumedEvent(exchangeType = ExchangeType.TOPIC, exchange = "kebab-topic-exchange", bindingKeys = {
+    @ConsumedEvent(exchangeType = TOPIC, exchange = "kebab-topic-exchange", bindingKeys = {
             "wrong.end.with.dot." })
     public record DotEndingBindingKeyTopicEvent() {
     }

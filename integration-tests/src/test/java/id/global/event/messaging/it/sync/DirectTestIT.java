@@ -1,6 +1,6 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -17,9 +17,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -110,18 +110,18 @@ public class DirectTestIT {
         }
     }
 
-    @ProducedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
-    @ProducedEvent(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(queue = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(routingKey = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
     public record PrioritizedEvent(String name, Long age) {
 
     }
 
-    @ProducedEvent(queue = EVENT_QUEUE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE, exchangeType = DIRECT)
     public record BlankExchangeEvent(String name, Long age) {
     }
 }

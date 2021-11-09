@@ -15,10 +15,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
-import id.global.asyncapi.spec.enums.ExchangeType;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -254,36 +254,36 @@ public class AnnotatedEventsTestIT {
     private record TopicReceivedEventTwo(String name, long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = ANNOTATED_QUEUE)
-    @ConsumedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = ExchangeType.DIRECT, queue = ANNOTATED_QUEUE)
+    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, routingKey = ANNOTATED_QUEUE)
+    @ConsumedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = ExchangeType.DIRECT, routingKey = ANNOTATED_QUEUE)
     private record DirectEvent(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = ExchangeType.DIRECT, queue = EMPTY)
+    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = ExchangeType.DIRECT, routingKey = EMPTY)
     private record DirectEventEmptyRoutingKey(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, queue = "nothing.a.nothing", exchangeType = ExchangeType.TOPIC)
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = "nothing.a.nothing", exchangeType = ExchangeType.TOPIC)
     private record TopicEventOne(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, queue = "something.a.b", exchangeType = ExchangeType.TOPIC)
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = "something.a.b", exchangeType = ExchangeType.TOPIC)
     private record TopicEventTwo(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, queue = "something.a.everything", exchangeType = ExchangeType.TOPIC)
+    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = "something.a.everything", exchangeType = ExchangeType.TOPIC)
     private record TopicEventThree(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, queue = ANNOTATED_QUEUE_FANOUT, exchangeType = ExchangeType.FANOUT)
+    @ProducedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, routingKey = ANNOTATED_QUEUE_FANOUT, exchangeType = ExchangeType.FANOUT)
     private record FanoutEventWrongRoutingKey(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, queue = EMPTY, exchangeType = ExchangeType.FANOUT)
+    @ProducedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, routingKey = EMPTY, exchangeType = ExchangeType.FANOUT)
     private record FanoutEvent(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, queue = EMPTY, exchangeType = ExchangeType.TOPIC)
+    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, routingKey = EMPTY, exchangeType = ExchangeType.TOPIC)
     private record TopicEventWrongRoutingKey(String name, Long age) {
     }
 }

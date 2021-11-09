@@ -1,6 +1,6 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;

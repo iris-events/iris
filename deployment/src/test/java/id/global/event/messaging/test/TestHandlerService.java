@@ -2,12 +2,11 @@ package id.global.event.messaging.test;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.common.annotations.amqp.MessageHandler;
 
 @ApplicationScoped
 public class TestHandlerService {
 
-    public static final String EVENT_QUEUE = "event-queue";
     public static final String EVENT_QUEUE_PRIORITY = "event-queue-priority";
 
     @MessageHandler

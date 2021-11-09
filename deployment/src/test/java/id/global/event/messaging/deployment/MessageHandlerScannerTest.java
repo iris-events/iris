@@ -1,7 +1,7 @@
 package id.global.event.messaging.deployment;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.FANOUT;
-import static id.global.asyncapi.spec.enums.ExchangeType.TOPIC;
+import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
+import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -18,8 +18,8 @@ import org.jboss.jandex.Type;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.BaseIndexingTest;
 import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.test.Event;
@@ -96,12 +96,12 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItem = handleCustomQueueParam.get(0);
         assertNotNull(messageHandlerInfoBuildItem);
         assertEquals("handleCustomQueueParam", messageHandlerInfoBuildItem.getMethodName());
-        Assertions.assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getQueue());
+        Assertions.assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getRoutingKey());
 
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItemClassName = handle.get(0);
         assertNotNull(messageHandlerInfoBuildItemClassName);
         assertEquals("handle", messageHandlerInfoBuildItemClassName.getMethodName());
-        assertEquals("event-queue", messageHandlerInfoBuildItemClassName.getQueue());
+        assertEquals("event-queue", messageHandlerInfoBuildItemClassName.getRoutingKey());
     }
 
     @Test

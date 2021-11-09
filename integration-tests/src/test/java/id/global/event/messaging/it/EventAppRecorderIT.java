@@ -1,6 +1,6 @@
 package id.global.event.messaging.it;
 
-import static id.global.asyncapi.spec.enums.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_CURRENT_SERVICE_ID;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_INSTANCE_ID;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_ORIGIN_SERVICE_ID;
@@ -20,9 +20,9 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.AMQP;
 
-import id.global.asyncapi.spec.annotations.ConsumedEvent;
-import id.global.asyncapi.spec.annotations.MessageHandler;
-import id.global.asyncapi.spec.annotations.ProducedEvent;
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -90,8 +90,8 @@ public class EventAppRecorderIT {
         }
     }
 
-    @ConsumedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(queue = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event() {
     }
 
