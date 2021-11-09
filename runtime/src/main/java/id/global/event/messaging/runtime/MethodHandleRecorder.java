@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import id.global.event.messaging.runtime.context.AmqpContext;
@@ -16,8 +14,6 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class MethodHandleRecorder {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MethodHandleRecorder.class.getName());
 
     public void registerConsumer(final BeanContainer beanContainer, MethodHandleContext methodHandleContext,
             AmqpContext amqpContext)
@@ -34,9 +30,12 @@ public class MethodHandleRecorder {
 
     private MethodHandle createMethodHandle(MethodHandleContext methodHandleContext)
             throws NoSuchMethodException, IllegalAccessException {
-        MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();
-        // currently only void return public methods
-        MethodType methodType = MethodType.methodType(void.class, methodHandleContext.getEventClass());
+
+        final var publicLookup = MethodHandles.publicLookup();
+        final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
+        final var returnType = optionalReturnEventClass.isPresent() ? optionalReturnEventClass.get() : void.class;
+        final var methodType = MethodType.methodType(returnType, methodHandleContext.getEventClass());
+
         return publicLookup.findVirtual(methodHandleContext.getHandlerClass(), methodHandleContext.getMethodName(), methodType);
     }
 

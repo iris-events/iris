@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
+import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,9 +113,12 @@ class EventMessagingProcessor {
             try {
                 Class<?> handlerClass = cl.loadClass(col.getDeclaringClass().name().toString());
                 Class<?> eventClass = cl.loadClass(col.getParameterType().asClassType().name().toString());
+                Class<?> returnEventClass = col.getReturnType().kind() == Type.Kind.CLASS
+                        ? cl.loadClass(col.getReturnType().asClassType().name().toString())
+                        : null;
 
                 MethodHandleContext methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
-                        col.getMethodName());
+                        returnEventClass, col.getMethodName());
                 AmqpContext amqpContext = new AmqpContext(col.getRoutingKey(), col.getExchange(), col.getBindingKeys(),
                         col.getExchangeType());
 

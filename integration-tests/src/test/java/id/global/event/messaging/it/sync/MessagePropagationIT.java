@@ -1,0 +1,107 @@
+package id.global.event.messaging.it.sync;
+
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
+
+import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
+import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.context.EventContext;
+import id.global.event.messaging.runtime.producer.AmqpProducer;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
+
+@QuarkusTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class MessagePropagationIT {
+
+    private static final String INITIAL_CONSUMING_QUEUE = "initial-consuming-queue";
+    private static final String FORWARDING_QUEUE = "forwarding-queue";
+    private static final String EXCHANGE = "exchange";
+
+    @Inject
+    AmqpProducer producer;
+
+    @Inject
+    Service originService;
+
+    @Inject
+    ForwardedToService forwardedToService;
+
+    @InjectMock
+    HostnameProvider hostnameProvider;
+
+    @AfterEach
+    void cleanup() {
+        Mockito.reset(hostnameProvider);
+    }
+
+    @Test
+    @DisplayName("Method handler return object should be forwarded to the annotated produced queue")
+    void messageHandlerForwardsReturnedEvent() throws Exception {
+        final var eventPropertyValue = UUID.randomUUID().toString();
+
+        producer.send(new HandledEvent(eventPropertyValue));
+
+        final var forwardedEvent = forwardedToService.getForwardedEvent().get();
+        assertThat(forwardedEvent, is(notNullValue()));
+        assertThat(forwardedEvent.eventPropertyValue(), is(eventPropertyValue));
+    }
+
+    @SuppressWarnings("unused")
+    @ApplicationScoped
+    public static class Service {
+
+        @MessageHandler
+        public ForwardedEvent handle(HandledEvent event) {
+            return new ForwardedEvent(event.eventPropertyValue());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @ApplicationScoped
+    public static class ForwardedToService {
+        private final CompletableFuture<ForwardedEvent> forwardedEventCompletableFuture = new CompletableFuture<>();
+        private final EventContext eventContext;
+
+        @Inject
+        public ForwardedToService(EventContext eventContext) {
+            this.eventContext = eventContext;
+        }
+
+        @MessageHandler
+        public void handle(ForwardedEvent event) {
+            final var amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
+            forwardedEventCompletableFuture.complete(event);
+        }
+
+        public CompletableFuture<ForwardedEvent> getForwardedEvent() {
+            return forwardedEventCompletableFuture;
+        }
+    }
+
+    @ConsumedEvent(routingKey = INITIAL_CONSUMING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = INITIAL_CONSUMING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    public record HandledEvent(String eventPropertyValue) {
+    }
+
+    @ConsumedEvent(routingKey = FORWARDING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ProducedEvent(routingKey = FORWARDING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    public record ForwardedEvent(String eventPropertyValue) {
+    }
+}

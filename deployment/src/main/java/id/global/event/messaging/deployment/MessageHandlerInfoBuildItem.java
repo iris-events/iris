@@ -9,6 +9,7 @@ import io.quarkus.builder.item.MultiBuildItem;
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final ClassInfo declaringClass;
     private final Type parameterType;
+    private final Type returnType;
     private final String exchange;
     private final String routingKey;
     private final String methodName;
@@ -18,6 +19,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     public MessageHandlerInfoBuildItem(
             final ClassInfo declaringClass,
             final Type parameterType,
+            final Type returnType,
             final String methodName,
             final String routingKey,
             final String exchange,
@@ -25,6 +27,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             final ExchangeType exchangeType) {
         this.declaringClass = declaringClass;
         this.parameterType = parameterType;
+        this.returnType = returnType;
         this.exchange = exchange;
         this.routingKey = routingKey;
         this.methodName = methodName;
@@ -38,6 +41,10 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
 
     public Type getParameterType() {
         return parameterType;
+    }
+
+    public Type getReturnType() {
+        return returnType;
     }
 
     public String getExchange() {
@@ -65,6 +72,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return "MessageHandlerInfoBuildItem{" +
                 "declaringClass=" + declaringClass +
                 ", parameterType=" + parameterType +
+                ", returnType=" + returnType +
                 ", exchange='" + exchange + '\'' +
                 ", queue='" + routingKey + '\'' +
                 ", methodName='" + methodName + '\'' +

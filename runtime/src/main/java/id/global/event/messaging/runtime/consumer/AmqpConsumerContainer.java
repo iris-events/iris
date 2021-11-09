@@ -19,6 +19,7 @@ import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
+import id.global.event.messaging.runtime.producer.AmqpProducer;
 
 @ApplicationScoped
 public class AmqpConsumerContainer {
@@ -28,14 +29,20 @@ public class AmqpConsumerContainer {
     private final EventContext eventContext;
     private final Map<String, AmqpConsumer> consumerMap;
     private final ConsumerChannelService consumerChannelService;
+    private final AmqpProducer producer;
 
     @Inject
-    public AmqpConsumerContainer(ObjectMapper objectMapper, EventContext eventContext,
-            ConsumerChannelService consumerChannelService) {
+    public AmqpConsumerContainer(
+            final ObjectMapper objectMapper,
+            final EventContext eventContext,
+            final ConsumerChannelService consumerChannelService,
+            final AmqpProducer producer) {
+
         this.consumerChannelService = consumerChannelService;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
+        this.producer = producer;
     }
 
     public void initConsumers() {
@@ -53,12 +60,13 @@ public class AmqpConsumerContainer {
     public void addConsumer(MethodHandle methodHandle, MethodHandleContext methodHandleContext, AmqpContext amqpContext,
             Object eventHandlerInstance) {
         consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
+                objectMapper,
                 methodHandle,
                 methodHandleContext,
                 amqpContext,
                 consumerChannelService,
                 eventHandlerInstance,
-                objectMapper,
-                eventContext));
+                eventContext,
+                producer));
     }
 }

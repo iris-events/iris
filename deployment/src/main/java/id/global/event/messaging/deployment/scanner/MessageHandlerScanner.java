@@ -73,6 +73,7 @@ public class MessageHandlerScanner {
             return new MessageHandlerInfoBuildItem(
                     methodInfo.declaringClass(),
                     methodInfo.parameters().get(0),
+                    methodInfo.returnType(),
                     methodInfo.name(),
                     routingKey,
                     exchange,

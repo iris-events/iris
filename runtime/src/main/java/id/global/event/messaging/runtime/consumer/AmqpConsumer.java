@@ -5,6 +5,7 @@ import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -21,42 +22,83 @@ import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
+import id.global.event.messaging.runtime.exception.AmqpRuntimeException;
+import id.global.event.messaging.runtime.exception.AmqpSendException;
+import id.global.event.messaging.runtime.exception.AmqpTransactionException;
+import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
+import id.global.event.messaging.runtime.producer.AmqpProducer;
 
 public class AmqpConsumer {
-    private static final Logger LOG = LoggerFactory.getLogger(AmqpConsumer.class);
+    private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
 
-    private final String channelId;
-
-    private final DeliverCallback callback;
+    private final ObjectMapper objectMapper;
+    private final MethodHandle methodHandle;
+    private final MethodHandleContext methodHandleContext;
     private final AmqpContext amqpContext;
     private final ConsumerChannelService channelService;
+    private final Object eventHandlerInstance;
     private final EventContext eventContext;
+    private final AmqpProducer producer;
+
+    private final String channelId;
+    private final DeliverCallback callback;
 
     public AmqpConsumer(
+            final ObjectMapper objectMapper,
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
             final AmqpContext amqpContext,
             final ConsumerChannelService channelService,
             final Object eventHandlerInstance,
-            final ObjectMapper objectMapper,
-            EventContext eventContext) {
-        this.channelId = UUID.randomUUID().toString();
-        this.eventContext = eventContext;
-        this.channelService = channelService;
+            final EventContext eventContext,
+            final AmqpProducer producer) {
+
+        this.objectMapper = objectMapper;
+        this.methodHandle = methodHandle;
+        this.methodHandleContext = methodHandleContext;
         this.amqpContext = amqpContext;
-        this.callback = ((consumerTag, message) -> {
+        this.channelService = channelService;
+        this.eventHandlerInstance = eventHandlerInstance;
+        this.eventContext = eventContext;
+        this.producer = producer;
+
+        this.channelId = UUID.randomUUID().toString();
+        this.callback = createDeliverCallback();
+    }
+
+    private DeliverCallback createDeliverCallback() {
+        return(consumerTag, message) -> {
             final var currentContextMap = MDC.getCopyOfContextMap();
             MDC.clear();
             try {
-                Object cast = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
                 this.eventContext.setAmqpBasicProperties(message.getProperties());
-                methodHandle.invoke(cast, objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass()));
+
+                final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
+                final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
+
+                final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
+
+                final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
+                optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             } catch (Throwable throwable) {
-                LOG.error("Could not invoke method handler on queue: " + this.amqpContext.getQueue(), throwable);
+                log.error("Could not invoke method handler on queue: " + this.amqpContext.getQueue(), throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
-        });
+        };
+    }
+
+    private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
+        final var returnClassInstance = returnEventClass.cast(invocationResult);
+        try {
+            producer.send(returnClassInstance);
+        } catch (AmqpSendException e) {
+            log.error("Exception forwarding event.", e);
+            throw new AmqpRuntimeException("Exception forwarding event.", e);
+        } catch (AmqpTransactionException e) {
+            log.error("Exception completing send transaction when sending forwarded event.", e);
+            throw new AmqpTransactionRuntimeException("Exception completing send transaction when sending forwarded event.", e);
+        }
     }
 
     public void initChannel() throws IOException {
