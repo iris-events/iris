@@ -70,35 +70,6 @@ public class JandexUtil {
     }
 
     /**
-     * Reads a string property named "ref" value from the given annotation and converts it
-     * to a value appropriate for setting on a model's "$ref" property.
-     *
-     * @param annotation AnnotationInstance
-     * @param refType RefType
-     * @return String value
-     */
-    //    public static String refValue(AnnotationInstance annotation, RefType refType) {
-    //        AnnotationValue value = annotation.value(OpenApiConstants.REF);
-    //        if (value == null) {
-    //            return null;
-    //        }
-    //
-    //        String ref = value.asString();
-    //
-    //        if (!COMPONENT_KEY_PATTERN.matcher(ref).matches()) {
-    //            return ref;
-    //        }
-    //
-    //        if (refType != null) {
-    //            ref = "#/components/" + refType.componentPath + "/" + ref;
-    //        } else {
-    //            throw UtilMessages.msg.refTypeNotNull();
-    //        }
-    //
-    //        return ref;
-    //    }
-
-    /**
      * Convenience method to retrieve the named parameter from an annotation.
      * The value will be unwrapped from its containing {@link AnnotationValue}.
      *

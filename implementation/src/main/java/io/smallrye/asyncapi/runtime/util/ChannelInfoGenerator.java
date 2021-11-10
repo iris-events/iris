@@ -9,35 +9,48 @@ public class ChannelInfoGenerator {
 
     public static ChannelInfo generateSubscribeChannelInfo(
             final String exchange,
-            final String queue,
+            final String bindingKeysCsv,
             final String eventClassSimpleName,
             final ExchangeType exchangeType,
+            final boolean durable,
+            final boolean autodelete,
             final String[] rolesAllowed) {
 
-        return generateChannelInfo(exchange, queue, eventClassSimpleName, exchangeType, rolesAllowed,
+        return generateChannelInfo(
+                exchange,
+                bindingKeysCsv,
+                eventClassSimpleName,
+                exchangeType,
+                durable,
+                autodelete,
+                rolesAllowed,
                 OperationConstant.PROP_SUBSCRIBE);
     }
 
     public static ChannelInfo generatePublishChannelInfo(
             final String exchange,
-            final String queue,
+            final String routingKey,
             final String eventClassSimpleName,
             final ExchangeType exchangeType,
+            final boolean durable,
+            final boolean autodelete,
             final String[] rolesAllowed) {
 
-        return generateChannelInfo(exchange, queue, eventClassSimpleName, exchangeType, rolesAllowed,
+        return generateChannelInfo(exchange, routingKey, eventClassSimpleName, exchangeType, durable, autodelete, rolesAllowed,
                 OperationConstant.PROP_PUBLISH);
     }
 
-    public static ChannelInfo generateChannelInfo(
+    private static ChannelInfo generateChannelInfo(
             final String exchange,
-            final String queue,
+            final String queueBinding,
             final String eventClassSimpleName,
             final ExchangeType exchangeType,
+            final boolean durable,
+            final boolean autodelete,
             final String[] rolesAllowed,
             final String operationType) {
 
-        final var channelBindingsInfo = new ChannelBindingsInfo(exchange, queue, exchangeType);
+        final var channelBindingsInfo = new ChannelBindingsInfo(exchange, queueBinding, exchangeType, durable, autodelete);
 
         return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, operationType, rolesAllowed);
     }

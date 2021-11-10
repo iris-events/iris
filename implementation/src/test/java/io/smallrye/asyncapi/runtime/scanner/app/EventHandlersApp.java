@@ -55,6 +55,11 @@ public class EventHandlersApp {
         LOG.info("Handling event generated in an external service");
     }
 
+    @MessageHandler
+    public void handleEventWithDefaults(EventDefaults event) {
+        LOG.info("Handling event with generated defaults");
+    }
+
     @ConsumedEvent(bindingKeys = "default-test-event-v1", exchangeType = DIRECT)
     public record TestEventV1(int id, String status, User user) {
     }

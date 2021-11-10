@@ -3,20 +3,19 @@ package io.smallrye.asyncapi.runtime.scanner.model;
 import id.global.common.annotations.amqp.ExchangeType;
 
 public class ChannelBindingsInfo {
-    private String exchange;
-    private String queue;
-    private ExchangeType exchangeType;
-    private boolean exchangeDurable;
-    private boolean exchangeAutoDelete;
-    private String exchangeVhost;
-    private boolean queueDurable;
-    private boolean queueExclusive;
-    private boolean queueAutoDelete;
-    private String queueVhost;
+    private final String exchange;
+    private final String queue;
+    private final ExchangeType exchangeType;
+    private final boolean exchangeDurable;
+    private final boolean exchangeAutoDelete;
+    private final String exchangeVhost;
+    private final boolean queueDurable;
+    private final boolean queueExclusive;
+    private final boolean queueAutoDelete;
+    private final String queueVhost;
 
-    public ChannelBindingsInfo(String exchange, String queue, ExchangeType exchangeType) {
-
-        this(exchange, queue, exchangeType, true, false, "/", true, false, false, "/");
+    public ChannelBindingsInfo(String exchange, String queue, ExchangeType exchangeType, boolean durable, boolean autodelete) {
+        this(exchange, queue, exchangeType, true, false, "/", durable, false, autodelete, "/");
     }
 
     public ChannelBindingsInfo(String exchange, String queue, ExchangeType exchangeType, boolean exchangeDurable,

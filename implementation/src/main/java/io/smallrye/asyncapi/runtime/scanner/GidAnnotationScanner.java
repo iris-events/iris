@@ -16,14 +16,17 @@
 
 package io.smallrye.asyncapi.runtime.scanner;
 
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getBindingKeysCsv;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getEventAutodelete;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getEventDurable;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getEventScope;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getExchange;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getExchangeType;
-import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getQueue;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getRolesAllowed;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getRoutingKey;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +69,6 @@ import io.smallrye.asyncapi.runtime.io.server.ServerReader;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import io.smallrye.asyncapi.runtime.util.ChannelInfoGenerator;
-import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 import io.smallrye.asyncapi.runtime.util.JandexUtil;
 import io.smallrye.asyncapi.runtime.util.SchemeIdGenerator;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
@@ -79,7 +81,6 @@ import io.smallrye.asyncapi.spec.annotations.EventApp;
  */
 public class GidAnnotationScanner extends BaseAnnotationScanner {
     private static final Logger LOG = Logger.getLogger(GidAnnotationScanner.class);
-    private static final String GENERATED_MODELS_PACKAGE = "id.global.models.";
 
     public static final DotName DOTNAME_EVENT_APP_DEFINITION = DotName.createSimple(EventApp.class.getName());
     public static final DotName DOTNAME_CONSUMED_EVENT = DotName.createSimple(ConsumedEvent.class.getName());
@@ -143,7 +144,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
     private void processProducedEventAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
             throws ClassNotFoundException {
-        List<AnnotationInstance> methodAnnotations = getClassAnnotations(ProducedEvent.class, context.getIndex())
+        FilteredIndexView index = context.getIndex();
+        List<AnnotationInstance> methodAnnotations = getClassAnnotations(ProducedEvent.class, index)
                 .collect(Collectors.toList());
 
         List<ChannelInfo> channelInfos = new ArrayList<>();
@@ -151,22 +153,25 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         Map<String, Scope> messageScopes = new HashMap<>();
         for (AnnotationInstance anno : methodAnnotations) {
             ClassInfo classInfo = anno.target().asClass();
-            String className = classInfo.name().toString();
             String classSimpleName = classInfo.simpleName();
 
             messageScopes.put(classSimpleName, getEventScope(anno));
             producedEvents.put(classSimpleName, generateProducedEventSchemaInfo(classInfo));
 
-            final var queue = getQueue(anno, classSimpleName);
-            final var exchange = getExchange(anno);
+            final var routingKey = getRoutingKey(anno, classSimpleName);
             final var exchangeType = getExchangeType(anno);
-            final var rolesAllowed = GidAnnotationParser.getRolesAllowed(anno);
+            final var exchange = getExchange(anno, context.getProjectId(), exchangeType);
+            final var rolesAllowed = getRolesAllowed(anno);
+            final var durable = getEventDurable(anno, index);
+            final var autodelete = getEventAutodelete(anno, index);
 
             channelInfos.add(ChannelInfoGenerator.generatePublishChannelInfo(
                     exchange,
-                    queue,
+                    routingKey,
                     classSimpleName,
                     exchangeType,
+                    durable,
+                    autodelete,
                     rolesAllowed
             ));
         }
@@ -181,8 +186,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     private void processMessageHandlerAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
             throws ClassNotFoundException {
 
-        final var methodAnnotationInstances = getMethodAnnotations(MessageHandler.class,
-                context.getIndex()).collect(Collectors.toList());
+        FilteredIndexView index = context.getIndex();
+        final var methodAnnotationInstances = getMethodAnnotations(MessageHandler.class, index).collect(Collectors.toList());
 
         final var incomingEvents = new HashMap<String, JsonSchemaInfo>();
         final var channelInfos = new ArrayList<ChannelInfo>();
@@ -195,14 +200,17 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var methodInfo = (MethodInfo) annotationInstance.target();
             final var methodParameters = methodInfo.parameters();
 
-            final var eventAnnotation = getEventAnnotation(methodParameters, context.getIndex());
+            final var eventAnnotation = getEventAnnotation(methodParameters, index);
             final var eventClass = eventAnnotation.target().asClass();
             final var eventClassSimpleName = eventClass.simpleName();
 
-            final var queue = getQueue(eventAnnotation, eventClassSimpleName);
-            final var exchange = getExchange(eventAnnotation);
+            final var bindingKeys = getBindingKeysCsv(eventAnnotation, eventClassSimpleName);
             final var exchangeType = getExchangeType(eventAnnotation);
+            final var exchange = getExchange(eventAnnotation, context.getProjectId(), exchangeType);
             final var scope = getEventScope(eventAnnotation);
+
+            final var durable = getEventDurable(eventAnnotation, index);
+            final var autodelete = getEventAutodelete(eventAnnotation, index);
 
             final var isGeneratedClass = isGeneratedClass(eventClass);
 
@@ -214,10 +222,12 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
             final var subscribeChannelInfo = ChannelInfoGenerator.generateSubscribeChannelInfo(
                     exchange,
-                    queue,
+                    bindingKeys,
                     eventClassSimpleName,
                     exchangeType,
-                    GidAnnotationParser.getRolesAllowed(annotationInstance));
+                    durable,
+                    autodelete,
+                    getRolesAllowed(annotationInstance));
 
             messageTypes.put(eventClassSimpleName, scope);
             incomingEvents.put(eventClassSimpleName, jsonSchemaInfo);
@@ -230,14 +240,13 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
     private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, Aai20Document asyncApi) {
         Map<String, AaiSchema> definitionSchemaMap = context.getDefinitionSchemaMap();
-        definitionSchemaMap.forEach((key, aaiSchema) -> asyncApi.components.schemas.put(key, aaiSchema));
+        asyncApi.components.schemas.putAll(definitionSchemaMap);
         context.clearDefinitionSchemaMap();
     }
 
     private Aai20Document processEventAppDefinition(final AnnotationScannerContext context, Aai20Document document) {
-        Collection<AnnotationInstance> annotations = context.getIndex()
-                .getAnnotations(DOTNAME_EVENT_APP_DEFINITION);
-        List<AnnotationInstance> packageDefs = annotations
+        final var annotations = context.getIndex().getAnnotations(DOTNAME_EVENT_APP_DEFINITION);
+        final var packageDefs = annotations
                 .stream()
                 .filter(this::annotatedClasses)
                 .collect(Collectors.toList());
@@ -245,9 +254,12 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         String projectVersion = context.getConfig().projectVersion();
         // Here we have packageDefs, now to build the AsyncAPI
         for (AnnotationInstance packageDef : packageDefs) {
-            Aai20Document packageAai = new Aai20Document();
+            final var packageAai = new Aai20Document();
             try {
-                packageAai.id = SchemeIdGenerator.buildId(JandexUtil.stringValue(packageDef, PROP_ID));
+                final var projectId = JandexUtil.stringValue(packageDef, PROP_ID);
+                final var projectSchemaId = SchemeIdGenerator.buildId(projectId);
+                context.setProjectId(projectId);
+                packageAai.id = projectSchemaId;
             } catch (URISyntaxException e) {
                 LOG.error("Could not generate schema ID", e);
                 throw new RuntimeException(e);

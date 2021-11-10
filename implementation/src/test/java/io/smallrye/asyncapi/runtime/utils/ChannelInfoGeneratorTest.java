@@ -24,7 +24,7 @@ public class ChannelInfoGeneratorTest {
         ExchangeType exchangeType = ExchangeType.DIRECT;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
-                .generateSubscribeChannelInfo(exchange, queue, eventClass, exchangeType, new String[0]);
+                .generateSubscribeChannelInfo(exchange, queue, eventClass, exchangeType, true, false, new String[0]);
 
         assertNotNull(channelInfo);
         assertEquals(eventClass, channelInfo.getEventKey());
@@ -50,7 +50,7 @@ public class ChannelInfoGeneratorTest {
         ExchangeType exchangeType = ExchangeType.DIRECT;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
-                .generateSubscribeChannelInfo(exchange, queueName, eventClass, exchangeType, new String[0]);
+                .generateSubscribeChannelInfo(exchange, queueName, eventClass, exchangeType, true, false, new String[0]);
 
         assertThat(channelInfo.getBindingsInfo().getQueue(), is(queueName));
         assertThat(channelInfo.getEventKey(), is(eventClass));
