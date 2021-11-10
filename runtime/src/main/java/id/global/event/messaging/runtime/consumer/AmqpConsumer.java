@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
@@ -45,11 +46,14 @@ public class AmqpConsumer {
         this.amqpContext = amqpContext;
         this.callback = ((consumerTag, message) -> {
             try {
+                MDC.clear();
                 Object cast = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
                 this.eventContext.setAmqpBasicProperties(message.getProperties());
                 methodHandle.invoke(cast, objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass()));
             } catch (Throwable throwable) {
                 LOG.error("Could not invoke method handler on queue: " + this.amqpContext.getQueue(), throwable);
+            } finally {
+                MDC.clear();
             }
         });
     }
