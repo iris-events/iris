@@ -41,6 +41,22 @@ public @interface ProducedEvent {
     String[] rolesAllowed() default {};
 
     /**
+     * Whether the queue defined by the annotated event should be durable or not. This parameter should default to true and is
+     * not required.
+     *
+     * @see <a href="https://www.rabbitmq.com/queues.html#durability">Rabbitmq queues durability</a>
+     */
+    boolean durable() default true;
+
+    /**
+     * Whether the queue defined by the annotated event should be marked for auto delete or not. This parameter should default
+     * to false and is not required.
+     *
+     * @see <a href="https://www.rabbitmq.com/queues.html#temporary-queues">Rabbitmq temporary queues</a>
+     */
+    boolean autodelete() default false;
+
+    /**
      * Wether the event is an internal system event or an external communication event
      */
     Scope scope() default Scope.INTERNAL;
