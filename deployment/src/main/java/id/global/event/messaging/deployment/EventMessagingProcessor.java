@@ -90,7 +90,7 @@ class EventMessagingProcessor {
     @BuildStep
     UnremovableBeanBuildItem unremovable() {
         // Any bean that has MyService in its set of bean types is considered unremovable
-        return UnremovableBeanBuildItem.beanClassAnnotation("id.global.asyncapi.spec.annotations");
+        return UnremovableBeanBuildItem.beanClassAnnotation("id.global.common.annotations.amqp");
     }
 
     @Record(ExecutionTime.RUNTIME_INIT)
