@@ -240,7 +240,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
     private AaiDocument generateSchema(IndexView index) throws IOException, ClassNotFoundException, MojoExecutionException {
         AsyncApiConfig asyncApiConfig = new MavenConfig(getProperties());
         ClassLoader classLoader = getClassLoader(mavenProject);
-        GidAnnotationScanner scanner = new GidAnnotationScanner(asyncApiConfig, index, classLoader, mavenProject.getArtifactId());
+        GidAnnotationScanner scanner = new GidAnnotationScanner(asyncApiConfig, index, classLoader);
         return scanner.scan();
     }
 
