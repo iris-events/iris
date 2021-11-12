@@ -21,7 +21,7 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
 
     public MethodAnnotationValidator(final IndexView index, final ValidationRules validationRules,
             final ClassAnnotationValidator classAnnotationValidator) {
-        super(validationRules);
+        super();
         this.index = index;
         this.validationRules = validationRules;
         this.classAnnotationValidator = classAnnotationValidator;

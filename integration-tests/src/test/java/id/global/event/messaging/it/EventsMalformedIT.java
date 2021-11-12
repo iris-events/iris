@@ -1,5 +1,6 @@
 package id.global.event.messaging.it;
 
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
 import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 import static org.mockito.Mockito.mock;
@@ -83,7 +84,7 @@ public class EventsMalformedIT {
         });
     }
 
-    @ProducedEvent(exchange = DIRECT_EXCHANGE, routingKey = DIRECT_QUEUE)
+    @ProducedEvent(exchange = DIRECT_EXCHANGE, routingKey = DIRECT_QUEUE, exchangeType = DIRECT)
     private record DirectEventTmp(String name, long age) {
     }
 

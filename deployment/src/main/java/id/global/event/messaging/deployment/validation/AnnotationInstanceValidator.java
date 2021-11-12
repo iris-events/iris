@@ -13,7 +13,7 @@ public class AnnotationInstanceValidator {
     private final Map<AnnotationTarget.Kind, AbstractAnnotationInstanceValidator> validatorsForKind = new HashMap<>();
 
     public AnnotationInstanceValidator(final IndexView index, final ValidationRules validationRules) {
-        final var classAnnotationValidator = new ClassAnnotationValidator(validationRules);
+        final var classAnnotationValidator = new ClassAnnotationValidator();
         final var methodAnnotationValidator = new MethodAnnotationValidator(index, validationRules, classAnnotationValidator);
         validatorsForKind.put(AnnotationTarget.Kind.METHOD, methodAnnotationValidator);
         validatorsForKind.put(AnnotationTarget.Kind.CLASS, classAnnotationValidator);

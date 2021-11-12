@@ -5,6 +5,7 @@ import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,7 +82,8 @@ public class AmqpConsumer {
                 final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             } catch (Throwable throwable) {
-                log.error("Could not invoke method handler on queue: " + this.amqpContext.getQueue(), throwable);
+                log.error("Could not invoke method handler on for bindingKeysqueue: " + Arrays.toString(
+                        this.amqpContext.getBindingKeys()), throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
@@ -119,14 +121,14 @@ public class AmqpConsumer {
 
     private void declareDirect(Channel channel) throws IOException {
         // Normal consume
-        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(this.amqpContext.getQueue(), true, false,
+        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(this.amqpContext.getBindingKeys()[0], true, false,
                 false, null);
         if (this.amqpContext.getExchange() != null && !this.amqpContext.getExchange().equals("")) {
             channel.exchangeDeclare(this.amqpContext.getExchange(), BuiltinExchangeType.DIRECT, true);
             channel.queueBind(declareOk.getQueue(), this.amqpContext.getExchange(), declareOk.getQueue());
         }
 
-        channel.basicConsume(this.amqpContext.getQueue(), true, this.callback, consumerTag -> {
+        channel.basicConsume(this.amqpContext.getBindingKeys()[0], true, this.callback, consumerTag -> {
         });
     }
 

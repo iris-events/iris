@@ -8,15 +8,14 @@ import java.util.regex.Pattern;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 
+import id.global.common.annotations.amqp.ExchangeType;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 import id.global.event.messaging.deployment.constants.AnnotationInstanceParams;
 
 class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
-    private final ValidationRules validationRules;
 
-    public ClassAnnotationValidator(final ValidationRules validationRules) {
-        super(validationRules);
-        this.validationRules = validationRules;
+    public ClassAnnotationValidator() {
+        super();
     }
 
     @Override
@@ -46,12 +45,18 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
     }
 
     private void validateBindingKeysValidity(final AnnotationInstance annotationInstance) {
+        final var exchangeType = getExchangeType(annotationInstance);
         final var annotationValue = annotationInstance.value(AnnotationInstanceParams.BINDING_KEYS_PARAM);
         if (annotationValue == null) {
             return;
         }
 
-        final var pattern = Pattern.compile(TOPIC_PATTERN);
+        var patternString = KEBAB_CASE_PATTERN;
+        if (exchangeType.equals(ExchangeType.TOPIC)) {
+            patternString = TOPIC_PATTERN;
+        }
+
+        final var pattern = Pattern.compile(patternString);
         final var classInfo = annotationInstance.target().asClass();
         final var className = classInfo.toString();
 
@@ -63,8 +68,9 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
                 .ifPresent(bindingKey -> {
                     throw new MessageHandlerValidationException(
                             String.format(
-                                    "Binding key \"%s\" on  event annotation in class %s does not conform to the TOPIC format. "
-                                            + "Can contain only lowercase alphanumerical characters, dots and wildcards (*).",
+                                    "bindingKeys \"%s\" on event annotation in class %s does not conform to the correct format. "
+                                            + "For TOPIC exchange type can contain only lowercase alphanumerical characters, dots and wildcards [*,#]. "
+                                            + "For all others it should be formatted in kebab case.",
                                     bindingKey,
                                     className));
                 });

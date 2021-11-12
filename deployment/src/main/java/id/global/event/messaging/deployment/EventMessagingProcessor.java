@@ -54,11 +54,13 @@ class EventMessagingProcessor {
     private static final String FEATURE = "event-messaging";
     private static final Logger LOG = LoggerFactory.getLogger(EventMessagingProcessor.class);
 
+    @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
 
+    @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void declareAmqpBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
         additionalBeanBuildItemBuildProducer.produce(
@@ -80,20 +82,33 @@ class EventMessagingProcessor {
                         .build());
     }
 
+    @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void scanForMessageHandlers(CombinedIndexBuildItem index,
+    EventAppInfoBuildItem scanForEventApp(final CombinedIndexBuildItem index) {
+        final var eventAppScanner = new EventAppScanner(index.getIndex());
+        return new EventAppInfoBuildItem(eventAppScanner.findEventAppContext().orElseThrow(() -> {
+            throw new EventAppMissingException("EventApp annotation with basic info missing");
+        }));
+    }
+
+    @SuppressWarnings("unused")
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void scanForMessageHandlers(CombinedIndexBuildItem index, EventAppInfoBuildItem eventAppInfoBuildItems,
             BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
-        MessageHandlerScanner scanner = new MessageHandlerScanner(index.getIndex());
+        MessageHandlerScanner scanner = new MessageHandlerScanner(index.getIndex(),
+                eventAppInfoBuildItems.getEventAppContext().getId());
         List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanner.scanMessageHandlerAnnotations();
         messageHandlerInfoBuildItems.forEach(messageHandlerProducer::produce);
     }
 
+    @SuppressWarnings("unused")
     @BuildStep
     UnremovableBeanBuildItem unremovable() {
         // Any bean that has MyService in its set of bean types is considered unremovable
         return UnremovableBeanBuildItem.beanClassAnnotation("id.global.common.annotations.amqp");
     }
 
+    @SuppressWarnings("unused")
     @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerInitRecorder consumerInitRecorder,
@@ -103,6 +118,7 @@ class EventMessagingProcessor {
         }
     }
 
+    @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void declareMessageHandlers(final BeanContainerBuildItem beanContainer,
@@ -119,8 +135,7 @@ class EventMessagingProcessor {
 
                 MethodHandleContext methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
                         returnEventClass, col.getMethodName());
-                AmqpContext amqpContext = new AmqpContext(col.getRoutingKey(), col.getExchange(), col.getBindingKeys(),
-                        col.getExchangeType());
+                AmqpContext amqpContext = new AmqpContext(col.getExchange(), col.getBindingKeys(), col.getExchangeType());
 
                 LOG.info("Registering handler. Handler class = " + handlerClass.getName() +
                         " eventClass = " + eventClass.getName() +
@@ -134,15 +149,11 @@ class EventMessagingProcessor {
         });
     }
 
+    @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void provideEventAppContext(final BeanContainerBuildItem beanContainer, final CombinedIndexBuildItem index,
-            final EventAppRecorder eventAppRecorder) {
-
-        final var eventAppScanner = new EventAppScanner(index.getIndex());
-        final var optionalEventAppContext = eventAppScanner.findEventAppContext();
-
-        optionalEventAppContext.ifPresent(
-                eventAppContext -> eventAppRecorder.registerEventAppContext(beanContainer.getValue(), eventAppContext));
+    void provideEventAppContext(final BeanContainerBuildItem beanContainer, EventAppInfoBuildItem eventAppInfoBuildItems,
+            EventAppRecorder eventAppRecorder) {
+        eventAppRecorder.registerEventAppContext(beanContainer.getValue(), eventAppInfoBuildItems.getEventAppContext());
     }
 }

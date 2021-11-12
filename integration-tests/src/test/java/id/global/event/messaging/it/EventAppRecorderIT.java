@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Application;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,8 +25,6 @@ import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
-import io.smallrye.asyncapi.spec.annotations.EventApp;
-import io.smallrye.asyncapi.spec.annotations.info.Info;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,9 +32,7 @@ public class EventAppRecorderIT {
 
     private static final String EVENT_QUEUE = "event-queue";
     private static final String EXCHANGE = "event-app-recorder-exchange";
-    public static final String APP_ID = "test-quarkus-eda";
-    public static final String APP_DESCRIPTION = "Quarkus EDA test application";
-    public static final String APP_TITLE = "Quarkus EDA";
+    public static final String APP_ID = "TestEventApp";
 
     @Inject
     AmqpProducer producer;
@@ -90,14 +85,8 @@ public class EventAppRecorderIT {
         }
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(bindingKeys = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event() {
     }
-
-    @SuppressWarnings("unused")
-    @EventApp(id = APP_ID, info = @Info(description = APP_DESCRIPTION, title = APP_TITLE))
-    public static class TestApplication extends Application {
-    }
-
 }

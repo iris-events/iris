@@ -15,7 +15,7 @@ import io.smallrye.asyncapi.spec.annotations.EventApp;
 
 public class EventAppScanner {
 
-    private final DotName DOT_NAME_EVENT_APP = DotName.createSimple(EventApp.class.getCanonicalName());
+    private final DotName DOT_NAME_EVENT_APP = DotName.createSimple(EventApp.class.getName());
 
     private final IndexView index;
 

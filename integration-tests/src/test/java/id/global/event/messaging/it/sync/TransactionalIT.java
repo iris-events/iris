@@ -254,7 +254,7 @@ public class TransactionalIT {
     }
 
     @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(bindingKeys = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     private record TestEvent(int seq) {
 
     }

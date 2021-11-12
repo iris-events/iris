@@ -33,6 +33,7 @@ public class DirectTestIT {
     private static final String EVENT_QUEUE = "test-eventqueue";
     private static final String EVENT_QUEUE_PRIORITY = "test-eventqueue-priority";
     private static final String EXCHANGE = "test-exchange";
+    private static final String MINIMUM_EVENT_ID = "minimumEvent";
 
     @Inject
     AmqpProducer producer;
@@ -65,21 +66,26 @@ public class DirectTestIT {
 
         assertDoesNotThrow(() -> producer.send(new PrioritizedEvent(EVENT_PAYLOAD_NAME_PRIORITY, EVENT_PAYLOAD_AGE)));
 
+        assertDoesNotThrow(() -> producer.send(new MinimumEvent(MINIMUM_EVENT_ID)));
+
         PrioritizedEvent priorityEvent = service.getHandledPriorityEvent().get();
         Event event = service.getHandledEvent().get();
+        MinimumEvent minimumEvent = service.getHandledMinimumEvent().get();
 
-        assertThat(TestHandlerService.count.get(), is(2));
+        assertThat(TestHandlerService.count.get(), is(3));
 
         assertThat(priorityEvent.name(), is(EVENT_PAYLOAD_NAME_PRIORITY));
         assertThat(priorityEvent.age(), is(EVENT_PAYLOAD_AGE));
         assertThat(event.name(), is(EVENT_PAYLOAD_NAME));
         assertThat(event.age(), is(EVENT_PAYLOAD_AGE));
+        assertThat(minimumEvent.id, is(MINIMUM_EVENT_ID));
     }
 
     @ApplicationScoped
     public static class TestHandlerService {
         private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         private final CompletableFuture<PrioritizedEvent> handledPriorityEvent = new CompletableFuture<>();
+        private final CompletableFuture<MinimumEvent> handledMinimumEvent = new CompletableFuture<>();
 
         public static final AtomicInteger count = new AtomicInteger(0);
 
@@ -101,6 +107,12 @@ public class DirectTestIT {
             handledPriorityEvent.complete(event);
         }
 
+        @MessageHandler
+        public void handleMinimum(MinimumEvent event) {
+            count.incrementAndGet();
+            handledMinimumEvent.complete(event);
+        }
+
         public CompletableFuture<Event> getHandledEvent() {
             return handledEvent;
         }
@@ -108,15 +120,19 @@ public class DirectTestIT {
         public CompletableFuture<PrioritizedEvent> getHandledPriorityEvent() {
             return handledPriorityEvent;
         }
+
+        public CompletableFuture<MinimumEvent> getHandledMinimumEvent() {
+            return handledMinimumEvent;
+        }
     }
 
     @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(bindingKeys = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
     @ProducedEvent(routingKey = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(routingKey = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(bindingKeys = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
     public record PrioritizedEvent(String name, Long age) {
 
     }
@@ -124,4 +140,10 @@ public class DirectTestIT {
     @ProducedEvent(routingKey = EVENT_QUEUE, exchangeType = DIRECT)
     public record BlankExchangeEvent(String name, Long age) {
     }
+
+    @ConsumedEvent(exchangeType = DIRECT)
+    public record MinimumEvent(String id) {
+
+    }
+
 }

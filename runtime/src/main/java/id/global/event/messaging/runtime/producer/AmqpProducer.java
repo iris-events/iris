@@ -43,6 +43,7 @@ import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.tx.TransactionCallback;
+import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 
 @ApplicationScoped
 public class AmqpProducer {
@@ -94,15 +95,11 @@ public class AmqpProducer {
                 message.getClass().getAnnotation(ProducedEvent.class));
 
         final var amqpBasicProperties = getOrCreateAmqpBasicProperties();
-        final var optionalExchange = getExchange(producedEventMetadata);
-        final var routingKey = getRoutingKey(producedEventMetadata);
+        final var exchange = getExchange(producedEventMetadata);
+        final var routingKey = getRoutingKey(producedEventMetadata, message.getClass().getSimpleName());
         final var exchangeType = getExchangeType(producedEventMetadata);
 
-        if (optionalExchange.isEmpty()) {
-            throw new AmqpSendException("Could not send message to empty or null exchange.");
-        }
-
-        publish(message, optionalExchange.get(), routingKey, amqpBasicProperties, exchangeType);
+        publish(message, exchange, routingKey, amqpBasicProperties, exchangeType);
     }
 
     public void addReturnListener(@NotNull String channelKey, @NotNull ReturnListener returnListener) throws IOException {
@@ -242,12 +239,14 @@ public class AmqpProducer {
         return producedEventMetadata.map(ProducedEvent::exchangeType).orElse(ExchangeType.DIRECT);
     }
 
-    private String getRoutingKey(Optional<ProducedEvent> producedEventMetadata) {
-        return producedEventMetadata.map(ProducedEvent::routingKey).orElse(null);
+    private String getRoutingKey(Optional<ProducedEvent> producedEventMetadata, String simpleName) {
+        return producedEventMetadata.map(ProducedEvent::routingKey)
+                .orElseGet(() -> GidAnnotationParser.camelToKebabCase(simpleName));
     }
 
-    private Optional<String> getExchange(Optional<ProducedEvent> producedEventMetadata) {
-        return producedEventMetadata.map(ProducedEvent::exchange);
+    private String getExchange(Optional<ProducedEvent> producedEventMetadata) {
+        return producedEventMetadata.map(ProducedEvent::exchange)
+                .orElse(GidAnnotationParser.camelToKebabCase(eventAppInfoProvider.getEventAppContext().getId()));
     }
 
     private boolean shouldWaitForConfirmations() {

@@ -28,7 +28,6 @@ import id.global.event.messaging.runtime.context.MethodHandleContext;
 public class AmqpConsumerTest {
 
     public static final String PAYLOAD = "testPayload";
-    public static final String QUEUE = "testQueue";
     public static final String EXCHANGE = "testExchange";
     public static final String ROUTING_KEY = "MyTestEvent";
     public static final String TEST_METHOD_NAME = "testMethod";
@@ -42,7 +41,7 @@ public class AmqpConsumerTest {
                 new ObjectMapper(),
                 createHandle(),
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, void.class, TEST_METHOD_NAME),
-                new AmqpContext(QUEUE, EXCHANGE, new String[0], DIRECT),
+                new AmqpContext(EXCHANGE, new String[0], DIRECT),
                 new ConsumerChannelService(
                         new ConsumerConnectionProvider(
                                 new ConnectionFactoryProvider(amqpConfiguration),

@@ -136,17 +136,17 @@ public class MetadataPropagationIT {
         }
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(bindingKeys = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
     @ProducedEvent(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event1() {
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(bindingKeys = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
     @ProducedEvent(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event2() {
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
+    @ConsumedEvent(bindingKeys = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
     @ProducedEvent(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event3() {
     }

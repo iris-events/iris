@@ -30,6 +30,7 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
     public static final String FANOUT_EXCHANGE = "fanout-exchange";
     public static final String TOPIC_EXCHANGE = "topic-exchange";
 
+    @SuppressWarnings("unused")
     public static class MessageHandlerService {
 
         @MessageHandler
@@ -67,7 +68,8 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
                 PriorityQueueEvent.class,
                 FanoutEvent.class,
                 TopicEvent.class,
-                Event.class);
+                Event.class,
+                ConsumedEvent.class);
 
         assertNotNull(messageHandlerInfoBuildItems);
         assertEquals(4, messageHandlerInfoBuildItems.size());
@@ -79,7 +81,8 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
                 PriorityQueueEvent.class,
                 FanoutEvent.class,
                 TopicEvent.class,
-                Event.class);
+                Event.class,
+                ConsumedEvent.class);
 
         final List<MessageHandlerInfoBuildItem> handleCustomQueueParam = messageHandlerInfoBuildItems.stream()
                 .filter(messageHandlerInfoBuildItem -> messageHandlerInfoBuildItem.getMethodName()
@@ -96,21 +99,22 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItem = handleCustomQueueParam.get(0);
         assertNotNull(messageHandlerInfoBuildItem);
         assertEquals("handleCustomQueueParam", messageHandlerInfoBuildItem.getMethodName());
-        Assertions.assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getRoutingKey());
+        Assertions.assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getBindingKeys()[0]);
 
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItemClassName = handle.get(0);
         assertNotNull(messageHandlerInfoBuildItemClassName);
         assertEquals("handle", messageHandlerInfoBuildItemClassName.getMethodName());
-        assertEquals("event-queue", messageHandlerInfoBuildItemClassName.getRoutingKey());
+        assertEquals("event-queue", messageHandlerInfoBuildItemClassName.getBindingKeys()[0]);
     }
 
     @Test
-    public void messageHandlerScannerShoudScanFanoutAndTopicExchanges() {
+    public void messageHandlerScannerShouldScanFanoutAndTopicExchanges() {
         final List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanService(MessageHandlerService.class,
                 PriorityQueueEvent.class,
                 FanoutEvent.class,
                 TopicEvent.class,
-                Event.class);
+                Event.class,
+                ConsumedEvent.class);
 
         MessageHandlerInfoBuildItem fanoutBuildItem = messageHandlerInfoBuildItems.stream()
                 .filter(buildItem -> buildItem.getExchangeType().equals(FANOUT)).collect(Collectors.toList())
@@ -141,7 +145,8 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
                 PriorityQueueEvent.class,
                 FanoutEvent.class,
                 TopicEvent.class,
-                Event.class);
+                Event.class,
+                ConsumedEvent.class);
 
         assertEquals(2, messageHandlerInfoBuildItems.size());
 
@@ -169,7 +174,7 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
 
     private List<MessageHandlerInfoBuildItem> scanService(Class<?>... classes) {
         IndexView index = indexOf(classes);
-        MessageHandlerScanner scanner = new MessageHandlerScanner(index);
+        MessageHandlerScanner scanner = new MessageHandlerScanner(index, "testAppId");
         return scanner.scanMessageHandlerAnnotations();
     }
 
