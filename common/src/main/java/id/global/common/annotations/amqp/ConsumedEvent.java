@@ -22,7 +22,7 @@ public @interface ConsumedEvent {
 
     /**
      * On what exchange to listen to for event messages. If not specified, exchange should be generated from the annotated class
-     * info.
+     * info and the type of exchange.
      * If the exchange doesn't exist it should be created.
      */
     String exchange() default "";
@@ -30,7 +30,7 @@ public @interface ConsumedEvent {
     /**
      * List of bindings keys. These are used to bind the consumer of the annotated event class to the correct queue.
      * If not specified, the binding key should be generated from the annotated class info. In case of a TOPIC exchange this
-     * parameter should be required.
+     * parameter is required.
      * <p>
      * <ul>
      * <li>For messages traversing through DIRECT type exchanges this should be 1:1 with routingKey on the ProducedEvent
