@@ -45,15 +45,16 @@ public class AmqpConsumer {
         this.channelService = channelService;
         this.amqpContext = amqpContext;
         this.callback = ((consumerTag, message) -> {
+            final var currentContextMap = MDC.getCopyOfContextMap();
+            MDC.clear();
             try {
-                MDC.clear();
                 Object cast = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
                 this.eventContext.setAmqpBasicProperties(message.getProperties());
                 methodHandle.invoke(cast, objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass()));
             } catch (Throwable throwable) {
                 LOG.error("Could not invoke method handler on queue: " + this.amqpContext.getQueue(), throwable);
             } finally {
-                MDC.clear();
+                MDC.setContextMap(currentContextMap);
             }
         });
     }
