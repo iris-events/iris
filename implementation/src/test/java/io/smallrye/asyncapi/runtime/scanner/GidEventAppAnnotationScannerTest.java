@@ -333,7 +333,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
         assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish, is(notNullValue()));
         assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish.message.getExtraProperty("scope"),
-                is(Scope.EXTERNAL));
+                is(Scope.SESSION));
         assertThat(((Schema) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.payload).$ref,
                 is("#/components/schemas/SentEvent"));
     }

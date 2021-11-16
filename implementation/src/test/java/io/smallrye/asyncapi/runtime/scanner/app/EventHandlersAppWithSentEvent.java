@@ -28,7 +28,7 @@ public class EventHandlersAppWithSentEvent {
     @ProducedEvent(
             exchange = "sent-event-exchange",
             routingKey = "sent-event-queue",
-            scope = Scope.EXTERNAL,
+            scope = Scope.SESSION,
             exchangeType = DIRECT,
             rolesAllowed = { "ADMIN", "USER", "DUMMY" })
     @ConsumedEvent(bindingKeys = "sent-event-v1", exchangeType = DIRECT)

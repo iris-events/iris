@@ -1,7 +1,7 @@
 package io.smallrye.asyncapi.runtime.scanner.model;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
-import static id.global.common.annotations.amqp.Scope.EXTERNAL;
+import static id.global.common.annotations.amqp.Scope.SESSION;
 
 import id.global.common.annotations.amqp.ConsumedEvent;
 import id.global.common.annotations.amqp.ProducedEvent;
@@ -9,7 +9,7 @@ import id.global.common.annotations.amqp.ProducedEvent;
 @ProducedEvent(
         exchange = "sent-event-exchange",
         routingKey = "sent-event-queue",
-        scope = EXTERNAL,
+        scope = SESSION,
         exchangeType = DIRECT,
         rolesAllowed = { "ADMIN", "USER", "DUMMY" })
 @ConsumedEvent(bindingKeys = "sent-event-v1", exchangeType = DIRECT)
