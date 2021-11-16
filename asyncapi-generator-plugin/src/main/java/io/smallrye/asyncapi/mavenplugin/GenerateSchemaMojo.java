@@ -10,19 +10,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -31,12 +26,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.jboss.jandex.CompositeIndex;
-import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
-import org.jboss.jandex.Indexer;
-import org.jboss.jandex.JarIndexer;
-import org.jboss.jandex.Result;
 
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import io.smallrye.asyncapi.api.AsyncApiConfig;
@@ -53,6 +43,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
      * Directory where to output the schemas.
      * If no path is specified, the schema will be printed to the log.
      */
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "${project.build.directory}/generated/", property = "outputDirectory")
     private File outputDirectory;
 
@@ -60,6 +51,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
      * Filename of the schema
      * Default to openapi. So the files created will be openapi.yaml and openapi.json.
      */
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "asyncapi", property = "schemaFilename")
     private String schemaFilename;
 
@@ -68,6 +60,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
      * You can change that here.
      * Valid options are: compile, provided, runtime, system, test, import
      */
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "compile,system", property = "includeDependenciesScopes")
     private List<String> includeDependenciesScopes;
 
@@ -75,77 +68,100 @@ public class GenerateSchemaMojo extends AbstractMojo {
      * When you include dependencies, we only look at jars (by default)
      * You can change that here.
      */
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "jar", property = "includeDependenciesTypes")
     private List<String> includeDependenciesTypes;
 
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "${project}", required = true)
     private MavenProject mavenProject;
 
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "false", property = "skip")
     private boolean skip;
 
     /**
      * Compiled classes of the project.
      */
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "${project.build.outputDirectory}", property = "classesDir")
     private File classesDir;
 
+    @SuppressWarnings("unused")
     @Parameter(defaultValue = "${project.version}", property = "projectVersion")
     private String projectVersion;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "configProperties")
     private File configProperties;
 
     // Properies as per AsyncAPI Config.
 
+    @SuppressWarnings("unused")
     @Parameter(property = "modelReader")
     private String modelReader;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "filter")
     private String filter;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "scanDisabled")
     private Boolean scanDisabled;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "scanPackages")
     private String scanPackages;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "scanClasses")
     private String scanClasses;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "scanExcludePackages")
     private String scanExcludePackages;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "scanExcludeClasses")
     private String scanExcludeClasses;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "servers")
     private List<String> servers;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "scanDependenciesDisable")
     private Boolean scanDependenciesDisable;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "scanDependenciesJars")
     private List<String> scanDependenciesJars;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "customSchemaRegistryClass")
     private String customSchemaRegistryClass;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "asyncApiVersion")
     private String asyncApiVersion;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "apicurioRegistryUrl")
     private String apicurioRegistryUrl;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "apicurioArtifactId", defaultValue = "${project.name}:${project.version}")
     private String apicurioArtifactId;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "apicurioArtifactType", defaultValue = "ASYNCAPI")
     private String apicurioArtifactType;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "uploadType", defaultValue = "json")
     private String uploadType;
 
+    @SuppressWarnings("unused")
     @Parameter(property = "excludeFromSchemas")
     private List<String> excludeFromSchemas;
 
@@ -158,7 +174,15 @@ public class GenerateSchemaMojo extends AbstractMojo {
                         + "\nArtifactType = " + apicurioArtifactType
                         + "\nProjectVersion = " + projectVersion);
 
-                IndexView index = createIndex();
+                IndexCreator indexCreator = new IndexCreator(
+                        mavenProject,
+                        getLog(),
+                        scanDependenciesDisable != null && scanDependenciesDisable,
+                        classesDir,
+                        includeDependenciesScopes,
+                        includeDependenciesTypes);
+
+                IndexView index = indexCreator.createIndex();
                 AaiDocument schema = generateSchema(index);
 
                 int schemaComponentsSize = schema.components.schemas.size();
@@ -211,58 +235,6 @@ public class GenerateSchemaMojo extends AbstractMojo {
         }
     }
 
-    private IndexView createIndex() throws MojoExecutionException {
-        IndexView moduleIndex;
-        try {
-            moduleIndex = indexModuleClasses();
-        } catch (IOException e) {
-            throw new MojoExecutionException("Can't compute index", e);
-        }
-        // TODO we need to add javax.* annotations to index somewhere here!
-        if (!scanDependenciesDisable()) {
-            List<IndexView> indexes = new ArrayList<>();
-            indexes.add(moduleIndex);
-            for (Object a : mavenProject.getArtifacts()) {
-                Artifact artifact = (Artifact) a;
-                if (includeDependenciesScopes.contains(artifact.getScope())
-                        && includeDependenciesTypes.contains(artifact.getType())) {
-                    try {
-                        Result result = JarIndexer.createJarIndex(artifact.getFile(), new Indexer(),
-                                false, false, false);
-                        indexes.add(result.getIndex());
-                    } catch (Exception e) {
-                        getLog().error("Can't compute index of " + artifact.getFile().getAbsolutePath() + ", skipping", e);
-                    }
-                }
-            }
-            return CompositeIndex.create(indexes);
-        } else {
-            return moduleIndex;
-        }
-    }
-
-    private boolean scanDependenciesDisable() {
-        if (scanDependenciesDisable == null) {
-            return false;
-        }
-        return scanDependenciesDisable;
-    }
-
-    // index the classes of this Maven module
-    private Index indexModuleClasses() throws IOException {
-        Indexer indexer = new Indexer();
-        try (Stream<Path> stream = Files.walk(classesDir.toPath())) {
-
-            List<Path> classFiles = stream
-                    .filter(path -> path.toString().endsWith(".class"))
-                    .collect(Collectors.toList());
-            for (Path path : classFiles) {
-                indexer.index(Files.newInputStream(path));
-            }
-        }
-        return indexer.complete();
-    }
-
     private AaiDocument generateSchema(IndexView index) throws IOException, ClassNotFoundException, MojoExecutionException {
         AsyncApiConfig asyncApiConfig = new MavenConfig(getProperties());
         ClassLoader classLoader = getClassLoader(mavenProject);
@@ -272,50 +244,33 @@ public class GenerateSchemaMojo extends AbstractMojo {
 
     private Map<String, String> getProperties() throws IOException {
         // First check if the configProperties is set, if so, load that.
-        Map<String, String> cp = new HashMap<>();
+        PropertyMap propertyMap = new PropertyMap();
+
         if (configProperties != null && configProperties.exists()) {
             Properties p = new Properties();
             try (InputStream is = Files.newInputStream(configProperties.toPath())) {
                 p.load(is);
-                cp.putAll((Map) p);
+                propertyMap.putAll((Map) p);
             }
         }
 
         // Now add properties set in the maven plugin.
-        addToPropertyMap(cp, AAIConfig.MODEL_READER, modelReader);
-        addToPropertyMap(cp, AAIConfig.FILTER, filter);
-        addToPropertyMap(cp, AAIConfig.SCAN_DISABLE, scanDisabled);
-        addToPropertyMap(cp, AAIConfig.SCAN_PACKAGES, scanPackages);
-        addToPropertyMap(cp, AAIConfig.SCAN_CLASSES, scanClasses);
-        addToPropertyMap(cp, AAIConfig.SCAN_EXCLUDE_PACKAGES, scanExcludePackages);
-        addToPropertyMap(cp, AAIConfig.SCAN_EXCLUDE_CLASSES, scanExcludeClasses);
-        addToPropertyMap(cp, AAIConfig.SERVERS, servers);
-        addToPropertyMap(cp, AsyncApiConstants.SCAN_DEPENDENCIES_DISABLE, scanDependenciesDisable);
-        addToPropertyMap(cp, AsyncApiConstants.SCAN_DEPENDENCIES_JARS, scanDependenciesJars);
-        addToPropertyMap(cp, AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, customSchemaRegistryClass);
-        addToPropertyMap(cp, AsyncApiConstants.VERSION, asyncApiVersion);
-        addToPropertyMap(cp, AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, excludeFromSchemas);
-        addToPropertyMap(cp, AsyncApiConstants.PROJECT_VERSION, projectVersion);
+        propertyMap.put(AAIConfig.MODEL_READER, modelReader);
+        propertyMap.put(AAIConfig.FILTER, filter);
+        propertyMap.put(AAIConfig.SCAN_DISABLE, scanDisabled);
+        propertyMap.put(AAIConfig.SCAN_PACKAGES, scanPackages);
+        propertyMap.put(AAIConfig.SCAN_CLASSES, scanClasses);
+        propertyMap.put(AAIConfig.SCAN_EXCLUDE_PACKAGES, scanExcludePackages);
+        propertyMap.put(AAIConfig.SCAN_EXCLUDE_CLASSES, scanExcludeClasses);
+        propertyMap.put(AAIConfig.SERVERS, servers);
+        propertyMap.put(AsyncApiConstants.SCAN_DEPENDENCIES_DISABLE, scanDependenciesDisable);
+        propertyMap.put(AsyncApiConstants.SCAN_DEPENDENCIES_JARS, scanDependenciesJars);
+        propertyMap.put(AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, customSchemaRegistryClass);
+        propertyMap.put(AsyncApiConstants.VERSION, asyncApiVersion);
+        propertyMap.put(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, excludeFromSchemas);
+        propertyMap.put(AsyncApiConstants.PROJECT_VERSION, projectVersion);
 
-        return cp;
-    }
-
-    private void addToPropertyMap(Map<String, String> map, String key, Boolean value) {
-        if (value != null) {
-            map.put(key, value.toString());
-        }
-    }
-
-    private void addToPropertyMap(Map<String, String> map, String key, String value) {
-        if (value != null) {
-            map.put(key, value);
-        }
-    }
-
-    private void addToPropertyMap(Map<String, String> map, String key, List<String> values) {
-        if (values != null && !values.isEmpty()) {
-            map.put(key, values.stream().collect(Collectors.joining(",")));
-        }
+        return propertyMap.getMap();
     }
 
     private void write(AaiDocument schema) throws MojoExecutionException {
