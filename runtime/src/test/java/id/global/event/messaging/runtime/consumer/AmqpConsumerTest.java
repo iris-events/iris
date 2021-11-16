@@ -39,8 +39,9 @@ public class AmqpConsumerTest {
 
         AmqpConfiguration amqpConfiguration = new AmqpConfiguration();
         AmqpConsumer consumer = new AmqpConsumer(
+                new ObjectMapper(),
                 createHandle(),
-                new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, TEST_METHOD_NAME),
+                new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, void.class, TEST_METHOD_NAME),
                 new AmqpContext(QUEUE, EXCHANGE, new String[0], DIRECT),
                 new ConsumerChannelService(
                         new ConsumerConnectionProvider(
@@ -49,8 +50,8 @@ public class AmqpConsumerTest {
                                 amqpConfiguration),
                         amqpConfiguration),
                 handler,
-                new ObjectMapper(),
-                new EventContext());
+                new EventContext(),
+                null);
 
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);

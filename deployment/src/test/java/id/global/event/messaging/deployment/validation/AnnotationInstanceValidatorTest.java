@@ -29,7 +29,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.BaseIndexingTest;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 
@@ -120,6 +122,51 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
             final var exception = assertThrows(MessageHandlerValidationException.class,
                     () -> validator.validate(annotationInstance));
             assertThat(exception.getMessage(), endsWith("can not have external dependency classes as parameters."));
+        }
+
+        @Test
+        public void validateForwardedEvent() {
+            final var serviceClass = ForwardedEventHandlerService.class;
+            final var annotationClass = MessageHandler.class;
+
+            final var annotationInstance = getAnnotationInstance(annotationClass, serviceClass);
+            final var validationRules = new ValidationRules(null, true, null, null);
+            final var indexWithEventAsExternalDependency = indexOf(serviceClass, ForwardedEvent.class);
+            final var validator = getValidatorService(indexWithEventAsExternalDependency, validationRules);
+
+            assertDoesNotThrow(() -> validator.validate(annotationInstance));
+        }
+
+        @Test
+        public void validateForwardedEventWithoutAnnotation() {
+            final var serviceClass = ForwardedEventWithoutAnnotationHandlerService.class;
+            final var annotationClass = MessageHandler.class;
+
+            final var annotationInstance = getAnnotationInstance(annotationClass, serviceClass);
+            final var validationRules = new ValidationRules(null, true, null, null);
+            final var indexWithEventAsExternalDependency = indexOf(serviceClass, ForwardedEventWithoutAnnotation.class);
+            final var validator = getValidatorService(indexWithEventAsExternalDependency, validationRules);
+
+            final var exception = assertThrows(MessageHandlerValidationException.class,
+                    () -> validator.validate(annotationInstance));
+            assertThat(exception.getMessage(), endsWith(
+                    "must either have a return object class annotated with @ProducedEvent annotation or have a void return type."));
+        }
+
+        @Test
+        public void validateForwardedEventIncorrectReturnType() {
+            final var serviceClass = ForwardedEventWithIncorrectReturnTypeHandlerService.class;
+            final var annotationClass = MessageHandler.class;
+
+            final var annotationInstance = getAnnotationInstance(annotationClass, serviceClass);
+            final var validationRules = new ValidationRules(null, true, null, null);
+            final var indexWithEventAsExternalDependency = indexOf(serviceClass, ForwardedEventWithoutAnnotation.class);
+            final var validator = getValidatorService(indexWithEventAsExternalDependency, validationRules);
+
+            final var exception = assertThrows(MessageHandlerValidationException.class,
+                    () -> validator.validate(annotationInstance));
+            assertThat(exception.getMessage(), endsWith(
+                    "must either have a class or void return type."));
         }
     }
 
@@ -284,6 +331,35 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     }
 
+    private static class ForwardedEventHandlerService {
+
+        @SuppressWarnings("unused")
+        @MessageHandler
+        public ForwardedEvent handleTopic(ValidDirectEvent event) {
+            return new ForwardedEvent();
+        }
+    }
+
+    private static class ForwardedEventWithoutAnnotationHandlerService {
+
+        @SuppressWarnings("unused")
+        @MessageHandler
+        public ForwardedEventWithoutAnnotation handleTopic(ValidDirectEvent event) {
+            return new ForwardedEventWithoutAnnotation();
+        }
+
+    }
+
+    private static class ForwardedEventWithIncorrectReturnTypeHandlerService {
+
+        @SuppressWarnings("unused")
+        @MessageHandler
+        public int handleTopic(ValidDirectEvent event) {
+            return -1;
+        }
+
+    }
+
     @ConsumedEvent(routingKey = "kebab-case-queue")
     public record ValidDirectEvent() {
     }
@@ -313,5 +389,13 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
     @ConsumedEvent(exchangeType = TOPIC, exchange = "kebab-topic-exchange", bindingKeys = {
             "wrong.end.with.dot." })
     public record DotEndingBindingKeyTopicEvent() {
+    }
+
+    @ProducedEvent(exchangeType = ExchangeType.DIRECT, exchange = "direct-exchange", routingKey = "direct-queue-forwarded-event")
+    public record ForwardedEvent() {
+
+    }
+
+    public record ForwardedEventWithoutAnnotation() {
     }
 }
