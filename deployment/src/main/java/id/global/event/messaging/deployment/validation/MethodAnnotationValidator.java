@@ -83,8 +83,17 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
     private void validateMethodReturnType(final AnnotationInstance annotationInstance) {
         final var methodInfo = getMethodInfo(annotationInstance);
         final var returnType = methodInfo.returnType();
-        if (returnType.kind() != Type.Kind.CLASS) {
+
+        if (returnType.kind() == Type.Kind.VOID) {
             return;
+        }
+
+        if (returnType.kind() != Type.Kind.CLASS) {
+            throw new MessageHandlerValidationException(
+                    String.format(
+                            "MessageHandler annotated method %s::%s must either have a class or void return type.",
+                            methodInfo.declaringClass(),
+                            methodInfo.name()));
         }
 
         final var classInfo = index.getClassByName(returnType.name());

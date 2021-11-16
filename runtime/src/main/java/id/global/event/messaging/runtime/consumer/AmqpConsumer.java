@@ -67,7 +67,7 @@ public class AmqpConsumer {
     }
 
     private DeliverCallback createDeliverCallback() {
-        return(consumerTag, message) -> {
+        return (consumerTag, message) -> {
             final var currentContextMap = MDC.getCopyOfContextMap();
             MDC.clear();
             try {

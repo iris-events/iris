@@ -152,6 +152,22 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
             assertThat(exception.getMessage(), endsWith(
                     "must either have a return object class annotated with @ProducedEvent annotation or have a void return type."));
         }
+
+        @Test
+        public void validateForwardedEventIncorrectReturnType() {
+            final var serviceClass = ForwardedEventWithIncorrectReturnTypeHandlerService.class;
+            final var annotationClass = MessageHandler.class;
+
+            final var annotationInstance = getAnnotationInstance(annotationClass, serviceClass);
+            final var validationRules = new ValidationRules(null, true, null, null);
+            final var indexWithEventAsExternalDependency = indexOf(serviceClass, ForwardedEventWithoutAnnotation.class);
+            final var validator = getValidatorService(indexWithEventAsExternalDependency, validationRules);
+
+            final var exception = assertThrows(MessageHandlerValidationException.class,
+                    () -> validator.validate(annotationInstance));
+            assertThat(exception.getMessage(), endsWith(
+                    "must either have a class or void return type."));
+        }
     }
 
     @Nested
@@ -330,6 +346,16 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         @MessageHandler
         public ForwardedEventWithoutAnnotation handleTopic(ValidDirectEvent event) {
             return new ForwardedEventWithoutAnnotation();
+        }
+
+    }
+
+    private static class ForwardedEventWithIncorrectReturnTypeHandlerService {
+
+        @SuppressWarnings("unused")
+        @MessageHandler
+        public int handleTopic(ValidDirectEvent event) {
+            return -1;
         }
 
     }
