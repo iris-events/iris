@@ -2,5 +2,8 @@ package id.global.common.annotations.amqp;
 
 public enum Scope {
     INTERNAL,
-    EXTERNAL
+    FRONTEND, //request message on websocket
+    WEBSOCKET,
+    SESSION,
+    BROADCAST
 }
