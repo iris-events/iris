@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,88 +17,114 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.jboss.jandex.CompositeIndex;
-import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.jboss.jandex.JarIndexer;
 import org.jboss.jandex.Result;
 
 public class IndexCreator {
-    public static final String GLOBALID_COMMON_ARTIFACT = "id.global.common:globalid-common";
 
     private final MavenProject mavenProject;
     private final Log log;
-    private final boolean scanDependenciesDisable;
+    private final boolean scanDependencies;
     private final File classesDir;
     private final List<String> includeDependenciesScopes;
     private final List<String> includeDependenciesTypes;
+    private final List<String> annotationsArtifacts;
 
-    public IndexCreator(MavenProject mavenProject, Log log, boolean scanDependenciesDisable,
-            File classesDir, List<String> includeDependenciesScopes, List<String> includeDependenciesTypes) {
+    public IndexCreator(MavenProject mavenProject, Log log, boolean scanDependencies,
+            File classesDir, List<String> includeDependenciesScopes, List<String> includeDependenciesTypes,
+            List<String> annotationsArtifacts) {
         this.mavenProject = mavenProject;
         this.log = log;
-        this.scanDependenciesDisable = scanDependenciesDisable;
+        this.scanDependencies = scanDependencies;
         this.classesDir = classesDir;
         this.includeDependenciesScopes = includeDependenciesScopes;
         this.includeDependenciesTypes = includeDependenciesTypes;
+        this.annotationsArtifacts = annotationsArtifacts;
     }
 
     public IndexView createIndex() throws MojoExecutionException {
-        List<IndexView> indexes = new ArrayList<>();
-        IndexView moduleIndex;
-        try {
-            moduleIndex = indexModuleClasses();
-            indexes.add(moduleIndex);
+        final var moduleIndex = getModuleClassIndex();
+        final var annotationsArtifactIndexes = getAnnotationsArtifactIndexes();
+        final var dependenciesIndexes = getDependenciesIndexes();
 
-            var artifactMap = mavenProject.getArtifactMap();
+        final List<IndexView> indexes = new ArrayList<>();
+        indexes.add(moduleIndex);
+        indexes.addAll(annotationsArtifactIndexes);
+        indexes.addAll(dependenciesIndexes);
 
-            if (artifactMap.containsKey(GLOBALID_COMMON_ARTIFACT)) {
-                Artifact globalIdCommon = (Artifact) artifactMap.get(GLOBALID_COMMON_ARTIFACT);
+        return CompositeIndex.create(indexes);
+    }
 
-                Result globalIdCommonResult = JarIndexer.createJarIndex(globalIdCommon.getFile(), new Indexer(),
-                        false, false, false);
-                indexes.add(globalIdCommonResult.getIndex());
-                log.info(String.format("Added %s to index.", GLOBALID_COMMON_ARTIFACT));
-            } else {
-                log.warn(
-                        String.format(
-                                "Project doesn't contain %s among it's artifacts. AMQP annotations will not be available to the Jandex scanner",
-                                GLOBALID_COMMON_ARTIFACT));
+    private IndexView getModuleClassIndex() throws MojoExecutionException {
+        Indexer indexer = new Indexer();
+        try (Stream<Path> pathStream = Files.walk(classesDir.toPath())) {
+            final var classPaths = pathStream
+                    .filter(path -> path.toString().endsWith(".class"))
+                    .collect(Collectors.toList());
+            for (Path path : classPaths) {
+                indexer.index(Files.newInputStream(path));
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Can't compute index", e);
         }
-        // TODO we need to add javax.* annotations to index somewhere here!
-        if (!scanDependenciesDisable) {
-            indexes.add(moduleIndex);
-            for (Object a : mavenProject.getArtifacts()) {
-                Artifact artifact = (Artifact) a;
-                if (includeDependenciesScopes.contains(artifact.getScope())
-                        && includeDependenciesTypes.contains(artifact.getType())) {
-                    try {
-                        Result result = JarIndexer.createJarIndex(artifact.getFile(), new Indexer(),
-                                false, false, false);
-                        indexes.add(result.getIndex());
-                    } catch (Exception e) {
-                        log.error("Can't compute index of " + artifact.getFile().getAbsolutePath() + ", skipping", e);
-                    }
-                }
-            }
-        }
-        return CompositeIndex.create(indexes);
+        return indexer.complete();
     }
 
-    private Index indexModuleClasses() throws IOException {
-        Indexer indexer = new Indexer();
-        try (Stream<Path> stream = Files.walk(classesDir.toPath())) {
+    private List<IndexView> getAnnotationsArtifactIndexes() {
+        final var artifactMap = mavenProject.getArtifactMap();
+        return annotationsArtifacts.stream()
+                .map(artifactName -> (Artifact) artifactMap.get(artifactName))
+                .map(this::createAnnotationArtifactIndex)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
 
-            List<Path> classFiles = stream
-                    .filter(path -> path.toString().endsWith(".class"))
-                    .collect(Collectors.toList());
-            for (Path path : classFiles) {
-                indexer.index(Files.newInputStream(path));
-            }
+    private List<IndexView> getDependenciesIndexes() {
+        if (!scanDependencies) {
+            return Collections.emptyList();
         }
-        return indexer.complete();
+
+        final Set<?> artifacts = mavenProject.getArtifacts();
+        return artifacts.stream()
+                .map(artifactObject -> (Artifact) artifactObject)
+                .filter(artifact -> includeDependenciesScopes.contains(artifact.getScope()))
+                .filter(artifact -> includeDependenciesTypes.contains(artifact.getType()))
+                .map(this::createDependencyArtifactIndex)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+    }
+
+    private Optional<IndexView> createAnnotationArtifactIndex(final Artifact artifact) {
+        try {
+            final var result = getJarIndex(artifact);
+            log.info(String.format("Adding %s:%s to index.", artifact.getGroupId(), artifact.getArtifactId()));
+            return Optional.of(result.getIndex());
+        } catch (Exception e) {
+            final var message = String.format(
+                    "Project doesn't contain %s among it's artifacts. AMQP annotations will not be available to the Jandex scanner",
+                    artifact);
+            log.warn(message);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<IndexView> createDependencyArtifactIndex(final Artifact artifact) {
+        try {
+            final var result = getJarIndex(artifact);
+            return Optional.of(result.getIndex());
+        } catch (Exception e) {
+            log.error("Can't compute index of " + artifact.getFile().getAbsolutePath() + ", skipping", e);
+            return Optional.empty();
+        }
+    }
+
+    private Result getJarIndex(final Artifact artifact) throws IOException {
+        return JarIndexer.createJarIndex(artifact.getFile(), new Indexer(),
+                false, false, false);
     }
 }

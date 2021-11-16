@@ -1,5 +1,7 @@
 package io.smallrye.asyncapi.mavenplugin;
 
+import static io.smallrye.asyncapi.mavenplugin.MapManipulator.addToPropertyMap;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,6 +167,10 @@ public class GenerateSchemaMojo extends AbstractMojo {
     @Parameter(property = "excludeFromSchemas")
     private List<String> excludeFromSchemas;
 
+    @SuppressWarnings("unused")
+    @Parameter(property = "annotationsArtifacts")
+    private List<String> annotationsArtifacts;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (!skip) {
@@ -174,13 +180,15 @@ public class GenerateSchemaMojo extends AbstractMojo {
                         + "\nArtifactType = " + apicurioArtifactType
                         + "\nProjectVersion = " + projectVersion);
 
+                final var scanDependencies = scanDependenciesDisable == null || !scanDependenciesDisable;
                 IndexCreator indexCreator = new IndexCreator(
                         mavenProject,
                         getLog(),
-                        scanDependenciesDisable != null && scanDependenciesDisable,
+                        scanDependencies,
                         classesDir,
                         includeDependenciesScopes,
-                        includeDependenciesTypes);
+                        includeDependenciesTypes,
+                        annotationsArtifacts);
 
                 IndexView index = indexCreator.createIndex();
                 AaiDocument schema = generateSchema(index);
