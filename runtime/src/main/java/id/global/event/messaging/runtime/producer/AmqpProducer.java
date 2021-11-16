@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -65,7 +66,7 @@ public class AmqpProducer {
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
 
-    private final Map<Transaction, List<Message>> transactionDelayedMessages;
+    private final Map<Transaction, List<Message>> transactionDelayedMessages = new ConcurrentHashMap<>();
 
     private TransactionCallback transactionCallback;
 
@@ -82,8 +83,6 @@ public class AmqpProducer {
         this.correlationIdProvider = correlationIdProvider;
         this.hostnameProvider = hostnameProvider;
         this.eventAppInfoProvider = eventAppInfoProvider;
-
-        this.transactionDelayedMessages = new HashMap<>();
     }
 
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
@@ -151,8 +150,8 @@ public class AmqpProducer {
 
     private void enqueueDelayedMessage(Object message, String exchange, String routingKey, AMQP.BasicProperties properties,
             Transaction tx) {
-        transactionDelayedMessages.computeIfAbsent(tx, k -> new LinkedList<>());
-        transactionDelayedMessages.get(tx).add(new Message(message, exchange, routingKey, properties));
+        transactionDelayedMessages.computeIfAbsent(tx, k -> new LinkedList<>())
+                .add(new Message(message, exchange, routingKey, properties));
     }
 
     private Optional<Transaction> getOptionalTransaction() throws AmqpTransactionException {

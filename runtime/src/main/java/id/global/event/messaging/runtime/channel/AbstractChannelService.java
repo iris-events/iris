@@ -1,6 +1,7 @@
 package id.global.event.messaging.runtime.channel;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.rabbitmq.client.Channel;
@@ -24,19 +25,23 @@ public abstract class AbstractChannelService {
     }
 
     public Channel getOrCreateChannelById(String channelId) throws IOException {
-        if (channelMap.get(channelId) != null) {
-            return channelMap.get(channelId);
-        }
-
-        Channel channel = connectionProvider.getConnection().createChannel();
+        Channel channel = channelMap.computeIfAbsent(channelId, this::createChanel);
         if (channel == null) {
             throw new AmqpConnectionException("Could not create channel.");
         }
+        return channel;
+    }
 
-        if (configuration.getConfirmationBatchSize() > 0) {
-            channel.confirmSelect();
+    private Channel createChanel(String channelId) throws RuntimeException {
+        try {
+            Channel channel = connectionProvider.getConnection().createChannel();
+
+            if (channel != null && configuration.getConfirmationBatchSize() > 0) {
+                channel.confirmSelect();
+            }
+            return channel;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        channelMap.put(channelId, channel);
-        return channelMap.get(channelId);
     }
 }
