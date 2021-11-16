@@ -16,6 +16,7 @@ public class AnnotationScannerContext {
     private final Aai20Document asyncApi;
     private final Map<String, AaiSchema> definitionSchemaMap;
     private final Collection<AnnotationInstance> generatedClassAnnotations;
+    private String projectId;
 
     public AnnotationScannerContext(AsyncApiConfig config, FilteredIndexView index,
             Aai20Document asyncApi, Collection<AnnotationInstance> generatedClassAnnotations) {
@@ -53,5 +54,13 @@ public class AnnotationScannerContext {
 
     public Collection<AnnotationInstance> getGeneratedClassAnnotations() {
         return generatedClassAnnotations;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getProjectId() {
+        return projectId;
     }
 }

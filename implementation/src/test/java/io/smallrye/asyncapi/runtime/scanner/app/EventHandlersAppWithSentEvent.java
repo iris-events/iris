@@ -1,9 +1,10 @@
 package io.smallrye.asyncapi.runtime.scanner.app;
 
+import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+
 import org.jboss.logging.Logger;
 
 import id.global.common.annotations.amqp.ConsumedEvent;
-import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.common.annotations.amqp.Scope;
@@ -28,9 +29,9 @@ public class EventHandlersAppWithSentEvent {
             exchange = "sent-event-exchange",
             routingKey = "sent-event-queue",
             scope = Scope.EXTERNAL,
-            exchangeType = ExchangeType.DIRECT,
+            exchangeType = DIRECT,
             rolesAllowed = { "ADMIN", "USER", "DUMMY" })
-    @ConsumedEvent(routingKey = "sent-event-v1")
+    @ConsumedEvent(bindingKeys = "sent-event-v1", exchangeType = DIRECT)
     public record SentEvent(int id, String status, User user) {
     }
 

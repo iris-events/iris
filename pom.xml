@@ -60,7 +60,7 @@
         <version.maven-plugin-annotations>3.6.1</version.maven-plugin-annotations>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <version.jackson>2.12.4</version.jackson>
-        <globalid-common.version>1.0.14</globalid-common.version>
+        <globalid-common.version>1.0.15</globalid-common.version>
     </properties>
 
     <licenses>
