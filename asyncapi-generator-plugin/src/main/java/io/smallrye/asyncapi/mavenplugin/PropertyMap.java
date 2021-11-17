@@ -20,7 +20,9 @@ public class PropertyMap {
     }
 
     public void put(String key, Boolean value) {
-        this.propertyMap.put(key, value.toString());
+        if (value != null) {
+            this.propertyMap.put(key, value.toString());
+        }
     }
 
     public void put(String key, List<String> values) {
