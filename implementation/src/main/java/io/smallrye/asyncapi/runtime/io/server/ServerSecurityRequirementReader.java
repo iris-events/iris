@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import io.apicurio.datamodels.core.models.common.SecurityRequirement;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
@@ -16,10 +17,10 @@ public class ServerSecurityRequirementReader {
     private ServerSecurityRequirementReader() {
     }
 
-    public static Optional<List<AaiSecurityRequirement>> readSecurityRequirements(final AnnotationValue annotationValue) {
+    public static Optional<List<SecurityRequirement>> readSecurityRequirements(final AnnotationValue annotationValue) {
         if (annotationValue != null) {
             AnnotationInstance[] nestedArray = annotationValue.asNestedArray();
-            List<AaiSecurityRequirement> securityRequirements = new ArrayList<>();
+            List<SecurityRequirement> securityRequirements = new ArrayList<>();
 
             for (AnnotationInstance secReqAnno : nestedArray) {
                 if (!JandexUtil.isRef(secReqAnno)) {

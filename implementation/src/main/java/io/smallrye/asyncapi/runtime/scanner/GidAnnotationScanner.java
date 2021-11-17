@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import id.global.common.annotations.amqp.Message;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -54,9 +55,7 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.common.annotations.amqp.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
@@ -83,7 +82,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     private static final Logger LOG = Logger.getLogger(GidAnnotationScanner.class);
 
     public static final DotName DOTNAME_EVENT_APP_DEFINITION = DotName.createSimple(EventApp.class.getName());
-    public static final DotName DOTNAME_CONSUMED_EVENT = DotName.createSimple(ConsumedEvent.class.getName());
+    public static final DotName DOTNAME_MESSAGE = DotName.createSimple(Message.class.getName());
     private final SchemaGenerator schemaGenerator;
 
     /**
@@ -124,9 +123,13 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         Aai20Document asyncApi = this.annotationScannerContext.getAsyncApi();
         // Process @EventApp
         processEventAppDefinition(annotationScannerContext, asyncApi);
+        // Process @Message
+        List<AnnotationInstance> allMessageAnnotations = getClassAnnotations(Message.class, this.annotationScannerContext.getIndex()).collect(Collectors.toList());
+
         // Process @MessageHandler
-        processMessageHandlerAnnotations(annotationScannerContext, asyncApi);
-        processProducedEventAnnotations(annotationScannerContext, asyncApi);
+        List<AnnotationInstance> consumedEventAnnotations = processMessageHandlerAnnotations(annotationScannerContext, asyncApi);
+
+        processProducedEventAnnotations(annotationScannerContext, asyncApi, allMessageAnnotations, consumedEventAnnotations);
         processContextDefinitionReferencedSchemas(annotationScannerContext, asyncApi);
 
         return asyncApi;
@@ -142,16 +145,18 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return index.getAnnotations(annotationName).stream().filter(this::annotatedClasses);
     }
 
-    private void processProducedEventAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
+    private void processProducedEventAnnotations(AnnotationScannerContext context,
+                                                 Aai20Document asyncApi,
+                                                 List<AnnotationInstance> allMessageAnnotations,
+                                                 List<AnnotationInstance> consumedEventAnnotations)
             throws ClassNotFoundException {
         FilteredIndexView index = context.getIndex();
-        List<AnnotationInstance> methodAnnotations = getClassAnnotations(ProducedEvent.class, index)
-                .collect(Collectors.toList());
+        allMessageAnnotations.removeAll(consumedEventAnnotations);
 
         List<ChannelInfo> channelInfos = new ArrayList<>();
         Map<String, JsonSchemaInfo> producedEvents = new HashMap<>();
         Map<String, Scope> messageScopes = new HashMap<>();
-        for (AnnotationInstance anno : methodAnnotations) {
+        for (AnnotationInstance anno : allMessageAnnotations) {
             ClassInfo classInfo = anno.target().asClass();
             String classSimpleName = classInfo.simpleName();
 
@@ -165,7 +170,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var durable = getEventDurable(anno, index);
             final var autodelete = getEventAutodelete(anno, index);
 
-            channelInfos.add(ChannelInfoGenerator.generatePublishChannelInfo(
+            channelInfos.add(ChannelInfoGenerator.generateSubscribeChannelInfo(
                     exchange,
                     routingKey,
                     classSimpleName,
@@ -183,8 +188,10 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         createChannels(channelInfos, messageScopes, asyncApi);
     }
 
-    private void processMessageHandlerAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
+    private List<AnnotationInstance> processMessageHandlerAnnotations(AnnotationScannerContext context, Aai20Document asyncApi)
             throws ClassNotFoundException {
+
+        List<AnnotationInstance> consumedMessages = new ArrayList<>();
 
         FilteredIndexView index = context.getIndex();
         final var methodAnnotationInstances = getMethodAnnotations(MessageHandler.class, index).collect(Collectors.toList());
@@ -201,6 +208,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var methodParameters = methodInfo.parameters();
 
             final var eventAnnotation = getEventAnnotation(methodParameters, index);
+            consumedMessages.add(eventAnnotation);
+
             final var eventClass = eventAnnotation.target().asClass();
             final var eventClassSimpleName = eventClass.simpleName();
 
@@ -220,7 +229,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                     annotationValues,
                     isGeneratedClass);
 
-            final var subscribeChannelInfo = ChannelInfoGenerator.generateSubscribeChannelInfo(
+            final var subscribeChannelInfo = ChannelInfoGenerator.generatePublishChannelInfo(
                     exchange,
                     bindingKeys,
                     eventClassSimpleName,
@@ -236,6 +245,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
         insertComponentSchemas(context, incomingEvents, asyncApi);
         createChannels(channelInfos, messageTypes, asyncApi);
+
+        return consumedMessages;
     }
 
     private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, Aai20Document asyncApi) {
@@ -343,7 +354,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 .map(Type::name)
                 .map(index::getClassByName)
                 .filter(Objects::nonNull)
-                .map(classInfo -> classInfo.classAnnotation(DOTNAME_CONSUMED_EVENT))
+                .map(classInfo -> classInfo.classAnnotation(DOTNAME_MESSAGE))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 

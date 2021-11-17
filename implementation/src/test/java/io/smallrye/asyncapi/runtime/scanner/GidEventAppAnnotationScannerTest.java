@@ -15,13 +15,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import id.global.common.annotations.amqp.Message;
 import org.hamcrest.Matchers;
 import org.jboss.jandex.Index;
 import org.junit.Test;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
 import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.common.annotations.amqp.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
@@ -214,7 +213,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void hashMapEvent() {
-        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, ConsumedEvent.class);
+        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, Message.class);
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -225,7 +224,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void hashMapEventExcludeFromSchemas() {
-        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, ConsumedEvent.class);
+        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, Message.class);
         Set<String> excludedPrefixes = new HashSet<>();
         excludedPrefixes.add("java.util");
 
@@ -243,8 +242,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         Index index = indexOf(
                 EventHandlersAppWithSentEvent.class,
                 EventHandlersAppWithSentEvent.SentEvent.class,
-                ConsumedEvent.class,
-                ProducedEvent.class
+                Message.class
         );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -263,7 +261,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void producedEventAnnotatedClassShouldGenerateComponentSchema() {
-        Index index = indexOf(DummyEventHandlersApp.class, SentEvent.class, ConsumedEvent.class, ProducedEvent.class);
+        Index index = indexOf(DummyEventHandlersApp.class, SentEvent.class, Message.class);
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -298,8 +296,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         Index index = indexOf(
                 EventHandlersAppWithSentEvent.class,
                 EventHandlersAppWithSentEvent.SentEvent.class,
-                ConsumedEvent.class,
-                ProducedEvent.class
+                Message.class
         );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -314,8 +311,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         Index index = indexOf(
                 EventHandlersAppWithSentEvent.class,
                 EventHandlersAppWithSentEvent.SentEvent.class,
-                ConsumedEvent.class,
-                ProducedEvent.class
+                Message.class
         );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -343,8 +339,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         Index index = indexOf(
                 DummyEventHandlersApp.class,
                 SentEvent.class,
-                ConsumedEvent.class,
-                ProducedEvent.class
+                Message.class
         );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
@@ -379,8 +374,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.FanoutTestEventV1.class,
                 EventHandlersApp.GeneratedTestEvent.class,
                 EventHandlersApp.EventDefaults.class,
-                ConsumedEvent.class,
-                ProducedEvent.class);
+                Message.class);
     }
 
     private String getDefaultExchangeName(String projectName, ExchangeType exchangeType) {

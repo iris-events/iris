@@ -1,18 +1,16 @@
 package io.smallrye.asyncapi.runtime.scanner.model;
 
+import id.global.common.annotations.amqp.Message;
+
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.common.annotations.amqp.Scope.SESSION;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
-import id.global.common.annotations.amqp.ProducedEvent;
-
-@ProducedEvent(
+@Message(
         exchange = "sent-event-exchange",
         routingKey = "sent-event-queue",
         scope = SESSION,
         exchangeType = DIRECT,
         rolesAllowed = { "ADMIN", "USER", "DUMMY" })
-@ConsumedEvent(bindingKeys = "sent-event-v1", exchangeType = DIRECT)
 public class SentEvent {
     private int id;
     private String status;

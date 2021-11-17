@@ -4,9 +4,9 @@ import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 
 import java.util.Map;
 
+import id.global.common.annotations.amqp.Message;
 import org.jboss.logging.Logger;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
 import id.global.common.annotations.amqp.MessageHandler;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
 import io.smallrye.asyncapi.spec.annotations.info.Info;
@@ -19,12 +19,12 @@ public class EventHandlersBadExampleApp {
     public static final String VERSION = "1.0.0";
     public static final String ID = "EventHandlersAppTest";
 
-    @MessageHandler
+    @MessageHandler(bindingKeys = "hashmap-queue")
     public void handleHashMapEvent(MapEvent event) {
         LOG.info("Handle hash map event: " + event);
     }
 
-    @ConsumedEvent(bindingKeys = "hashmap-queue", exchangeType = DIRECT)
+    @Message(exchangeType = DIRECT)
     public record MapEvent(Map<String, Object> mapProperty) {
     }
 }
