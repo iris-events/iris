@@ -17,9 +17,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -147,13 +146,11 @@ public class FanoutTestIT {
 
     }
 
-    @ProducedEvent(exchange = EXCHANGE, exchangeType = FANOUT)
-    @ConsumedEvent(exchange = EXCHANGE, exchangeType = FANOUT)
+    @Message(exchange = EXCHANGE, exchangeType = FANOUT)
     public record FanoutLoggingEvent(String log, Long level) {
     }
 
-    @ProducedEvent(exchange = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
-    @ConsumedEvent(exchange = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
+    @Message(exchange = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
     public record FanoutEvent(String log, Long level) {
     }
 

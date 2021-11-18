@@ -3,6 +3,7 @@ package id.global.event.messaging.it.sync;
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
 import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -13,14 +14,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -64,9 +65,12 @@ public class AnnotatedEventsTestIT {
     }
 
     @Test
-    @DisplayName("Event without annotations should be published successfully.")
+    @DisplayName("Event without annotations should not be published successfully.")
     void publishMessageWithoutAnnotations() {
-        assertDoesNotThrow(() -> testProducer.send(new Event("name", 1L)));
+        final var amqpSendException = assertThrows(AmqpSendException.class, () -> {
+            testProducer.send(new Event("name", 1L));
+        });
+        MatcherAssert.assertThat(amqpSendException.getMessage(), is("Message annotation is required."));
     }
 
     public record Event(String name, Long age) {
@@ -77,12 +81,6 @@ public class AnnotatedEventsTestIT {
     void publishDirect() {
         DirectEvent publishedEvent = new DirectEvent("name", 1L);
         assertDoesNotThrow(() -> testProducer.send(publishedEvent));
-    }
-
-    @Test
-    @DisplayName("Published annotated event with missing routing key to DIRECT exchange should fail")
-    void publishDirectNoRoutingKey() {
-        assertThrows(AmqpSendException.class, () -> testProducer.send(new DirectEventEmptyRoutingKey("name", 1L)));
     }
 
     @Test
@@ -114,9 +112,11 @@ public class AnnotatedEventsTestIT {
     }
 
     @Test
-    @DisplayName("Published annotated event without routing/binding key to TOPIC exchange should fail")
+    @DisplayName("Published annotated event without routing/binding key to TOPIC exchange should not fail")
     void publishTopicMissingRoutingKey() {
-        assertThrows(AmqpSendException.class, () -> testProducer.send(new TopicEventWrongRoutingKey("name", 1L)));
+        assertDoesNotThrow(() -> {
+            testProducer.send(new TopicEventWrongRoutingKey("name", 1L));
+        });
     }
 
     @SuppressWarnings("unused")
@@ -195,13 +195,13 @@ public class AnnotatedEventsTestIT {
 
         private CountDownLatch countDownLatch = new CountDownLatch(99);
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = SOMETHING_NOTHING)
         public void handleLogEventsOne(TopicReceivedEventOne event) {
             count.incrementAndGet();
             futureOne.complete(event.name());
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = SOMETHING)
         public void handleLogEventsTwo(TopicReceivedEventTwo event) {
             count.incrementAndGet();
             countDownLatch.countDown();
@@ -231,48 +231,47 @@ public class AnnotatedEventsTestIT {
 
     }
 
-    @ConsumedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
+    @Message(exchange = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
     public record FanoutLoggingEvent(String log, Long level) {
     }
 
-    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = SOMETHING_NOTHING)
+    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "something.nothing")
     private record TopicReceivedEventOne(String name, long age) {
     }
 
-    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = SOMETHING)
+    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "something.dummy")
     private record TopicReceivedEventTwo(String name, long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, routingKey = ANNOTATED_QUEUE, exchangeType = DIRECT)
-    @ConsumedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = DIRECT, bindingKeys = ANNOTATED_QUEUE)
+    @Message(exchange = ANNOTATED_EXCHANGE, routingKey = ANNOTATED_QUEUE, exchangeType = DIRECT)
     private record DirectEvent(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = DIRECT)
+    @Message(exchange = ANNOTATED_EXCHANGE, exchangeType = DIRECT)
     private record DirectEventEmptyRoutingKey(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = "nothing.a.nothing", exchangeType = TOPIC)
+    @Message(exchange = TOPIC_EXCHANGE, routingKey = "nothing.a.nothing", exchangeType = TOPIC)
     private record TopicEventOne(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = "something.a.b", exchangeType = TOPIC)
+    @Message(exchange = TOPIC_EXCHANGE, routingKey = "something.a.b", exchangeType = TOPIC)
     private record TopicEventTwo(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = "something.a.everything", exchangeType = TOPIC)
+    @Message(exchange = TOPIC_EXCHANGE, routingKey = "something.a.everything", exchangeType = TOPIC)
     private record TopicEventThree(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, routingKey = ANNOTATED_QUEUE_FANOUT, exchangeType = FANOUT)
+    @Message(exchange = ANNOTATED_EXCHANGE_FANOUT, routingKey = ANNOTATED_QUEUE_FANOUT, exchangeType = FANOUT)
     private record FanoutEventWrongRoutingKey(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
+    @Message(exchange = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
     private record FanoutEvent(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = ANNOTATED_EXCHANGE, exchangeType = TOPIC)
+    @Message(exchange = ANNOTATED_EXCHANGE, exchangeType = TOPIC)
     private record TopicEventWrongRoutingKey(String name, Long age) {
     }
 }

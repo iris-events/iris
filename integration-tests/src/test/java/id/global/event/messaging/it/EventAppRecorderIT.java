@@ -2,6 +2,7 @@ package id.global.event.messaging.it;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_CURRENT_SERVICE_ID;
+import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_EVENT_TYPE;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_INSTANCE_ID;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_ORIGIN_SERVICE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,9 +20,8 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.AMQP;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -53,10 +53,12 @@ public class EventAppRecorderIT {
                 containsInAnyOrder(
                         HEADER_ORIGIN_SERVICE_ID,
                         HEADER_CURRENT_SERVICE_ID,
-                        HEADER_INSTANCE_ID));
+                        HEADER_INSTANCE_ID,
+                        HEADER_EVENT_TYPE));
 
         assertThat(headers.get(HEADER_ORIGIN_SERVICE_ID).toString(), is(APP_ID));
         assertThat(headers.get(HEADER_CURRENT_SERVICE_ID).toString(), is(APP_ID));
+        assertThat(headers.get(HEADER_EVENT_TYPE).toString(), is(Event.class.getSimpleName()));
     }
 
     @SuppressWarnings("unused")
@@ -70,7 +72,7 @@ public class EventAppRecorderIT {
             this.eventContext = eventContext;
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = EVENT_QUEUE)
         public void handle(Event event) {
             final var amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             basicPropertiesCompletableFuture.complete(amqpBasicProperties);
@@ -85,8 +87,7 @@ public class EventAppRecorderIT {
         }
     }
 
-    @ConsumedEvent(bindingKeys = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event() {
     }
 }

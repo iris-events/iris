@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.common.annotations.amqp.ProducedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
@@ -84,15 +84,15 @@ public class EventsMalformedIT {
         });
     }
 
-    @ProducedEvent(exchange = DIRECT_EXCHANGE, routingKey = DIRECT_QUEUE, exchangeType = DIRECT)
+    @Message(exchange = DIRECT_EXCHANGE, routingKey = DIRECT_QUEUE, exchangeType = DIRECT)
     private record DirectEventTmp(String name, long age) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, routingKey = TOPIC_QUEUE, exchangeType = TOPIC)
+    @Message(exchange = TOPIC_EXCHANGE, routingKey = TOPIC_QUEUE, exchangeType = TOPIC)
     private record TopicEventTmp(String name, long age) {
     }
 
-    @ProducedEvent(exchange = FANOUT_EXCHANGE, exchangeType = FANOUT)
+    @Message(exchange = FANOUT_EXCHANGE, exchangeType = FANOUT)
     private record FanoutEventTmp(String name, long age) {
     }
 }

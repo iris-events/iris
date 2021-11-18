@@ -19,4 +19,8 @@ public class EventAppInfoProvider {
     public EventAppContext getEventAppContext() {
         return eventAppContext;
     }
+
+    public String getApplicationId() {
+        return eventAppContext.getId();
+    }
 }

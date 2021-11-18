@@ -16,9 +16,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -57,8 +56,8 @@ public class TopicTestIT {
         producer.send(l3);
         producer.send(l4);
 
-        MyLoggingServiceA.completionSignal.get();
-        MyLoggingServiceB.completionSignal.get();
+        internalLoggingServiceA.getCompletionSignal().get();
+        internalLoggingServiceB.getCompletionSignal().get();
 
         assertThat(internalLoggingServiceA.getEvents(),
                 contains("Quick orange fox", "Lazy orange rabbit"));
@@ -69,7 +68,7 @@ public class TopicTestIT {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class MyLoggingServiceA {
-        public static CompletableFuture<String> completionSignal = new CompletableFuture<>();
+        public CompletableFuture<String> completionSignal = new CompletableFuture<>();
 
         private final List<String> events = new ArrayList<>();
 
@@ -82,7 +81,7 @@ public class TopicTestIT {
             completionSignal = new CompletableFuture<>();
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = { "*.orange.*" })
         public void handleLogEvents(ServiceALoggingEvent1 event) {
             synchronized (events) {
                 events.add(event.log());
@@ -91,13 +90,16 @@ public class TopicTestIT {
                 }
             }
         }
+
+        public CompletableFuture<String> getCompletionSignal() {
+            return completionSignal;
+        }
     }
 
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class MyLoggingServiceB {
-
-        public static CompletableFuture<String> completionSignal = new CompletableFuture<>();
+        public CompletableFuture<String> completionSignal = new CompletableFuture<>();
         private final List<String> events = new ArrayList<>();
 
         public List<String> getEvents() {
@@ -109,7 +111,7 @@ public class TopicTestIT {
             completionSignal = new CompletableFuture<>();
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = { "*.*.rabbit", "lazy.#" })
         public void handleLogEvents(ServiceBLoggingEvent event) {
             synchronized (events) {
                 events.add(event.log());
@@ -118,29 +120,29 @@ public class TopicTestIT {
                 }
             }
         }
+
+        public CompletableFuture<String> getCompletionSignal() {
+            return completionSignal;
+        }
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.orange.fox")
-    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.orange.fox")
     public record ServiceALoggingEvent1(String log, Long level) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.yellow.rabbit")
-    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.yellow.rabbit")
     public record ServiceALoggingEvent2(String log, Long level) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.blue.snail")
-    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.blue.snail")
     public record ServiceALoggingEvent3(String log, Long level) {
     }
 
-    @ProducedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.orange.rabbit")
-    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.orange.*" })
+    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.orange.rabbit")
     public record ServiceALoggingEvent4(String log, Long level) {
     }
 
-    @ConsumedEvent(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, bindingKeys = { "*.*.rabbit", "lazy.#" })
+    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC)
     public record ServiceBLoggingEvent(String log, Long level) {
     }
 }
