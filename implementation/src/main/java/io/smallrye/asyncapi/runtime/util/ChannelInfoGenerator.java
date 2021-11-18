@@ -1,7 +1,9 @@
 package io.smallrye.asyncapi.runtime.util;
 
+import static io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant.PROP_PUBLISH;
+import static io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant.PROP_SUBSCRIBE;
+
 import id.global.common.annotations.amqp.ExchangeType;
-import io.smallrye.asyncapi.runtime.io.channel.operation.OperationConstant;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import io.smallrye.asyncapi.runtime.scanner.model.ChannelInfo;
 
@@ -12,19 +14,12 @@ public class ChannelInfoGenerator {
             final String bindingKeysCsv,
             final String eventClassSimpleName,
             final ExchangeType exchangeType,
-            final boolean durable,
-            final boolean autodelete,
-            final String[] rolesAllowed) {
+            final String[] rolesAllowed,
+            final String deadLetterQueue,
+            final int ttl) {
 
-        return generateChannelInfo(
-                exchange,
-                bindingKeysCsv,
-                eventClassSimpleName,
-                exchangeType,
-                durable,
-                autodelete,
-                rolesAllowed,
-                OperationConstant.PROP_SUBSCRIBE);
+        final var channelBindingsInfo = new ChannelBindingsInfo(exchange, bindingKeysCsv, exchangeType);
+        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, PROP_SUBSCRIBE, rolesAllowed, deadLetterQueue, ttl);
     }
 
     public static ChannelInfo generatePublishChannelInfo(
@@ -34,24 +29,11 @@ public class ChannelInfoGenerator {
             final ExchangeType exchangeType,
             final boolean durable,
             final boolean autodelete,
-            final String[] rolesAllowed) {
-
-        return generateChannelInfo(exchange, routingKey, eventClassSimpleName, exchangeType, durable, autodelete, rolesAllowed,
-                OperationConstant.PROP_PUBLISH);
-    }
-
-    private static ChannelInfo generateChannelInfo(
-            final String exchange,
-            final String queueBinding,
-            final String eventClassSimpleName,
-            final ExchangeType exchangeType,
-            final boolean durable,
-            final boolean autodelete,
             final String[] rolesAllowed,
-            final String operationType) {
+            final String deadLetterQueue,
+            final int ttl) {
 
-        final var channelBindingsInfo = new ChannelBindingsInfo(exchange, queueBinding, exchangeType, durable, autodelete);
-
-        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, operationType, rolesAllowed);
+        final var channelBindingsInfo = new ChannelBindingsInfo(exchange, routingKey, exchangeType, durable, autodelete);
+        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, PROP_PUBLISH, rolesAllowed, deadLetterQueue, ttl);
     }
 }

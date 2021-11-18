@@ -9,10 +9,14 @@ public class ChannelBindingsInfo {
     private final boolean exchangeDurable;
     private final boolean exchangeAutoDelete;
     private final String exchangeVhost;
-    private final boolean queueDurable;
+    private final Boolean queueDurable;
     private final boolean queueExclusive;
-    private final boolean queueAutoDelete;
+    private final Boolean queueAutoDelete;
     private final String queueVhost;
+
+    public ChannelBindingsInfo(String exchange, String queue, ExchangeType exchangeType) {
+        this(exchange, queue, exchangeType, true, false, "/", null, false, null, "/");
+    }
 
     public ChannelBindingsInfo(String exchange, String queue, ExchangeType exchangeType, boolean durable, boolean autodelete) {
         this(exchange, queue, exchangeType, true, false, "/", durable, false, autodelete, "/");
@@ -20,7 +24,7 @@ public class ChannelBindingsInfo {
 
     public ChannelBindingsInfo(String exchange, String queue, ExchangeType exchangeType, boolean exchangeDurable,
             boolean exchangeAutoDelete,
-            String exchangeVhost, boolean queueDurable, boolean queueExclusive, boolean queueAutoDelete, String queueVhost) {
+            String exchangeVhost, Boolean queueDurable, boolean queueExclusive, Boolean queueAutoDelete, String queueVhost) {
         this.exchange = exchange;
         this.queue = queue;
         this.exchangeType = exchangeType;
@@ -61,11 +65,11 @@ public class ChannelBindingsInfo {
         return exchangeVhost;
     }
 
-    public boolean isQueueDurable() {
+    public Boolean isQueueDurable() {
         return queueDurable;
     }
 
-    public boolean isQueueAutoDelete() {
+    public Boolean isQueueAutoDelete() {
         return queueAutoDelete;
     }
 

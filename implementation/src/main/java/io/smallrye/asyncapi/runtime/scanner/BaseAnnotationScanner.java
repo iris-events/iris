@@ -1,6 +1,5 @@
 package io.smallrye.asyncapi.runtime.scanner;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +44,11 @@ public abstract class BaseAnnotationScanner {
     public static final String PROP_SERVERS = "servers";
     public static final String PROP_CHANNELS = "channels";
     public static final String COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
-    public static final String PROP_MESSAGE_SCOPE = "scope";
-    private static final String ROLES_ALLOWED = "rolesAllowed";
+
+    private static final String HEADER_ROLES_ALLOWED = "X-roles-allowed";
+    private static final String HEADER_SCOPE = "X-scope";
+    private static final String HEADER_TTL = "X-ttl";
+    private static final String HEADER_DEAD_LETTER = "X-dead-letter";
 
     protected final AnnotationScannerContext annotationScannerContext;
     protected ClassLoader classLoader = null;
@@ -101,13 +103,13 @@ public abstract class BaseAnnotationScanner {
             }
 
             operation.message = new Aai20Message(eventKey);
-            operation.message.addExtraProperty(PROP_MESSAGE_SCOPE, messageScopes.get(eventKey));
-            Extension rolesAllowedExtension = new Extension();
-            rolesAllowedExtension.name = ROLES_ALLOWED;
-            rolesAllowedExtension.value = channelInfo.getRolesAllowed();
 
             operation.message.headers = new Aai20HeaderItem();
-            operation.message.headers.addExtension(ROLES_ALLOWED, rolesAllowedExtension);
+            operation.message.headers.addExtension(HEADER_ROLES_ALLOWED, getRolesAllowedExtension(channelInfo.getRolesAllowed()));
+            operation.message.headers.addExtension(HEADER_TTL, getTtlHeaderExtension(channelInfo.getTtl()));
+            operation.message.headers.addExtension(HEADER_SCOPE, getScopeHeaderExtension(messageScopes, eventKey));
+            operation.message.headers.addExtension(HEADER_DEAD_LETTER, getDeadLetterHeaderExtension(channelInfo.getDeadLetterQueue()));
+
             operation.message._name = eventKey;
             operation.message.name = eventKey;
             operation.message.title = eventKey;
@@ -178,5 +180,38 @@ public abstract class BaseAnnotationScanner {
         return annotationScannerContext.getGeneratedClassAnnotations().stream()
                 .filter(annotationInstance -> annotationInstance.target().kind().equals(AnnotationTarget.Kind.CLASS))
                 .anyMatch(annotationInstance -> annotationInstance.target().asClass().name().equals(eventClass.name()));
+    }
+
+    private Extension getScopeHeaderExtension(Map<String, Scope> messageScopes, String eventKey) {
+        Extension scopeExtension = new Extension();
+        scopeExtension.name = HEADER_SCOPE;
+        scopeExtension.value = messageScopes.get(eventKey);
+        return scopeExtension;
+    }
+
+    private Extension getTtlHeaderExtension(int ttl) {
+        if (ttl <= -1) {
+            return null;
+        }
+
+        Extension ttlExtension = new Extension();
+        ttlExtension.name = HEADER_TTL;
+        ttlExtension.value = ttl;
+        return ttlExtension;
+    }
+
+    private Extension getRolesAllowedExtension(String[] rolesAllowed) {
+        Extension rolesAllowedExtension = new Extension();
+        rolesAllowedExtension.name = HEADER_ROLES_ALLOWED;
+        rolesAllowedExtension.value = rolesAllowed;
+
+        return rolesAllowedExtension;
+    }
+
+    private Extension getDeadLetterHeaderExtension(String deadLetterQueue) {
+        Extension deadLetterExtension = new Extension();
+        deadLetterExtension.name = HEADER_DEAD_LETTER;
+        deadLetterExtension.value = deadLetterQueue;
+        return deadLetterExtension;
     }
 }

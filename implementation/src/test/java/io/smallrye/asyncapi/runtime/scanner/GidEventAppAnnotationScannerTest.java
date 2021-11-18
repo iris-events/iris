@@ -12,32 +12,31 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import id.global.common.annotations.amqp.Message;
 import org.hamcrest.Matchers;
 import org.jboss.jandex.Index;
 import org.junit.Test;
 
 import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.Message;
+import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
+import io.apicurio.datamodels.asyncapi.models.AaiHeaderItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
-import io.apicurio.datamodels.core.models.common.Schema;
 import io.smallrye.asyncapi.runtime.scanner.app.DummyEventHandlersApp;
 import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersApp;
-import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersAppWithSentEvent;
 import io.smallrye.asyncapi.runtime.scanner.app.EventHandlersBadExampleApp;
 import io.smallrye.asyncapi.runtime.scanner.model.AaiSchemaAdditionalProperties;
 import io.smallrye.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
 import io.smallrye.asyncapi.runtime.scanner.model.SentEvent;
 
 public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
-
-    public static final String ROLES_ALLOWED = "rolesAllowed";
 
     @Test
     public void eventAppAnnotationShouldGenerateBasicDocument() {
@@ -65,7 +64,16 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
         assertThat(document.components.schemas, notNullValue());
         assertThat(document.channels, notNullValue());
-        assertThat(document.channels.size(), is(7));
+        assertThat(document.channels.size(), is(8));
+
+        Set<Map.Entry<String, AaiChannelItem>> publishChannels = document.channels.entrySet().stream()
+                .filter(entry -> entry.getValue().publish != null).collect(Collectors.toSet());
+
+        Set<Map.Entry<String, AaiChannelItem>> subscribeChannels = document.channels.entrySet().stream()
+                .filter(entry -> entry.getValue().subscribe != null).collect(Collectors.toSet());
+
+        assertThat(publishChannels.size(), is(7));
+        assertThat(subscribeChannels.size(), is(1));
 
         document.channels.forEach((key, value) -> {
             AaiOperation subscribe = value.subscribe;
@@ -122,19 +130,19 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getValue().subscribe != null)
                 .collect(Collectors.toList());
 
-        assertThat(publishChannels.size(), is(0));
-        assertThat(subscribeChannels.size(), is(7));
-        assertThat(document.components.schemas.size(), is(11));
+        assertThat(publishChannels.size(), is(7));
+        assertThat(subscribeChannels.size(), is(1));
+        assertThat(document.components.schemas.size(), is(12));
 
         String defaultExchangeName = getDefaultExchangeName(EventHandlersApp.ID, ExchangeType.DIRECT);
         String defaultTestEventV1ChannelName = String.format("%s/default-test-event-v1", defaultExchangeName);
-        Map.Entry<String, AaiChannelItem> testEventV1Entry = subscribeChannels.stream()
+        Map.Entry<String, AaiChannelItem> testEventV1Entry = publishChannels.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey().equals(defaultTestEventV1ChannelName))
                 .collect(Collectors.toList()).get(0);
 
         AaiChannelItem testEventV1Value = testEventV1Entry.getValue();
         assertThat(testEventV1Value, notNullValue());
-        assertThat(testEventV1Value.subscribe, notNullValue());
+        assertThat(testEventV1Value.publish, notNullValue());
         assertThat(testEventV1Value.bindings, notNullValue());
         assertThat(testEventV1Value.bindings.amqp, notNullValue());
 
@@ -157,7 +165,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(testEventGidChannelBindings.getQueue().get("exclusive"), is(false));
 
         // Event with minimum required annotation values
-        Map.Entry<String, AaiChannelItem> testEventDefaultsEntry = subscribeChannels.stream()
+        Map.Entry<String, AaiChannelItem> testEventDefaultsEntry = publishChannels.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey()
                         .equals(String.format("%s/event-defaults", defaultExchangeName)))
                 .collect(Collectors.toList()).get(0);
@@ -190,7 +198,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
-        assertThat(document.components.schemas.size(), is(11));
+        assertThat(document.components.schemas.size(), is(12));
         assertThat(document.components.schemas.get("JsonNode"), notNullValue());
 
         Set<String> excludedPrefixes = new HashSet<>();
@@ -201,7 +209,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 index);
         Aai20Document documentWithExclude = scannerWithExclude.scan();
 
-        assertThat(documentWithExclude.components.schemas.size(), is(9));
+        assertThat(documentWithExclude.components.schemas.size(), is(10));
 
         // Finding JsonNode under components.schemas is NOT expected
         assertThat(documentWithExclude.components.schemas.get("JsonNode"), nullValue());
@@ -213,7 +221,8 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void hashMapEvent() {
-        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, Message.class);
+        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, Message.class,
+                MessageHandler.class);
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -224,7 +233,8 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void hashMapEventExcludeFromSchemas() {
-        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, Message.class);
+        Index index = indexOf(EventHandlersBadExampleApp.class, EventHandlersBadExampleApp.MapEvent.class, Message.class,
+                MessageHandler.class);
         Set<String> excludedPrefixes = new HashSet<>();
         excludedPrefixes.add("java.util");
 
@@ -239,11 +249,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void enumValuesShouldNotIgnoreJsonProperty() {
-        Index index = indexOf(
-                EventHandlersAppWithSentEvent.class,
-                EventHandlersAppWithSentEvent.SentEvent.class,
-                Message.class
-        );
+        Index index = getEventHandlersAppIndex();
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -261,7 +267,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
     @Test
     public void producedEventAnnotatedClassShouldGenerateComponentSchema() {
-        Index index = indexOf(DummyEventHandlersApp.class, SentEvent.class, Message.class);
+        Index index = indexOf(DummyEventHandlersApp.class, SentEvent.class, Message.class, MessageHandler.class);
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
@@ -292,46 +298,29 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
     }
 
     @Test
-    public void sameEventProducedAndHandledShouldBeOneSchema() {
-        Index index = indexOf(
-                EventHandlersAppWithSentEvent.class,
-                EventHandlersAppWithSentEvent.SentEvent.class,
-                Message.class
-        );
+    public void messageHeadersShouldPopulate() {
+        Index index = getEventHandlersAppIndex();
+
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
 
-        assertThat(document, is(notNullValue()));
-        assertThat(document.components.schemas, is(notNullValue()));
-        assertThat(document.components.schemas.size(), is(3));
-    }
+        Optional<Map.Entry<String, AaiChannelItem>> testEventV2EntryOptional = document.channels.entrySet().stream()
+                .filter(entry ->
+                        entry.getKey().equals("event-handlers-app-test-direct/test-event-v2")
+                                && entry.getValue().publish != null).findFirst();
 
-    @Test
-    public void producedAndHandledShouldCreateCorrectChannels() {
-        Index index = indexOf(
-                EventHandlersAppWithSentEvent.class,
-                EventHandlersAppWithSentEvent.SentEvent.class,
-                Message.class
-        );
-        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
-        Aai20Document document = scanner.scan();
-
-        assertThat(document, is(notNullValue()));
-        assertThat(document.channels.size(), is(2));
-
-        String sentEventV1ChannelName = String.format("%s/sent-event-v1",
-                getDefaultExchangeName(EventHandlersAppWithSentEvent.ID, ExchangeType.DIRECT));
-        assertThat(document.channels.get(sentEventV1ChannelName).subscribe, is(notNullValue()));
-        assertThat(document.channels.get(sentEventV1ChannelName).subscribe.message.getExtraProperty("scope"),
-                is(Scope.INTERNAL));
-        assertThat(((Schema) document.channels.get(sentEventV1ChannelName).subscribe.message.payload).$ref,
-                is("#/components/schemas/SentEvent"));
-
-        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish, is(notNullValue()));
-        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish.message.getExtraProperty("scope"),
-                is(Scope.SESSION));
-        assertThat(((Schema) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.payload).$ref,
-                is("#/components/schemas/SentEvent"));
+        assertThat(testEventV2EntryOptional, is(notNullValue()));
+        AaiHeaderItem headers = testEventV2EntryOptional.get().getValue().publish.message.headers;
+        assertThat(headers, is(notNullValue()));
+        assertThat(headers.getExtension("X-ttl"), is(notNullValue()));
+        assertThat(headers.getExtension("X-ttl").name, is("X-ttl"));
+        assertThat(headers.getExtension("X-ttl").value, is(10000));
+        assertThat(headers.getExtension("X-scope"), is(notNullValue()));
+        assertThat(headers.getExtension("X-scope").name, is("X-scope"));
+        assertThat(headers.getExtension("X-scope").value, is(Scope.INTERNAL));
+        assertThat(headers.getExtension("X-roles-allowed"), is(notNullValue()));
+        assertThat(headers.getExtension("X-roles-allowed").name, is("X-roles-allowed"));
+        assertThat(headers.getExtension("X-roles-allowed").value, is(new String[0]));
     }
 
     @Test
@@ -339,29 +328,24 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         Index index = indexOf(
                 DummyEventHandlersApp.class,
                 SentEvent.class,
-                Message.class
+                Message.class,
+                MessageHandler.class
         );
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index);
         Aai20Document document = scanner.scan();
         assertThat(document, is(notNullValue()));
         assertThat(document.channels.size(), is(1));
 
-        assertThat(
-                document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers.getExtension(
-                        ROLES_ALLOWED),
-                is(notNullValue()));
-        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
-                .getExtension(ROLES_ALLOWED).name, is(ROLES_ALLOWED));
-        assertThat(document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
-                .getExtension(ROLES_ALLOWED).value, is(notNullValue()));
-        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
-                .getExtension(ROLES_ALLOWED).value).length, is(3));
-        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
-                .getExtension(ROLES_ALLOWED).value)[0], is("ADMIN"));
-        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
-                .getExtension(ROLES_ALLOWED).value)[1], is("USER"));
-        assertThat(((String[]) document.channels.get("sent-event-exchange/sent-event-queue").publish.message.headers
-                .getExtension(ROLES_ALLOWED).value)[2], is("DUMMY"));
+        var rolesAllowedHeader = "X-roles-allowed";
+
+        AaiHeaderItem headers = document.channels.get("sent-event-exchange/sent-event-queue").subscribe.message.headers;
+        assertThat(headers.getExtension(rolesAllowedHeader), is(notNullValue()));
+        assertThat(headers.getExtension(rolesAllowedHeader).name, is(rolesAllowedHeader));
+        assertThat(headers.getExtension(rolesAllowedHeader).value, is(notNullValue()));
+        assertThat(((String[]) headers.getExtension(rolesAllowedHeader).value).length, is(3));
+        assertThat(((String[]) headers.getExtension(rolesAllowedHeader).value)[0], is("ADMIN"));
+        assertThat(((String[]) headers.getExtension(rolesAllowedHeader).value)[1], is("USER"));
+        assertThat(((String[]) headers.getExtension(rolesAllowedHeader).value)[2], is("DUMMY"));
 
     }
 
@@ -374,6 +358,8 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.FanoutTestEventV1.class,
                 EventHandlersApp.GeneratedTestEvent.class,
                 EventHandlersApp.EventDefaults.class,
+                EventHandlersApp.ProducedEvent.class,
+                MessageHandler.class,
                 Message.class);
     }
 

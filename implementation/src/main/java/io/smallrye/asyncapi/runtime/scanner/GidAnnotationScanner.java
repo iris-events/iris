@@ -16,14 +16,16 @@
 
 package io.smallrye.asyncapi.runtime.scanner;
 
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getAutodelete;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getBindingKeysCsv;
-import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getEventAutodelete;
-import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getEventDurable;
-import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getEventScope;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getDeadLetterQueue;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getDurable;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getExchange;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getExchangeType;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getMessageScope;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getRolesAllowed;
 import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getRoutingKey;
+import static io.smallrye.asyncapi.runtime.util.GidAnnotationParser.getTtl;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -35,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import id.global.common.annotations.amqp.Message;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -55,6 +56,7 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
@@ -124,64 +126,65 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         // Process @EventApp
         processEventAppDefinition(annotationScannerContext, asyncApi);
         // Process @Message
-        List<AnnotationInstance> allMessageAnnotations = getClassAnnotations(Message.class, this.annotationScannerContext.getIndex()).collect(Collectors.toList());
+        List<AnnotationInstance> allMessageAnnotations = getClassAnnotations(this.annotationScannerContext.getIndex()).collect(
+                Collectors.toList());
 
         // Process @MessageHandler
-        List<AnnotationInstance> consumedEventAnnotations = processMessageHandlerAnnotations(annotationScannerContext, asyncApi);
+        List<AnnotationInstance> consumedMessageAnnotations = processMessageHandlerAnnotations(annotationScannerContext,
+                asyncApi);
 
-        processProducedEventAnnotations(annotationScannerContext, asyncApi, allMessageAnnotations, consumedEventAnnotations);
+        processProducedMessages(annotationScannerContext, asyncApi, allMessageAnnotations, consumedMessageAnnotations);
         processContextDefinitionReferencedSchemas(annotationScannerContext, asyncApi);
 
         return asyncApi;
     }
 
-    private Stream<AnnotationInstance> getMethodAnnotations(Class<?> annotationClass, IndexView index) {
-        DotName annotationName = DotName.createSimple(annotationClass.getName());
+    private Stream<AnnotationInstance> getMethodAnnotations(IndexView index) {
+        DotName annotationName = DotName.createSimple(MessageHandler.class.getName());
         return index.getAnnotations(annotationName).stream().filter(this::annotatedMethods);
     }
 
-    private Stream<AnnotationInstance> getClassAnnotations(Class<?> annotationClass, IndexView index) {
-        DotName annotationName = DotName.createSimple(annotationClass.getName());
+    private Stream<AnnotationInstance> getClassAnnotations(IndexView index) {
+        DotName annotationName = DotName.createSimple(Message.class.getName());
         return index.getAnnotations(annotationName).stream().filter(this::annotatedClasses);
     }
 
-    private void processProducedEventAnnotations(AnnotationScannerContext context,
-                                                 Aai20Document asyncApi,
-                                                 List<AnnotationInstance> allMessageAnnotations,
-                                                 List<AnnotationInstance> consumedEventAnnotations)
+    private void processProducedMessages(AnnotationScannerContext context,
+            Aai20Document asyncApi,
+            List<AnnotationInstance> allMessageAnnotations,
+            List<AnnotationInstance> consumedMessageAnnotations)
             throws ClassNotFoundException {
         FilteredIndexView index = context.getIndex();
-        allMessageAnnotations.removeAll(consumedEventAnnotations);
+        allMessageAnnotations.removeAll(consumedMessageAnnotations);
 
         List<ChannelInfo> channelInfos = new ArrayList<>();
-        Map<String, JsonSchemaInfo> producedEvents = new HashMap<>();
+        Map<String, JsonSchemaInfo> producedMessages = new HashMap<>();
         Map<String, Scope> messageScopes = new HashMap<>();
         for (AnnotationInstance anno : allMessageAnnotations) {
             ClassInfo classInfo = anno.target().asClass();
             String classSimpleName = classInfo.simpleName();
 
-            messageScopes.put(classSimpleName, getEventScope(anno));
-            producedEvents.put(classSimpleName, generateProducedEventSchemaInfo(classInfo));
+            messageScopes.put(classSimpleName, getMessageScope(anno));
+            producedMessages.put(classSimpleName, generateProducedMessageSchemaInfo(classInfo));
 
             final var routingKey = getRoutingKey(anno, classSimpleName);
             final var exchangeType = getExchangeType(anno);
             final var exchange = getExchange(anno, context.getProjectId(), exchangeType);
             final var rolesAllowed = getRolesAllowed(anno);
-            final var durable = getEventDurable(anno, index);
-            final var autodelete = getEventAutodelete(anno, index);
+            final var deadLetterQueue = getDeadLetterQueue(anno, index);
+            final var ttl = getTtl(anno, index);
 
             channelInfos.add(ChannelInfoGenerator.generateSubscribeChannelInfo(
                     exchange,
                     routingKey,
                     classSimpleName,
                     exchangeType,
-                    durable,
-                    autodelete,
-                    rolesAllowed
-            ));
+                    rolesAllowed,
+                    deadLetterQueue,
+                    ttl));
         }
 
-        insertComponentSchemas(context, producedEvents, asyncApi);
+        insertComponentSchemas(context, producedMessages, asyncApi);
 
         // TODO check what's with the types
 
@@ -194,9 +197,9 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         List<AnnotationInstance> consumedMessages = new ArrayList<>();
 
         FilteredIndexView index = context.getIndex();
-        final var methodAnnotationInstances = getMethodAnnotations(MessageHandler.class, index).collect(Collectors.toList());
+        final var methodAnnotationInstances = getMethodAnnotations(index).collect(Collectors.toList());
 
-        final var incomingEvents = new HashMap<String, JsonSchemaInfo>();
+        final var incomingMessages = new HashMap<String, JsonSchemaInfo>();
         final var channelInfos = new ArrayList<ChannelInfo>();
         final var messageTypes = new HashMap<String, Scope>();
 
@@ -207,43 +210,47 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var methodInfo = (MethodInfo) annotationInstance.target();
             final var methodParameters = methodInfo.parameters();
 
-            final var eventAnnotation = getEventAnnotation(methodParameters, index);
-            consumedMessages.add(eventAnnotation);
+            final var messageAnnotation = getMessageAnnotation(methodParameters, index);
+            consumedMessages.add(messageAnnotation);
 
-            final var eventClass = eventAnnotation.target().asClass();
-            final var eventClassSimpleName = eventClass.simpleName();
+            final var messageClass = messageAnnotation.target().asClass();
+            final var messageClassSimpleName = messageClass.simpleName();
 
-            final var bindingKeys = getBindingKeysCsv(eventAnnotation, eventClassSimpleName);
-            final var exchangeType = getExchangeType(eventAnnotation);
-            final var exchange = getExchange(eventAnnotation, context.getProjectId(), exchangeType);
-            final var scope = getEventScope(eventAnnotation);
+            final var bindingKeys = getBindingKeysCsv(annotationInstance, messageClassSimpleName);
+            final var exchangeType = getExchangeType(messageAnnotation);
+            final var exchange = getExchange(messageAnnotation, context.getProjectId(), exchangeType);
+            final var scope = getMessageScope(messageAnnotation);
 
-            final var durable = getEventDurable(eventAnnotation, index);
-            final var autodelete = getEventAutodelete(eventAnnotation, index);
+            final var durable = getDurable(annotationInstance, index);
+            final var autodelete = getAutodelete(annotationInstance, index);
+            final var deadLetterQueue = getDeadLetterQueue(messageAnnotation, index);
+            final var ttl = getTtl(messageAnnotation, index);
 
-            final var isGeneratedClass = isGeneratedClass(eventClass);
+            final var isGeneratedClass = isGeneratedClass(messageClass);
 
             final var jsonSchemaInfo = generateJsonSchemaInfo(
                     annotationName,
-                    eventClass.name().toString(),
+                    messageClass.name().toString(),
                     annotationValues,
                     isGeneratedClass);
 
             final var subscribeChannelInfo = ChannelInfoGenerator.generatePublishChannelInfo(
                     exchange,
                     bindingKeys,
-                    eventClassSimpleName,
+                    messageClassSimpleName,
                     exchangeType,
                     durable,
                     autodelete,
-                    getRolesAllowed(annotationInstance));
+                    getRolesAllowed(annotationInstance),
+                    deadLetterQueue,
+                    ttl);
 
-            messageTypes.put(eventClassSimpleName, scope);
-            incomingEvents.put(eventClassSimpleName, jsonSchemaInfo);
+            messageTypes.put(messageClassSimpleName, scope);
+            incomingMessages.put(messageClassSimpleName, jsonSchemaInfo);
             channelInfos.add(subscribeChannelInfo);
         }
 
-        insertComponentSchemas(context, incomingEvents, asyncApi);
+        insertComponentSchemas(context, incomingMessages, asyncApi);
         createChannels(channelInfos, messageTypes, asyncApi);
 
         return consumedMessages;
@@ -287,7 +294,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return document;
     }
 
-    private JsonSchemaInfo generateProducedEventSchemaInfo(ClassInfo classInfo) throws ClassNotFoundException {
+    private JsonSchemaInfo generateProducedMessageSchemaInfo(ClassInfo classInfo) throws ClassNotFoundException {
         final var className = classInfo.name().toString();
         final var loadedClass = loadClass(className);
         final var classSimpleName = loadedClass.getSimpleName();
@@ -347,7 +354,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return new SchemaGenerator(schemaGeneratorConfig);
     }
 
-    private AnnotationInstance getEventAnnotation(final List<Type> parameters,
+    private AnnotationInstance getMessageAnnotation(final List<Type> parameters,
             final FilteredIndexView index) {
 
         final var consumedEventTypes = parameters.stream()

@@ -19,6 +19,8 @@ public class GidAnnotationParser {
     private static final String METHOD_NAME_ROLES_ALLOWED = "rolesAllowed";
     private static final String METHOD_NAME_DURABLE = "durable";
     private static final String METHOD_NAME_AUTODELETE = "autodelete";
+    private static final String METHOD_NAME_DEAD_LETTER = "deadLetter";
+    private static final String METHOD_NAME_TTL = "ttl";
 
     private static final ExchangeType DEFAULT_EXCHANGE_TYPE = ExchangeType.DIRECT;
     private static final Scope DEFAULT_SCOPE = Scope.INTERNAL;
@@ -46,19 +48,27 @@ public class GidAnnotationParser {
                 .orElse(DEFAULT_EXCHANGE_TYPE);
     }
 
-    public static Scope getEventScope(AnnotationInstance annotation) {
+    public static Scope getMessageScope(AnnotationInstance annotation) {
         return JandexUtil.optionalStringValue(annotation, METHOD_NAME_SCOPE)
                 .map(Scope::valueOf)
                 .orElse(DEFAULT_SCOPE);
     }
 
-    public static boolean getEventDurable(AnnotationInstance annotation,
+    public static int getTtl(AnnotationInstance annotation, FilteredIndexView index) {
+        return annotation.valueWithDefault(index, METHOD_NAME_TTL).asInt();
+    }
+
+    public static boolean getDurable(AnnotationInstance annotation,
             FilteredIndexView index) {
         return annotation.valueWithDefault(index, METHOD_NAME_DURABLE).asBoolean();
     }
 
-    public static boolean getEventAutodelete(AnnotationInstance annotation, FilteredIndexView index) {
+    public static boolean getAutodelete(AnnotationInstance annotation, FilteredIndexView index) {
         return annotation.valueWithDefault(index, METHOD_NAME_AUTODELETE).asBoolean();
+    }
+
+    public static String getDeadLetterQueue(AnnotationInstance annotation, FilteredIndexView index) {
+        return annotation.valueWithDefault(index, METHOD_NAME_DEAD_LETTER).asString();
     }
 
     public static String[] getRolesAllowed(AnnotationInstance annotation) {

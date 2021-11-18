@@ -6,12 +6,12 @@ import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
 
 import java.util.Map;
 
-import id.global.common.annotations.amqp.Message;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import id.global.common.annotations.amqp.GlobalIdGenerated;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import io.smallrye.asyncapi.runtime.scanner.model.User;
 import io.smallrye.asyncapi.spec.annotations.EventApp;
@@ -64,7 +64,7 @@ public class EventHandlersApp {
     public record TestEventV1(int id, String status, User user) {
     }
 
-    @Message(exchangeType = DIRECT)
+    @Message(exchangeType = DIRECT, ttl = 10000)
     public record TestEventV2(
             int id,
             String name,
@@ -86,7 +86,7 @@ public class EventHandlersApp {
     public record FanoutTestEventV1(int id, String status, User user) {
     }
 
-    @Message(exchangeType = DIRECT)
+    @Message
     public record EventDefaults(int id) {
     }
 
@@ -94,5 +94,10 @@ public class EventHandlersApp {
     @Message(exchange = "test-generated-exchange", exchangeType = TOPIC)
     public record GeneratedTestEvent(int id, String status) {
 
+    }
+
+    @SuppressWarnings("unused")
+    @Message(exchangeType = FANOUT)
+    public record ProducedEvent(int id) {
     }
 }
