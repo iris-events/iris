@@ -17,7 +17,7 @@ public @interface Message {
      * Type of exchange this event gets published to. If the exchange doesn't exist it should be created.
      * This parameter is required.
      */
-    ExchangeType exchangeType();
+    ExchangeType exchangeType() default ExchangeType.FANOUT;
 
     /**
      * Defines the exchange to publish this event message to. If not specified, the exchange should be generated from the
