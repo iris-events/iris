@@ -1,12 +1,13 @@
 package id.global.common.annotations.amqp;
 
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.METHOD })
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface MessageHandler {
@@ -29,7 +30,23 @@ public @interface MessageHandler {
      * @see <a href="https://www.rabbitmq.com/tutorials/tutorial-four-java.html">Rabbitmq Routing Tutorial for Java clients</a>
      */
     String[] bindingKeys() default {};
-    
+
+    /**
+     * Whether the queue defined by the annotated event should be durable or not. This parameter should default to true and is
+     * not required.
+     *
+     * @see <a href="https://www.rabbitmq.com/queues.html#durability">Rabbitmq queues durability</a>
+     */
+    boolean durable() default true;
+
+    /**
+     * Whether the queue defined by the annotated event should be marked for auto delete or not. This parameter should default
+     * to false and is not required.
+     *
+     * @see <a href="https://www.rabbitmq.com/queues.html#temporary-queues">Rabbitmq temporary queues</a>
+     */
+    boolean autodelete() default false;
+
     /**
      * Defines allowed roles to use this event handler
      */
