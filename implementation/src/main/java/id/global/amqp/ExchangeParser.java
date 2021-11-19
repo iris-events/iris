@@ -23,11 +23,8 @@ public class ExchangeParser {
 
     public static String getFromAnnotationInstance(AnnotationInstance messageAnnotation, String messageClassSimpleName) {
         return JandexUtil.optionalStringValue(messageAnnotation, MESSAGE_EXCHANGE_PARAM).
-                orElse(generateDefaultExchangeName(messageClassSimpleName));
+                orElse(camelToKebabCase(messageClassSimpleName));
 
     }
 
-    private static String generateDefaultExchangeName(String defaultExchange) {
-        return camelToKebabCase(defaultExchange);
-    }
 }

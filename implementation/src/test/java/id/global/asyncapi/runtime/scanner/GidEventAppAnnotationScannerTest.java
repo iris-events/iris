@@ -1,6 +1,5 @@
 package id.global.asyncapi.runtime.scanner;
 
-import static id.global.asyncapi.runtime.util.GidAnnotationParser.camelToKebabCase;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -22,9 +21,11 @@ import org.jboss.jandex.Index;
 import org.junit.Test;
 
 import id.global.asyncapi.runtime.scanner.app.DummyEventHandlersApp;
+import id.global.asyncapi.runtime.scanner.app.EventHandlersApp;
+import id.global.asyncapi.runtime.scanner.app.EventHandlersBadExampleApp;
 import id.global.asyncapi.runtime.scanner.model.AaiSchemaAdditionalProperties;
 import id.global.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
-import id.global.common.annotations.amqp.ExchangeType;
+import id.global.asyncapi.runtime.scanner.model.SentEvent;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
@@ -33,9 +34,6 @@ import io.apicurio.datamodels.asyncapi.models.AaiHeaderItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
-import id.global.asyncapi.runtime.scanner.app.EventHandlersApp;
-import id.global.asyncapi.runtime.scanner.app.EventHandlersBadExampleApp;
-import id.global.asyncapi.runtime.scanner.model.SentEvent;
 
 public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
@@ -135,8 +133,8 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(subscribeChannels.size(), is(1));
         assertThat(document.components.schemas.size(), is(12));
 
-        String defaultExchangeName = getDefaultExchangeName(EventHandlersApp.ID, ExchangeType.DIRECT);
-        String defaultTestEventV1ChannelName = String.format("%s/default-test-event-v1", defaultExchangeName);
+        String testEventV1ExchangeName = "test-event-v1";
+        String defaultTestEventV1ChannelName = "test-event-v1/default-test-event-v1";
         Map.Entry<String, AaiChannelItem> testEventV1Entry = publishChannels.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey().equals(defaultTestEventV1ChannelName))
                 .collect(Collectors.toList()).get(0);
@@ -154,7 +152,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
         assertThat(testEventGidChannelBindings.getExchange().get("durable"), is(true));
         assertThat(testEventGidChannelBindings.getExchange().get("vhost"), is("/"));
-        assertThat(testEventGidChannelBindings.getExchange().get("name"), is(defaultExchangeName));
+        assertThat(testEventGidChannelBindings.getExchange().get("name"), is(testEventV1ExchangeName));
         assertThat(testEventGidChannelBindings.getExchange().get("autoDelete"), is(false));
         assertThat(testEventGidChannelBindings.getExchange().get("type"), is("direct"));
 
@@ -166,9 +164,11 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(testEventGidChannelBindings.getQueue().get("exclusive"), is(false));
 
         // Event with minimum required annotation values
+        String defaultEventExchangeName = "test-event-v1";
+        String defaultEventChannelName = "test-event-v1/default-test-event-v1";
         Map.Entry<String, AaiChannelItem> testEventDefaultsEntry = publishChannels.stream()
                 .filter(stringAaiChannelItemEntry -> stringAaiChannelItemEntry.getKey()
-                        .equals(String.format("%s/event-defaults", defaultExchangeName)))
+                        .equals(defaultEventChannelName))
                 .collect(Collectors.toList()).get(0);
 
         AaiChannelItem testEventDefaultsValue = testEventDefaultsEntry.getValue();
@@ -177,14 +177,14 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         Map<String, Object> queueValues = testEventDefaultGidChannelBindings.getQueue();
         Map<String, Object> exchangeValues = testEventDefaultGidChannelBindings.getExchange();
 
-        assertThat(queueValues.get("name"), is("event-defaults"));
+        assertThat(queueValues.get("name"), is("default-test-event-v1"));
         assertThat(queueValues.get("durable"), is(true));
         assertThat(queueValues.get("autoDelete"), is(false));
         assertThat(queueValues.get("vhost"), is("/"));
 
         assertThat(exchangeValues.get("type"), is("direct"));
         assertThat(exchangeValues.get("vhost"), is("/"));
-        assertThat(exchangeValues.get("name"), is(defaultExchangeName));
+        assertThat(exchangeValues.get("name"), is(defaultEventExchangeName));
         assertThat(exchangeValues.get("durable"), is(true));
         assertThat(exchangeValues.get("autoDelete"), is(false));
 
@@ -307,7 +307,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
 
         Optional<Map.Entry<String, AaiChannelItem>> testEventV2EntryOptional = document.channels.entrySet().stream()
                 .filter(entry ->
-                        entry.getKey().equals("event-handlers-app-test-direct/test-event-v2")
+                        entry.getKey().equals("test-event-v2/test-event-v2")
                                 && entry.getValue().publish != null).findFirst();
 
         assertThat(testEventV2EntryOptional, is(notNullValue()));
@@ -362,9 +362,5 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.ProducedEvent.class,
                 MessageHandler.class,
                 Message.class);
-    }
-
-    private String getDefaultExchangeName(String projectName, ExchangeType exchangeType) {
-        return camelToKebabCase(projectName) + "-" + exchangeType.getType();
     }
 }
