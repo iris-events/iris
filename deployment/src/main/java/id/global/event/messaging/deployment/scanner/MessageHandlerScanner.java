@@ -19,12 +19,12 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
 
+import id.global.asyncapi.runtime.util.GidAnnotationParser;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.event.messaging.deployment.validation.AnnotationInstanceValidator;
-import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 
 public class MessageHandlerScanner {
     private static final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getCanonicalName());
