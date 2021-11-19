@@ -10,8 +10,8 @@ import java.util.Optional;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
+import id.global.asyncapi.spec.annotations.EventApp;
 import id.global.event.messaging.runtime.context.EventAppContext;
-import io.smallrye.asyncapi.spec.annotations.EventApp;
 
 public class EventAppScanner {
 

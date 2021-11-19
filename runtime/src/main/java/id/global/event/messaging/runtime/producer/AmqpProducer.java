@@ -30,6 +30,7 @@ import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 
+import id.global.asyncapi.runtime.util.GidAnnotationParser;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.Common;
@@ -43,7 +44,6 @@ import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.tx.TransactionCallback;
-import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 
 @ApplicationScoped
 public class AmqpProducer {
