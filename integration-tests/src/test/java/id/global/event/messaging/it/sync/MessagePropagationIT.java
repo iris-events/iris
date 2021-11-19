@@ -17,9 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -95,13 +94,11 @@ public class MessagePropagationIT {
         }
     }
 
-    @ConsumedEvent(routingKey = INITIAL_CONSUMING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(routingKey = INITIAL_CONSUMING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = INITIAL_CONSUMING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record HandledEvent(String eventPropertyValue) {
     }
 
-    @ConsumedEvent(routingKey = FORWARDING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(routingKey = FORWARDING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = FORWARDING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record ForwardedEvent(String eventPropertyValue) {
     }
 }

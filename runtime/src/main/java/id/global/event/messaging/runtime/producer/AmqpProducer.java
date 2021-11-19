@@ -31,7 +31,7 @@ import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 
 import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.ProducedEvent;
+import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.HostnameProvider;
@@ -43,14 +43,16 @@ import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.tx.TransactionCallback;
+import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 
 @ApplicationScoped
 public class AmqpProducer {
     private static final Logger log = LoggerFactory.getLogger(AmqpProducer.class);
 
-    public static final String HEADER_ORIGIN_SERVICE_ID = "X-Origin-Service-Id";
-    public static final String HEADER_CURRENT_SERVICE_ID = "X-Current-Service-Id";
-    public static final String HEADER_INSTANCE_ID = "X-Instance-Id";
+    public static final String HEADER_ORIGIN_SERVICE_ID = "originServiceId";
+    public static final String HEADER_CURRENT_SERVICE_ID = "currentServiceId";
+    public static final String HEADER_INSTANCE_ID = "instanceId";
+    public static final String HEADER_EVENT_TYPE = "eventType";
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
@@ -90,19 +92,30 @@ public class AmqpProducer {
             throw new AmqpSendException("Null message can not be published!");
         }
 
-        Optional<ProducedEvent> producedEventMetadata = Optional.ofNullable(
-                message.getClass().getAnnotation(ProducedEvent.class));
+        final id.global.common.annotations.amqp.Message messageAnnotation = Optional
+                .ofNullable(message.getClass().getAnnotation(id.global.common.annotations.amqp.Message.class))
+                .orElseThrow(() -> new AmqpSendException("Message annotation is required."));
 
-        final var amqpBasicProperties = getOrCreateAmqpBasicProperties();
-        final var optionalExchange = getExchange(producedEventMetadata);
-        final var routingKey = getRoutingKey(producedEventMetadata);
-        final var exchangeType = getExchangeType(producedEventMetadata);
+        final var messageClassSimpleName = message.getClass().getSimpleName();
+        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(messageClassSimpleName);
+        final var scope = getScope(messageAnnotation);
+        final var exchange = getExchange(messageAnnotation, messageClassSimpleName);
+        final var routingKey = getRoutingKey(messageAnnotation, messageClassSimpleName);
+        final var exchangeType = getExchangeType(messageAnnotation);
 
-        if (optionalExchange.isEmpty()) {
-            throw new AmqpSendException("Could not send message to empty or null exchange.");
+        final var applicationId = eventAppInfoProvider.getApplicationId();
+        final var messageClassKebabCase = GidAnnotationParser.camelToKebabCase(messageClassSimpleName);
+        final var appPrefixedMessageClassRoutingKey = applicationId + "." + messageClassKebabCase;
+
+        switch (scope) {
+            case INTERNAL -> publish(message, exchange, routingKey, amqpBasicProperties, exchangeType);
+            case USER -> publish(message, "user", appPrefixedMessageClassRoutingKey, amqpBasicProperties, ExchangeType.TOPIC);
+            case SESSION -> publish(message, "session", appPrefixedMessageClassRoutingKey, amqpBasicProperties,
+                    ExchangeType.TOPIC);
+            case BROADCAST -> publish(message, "broadcast", appPrefixedMessageClassRoutingKey, amqpBasicProperties,
+                    ExchangeType.TOPIC);
+            default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
         }
-
-        publish(message, optionalExchange.get(), routingKey, amqpBasicProperties, exchangeType);
     }
 
     public void addReturnListener(@NotNull String channelKey, @NotNull ReturnListener returnListener) throws IOException {
@@ -211,22 +224,23 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getOrCreateAmqpBasicProperties() {
+    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(final String messageClassSimpleName) {
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildServiceAndInstanceAwareBasicProperties(basicProperties, serviceId);
+        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, messageClassSimpleName);
     }
 
-    private AMQP.BasicProperties buildServiceAndInstanceAwareBasicProperties(final AMQP.BasicProperties basicProperties,
-            final String serviceId) {
+    private AMQP.BasicProperties buildAmqpBasicPropertiesWithAdditionalHeaders(final AMQP.BasicProperties basicProperties,
+            final String serviceId, final String messageClassSimpleName) {
 
         final var hostName = hostnameProvider.getHostName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
         headers.put(HEADER_INSTANCE_ID, hostName);
+        headers.put(HEADER_EVENT_TYPE, messageClassSimpleName);
 
         return basicProperties.builder().headers(headers).build();
     }
@@ -238,16 +252,28 @@ public class AmqpProducer {
                 .build();
     }
 
-    private ExchangeType getExchangeType(Optional<ProducedEvent> producedEventMetadata) {
-        return producedEventMetadata.map(ProducedEvent::exchangeType).orElse(ExchangeType.DIRECT);
+    private ExchangeType getExchangeType(id.global.common.annotations.amqp.Message messageAnnotation) {
+        return messageAnnotation.exchangeType();
     }
 
-    private String getRoutingKey(Optional<ProducedEvent> producedEventMetadata) {
-        return producedEventMetadata.map(ProducedEvent::routingKey).orElse(null);
+    private String getRoutingKey(id.global.common.annotations.amqp.Message messageAnnotation, String simpleName) {
+        final var routingKey = messageAnnotation.routingKey();
+        if (Objects.isNull(routingKey) || routingKey.isEmpty()) {
+            return GidAnnotationParser.camelToKebabCase(simpleName);
+        }
+        return routingKey;
     }
 
-    private Optional<String> getExchange(Optional<ProducedEvent> producedEventMetadata) {
-        return producedEventMetadata.map(ProducedEvent::exchange);
+    private String getExchange(id.global.common.annotations.amqp.Message messageAnnotation, String simpleName) {
+        final var exchange = messageAnnotation.exchange();
+        if (Objects.isNull(exchange) || exchange.isEmpty()) {
+            return GidAnnotationParser.camelToKebabCase(simpleName);
+        }
+        return exchange;
+    }
+
+    private Scope getScope(id.global.common.annotations.amqp.Message messageAnnotation) {
+        return messageAnnotation.scope();
     }
 
     private boolean shouldWaitForConfirmations() {

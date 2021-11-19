@@ -2,6 +2,7 @@ package id.global.event.messaging.it;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_CURRENT_SERVICE_ID;
+import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_EVENT_TYPE;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_INSTANCE_ID;
 import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_ORIGIN_SERVICE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Application;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,14 +20,11 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.AMQP;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
-import io.smallrye.asyncapi.spec.annotations.EventApp;
-import io.smallrye.asyncapi.spec.annotations.info.Info;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,9 +32,7 @@ public class EventAppRecorderIT {
 
     private static final String EVENT_QUEUE = "event-queue";
     private static final String EXCHANGE = "event-app-recorder-exchange";
-    public static final String APP_ID = "test-quarkus-eda";
-    public static final String APP_DESCRIPTION = "Quarkus EDA test application";
-    public static final String APP_TITLE = "Quarkus EDA";
+    public static final String APP_ID = "TestEventApp";
 
     @Inject
     AmqpProducer producer;
@@ -58,10 +53,12 @@ public class EventAppRecorderIT {
                 containsInAnyOrder(
                         HEADER_ORIGIN_SERVICE_ID,
                         HEADER_CURRENT_SERVICE_ID,
-                        HEADER_INSTANCE_ID));
+                        HEADER_INSTANCE_ID,
+                        HEADER_EVENT_TYPE));
 
         assertThat(headers.get(HEADER_ORIGIN_SERVICE_ID).toString(), is(APP_ID));
         assertThat(headers.get(HEADER_CURRENT_SERVICE_ID).toString(), is(APP_ID));
+        assertThat(headers.get(HEADER_EVENT_TYPE).toString(), is(Event.class.getSimpleName()));
     }
 
     @SuppressWarnings("unused")
@@ -75,7 +72,7 @@ public class EventAppRecorderIT {
             this.eventContext = eventContext;
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = EVENT_QUEUE)
         public void handle(Event event) {
             final var amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             basicPropertiesCompletableFuture.complete(amqpBasicProperties);
@@ -90,14 +87,7 @@ public class EventAppRecorderIT {
         }
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event() {
     }
-
-    @SuppressWarnings("unused")
-    @EventApp(id = APP_ID, info = @Info(description = APP_DESCRIPTION, title = APP_TITLE))
-    public static class TestApplication extends Application {
-    }
-
 }

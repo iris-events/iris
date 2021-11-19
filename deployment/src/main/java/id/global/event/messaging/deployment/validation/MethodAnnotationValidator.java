@@ -1,6 +1,8 @@
 package id.global.event.messaging.deployment.validation;
 
+import java.util.Arrays;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
@@ -8,47 +10,30 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.annotations.amqp.ProducedEvent;
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.Message;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
+import id.global.event.messaging.deployment.constants.AnnotationInstanceParams;
+import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 
 class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
 
-    private final DotName DOT_NAME_PRODUCED_EVENT = DotName.createSimple(ProducedEvent.class.getCanonicalName());
+    private final DotName DOT_NAME_PRODUCED_EVENT = DotName.createSimple(Message.class.getCanonicalName());
 
     private final IndexView index;
-    private final ValidationRules validationRules;
     private final ClassAnnotationValidator classAnnotationValidator;
 
-    public MethodAnnotationValidator(final IndexView index, final ValidationRules validationRules,
-            final ClassAnnotationValidator classAnnotationValidator) {
-        super(validationRules);
+    public MethodAnnotationValidator(final IndexView index, final ClassAnnotationValidator classAnnotationValidator) {
+        super();
         this.index = index;
-        this.validationRules = validationRules;
         this.classAnnotationValidator = classAnnotationValidator;
     }
 
     @Override
     public void validate(final AnnotationInstance annotationInstance) {
         super.validate(annotationInstance);
-
-        validateMethodParamCount(annotationInstance);
+        validateBindingKeysValidity(annotationInstance);
         validateMethodReturnType(annotationInstance);
-
-        if (!validationRules.allowExternalDependencyParams()) {
-            validateMethodParamExternalDependency(annotationInstance);
-        }
-    }
-
-    @Override
-    protected MessageHandlerValidationException createMissingParamsException(final AnnotationInstance annotationInstance,
-            final Set<String> missingParams) {
-
-        final var missingParamsString = String.join(", ", missingParams);
-        final var methodInfo = getMethodInfo(annotationInstance);
-        final var declaringClassName = getDeclaringClassName(methodInfo);
-        throw new MessageHandlerValidationException(
-                String.format("Parameter(s) \"%s\" missing on MessageHandler annotation on %s::%s",
-                        missingParamsString, declaringClassName, methodInfo.name()));
     }
 
     @Override
@@ -63,21 +48,43 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
                         nonKebabCaseParamsString, methodInfo.name(), declaringClassName));
     }
 
-    private void validateMethodParamCount(final AnnotationInstance annotationInstance) {
-        final var paramCount = validationRules.paramCount();
-        if (paramCount == null) {
+    @Override
+    protected ExchangeType getExchangeType(final AnnotationInstance annotationInstance) {
+        final var methodInfo = getMethodInfo(annotationInstance);
+        final var messageAnnotation = MessageHandlerScanner.getMessageAnnotation(methodInfo.parameters(), index);
+
+        return MessageHandlerScanner.getExchangeType(messageAnnotation);
+    }
+
+    private void validateBindingKeysValidity(final AnnotationInstance annotationInstance) {
+        final var annotationValue = annotationInstance.value(AnnotationInstanceParams.BINDING_KEYS_PARAM);
+        if (annotationValue == null) {
             return;
         }
 
-        final var methodInfo = getMethodInfo(annotationInstance);
-        if (methodInfo.parameters().size() != paramCount) {
-            throw new MessageHandlerValidationException(
-                    String.format(
-                            "MessageHandler annotated method %s::%s must declare exactly %s parameters that represents the event.",
-                            methodInfo.declaringClass(),
-                            methodInfo.name(),
-                            paramCount));
+        final var exchangeType = getExchangeType(annotationInstance);
+
+        var patternString = KEBAB_CASE_PATTERN;
+        if (exchangeType.equals(ExchangeType.TOPIC)) {
+            patternString = TOPIC_PATTERN;
         }
+
+        final var pattern = Pattern.compile(patternString);
+        final var bindingKeys = Arrays.asList(annotationValue.asStringArray());
+        bindingKeys.stream()
+                .filter(bindingKey -> !pattern.matcher(bindingKey).matches())
+                .findAny()
+                .ifPresent(bindingKey -> {
+                    final var methodInfo = getMethodInfo(annotationInstance);
+                    final var declaringClassName = getDeclaringClassName(methodInfo);
+                    throw new MessageHandlerValidationException(
+                            String.format(
+                                    "bindingKeys \"%s\" on message handler annotation in class %s does not conform to the correct format. "
+                                            + "For TOPIC exchange type can contain only lowercase alphanumerical characters, dots and wildcards [*,#]. "
+                                            + "For all others it should be formatted in kebab case.",
+                                    bindingKey,
+                                    declaringClassName));
+                });
     }
 
     private void validateMethodReturnType(final AnnotationInstance annotationInstance) {
@@ -108,21 +115,6 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
         }
 
         classAnnotationValidator.validate(annotation);
-    }
-
-    private void validateMethodParamExternalDependency(final AnnotationInstance annotationInstance) {
-        final var methodInfo = annotationInstance.target().asMethod();
-        final var parameterType = methodInfo.parameters().get(0);
-        final var classByName = index.getClassByName(parameterType.name());
-
-        if (classByName == null) {
-            throw new MessageHandlerValidationException(
-                    String.format(
-                            "MessageHandler annotated method %s::%s can not have external dependency classes as parameters.",
-                            methodInfo.declaringClass(),
-                            methodInfo.name()));
-        }
-
     }
 
     private MethodInfo getMethodInfo(final AnnotationInstance annotationInstance) {

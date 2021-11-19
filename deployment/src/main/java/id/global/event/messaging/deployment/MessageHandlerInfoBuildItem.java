@@ -11,7 +11,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final Type parameterType;
     private final Type returnType;
     private final String exchange;
-    private final String routingKey;
     private final String methodName;
     private final ExchangeType exchangeType;
     private final String[] bindingKeys;
@@ -21,7 +20,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             final Type parameterType,
             final Type returnType,
             final String methodName,
-            final String routingKey,
             final String exchange,
             final String[] bindingKeys,
             final ExchangeType exchangeType) {
@@ -29,7 +27,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         this.parameterType = parameterType;
         this.returnType = returnType;
         this.exchange = exchange;
-        this.routingKey = routingKey;
         this.methodName = methodName;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -51,10 +48,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return exchange;
     }
 
-    public String getRoutingKey() {
-        return routingKey;
-    }
-
     public String getMethodName() {
         return methodName;
     }
@@ -74,7 +67,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 ", parameterType=" + parameterType +
                 ", returnType=" + returnType +
                 ", exchange='" + exchange + '\'' +
-                ", queue='" + routingKey + '\'' +
                 ", methodName='" + methodName + '\'' +
                 '}';
     }

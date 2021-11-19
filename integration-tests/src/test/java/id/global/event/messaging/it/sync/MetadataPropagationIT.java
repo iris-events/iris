@@ -18,9 +18,8 @@ import org.mockito.Mockito;
 
 import com.rabbitmq.client.AMQP;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
@@ -86,7 +85,7 @@ public class MetadataPropagationIT {
             this.producer = producer;
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = EVENT_QUEUE1)
         public void handle(Event1 event) throws AmqpSendException, AmqpTransactionException {
             final var forwardedEvent = new Event2();
             producer.send(forwardedEvent);
@@ -103,7 +102,7 @@ public class MetadataPropagationIT {
             this.producer = producer;
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = EVENT_QUEUE2)
         public void handle(Event2 event) throws AmqpSendException, AmqpTransactionException {
             final var forwardedEvent = new Event3();
             producer.send(forwardedEvent);
@@ -121,7 +120,7 @@ public class MetadataPropagationIT {
             this.eventContext = eventContext;
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = EVENT_QUEUE3)
         public void handle(Event3 event) {
             final var amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             basicPropertiesCompletableFuture.complete(amqpBasicProperties);
@@ -136,18 +135,15 @@ public class MetadataPropagationIT {
         }
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event1() {
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event2() {
     }
 
-    @ConsumedEvent(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ProducedEvent(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event3() {
     }
 }

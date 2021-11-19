@@ -21,9 +21,8 @@ import org.junit.jupiter.api.TestInstance;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ShutdownSignalException;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -128,7 +127,7 @@ public class ListenerAndHandlerTestIT {
             count.set(0);
         }
 
-        @MessageHandler
+        @MessageHandler(bindingKeys = EVENT_QUEUE)
         public void handle(Event event) {
             count.incrementAndGet();
             handledEvent.complete(event);
@@ -139,16 +138,15 @@ public class ListenerAndHandlerTestIT {
         }
     }
 
-    @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = UNKNOWN_EXCHANGE, exchangeType = DIRECT, routingKey = EVENT_QUEUE)
+    @Message(exchange = UNKNOWN_EXCHANGE, exchangeType = DIRECT, routingKey = EVENT_QUEUE)
     public record UnknownExchangeEvent(String name, Long age) {
     }
 
-    @ProducedEvent(exchange = EXCHANGE, exchangeType = DIRECT, routingKey = UNKNOWN_QUEUE)
+    @Message(exchange = EXCHANGE, exchangeType = DIRECT, routingKey = UNKNOWN_QUEUE)
     public record UnknownQueueEvent(String name, Long age) {
     }
 }

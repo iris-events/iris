@@ -1,16 +1,14 @@
 package id.global.event.messaging.deployment.scanner;
 
-import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.BINDING_KEYS_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_TYPE_PARAM;
-import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY;
-import static java.util.Collections.emptySet;
+import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY_PARAM;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,16 +19,16 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
 import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.event.messaging.deployment.validation.AnnotationInstanceValidator;
-import id.global.event.messaging.deployment.validation.ValidationRules;
+import io.smallrye.asyncapi.runtime.util.GidAnnotationParser;
 
 public class MessageHandlerScanner {
-    private final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getCanonicalName());
-    private final DotName DOT_NAME_CONSUMED_EVENT = DotName.createSimple(ConsumedEvent.class.getCanonicalName());
+    private static final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getCanonicalName());
+    private static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getCanonicalName());
     private final IndexView index;
 
     public MessageHandlerScanner(IndexView index) {
@@ -44,74 +42,86 @@ public class MessageHandlerScanner {
     }
 
     private Stream<MessageHandlerInfoBuildItem> scanMessageHandlerAnnotations(Stream<AnnotationInstance> directAnnotations) {
+        final AnnotationInstanceValidator annotationValidator = getAnnotationValidator();
 
-        final AnnotationInstanceValidator messageHandlerValidator = getMessageHandlerValidator();
-        final AnnotationInstanceValidator eventValidator = getEventValidator();
+        return directAnnotations.filter(isNotSyntheticPredicate()).map(messageHandlerAnnotation -> {
 
-        return directAnnotations.filter(isNotSyntheticPredicate()).map(methodAnnotation -> {
-            messageHandlerValidator.validate(methodAnnotation);
-            final var methodInfo = methodAnnotation.target().asMethod();
+            annotationValidator.validate(messageHandlerAnnotation);
+            final var methodInfo = messageHandlerAnnotation.target().asMethod();
             final var methodParameters = methodInfo.parameters();
 
-            final var eventAnnotation = getEventAnnotation(methodParameters, index);
-            eventValidator.validate(eventAnnotation);
+            final var messageAnnotation = getMessageAnnotation(methodParameters, index);
+            annotationValidator.validate(messageAnnotation);
 
-            final var routingKey = Optional.ofNullable(eventAnnotation.value(ROUTING_KEY))
-                    .map(AnnotationValue::asString)
-                    .orElse(null);
-            final var exchange = Optional.ofNullable(eventAnnotation.value(EXCHANGE_PARAM))
-                    .map(AnnotationValue::asString)
-                    .orElse(null);
-            final var exchangeType = Optional.ofNullable(eventAnnotation.value(EXCHANGE_TYPE_PARAM))
-                    .map(AnnotationValue::asString)
-                    .map(ExchangeType::fromType)
-                    .orElse(DIRECT);
-            final var bindingKeys = Optional.ofNullable(eventAnnotation.value(BINDING_KEYS_PARAM))
-                    .map(AnnotationValue::asStringArray)
-                    .orElse(null);
+            final var exchangeType = getExchangeType(messageAnnotation);
+            final var exchange = getExchange(messageAnnotation);
+            final var bindingKeys = getBindingKeysOrDefault(messageHandlerAnnotation, messageAnnotation, exchangeType);
 
             return new MessageHandlerInfoBuildItem(
                     methodInfo.declaringClass(),
                     methodInfo.parameters().get(0),
                     methodInfo.returnType(),
                     methodInfo.name(),
-                    routingKey,
                     exchange,
                     bindingKeys,
                     exchangeType);
         });
     }
 
+    // TODO: extract all annotation value retrievals to common place: MessageHandlerScanner, AmqpProducer and smallrye-eda asyncapi generator should all use same defaults retrieval logic
+    private String[] getBindingKeysOrDefault(AnnotationInstance messageHandlerAnnotation, AnnotationInstance messageAnnotation,
+            ExchangeType exchangeType) {
+        return Optional.ofNullable(messageHandlerAnnotation.value(BINDING_KEYS_PARAM))
+                .map(AnnotationValue::asStringArray)
+                .orElseGet(() -> getDefaultBindingKeys(messageAnnotation, exchangeType));
+    }
+
+    private String[] getDefaultBindingKeys(AnnotationInstance messageAnnotation, ExchangeType exchangeType) {
+        if (exchangeType.equals(FANOUT)) {
+            return null;
+        }
+
+        return Optional.ofNullable(messageAnnotation.value(ROUTING_KEY_PARAM))
+                .map(AnnotationValue::asString)
+                .map(s -> new String[] { s })
+                .orElseGet(() -> new String[] { getMessageClassKebabCase(messageAnnotation) });
+
+    }
+
+    private String getExchange(AnnotationInstance messageAnnotation) {
+        return Optional
+                .ofNullable(messageAnnotation.value(EXCHANGE_PARAM))
+                .map(AnnotationValue::asString)
+                .orElseGet(() -> getMessageClassKebabCase(messageAnnotation));
+    }
+
+    private String getMessageClassKebabCase(final AnnotationInstance messageAnnotation) {
+        return GidAnnotationParser.camelToKebabCase(messageAnnotation.target().asClass().simpleName());
+    }
+
     private Predicate<AnnotationInstance> isNotSyntheticPredicate() {
         return annotationInstance -> !annotationInstance.target().asMethod().isSynthetic();
     }
 
-    private AnnotationInstanceValidator getEventValidator() {
-        final var eventValidationRules = getValidationRules(Set.of(EXCHANGE_PARAM, EXCHANGE_TYPE_PARAM),
-                Set.of(EXCHANGE_PARAM, ROUTING_KEY));
-        return new AnnotationInstanceValidator(index, eventValidationRules);
+    private AnnotationInstanceValidator getAnnotationValidator() {
+        return new AnnotationInstanceValidator(index);
     }
 
-    private AnnotationInstanceValidator getMessageHandlerValidator() {
-        final var methodValidationRules = getValidationRules(emptySet(), emptySet());
-        return new AnnotationInstanceValidator(index, methodValidationRules);
+    public static ExchangeType getExchangeType(AnnotationInstance annotationInstance) {
+        // TODO: change extraction to common defaulting code
+        return Optional.ofNullable(annotationInstance.value(EXCHANGE_TYPE_PARAM))
+                .map(AnnotationValue::asString)
+                .map(ExchangeType::fromType)
+                .orElse(ExchangeType.FANOUT);
     }
 
-    private ValidationRules getValidationRules(final Set<String> requiredParams, final Set<String> kebabCaseOnlyParams) {
-        return new ValidationRules(1,
-                false,
-                requiredParams,
-                kebabCaseOnlyParams);
-
-    }
-
-    private AnnotationInstance getEventAnnotation(final List<Type> parameters, final IndexView index) {
+    public static AnnotationInstance getMessageAnnotation(final List<Type> parameters, final IndexView index) {
 
         final var consumedEventTypes = parameters.stream()
                 .map(Type::name)
                 .map(index::getClassByName)
                 .filter(Objects::nonNull)
-                .map(classInfo -> classInfo.classAnnotation(DOT_NAME_CONSUMED_EVENT))
+                .map(classInfo -> classInfo.classAnnotation(DOT_NAME_MESSAGE))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 

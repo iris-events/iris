@@ -3,7 +3,6 @@ package id.global.event.messaging.runtime.context;
 import id.global.common.annotations.amqp.ExchangeType;
 
 public class AmqpContext {
-    private String queue;
     private String exchange;
     private String[] bindingKeys;
     private ExchangeType exchangeType;
@@ -11,8 +10,7 @@ public class AmqpContext {
     public AmqpContext() {
     }
 
-    public AmqpContext(String queue, String exchange, String[] bindingKeys, ExchangeType exchangeType) {
-        this.queue = queue;
+    public AmqpContext(String exchange, String[] bindingKeys, ExchangeType exchangeType) {
         this.exchange = exchange;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -26,16 +24,8 @@ public class AmqpContext {
         this.exchangeType = exchangeType;
     }
 
-    public void setQueue(String queue) {
-        this.queue = queue;
-    }
-
     public void setExchange(String exchange) {
         this.exchange = exchange;
-    }
-
-    public String getQueue() {
-        return queue;
     }
 
     public String getExchange() {

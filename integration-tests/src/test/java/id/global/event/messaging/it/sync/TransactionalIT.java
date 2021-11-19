@@ -26,14 +26,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.ProducedEvent;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import id.global.event.messaging.runtime.producer.Message;
 import id.global.event.messaging.runtime.tx.TransactionCallback;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -52,7 +50,7 @@ public class TransactionalIT {
     }
 
     @Test
-    @DisplayName("Message send")
+    @DisplayName("id.global.event.messaging.runtime.producer.Message send")
     void testThroughServiceTransactionSuccessful() throws Exception {
         service.sendTransactional(false);
 
@@ -70,7 +68,7 @@ public class TransactionalIT {
     }
 
     @Test
-    @DisplayName("Message send in rolled back should not reach handler service")
+    @DisplayName("id.global.event.messaging.runtime.producer.Message send in rolled back should not reach handler service")
     void testTransactionRollback() {
         assertThrows(RuntimeException.class, () -> service.sendTransactional(true));
         assertThat(service.getHandledEventCount(), is(0));
@@ -135,7 +133,8 @@ public class TransactionalIT {
 
         service.getProducer().registerTransactionCallback(new TransactionCallback() {
             @Override
-            public void beforeTxPublish(List<Message> messages) throws AmqpSendException {
+            public void beforeTxPublish(List<id.global.event.messaging.runtime.producer.Message> messages)
+                    throws AmqpSendException {
                 throw new AmqpSendException("Test exception");
             }
 
@@ -145,7 +144,7 @@ public class TransactionalIT {
             }
 
             @Override
-            public void afterTxCompletion(List<Message> messages, int status) {
+            public void afterTxCompletion(List<id.global.event.messaging.runtime.producer.Message> messages, int status) {
 
             }
         });
@@ -253,16 +252,14 @@ public class TransactionalIT {
 
     }
 
-    @ProducedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    @ConsumedEvent(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
-    private record TestEvent(int seq) {
-
+    @Message(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    public record TestEvent(int seq) {
     }
 
     private class TestCustomTransactionCallback implements TransactionCallback {
 
         @Override
-        public void beforeTxPublish(List<Message> messages) {
+        public void beforeTxPublish(List<id.global.event.messaging.runtime.producer.Message> messages) {
             service.getBeforeTxPublishCallback().complete(true);
         }
 
@@ -272,7 +269,7 @@ public class TransactionalIT {
         }
 
         @Override
-        public void afterTxCompletion(List<Message> messages, int status) {
+        public void afterTxCompletion(List<id.global.event.messaging.runtime.producer.Message> messages, int status) {
             service.getAfterTxCompletionCallback().complete(true);
             if (!service.getBeforeTxPublishCallback().isDone()) {
                 service.getBeforeTxPublishCallback().complete(false);
