@@ -1,13 +1,12 @@
 package id.global.common.annotations.amqp;
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface MessageHandler {
@@ -45,10 +44,26 @@ public @interface MessageHandler {
      *
      * @see <a href="https://www.rabbitmq.com/queues.html#temporary-queues">Rabbitmq temporary queues</a>
      */
-    boolean autodelete() default false;
+    boolean autoDelete() default false;
 
     /**
      * Defines allowed roles to use this event handler
      */
     String[] rolesAllowed() default {};
+
+    /**
+     * Defines consumer per service instance, in case there are multiple replicas / pods of same service running
+     * setting this flag to true, would create dedicated queue for each service instance.
+     * If this is set to true, {@link #autoDelete()} is enforced to prevent leftover queues.
+     * 
+     * @return true if queue per service instance must be created
+     */
+    boolean perInstance() default false;
+
+    /**
+     * Defines how many messages are fetched at once
+     * 
+     * @return number of messages to fetch
+     */
+    long prefetchCount() default 1;
 }
