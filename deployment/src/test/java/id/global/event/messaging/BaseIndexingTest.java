@@ -7,6 +7,11 @@ import java.io.UncheckedIOException;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 
+import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.Message;
+import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.Scope;
+
 public class BaseIndexingTest {
     protected Index indexOf(Class<?>... classes) {
         Indexer indexer = new Indexer();
@@ -14,6 +19,10 @@ public class BaseIndexingTest {
         for (Class<?> klazz : classes) {
             index(indexer, pathOf(klazz));
         }
+        index(indexer, pathOf(Message.class));
+        index(indexer, pathOf(MessageHandler.class));
+        index(indexer, pathOf(Scope.class));
+        index(indexer, pathOf(ExchangeType.class));
 
         return indexer.complete();
     }

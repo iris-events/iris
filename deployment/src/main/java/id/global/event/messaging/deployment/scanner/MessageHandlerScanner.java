@@ -23,6 +23,7 @@ import id.global.asyncapi.runtime.util.GidAnnotationParser;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.event.messaging.deployment.validation.AnnotationInstanceValidator;
 
@@ -44,28 +45,50 @@ public class MessageHandlerScanner {
     private Stream<MessageHandlerInfoBuildItem> scanMessageHandlerAnnotations(Stream<AnnotationInstance> directAnnotations) {
         final AnnotationInstanceValidator annotationValidator = getAnnotationValidator();
 
-        return directAnnotations.filter(isNotSyntheticPredicate()).map(messageHandlerAnnotation -> {
+        return directAnnotations.filter(isNotSyntheticPredicate())
+                .map(messageHandlerAnnotation -> {
 
-            annotationValidator.validate(messageHandlerAnnotation);
-            final var methodInfo = messageHandlerAnnotation.target().asMethod();
-            final var methodParameters = methodInfo.parameters();
+                    annotationValidator.validate(messageHandlerAnnotation);
+                    final var methodInfo = messageHandlerAnnotation.target().asMethod();
+                    final var methodParameters = methodInfo.parameters();
 
-            final var messageAnnotation = getMessageAnnotation(methodParameters, index);
-            annotationValidator.validate(messageAnnotation);
+                    final var messageAnnotation = getMessageAnnotation(methodParameters, index);
+                    annotationValidator.validate(messageAnnotation);
 
-            final var exchangeType = getExchangeType(messageAnnotation);
-            final var exchange = getExchange(messageAnnotation);
-            final var bindingKeys = getBindingKeysOrDefault(messageHandlerAnnotation, messageAnnotation, exchangeType);
+                    final ExchangeType exchangeType = ExchangeType
+                            .valueOf(messageAnnotation.valueWithDefault(index, EXCHANGE_TYPE_PARAM)
+                                    .asString());
+                    String exchange = messageAnnotation.valueWithDefault(index, EXCHANGE_PARAM).asString();
+                    if (exchange == null || exchange.isEmpty()) {
+                        exchange = getMessageClassKebabCase(messageAnnotation);
+                    }
 
-            return new MessageHandlerInfoBuildItem(
-                    methodInfo.declaringClass(),
-                    methodInfo.parameters().get(0),
-                    methodInfo.returnType(),
-                    methodInfo.name(),
-                    exchange,
-                    bindingKeys,
-                    exchangeType);
-        });
+                    final var bindingKeys = getBindingKeysOrDefault(messageHandlerAnnotation, messageAnnotation, exchangeType);
+                    final Scope scope = Scope.valueOf(messageAnnotation.valueWithDefault(index, "scope").asString());
+                    final long ttl = messageAnnotation.valueWithDefault(index, "ttl").asLong();
+                    final String deadLetter = messageAnnotation.valueWithDefault(index, "deadLetter").asString();
+
+                    final boolean durable = messageHandlerAnnotation.valueWithDefault(index, "durable").asBoolean();
+                    final boolean autoDelete = messageHandlerAnnotation.valueWithDefault(index, "autoDelete").asBoolean();
+                    final boolean perInstance = messageHandlerAnnotation.valueWithDefault(index, "perInstance").asBoolean();
+                    final int prefetchCount = messageHandlerAnnotation.valueWithDefault(index, "prefetchCount").asInt();
+
+                    return new MessageHandlerInfoBuildItem(
+                            methodInfo.declaringClass(),
+                            methodInfo.parameters().get(0),
+                            methodInfo.returnType(),
+                            methodInfo.name(),
+                            exchange,
+                            exchangeType,
+                            bindingKeys,
+                            scope,
+                            durable,
+                            autoDelete,
+                            perInstance,
+                            prefetchCount,
+                            ttl,
+                            deadLetter);
+                });
     }
 
     // TODO: extract all annotation value retrievals to common place: MessageHandlerScanner, AmqpProducer and smallrye-eda asyncapi generator should all use same defaults retrieval logic
@@ -88,13 +111,6 @@ public class MessageHandlerScanner {
 
     }
 
-    private String getExchange(AnnotationInstance messageAnnotation) {
-        return Optional
-                .ofNullable(messageAnnotation.value(EXCHANGE_PARAM))
-                .map(AnnotationValue::asString)
-                .orElseGet(() -> getMessageClassKebabCase(messageAnnotation));
-    }
-
     private String getMessageClassKebabCase(final AnnotationInstance messageAnnotation) {
         return GidAnnotationParser.camelToKebabCase(messageAnnotation.target().asClass().simpleName());
     }
@@ -107,6 +123,7 @@ public class MessageHandlerScanner {
         return new AnnotationInstanceValidator(index);
     }
 
+    @Deprecated(forRemoval = true, since = "this is wrongly handling default")
     public static ExchangeType getExchangeType(AnnotationInstance annotationInstance) {
         // TODO: change extraction to common defaulting code
         return Optional.ofNullable(annotationInstance.value(EXCHANGE_TYPE_PARAM))

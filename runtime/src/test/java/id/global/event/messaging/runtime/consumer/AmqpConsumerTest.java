@@ -10,12 +10,15 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
+import javax.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 
+import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
@@ -31,6 +34,8 @@ public class AmqpConsumerTest {
     public static final String EXCHANGE = "testExchange";
     public static final String ROUTING_KEY = "MyTestEvent";
     public static final String TEST_METHOD_NAME = "testMethod";
+    @Inject
+    HostnameProvider hostnameProvider;
 
     @Test
     void consumerMethodHandleShouldCorrectlyInvoke() throws NoSuchMethodException, IllegalAccessException, IOException {
@@ -41,7 +46,7 @@ public class AmqpConsumerTest {
                 new ObjectMapper(),
                 createHandle(),
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, void.class, TEST_METHOD_NAME),
-                new AmqpContext(EXCHANGE, new String[0], DIRECT),
+                new AmqpContext(EXCHANGE, new String[0], DIRECT, Scope.INTERNAL, false, false, false, 1, -1, ""),
                 new ConsumerChannelService(
                         new ConsumerConnectionProvider(
                                 new ConnectionFactoryProvider(amqpConfiguration),
@@ -50,7 +55,7 @@ public class AmqpConsumerTest {
                         amqpConfiguration),
                 handler,
                 new EventContext(),
-                null);
+                null, hostnameProvider, "test-app");
 
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);

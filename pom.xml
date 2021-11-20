@@ -17,7 +17,8 @@
     <smallrye.asyncapi.version>1.0.9</smallrye.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
     <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
-    <globalid-common.version>1.0.17</globalid-common.version>
+    <globalid-common.version>1.0.18-SNAPSHOT</globalid-common.version>
+
   </properties>
   <scm>
     <connection>scm:git:git@gitlab.com:globalid/experiments/quarkus-eda.git</connection>
@@ -57,11 +58,11 @@
         <artifactId>quarkus-narayana-jta</artifactId>
         <version>${version.quarkus}</version>
       </dependency>
-      <dependency>
+     <!-- <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-narayana-jta-deployment</artifactId>
         <version>${version.quarkus}</version>
-      </dependency>
+      </dependency>-->
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest</artifactId>

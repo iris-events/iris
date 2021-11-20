@@ -38,6 +38,7 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 
 class EventMessagingProcessor {
 
@@ -134,11 +135,23 @@ class EventMessagingProcessor {
 
                 MethodHandleContext methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
                         returnEventClass, col.getMethodName());
-                AmqpContext amqpContext = new AmqpContext(col.getExchange(), col.getBindingKeys(), col.getExchangeType());
+                AmqpContext amqpContext = new AmqpContext(col.getExchange(),
+                        col.getBindingKeys(),
+                        col.getExchangeType(),
+                        col.getScope(),
+                        col.isDurable(),
+                        col.isAutoDelete(),
+                        col.isQueuePerInstance(),
+                        col.getPrefetchCount(),
+                        col.getTtl(),
+                        col.getDeadLetterQueue());
 
                 LOG.info("Registering handler. Handler class = " + handlerClass.getName() +
                         " eventClass = " + eventClass.getName() +
                         " methodName = " + col.getMethodName());
+                if (returnEventClass != null) {
+                    LOG.info("we have reply event: {}", returnEventClass);
+                }
 
                 methodHandleRecorder.registerConsumer(beanContainer.getValue(), methodHandleContext, amqpContext);
 
@@ -154,5 +167,10 @@ class EventMessagingProcessor {
     void provideEventAppContext(final BeanContainerBuildItem beanContainer, EventAppInfoBuildItem eventAppInfoBuildItems,
             EventAppRecorder eventAppRecorder) {
         eventAppRecorder.registerEventAppContext(beanContainer.getValue(), eventAppInfoBuildItems.getEventAppContext());
+    }
+
+    @BuildStep
+    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+        indexDependency.produce(new IndexDependencyBuildItem("id.global.common", "globalid-common"));
     }
 }

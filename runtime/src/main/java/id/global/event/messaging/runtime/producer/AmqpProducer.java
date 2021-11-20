@@ -97,11 +97,11 @@ public class AmqpProducer {
                 .orElseThrow(() -> new AmqpSendException("Message annotation is required."));
 
         final var messageClassSimpleName = message.getClass().getSimpleName();
-        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(messageClassSimpleName);
         final var scope = getScope(messageAnnotation);
         final var exchange = getExchange(messageAnnotation, messageClassSimpleName);
         final var routingKey = getRoutingKey(messageAnnotation, messageClassSimpleName);
         final var exchangeType = getExchangeType(messageAnnotation);
+        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(messageClassSimpleName, exchange);
 
         final var applicationId = eventAppInfoProvider.getApplicationId();
         final var messageClassKebabCase = GidAnnotationParser.camelToKebabCase(messageClassSimpleName);
@@ -109,8 +109,8 @@ public class AmqpProducer {
 
         switch (scope) {
             case INTERNAL -> publish(message, exchange, routingKey, amqpBasicProperties, exchangeType);
-            case USER -> publish(message, "user", appPrefixedMessageClassRoutingKey, amqpBasicProperties, ExchangeType.TOPIC);
-            case SESSION -> publish(message, "session", appPrefixedMessageClassRoutingKey, amqpBasicProperties,
+            case USER -> publish(message, "user", "user", amqpBasicProperties, ExchangeType.TOPIC);
+            case SESSION -> publish(message, "session", "session", amqpBasicProperties,
                     ExchangeType.TOPIC);
             case BROADCAST -> publish(message, "broadcast", appPrefixedMessageClassRoutingKey, amqpBasicProperties,
                     ExchangeType.TOPIC);
@@ -202,6 +202,7 @@ public class AmqpProducer {
             synchronized (this.lock) {
                 String channelKey = Common.createChannelKey(exchange, routingKey);
                 Channel channel = channelService.getOrCreateChannelById(channelKey);
+                log.info("publishing event to exchange: {}, routing key: {}, props: {}{", exchange, routingKey, properties);
                 channel.basicPublish(exchange, routingKey, true, properties, bytes);
 
                 if (shouldWaitForConfirmations()) {
@@ -224,23 +225,23 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(final String messageClassSimpleName) {
+    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(final String messageClassSimpleName, String exchange) {
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, messageClassSimpleName);
+        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, messageClassSimpleName, exchange);
     }
 
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithAdditionalHeaders(final AMQP.BasicProperties basicProperties,
-            final String serviceId, final String messageClassSimpleName) {
+            final String serviceId, final String messageClassSimpleName, String exchange) {
 
         final var hostName = hostnameProvider.getHostName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
         headers.put(HEADER_INSTANCE_ID, hostName);
-        headers.put(HEADER_EVENT_TYPE, messageClassSimpleName);
+        headers.put(HEADER_EVENT_TYPE, exchange);
 
         return basicProperties.builder().headers(headers).build();
     }
