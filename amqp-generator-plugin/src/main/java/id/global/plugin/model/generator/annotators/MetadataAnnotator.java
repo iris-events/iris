@@ -4,6 +4,7 @@ import static id.global.plugin.model.generator.utils.StringConstants.EMPTY_STRIN
 
 import java.util.Optional;
 
+import id.global.common.annotations.amqp.Message;
 import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
@@ -14,10 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.sun.codemodel.JDefinedClass;
 
-import id.global.common.annotations.amqp.ConsumedEvent;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
-import id.global.common.annotations.amqp.ProducedEvent;
 
 public class MetadataAnnotator extends Jackson2Annotator {
 
@@ -79,14 +78,14 @@ public class MetadataAnnotator extends Jackson2Annotator {
         clazz.annotate(GlobalIdGenerated.class);
 
         if (!(publishMessage instanceof MissingNode)) {
-            clazz.annotate(ProducedEvent.class)
+            clazz.annotate(Message.class)
                     .param(EXCHANGE, exchangeName)
                     .param(EXCHANGE_TYPE, exchangeType)
                     .param(ROUTING_KEY, routingKey);
         }
 
         if (!(subscribeMessage instanceof MissingNode)) {
-            clazz.annotate(ConsumedEvent.class)
+            clazz.annotate(Message.class)
                     .param(EXCHANGE, exchangeName)
                     .param(EXCHANGE_TYPE, exchangeType)
                     .param(ROUTING_KEY, routingKey);

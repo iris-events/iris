@@ -1,14 +1,10 @@
 package id.global.plugin.model.generator;
 
-import java.io.File;
+import id.global.plugin.model.generator.models.ArtifactSource;
+import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 import javax.annotation.Nullable;
-
-import org.apache.maven.model.Model;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.project.MavenProject;
-
-import id.global.plugin.model.generator.models.ArtifactSource;
+import java.io.File;
 
 public class MyMojoTest extends AbstractMojoTestCase {
 
@@ -20,7 +16,9 @@ public class MyMojoTest extends AbstractMojoTestCase {
     private static final String MODEL_VERSION = "2.0.0";
     private static final String URL = "https://schema.internal.globalid.dev";
 
-    @Override protected void setUp() throws Exception {
+
+    @Override
+    protected void setUp() throws Exception {
         super.setUp();
     }
 
@@ -37,15 +35,8 @@ public class MyMojoTest extends AbstractMojoTestCase {
         myMojo.execute();
     }
 
-    private MavenProject createMavenProject(File file) {
-        Model model = new Model();
-        model.setPomFile(file);
-
-        return new MavenProject(model);
-    }
 
     private void setMojoProperties(@Nullable AmqpGeneratorMojo mojo, File pom) {
-        mojo.project = createMavenProject(pom);
         mojo.asyncApiFilename = ASYNC_API_FILENAME;
         mojo.asyncApiDirectory = ASYNC_API_DIRECTORY;
         mojo.modelName = MODEL_NAME;

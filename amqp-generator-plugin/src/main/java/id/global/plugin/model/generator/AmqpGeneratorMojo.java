@@ -45,7 +45,6 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 import org.jsonschema2pojo.GenerationConfig;
 import org.jsonschema2pojo.Jackson2Annotator;
@@ -78,9 +77,6 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     private static final String defaultUrl = "https://schema.internal.globalid.dev";
     public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
     public static final String IS_GENERATED_EVENT = "isGeneratedEvent";
-
-    @Parameter(defaultValue = "${project}", required = true, readonly = true)
-    MavenProject project;
 
     @Parameter(property = "artifactSource", required = true)
     ArtifactSource artifactSource;

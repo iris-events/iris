@@ -1,19 +1,14 @@
 package io.smallrye.asyncapi.mavenplugin;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import id.global.asyncapi.api.AsyncApiConfig;
+import id.global.asyncapi.api.AsyncApiConstants;
+import id.global.asyncapi.runtime.io.AsyncApiSerializer;
+import id.global.asyncapi.runtime.io.Format;
+import id.global.asyncapi.runtime.io.JsonUtil;
+import id.global.asyncapi.runtime.scanner.GidAnnotationScanner;
+import id.global.asyncapi.spec.AAIConfig;
+import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -28,13 +23,18 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.jboss.jandex.IndexView;
 
-import io.apicurio.datamodels.asyncapi.models.AaiDocument;
-import io.smallrye.asyncapi.api.AsyncApiConfig;
-import io.smallrye.asyncapi.api.AsyncApiConstants;
-import io.smallrye.asyncapi.runtime.io.AsyncApiSerializer;
-import io.smallrye.asyncapi.runtime.io.Format;
-import io.smallrye.asyncapi.runtime.scanner.GidAnnotationScanner;
-import io.smallrye.asyncapi.spec.AAIConfig;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 @Mojo(name = "generate-schema", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class GenerateSchemaMojo extends AbstractMojo {
@@ -150,7 +150,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
     private String apicurioRegistryUrl;
 
     @SuppressWarnings("unused")
-    @Parameter(property = "apicurioArtifactId", defaultValue = "${project.name}:${project.version}")
+    @Parameter(property = "apicurioArtifactId", defaultValue = "${project.artifactId}:${project.version}")
     private String apicurioArtifactId;
 
     @SuppressWarnings("unused")
@@ -163,7 +163,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
 
     @SuppressWarnings("unused")
     @Parameter(property = "excludeFromSchemas")
-    private List<String> excludeFromSchemas;
+    private List<String> excludeFromSchemas ;
 
     @SuppressWarnings("unused")
     @Parameter(property = "annotationsArtifacts")
@@ -273,6 +273,9 @@ public class GenerateSchemaMojo extends AbstractMojo {
         propertyMap.put(AsyncApiConstants.SCAN_DEPENDENCIES_JARS, scanDependenciesJars);
         propertyMap.put(AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, customSchemaRegistryClass);
         propertyMap.put(AsyncApiConstants.VERSION, asyncApiVersion);
+        if (excludeFromSchemas == null ||excludeFromSchemas.isEmpty()){
+            excludeFromSchemas = List.of("com.fasterxml.jackson.databind.JsonNode");
+        }
         propertyMap.put(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, excludeFromSchemas);
         propertyMap.put(AsyncApiConstants.PROJECT_VERSION, projectVersion);
 
@@ -281,19 +284,17 @@ public class GenerateSchemaMojo extends AbstractMojo {
 
     private void write(AaiDocument schema) throws MojoExecutionException {
         try {
-            String yaml = AsyncApiSerializer.serialize(schema, Format.YAML);
-            String json = AsyncApiSerializer.serialize(schema, Format.JSON);
             if (outputDirectory == null) {
                 // no destination file specified => print to stdout
-                getLog().info(yaml);
+                getLog().info(JsonUtil.MAPPER.writeValueAsString(schema));
             } else {
                 Path directory = outputDirectory.toPath();
                 if (!Files.exists(directory)) {
                     Files.createDirectories(directory);
                 }
 
-                writeSchemaFile(directory, schemaFilename + ".yaml", yaml.getBytes());
-                writeSchemaFile(directory, schemaFilename + ".json", json.getBytes());
+                writeSchemaFile(directory, schemaFilename + ".yaml", schema, JsonUtil.MAPPER_YAML);
+                writeSchemaFile(directory, schemaFilename + ".json", schema, JsonUtil.MAPPER);
 
                 getLog().info("Wrote the schema files to " + outputDirectory.getAbsolutePath());
             }
@@ -302,16 +303,12 @@ public class GenerateSchemaMojo extends AbstractMojo {
         }
     }
 
-    private void writeSchemaFile(Path directory, String filename, byte[] contents) throws IOException {
+    private void writeSchemaFile(Path directory, String filename, AaiDocument schema, ObjectMapper mapper) throws IOException {
         Path file = Paths.get(directory.toString(), filename);
         if (!Files.exists(file)) {
             Files.createFile(file);
         }
-
-        Files.write(file, contents,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING);
+        mapper.writerWithDefaultPrettyPrinter().writeValue(file.toFile(), schema);
     }
 
     private ClassLoader getClassLoader(MavenProject project) throws MojoExecutionException {
