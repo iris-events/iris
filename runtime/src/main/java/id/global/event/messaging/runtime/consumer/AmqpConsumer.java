@@ -20,7 +20,7 @@ import com.rabbitmq.client.DeliverCallback;
 
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -45,10 +45,9 @@ public class AmqpConsumer {
     private final Object eventHandlerInstance;
     private final EventContext eventContext;
     private final AmqpProducer producer;
-    private final HostnameProvider hostnameProvider;
+    private final InstanceInfoProvider instanceInfoProvider;
     private final String channelId;
     private final DeliverCallback callback;
-    private final String applicationName;
 
     public AmqpConsumer(
             final ObjectMapper objectMapper,
@@ -59,8 +58,7 @@ public class AmqpConsumer {
             final Object eventHandlerInstance,
             final EventContext eventContext,
             final AmqpProducer producer,
-            final HostnameProvider hostnameProvider,
-            final String applicationName) {
+            final InstanceInfoProvider instanceInfoProvider) {
 
         this.objectMapper = objectMapper;
         this.methodHandle = methodHandle;
@@ -70,10 +68,9 @@ public class AmqpConsumer {
         this.eventHandlerInstance = eventHandlerInstance;
         this.eventContext = eventContext;
         this.producer = producer;
-        this.hostnameProvider = hostnameProvider;
+        this.instanceInfoProvider = instanceInfoProvider;
         this.channelId = UUID.randomUUID().toString();
         this.callback = createDeliverCallback();
-        this.applicationName = applicationName;
     }
 
     protected AmqpContext getContext() {
@@ -169,15 +166,14 @@ public class AmqpConsumer {
 
     private void createQueues(Channel channel) throws IOException {
         String exchange = context.getName();
-        String versionQueue = "#";
         long ttl = context.getTtl();
         String deadLetter = context.getDeadLetterQueue();
         boolean durable = context.isDurable();
         boolean onEveryInstance = context.isConsumerOnEveryInstance();
         boolean autoDelete = context.isAutoDelete() && !onEveryInstance;
-        String instanceName = hostnameProvider.getHostName();
+        String applicationName = instanceInfoProvider.getApplicationName();
+        String instanceName = instanceInfoProvider.getInstanceName();
 
-        // prefetch count todo
         int prefetchCount = context.getPrefetch();
         channel.basicQos(prefetchCount);
 
@@ -188,13 +184,13 @@ public class AmqpConsumer {
             durable = false;
         }
 
-        final String nameSuffix = getQueueName(exchange, instanceName, onEveryInstance);
+        final String queueName = getQueueName(exchange, applicationName, instanceName, onEveryInstance);
         Map<String, Object> args = new HashMap<>();
 
         // setup dead letter
         if (!deadLetter.isBlank()) {
             String deadLetterQueue = "dead." + deadLetter;
-            args.put("x-dead-letter-routing-key", getDeadPrefix(nameSuffix));
+            args.put("x-dead-letter-routing-key", getDeadPrefix(queueName));
             args.put("x-dead-letter-exchange", deadLetter);
             channel.exchangeDeclare(deadLetter, BuiltinExchangeType.TOPIC);
             AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(deadLetterQueue, true, false, false, null);
@@ -207,34 +203,31 @@ public class AmqpConsumer {
         }
 
         try {
-            //amqpAdmin.declareQueue(new Queue(nameSuffix, durable, false, autoDelete, args));
-            AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(nameSuffix, durable, false, autoDelete, args);
+            AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(queueName, durable, false, autoDelete, args);
             log.info("queue: {}, consumers: {}, message count: {}", declareOk.getQueue(), declareOk.getConsumerCount(),
                     declareOk.getMessageCount());
         } catch (IOException e) {
-            long msgCount = channel.messageCount(nameSuffix);
+            long msgCount = channel.messageCount(queueName);
             if (msgCount <= 0) {
-                channel.queueDelete(nameSuffix, false, true);
-                AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(nameSuffix, durable, false, autoDelete, args);
+                channel.queueDelete(queueName, false, true);
+                AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(queueName, durable, false, autoDelete, args);
             } else {
-                log.error("The new settings of queue was not set, because was not empty! queue={}", nameSuffix, e);
+                log.error("The new settings of queue was not set, because was not empty! queue={}", queueName, e);
             }
         }
-        //context.getExchangeType() todo maybe use annotation info for setting exchange
         channel.exchangeDeclare(exchange, BuiltinExchangeType.FANOUT);
-        //String routingKey = "#." + exchange + "." + versionQueue;
         String routingKey = "#." + exchange;
-        channel.queueBind(nameSuffix, exchange, routingKey);
-        channel.basicConsume(nameSuffix, true, this.callback, consumerTag -> {
-            log.warn("Channel canceled for {}", nameSuffix);
+        channel.queueBind(queueName, exchange, routingKey);
+        channel.basicConsume(queueName, true, this.callback, consumerTag -> {
+            log.warn("Channel canceled for {}", queueName);
         },
                 (consumerTag, sig) -> {
-                    log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, nameSuffix, consumerTag);
+                    log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag);
                 });
-        log.info("consumer started on '{}' --> {} routing key: {}", nameSuffix, exchange, routingKey);
+        log.info("consumer started on '{}' --> {} routing key: {}", queueName, exchange, routingKey);
     }
 
-    private String getQueueName(String name, String instanceName, boolean onEveryInstance) {
+    private String getQueueName(String name, String applicationName, String instanceName, boolean onEveryInstance) {
         StringBuilder stringBuffer = new StringBuilder()
                 .append(applicationName)
                 .append(".")

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Connection;
 
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 import io.github.resilience4j.core.IntervalFunction;
@@ -20,7 +20,7 @@ public abstract class AbstractConnectionProvider {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractConnectionProvider.class);
 
     private ConnectionFactoryProvider connectionFactoryProvider;
-    private HostnameProvider hostnameProvider;
+    private InstanceInfoProvider instanceInfoProvider;
     private AmqpConfiguration configuration;
     private AtomicInteger retryCount;
 
@@ -30,10 +30,10 @@ public abstract class AbstractConnectionProvider {
     public AbstractConnectionProvider() {
     }
 
-    public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider, HostnameProvider hostnameProvider,
+    public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider, InstanceInfoProvider instanceInfoProvider,
             AmqpConfiguration configuration) {
         this.connectionFactoryProvider = connectionFactoryProvider;
-        this.hostnameProvider = hostnameProvider;
+        this.instanceInfoProvider = instanceInfoProvider;
         this.configuration = configuration;
         this.retryCount = new AtomicInteger(0);
     }
@@ -68,7 +68,7 @@ public abstract class AbstractConnectionProvider {
     private Connection connect() {
         try {
             return connectionFactoryProvider.getConnectionFactory()
-                    .newConnection(getConnectionNamePrefix() + hostnameProvider.getHostName());
+                    .newConnection(getConnectionNamePrefix() + instanceInfoProvider.getInstanceName());
         } catch (IOException | TimeoutException e) {
             String msg = String.format("Could not create new AMQP connection, retry %d/%d", retryCount.incrementAndGet(),
                     configuration.getMaxRetries());

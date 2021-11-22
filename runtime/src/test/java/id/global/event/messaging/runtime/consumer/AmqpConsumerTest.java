@@ -19,7 +19,7 @@ import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 
 import id.global.common.annotations.amqp.Scope;
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
@@ -35,7 +35,7 @@ public class AmqpConsumerTest {
     public static final String ROUTING_KEY = "MyTestEvent";
     public static final String TEST_METHOD_NAME = "testMethod";
     @Inject
-    HostnameProvider hostnameProvider;
+    InstanceInfoProvider instanceInfoProvider;
 
     @Test
     void consumerMethodHandleShouldCorrectlyInvoke() throws NoSuchMethodException, IllegalAccessException, IOException {
@@ -50,12 +50,12 @@ public class AmqpConsumerTest {
                 new ConsumerChannelService(
                         new ConsumerConnectionProvider(
                                 new ConnectionFactoryProvider(amqpConfiguration),
-                                new HostnameProvider(),
+                                new InstanceInfoProvider(),
                                 amqpConfiguration),
                         amqpConfiguration),
                 handler,
                 new EventContext(),
-                null, hostnameProvider, "test-app");
+                null, instanceInfoProvider);
 
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);

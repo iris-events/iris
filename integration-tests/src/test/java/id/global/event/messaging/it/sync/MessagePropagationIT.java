@@ -19,7 +19,7 @@ import org.mockito.Mockito;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -43,11 +43,11 @@ public class MessagePropagationIT {
     ForwardedToService forwardedToService;
 
     @InjectMock
-    HostnameProvider hostnameProvider;
+    InstanceInfoProvider instanceInfoProvider;
 
     @AfterEach
     void cleanup() {
-        Mockito.reset(hostnameProvider);
+        Mockito.reset(instanceInfoProvider);
     }
 
     @Test
