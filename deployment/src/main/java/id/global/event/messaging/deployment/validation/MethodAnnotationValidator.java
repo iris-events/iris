@@ -10,6 +10,7 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
+import id.global.amqp.parsers.ExchangeTypeParser;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
@@ -30,8 +31,8 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
     }
 
     @Override
-    public void validate(final AnnotationInstance annotationInstance) {
-        super.validate(annotationInstance);
+    public void validate(final AnnotationInstance annotationInstance, IndexView index) {
+        super.validate(annotationInstance, index);
         validateBindingKeysValidity(annotationInstance);
         validateMethodReturnType(annotationInstance);
     }
@@ -49,11 +50,11 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
     }
 
     @Override
-    protected ExchangeType getExchangeType(final AnnotationInstance annotationInstance) {
+    protected ExchangeType getExchangeType(final AnnotationInstance annotationInstance, IndexView index) {
         final var methodInfo = getMethodInfo(annotationInstance);
-        final var messageAnnotation = MessageHandlerScanner.getMessageAnnotation(methodInfo.parameters(), index);
+        final var messageAnnotation = MessageHandlerScanner.getMessageAnnotation(methodInfo.parameters(), this.index);
 
-        return MessageHandlerScanner.getExchangeType(messageAnnotation);
+        return ExchangeTypeParser.getFromAnnotationInstance(messageAnnotation, index);
     }
 
     private void validateBindingKeysValidity(final AnnotationInstance annotationInstance) {
@@ -62,7 +63,7 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
             return;
         }
 
-        final var exchangeType = getExchangeType(annotationInstance);
+        final var exchangeType = getExchangeType(annotationInstance, index);
 
         var patternString = KEBAB_CASE_PATTERN;
         if (exchangeType.equals(ExchangeType.TOPIC)) {
@@ -114,7 +115,7 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
                             DOT_NAME_PRODUCED_EVENT.withoutPackagePrefix()));
         }
 
-        classAnnotationValidator.validate(annotation);
+        classAnnotationValidator.validate(annotation, index);
     }
 
     private MethodInfo getMethodInfo(final AnnotationInstance annotationInstance) {

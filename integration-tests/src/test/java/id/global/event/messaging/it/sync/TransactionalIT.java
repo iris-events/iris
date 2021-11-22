@@ -78,19 +78,19 @@ public class TransactionalIT {
     @DisplayName("Non transactional sends should not implicitly create a transaction")
     void testNonTransactional() throws Exception {
         service.send(0);
-        TestEvent testEvent0 = service.getFutures().get(0).get();
+        TestEvent testEvent0 = service.getFutures().get(0).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent0, 0);
 
         service.send(1);
-        TestEvent testEvent1 = service.getFutures().get(1).get();
+        TestEvent testEvent1 = service.getFutures().get(1).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent1, 1);
 
         service.send(2);
-        TestEvent testEvent2 = service.getFutures().get(2).get();
+        TestEvent testEvent2 = service.getFutures().get(2).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent2, 2);
 
         service.send(3);
-        TestEvent testEvent3 = service.getFutures().get(3).get();
+        TestEvent testEvent3 = service.getFutures().get(3).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent3, 3);
     }
 

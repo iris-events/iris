@@ -11,8 +11,10 @@ import org.jboss.jandex.IndexView;
 public class AnnotationInstanceValidator {
 
     private final Map<AnnotationTarget.Kind, AbstractAnnotationInstanceValidator> validatorsForKind = new HashMap<>();
+    private final IndexView index;
 
     public AnnotationInstanceValidator(final IndexView index) {
+        this.index = index;
         final var classAnnotationValidator = new ClassAnnotationValidator();
         final var methodAnnotationValidator = new MethodAnnotationValidator(index, classAnnotationValidator);
         validatorsForKind.put(AnnotationTarget.Kind.METHOD, methodAnnotationValidator);
@@ -25,7 +27,7 @@ public class AnnotationInstanceValidator {
                 () -> new IllegalArgumentException(
                         "Annotation validator not found. Unsupported annotation target kind: " + annotationInstance.target()
                                 .kind()));
-        validator.validate(annotationInstance);
+        validator.validate(annotationInstance, index);
     }
 
     private Optional<AbstractAnnotationInstanceValidator> findValidator(final AnnotationTarget target) {

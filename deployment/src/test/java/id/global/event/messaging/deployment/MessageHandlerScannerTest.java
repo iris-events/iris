@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,7 +81,8 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
                 FanoutEvent.class,
                 TopicEvent.class,
                 Event.class,
-                Message.class);
+                Message.class,
+                MessageHandler.class);
 
         final List<MessageHandlerInfoBuildItem> handleCustomQueueParam = messageHandlerInfoBuildItems.stream()
                 .filter(messageHandlerInfoBuildItem -> messageHandlerInfoBuildItem.getMethodName()
@@ -99,12 +99,12 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItem = handleCustomQueueParam.get(0);
         assertNotNull(messageHandlerInfoBuildItem);
         assertEquals("handleCustomQueueParam", messageHandlerInfoBuildItem.getMethodName());
-        Assertions.assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getBindingKeys()[0]);
+        Assertions.assertEquals(TestHandlerService.EVENT_QUEUE_PRIORITY, messageHandlerInfoBuildItem.getBindingKeys().get(0));
 
         MessageHandlerInfoBuildItem messageHandlerInfoBuildItemClassName = handle.get(0);
         assertNotNull(messageHandlerInfoBuildItemClassName);
         assertEquals("handle", messageHandlerInfoBuildItemClassName.getMethodName());
-        assertEquals("event-queue", messageHandlerInfoBuildItemClassName.getBindingKeys()[0]);
+        assertEquals("event-queue", messageHandlerInfoBuildItemClassName.getBindingKeys().get(0));
     }
 
     @Test
@@ -133,10 +133,10 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
         assertEquals(TOPIC, topicBuildItem.getExchangeType());
 
         assertNull(fanoutBuildItem.getBindingKeys());
-        String[] bindingKeys = topicBuildItem.getBindingKeys();
+        List<String> bindingKeys = topicBuildItem.getBindingKeys();
         assertNotNull(bindingKeys);
-        assertTrue(Arrays.asList(bindingKeys).contains("lazy.yellow"));
-        assertTrue(Arrays.asList(bindingKeys).contains("*.*.rabbit"));
+        assertTrue(bindingKeys.contains("lazy.yellow"));
+        assertTrue(bindingKeys.contains("*.*.rabbit"));
     }
 
     @Test

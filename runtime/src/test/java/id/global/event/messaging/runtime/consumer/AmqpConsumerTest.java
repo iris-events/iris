@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -46,7 +47,7 @@ public class AmqpConsumerTest {
                 new ObjectMapper(),
                 createHandle(),
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, void.class, TEST_METHOD_NAME),
-                new AmqpContext(EXCHANGE, new String[0], DIRECT, Scope.INTERNAL, false, false, false, 1, -1, ""),
+                new AmqpContext(EXCHANGE, List.of(), DIRECT, Scope.INTERNAL, false, false, false, 1, -1, ""),
                 new ConsumerChannelService(
                         new ConsumerConnectionProvider(
                                 new ConnectionFactoryProvider(amqpConfiguration),

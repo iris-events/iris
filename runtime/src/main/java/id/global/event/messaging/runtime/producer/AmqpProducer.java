@@ -32,7 +32,8 @@ import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 
-import id.global.asyncapi.runtime.util.GidAnnotationParser;
+import id.global.amqp.parsers.MessageScopeParser;
+import id.global.asyncapi.runtime.util.CaseConverter;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.Common;
@@ -99,14 +100,15 @@ public class AmqpProducer {
                 .orElseThrow(() -> new AmqpSendException("Message annotation is required."));
 
         final var messageClassSimpleName = message.getClass().getSimpleName();
-        final var scope = getScope(messageAnnotation);
+
+        final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
         final var exchangeType = getExchangeType(messageAnnotation);
         final var exchange = getExchange(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
         final var amqpBasicProperties = getOrCreateAmqpBasicProperties(messageClassSimpleName, exchange);
 
         final var applicationId = eventAppInfoProvider.getApplicationId();
-        final var messageClassKebabCase = GidAnnotationParser.camelToKebabCase(messageClassSimpleName);
+        final var messageClassKebabCase = CaseConverter.camelToKebabCase(messageClassSimpleName);
         final var appPrefixedMessageClassRoutingKey = applicationId + "." + messageClassKebabCase;
 
         switch (scope) {
