@@ -114,57 +114,23 @@ public class AmqpConsumer {
     }
 
     public void initChannel() throws IOException {
-        Channel channel = channelService.getOrCreateChannelById(this.channelId);
-        if (this.context.getExchangeType() == ExchangeType.DIRECT) {
-            declareDirect(channel);
-        } else if (this.context.getExchangeType() == ExchangeType.TOPIC) {
-            declareTopic(channel);
-        } else {
-            createQueues(channel);
-        }
+        final var channel = channelService.getOrCreateChannelById(this.channelId);
+        final var exchangeType = getExchangeType();
+        createQueues(channel, exchangeType);
     }
 
     public DeliverCallback getCallback() {
         return callback;
     }
 
-    private void declareDirect(Channel channel) throws IOException {
-        // Normal consume
-        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(this.context.getBindingKeys()[0], true, false,
-                false, null);
-        if (this.context.getName() != null && !this.context.getName().equals("")) {
-            channel.exchangeDeclare(this.context.getName(), BuiltinExchangeType.DIRECT, true);
-            channel.queueBind(declareOk.getQueue(), this.context.getName(), declareOk.getQueue());
-        }
-
-        channel.basicConsume(this.context.getBindingKeys()[0], true, this.callback, consumerTag -> {
-        });
-    }
-
-    private void declareTopic(Channel channel) throws IOException {
-        channel.exchangeDeclare(this.context.getName(), BuiltinExchangeType.TOPIC, true);
-        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare("", true, true, false, null);
-
-        if (this.context.getBindingKeys() == null || this.context.getBindingKeys().length == 0) {
+    private void createQueues(Channel channel, final ExchangeType exchangeType) throws IOException {
+        if (exchangeType == ExchangeType.TOPIC
+                && (this.context.getBindingKeys() == null || this.context.getBindingKeys().length == 0)) {
+            // TODO: extract this to a validate() method which will also verify that there is exactly one binding key on direct exchange
             throw new RuntimeException("Binding keys are required when declaring a TOPIC type exchange.");
         }
 
-        for (String bindingKey : context.getBindingKeys()) {
-            channel.queueBind(declareOk.getQueue(), context.getName(), bindingKey);
-        }
-        channel.basicConsume(declareOk.getQueue(), this.callback, consumerTag -> {
-        });
-    }
-
-    private void declareFanout(Channel channel) throws IOException {
-        channel.exchangeDeclare(this.context.getName(), BuiltinExchangeType.FANOUT, true);
-        AMQP.Queue.DeclareOk declareOk = channel.queueDeclare("", true, true, false, null);
-        channel.queueBind(declareOk.getQueue(), this.context.getName(), "");
-        channel.basicConsume(declareOk.getQueue(), true, this.callback, consumerTag -> {
-        });
-    }
-
-    private void createQueues(Channel channel) throws IOException {
+        String name = context.getName();
         String exchange = context.getName();
         long ttl = context.getTtl();
         String deadLetter = context.getDeadLetterQueue();
@@ -184,7 +150,7 @@ public class AmqpConsumer {
             durable = false;
         }
 
-        final String queueName = getQueueName(exchange, applicationName, instanceName, onEveryInstance);
+        final String queueName = getQueueName(exchange, exchangeType, applicationName, instanceName, onEveryInstance);
         Map<String, Object> args = new HashMap<>();
 
         // setup dead letter
@@ -192,7 +158,7 @@ public class AmqpConsumer {
             String deadLetterQueue = "dead." + deadLetter;
             args.put("x-dead-letter-routing-key", getDeadPrefix(queueName));
             args.put("x-dead-letter-exchange", deadLetter);
-            channel.exchangeDeclare(deadLetter, BuiltinExchangeType.TOPIC);
+            channel.exchangeDeclare(deadLetter, BuiltinExchangeType.TOPIC, true);
             AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(deadLetterQueue, true, false, false, null);
             channel.queueBind(deadLetterQueue, deadLetter, "#");
         }
@@ -215,19 +181,29 @@ public class AmqpConsumer {
                 log.error("The new settings of queue was not set, because was not empty! queue={}", queueName, e);
             }
         }
-        channel.exchangeDeclare(exchange, BuiltinExchangeType.FANOUT);
-        String routingKey = "#." + exchange;
-        channel.queueBind(queueName, exchange, routingKey);
+
+        final var type = BuiltinExchangeType.valueOf(exchangeType.name());
+        channel.exchangeDeclare(exchange, type, true);
+        final String[] bindingKeys = switch (type) {
+            case DIRECT, TOPIC -> context.getBindingKeys();
+            case FANOUT -> new String[] { "#." + name };
+            case HEADERS -> throw new IllegalArgumentException("Unsupported exchange type: " + type);
+        };
+
+        for (String bindingKey : bindingKeys) {
+            channel.queueBind(queueName, exchange, bindingKey);
+        }
         channel.basicConsume(queueName, true, this.callback, consumerTag -> {
-            log.warn("Channel canceled for {}", queueName);
-        },
+                    log.warn("Channel canceled for {}", queueName);
+                },
                 (consumerTag, sig) -> {
                     log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag);
                 });
-        log.info("consumer started on '{}' --> {} routing key: {}", queueName, exchange, routingKey);
+        log.info("consumer started on '{}' --> {} binding key(s): {}", queueName, exchange, String.join(", ", bindingKeys));
     }
 
-    private String getQueueName(String name, String applicationName, String instanceName, boolean onEveryInstance) {
+    private String getQueueName(String name, final ExchangeType exchangeType,
+            String applicationName, String instanceName, boolean onEveryInstance) {
         StringBuilder stringBuffer = new StringBuilder()
                 .append(applicationName)
                 .append(".")
@@ -237,10 +213,22 @@ public class AmqpConsumer {
             stringBuffer.append(".").append(instanceName);
         }
 
+        if (exchangeType == ExchangeType.DIRECT) {
+            stringBuffer.append(".").append(context.getBindingKeys()[0]);
+        } else if (exchangeType == ExchangeType.TOPIC) {
+            for (var bindingKey : context.getBindingKeys()) {
+                stringBuffer.append(".").append(bindingKey);
+            }
+        }
+
         return stringBuffer.toString();
     }
 
     private String getDeadPrefix(String name) {
         return "dead." + name;
+    }
+
+    private ExchangeType getExchangeType() {
+        return Optional.ofNullable(context.getExchangeType()).orElse(ExchangeType.FANOUT);
     }
 }

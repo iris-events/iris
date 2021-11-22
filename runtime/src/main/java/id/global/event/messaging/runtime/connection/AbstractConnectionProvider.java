@@ -30,8 +30,8 @@ public abstract class AbstractConnectionProvider {
     public AbstractConnectionProvider() {
     }
 
-    public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider, InstanceInfoProvider instanceInfoProvider,
-            AmqpConfiguration configuration) {
+    public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
+            InstanceInfoProvider instanceInfoProvider, AmqpConfiguration configuration) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;
         this.configuration = configuration;

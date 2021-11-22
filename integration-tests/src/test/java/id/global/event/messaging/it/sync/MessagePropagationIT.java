@@ -31,7 +31,7 @@ public class MessagePropagationIT {
 
     private static final String INITIAL_CONSUMING_QUEUE = "initial-consuming-queue";
     private static final String FORWARDING_QUEUE = "forwarding-queue";
-    private static final String EXCHANGE = "exchange";
+    private static final String EXCHANGE = "message-propagation-exchange";
 
     @Inject
     AmqpProducer producer;
