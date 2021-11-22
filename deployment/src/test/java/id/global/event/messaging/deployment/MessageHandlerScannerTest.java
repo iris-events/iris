@@ -54,11 +54,11 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
         }
     }
 
-    @Message(exchange = FANOUT_EXCHANGE, exchangeType = FANOUT)
+    @Message(name = FANOUT_EXCHANGE, exchangeType = FANOUT)
     public record FanoutEvent() {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC)
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC)
     public record TopicEvent() {
     }
 
@@ -127,8 +127,8 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
         assertNotNull(fanoutBuildItem);
         assertNotNull(topicBuildItem);
 
-        assertEquals(FANOUT_EXCHANGE, fanoutBuildItem.getExchange());
-        assertEquals(TOPIC_EXCHANGE, topicBuildItem.getExchange());
+        assertEquals(FANOUT_EXCHANGE, fanoutBuildItem.getName());
+        assertEquals(TOPIC_EXCHANGE, topicBuildItem.getName());
         assertEquals(FANOUT, fanoutBuildItem.getExchangeType());
         assertEquals(TOPIC, topicBuildItem.getExchangeType());
 

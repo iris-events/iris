@@ -138,15 +138,15 @@ public class ListenerAndHandlerTestIT {
         }
     }
 
-    @Message(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE, name = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
-    @Message(exchange = UNKNOWN_EXCHANGE, exchangeType = DIRECT, routingKey = EVENT_QUEUE)
+    @Message(name = UNKNOWN_EXCHANGE, exchangeType = DIRECT, routingKey = EVENT_QUEUE)
     public record UnknownExchangeEvent(String name, Long age) {
     }
 
-    @Message(exchange = EXCHANGE, exchangeType = DIRECT, routingKey = UNKNOWN_QUEUE)
+    @Message(name = EXCHANGE, exchangeType = DIRECT, routingKey = UNKNOWN_QUEUE)
     public record UnknownQueueEvent(String name, Long age) {
     }
 }

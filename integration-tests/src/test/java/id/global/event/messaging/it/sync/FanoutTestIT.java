@@ -150,11 +150,11 @@ public class FanoutTestIT {
 
     }
 
-    @Message(exchange = EXCHANGE, exchangeType = FANOUT)
+    @Message(name = EXCHANGE, exchangeType = FANOUT)
     public record FanoutLoggingEvent(String log, Long level) {
     }
 
-    @Message(exchange = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
+    @Message(name = MY_FANOUT_EXCHANGE, exchangeType = FANOUT)
     public record FanoutEvent(String log, Long level) {
     }
 

@@ -135,7 +135,7 @@ class EventMessagingProcessor {
 
                 MethodHandleContext methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
                         returnEventClass, col.getMethodName());
-                AmqpContext amqpContext = new AmqpContext(col.getExchange(),
+                AmqpContext amqpContext = new AmqpContext(col.getName(),
                         col.getBindingKeys(),
                         col.getExchangeType(),
                         col.getScope(),

@@ -252,7 +252,7 @@ public class TransactionalIT {
 
     }
 
-    @Message(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE, name = EXCHANGE, exchangeType = DIRECT)
     public record TestEvent(int seq) {
     }
 

@@ -57,7 +57,7 @@ public class AmqpConsumerContainer {
                 consumer.initChannel();
             } catch (Exception e) {
                 String msg = String.format("Could not initialize consumer for exchange: '%s' queue '%s'",
-                        consumer.getContext().getExchange(), queueName);
+                        consumer.getContext().getName(), queueName);
                 LOG.error(msg, e);
                 throw new AmqpConnectionException(msg, e);
             }

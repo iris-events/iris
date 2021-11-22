@@ -14,7 +14,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final Type parameterType;
     private final Type returnType;
     private final String methodName;
-    private final String exchange;
+    private final String name;
     private final ExchangeType exchangeType;
     private final String[] bindingKeys;
     private final Scope scope;
@@ -29,7 +29,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             Type parameterType,
             Type returnType,
             String methodName,
-            String exchange,
+            String name,
             ExchangeType exchangeType,
             String[] bindingKeys,
             Scope scope,
@@ -43,7 +43,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         this.parameterType = parameterType;
         this.returnType = returnType;
         this.methodName = methodName;
-        this.exchange = exchange;
+        this.name = name;
         this.exchangeType = exchangeType;
         this.bindingKeys = bindingKeys;
         this.scope = scope;
@@ -67,8 +67,8 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return returnType;
     }
 
-    public String getExchange() {
-        return exchange;
+    public String getName() {
+        return name;
     }
 
     public String getMethodName() {
@@ -118,7 +118,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 ", parameterType=" + parameterType +
                 ", returnType=" + returnType +
                 ", methodName='" + methodName + '\'' +
-                ", exchange='" + exchange + '\'' +
+                ", exchange='" + name + '\'' +
                 ", exchangeType=" + exchangeType +
                 ", bindingKeys=" + Arrays.toString(bindingKeys) +
                 ", scope=" + scope +

@@ -2,7 +2,6 @@ package id.global.event.messaging.deployment.scanner;
 
 import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.BINDING_KEYS_PARAM;
-import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_TYPE_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY_PARAM;
 
@@ -58,9 +57,9 @@ public class MessageHandlerScanner {
                     final ExchangeType exchangeType = ExchangeType
                             .valueOf(messageAnnotation.valueWithDefault(index, EXCHANGE_TYPE_PARAM)
                                     .asString());
-                    String exchange = messageAnnotation.valueWithDefault(index, EXCHANGE_PARAM).asString();
-                    if (exchange == null || exchange.isEmpty()) {
-                        exchange = getMessageClassKebabCase(messageAnnotation);
+                    String name = messageAnnotation.value("name").asString();
+                    if (name == null || name.isEmpty()) {
+                        name = getMessageClassKebabCase(messageAnnotation);
                     }
 
                     final var bindingKeys = getBindingKeysOrDefault(messageHandlerAnnotation, messageAnnotation, exchangeType);
@@ -78,7 +77,7 @@ public class MessageHandlerScanner {
                             methodInfo.parameters().get(0),
                             methodInfo.returnType(),
                             methodInfo.name(),
-                            exchange,
+                            name,
                             exchangeType,
                             bindingKeys,
                             scope,

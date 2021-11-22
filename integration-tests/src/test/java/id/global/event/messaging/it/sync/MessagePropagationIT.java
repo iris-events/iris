@@ -94,11 +94,11 @@ public class MessagePropagationIT {
         }
     }
 
-    @Message(routingKey = INITIAL_CONSUMING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = INITIAL_CONSUMING_QUEUE, name = EXCHANGE, exchangeType = DIRECT)
     public record HandledEvent(String eventPropertyValue) {
     }
 
-    @Message(routingKey = FORWARDING_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = FORWARDING_QUEUE, name = EXCHANGE, exchangeType = DIRECT)
     public record ForwardedEvent(String eventPropertyValue) {
     }
 }

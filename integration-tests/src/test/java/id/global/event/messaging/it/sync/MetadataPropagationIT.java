@@ -135,15 +135,15 @@ public class MetadataPropagationIT {
         }
     }
 
-    @Message(routingKey = EVENT_QUEUE1, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE1, name = EXCHANGE, exchangeType = DIRECT)
     public record Event1() {
     }
 
-    @Message(routingKey = EVENT_QUEUE2, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE2, name = EXCHANGE, exchangeType = DIRECT)
     public record Event2() {
     }
 
-    @Message(routingKey = EVENT_QUEUE3, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE3, name = EXCHANGE, exchangeType = DIRECT)
     public record Event3() {
     }
 }

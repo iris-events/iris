@@ -84,15 +84,15 @@ public class EventsMalformedIT {
         });
     }
 
-    @Message(exchange = DIRECT_EXCHANGE, routingKey = DIRECT_QUEUE, exchangeType = DIRECT)
+    @Message(name = DIRECT_EXCHANGE, routingKey = DIRECT_QUEUE, exchangeType = DIRECT)
     private record DirectEventTmp(String name, long age) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, routingKey = TOPIC_QUEUE, exchangeType = TOPIC)
+    @Message(name = TOPIC_EXCHANGE, routingKey = TOPIC_QUEUE, exchangeType = TOPIC)
     private record TopicEventTmp(String name, long age) {
     }
 
-    @Message(exchange = FANOUT_EXCHANGE, exchangeType = FANOUT)
+    @Message(name = FANOUT_EXCHANGE, exchangeType = FANOUT)
     private record FanoutEventTmp(String name, long age) {
     }
 }

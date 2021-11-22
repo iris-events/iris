@@ -135,9 +135,9 @@ public class AmqpConsumer {
         // Normal consume
         AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(this.context.getBindingKeys()[0], true, false,
                 false, null);
-        if (this.context.getExchange() != null && !this.context.getExchange().equals("")) {
-            channel.exchangeDeclare(this.context.getExchange(), BuiltinExchangeType.DIRECT, true);
-            channel.queueBind(declareOk.getQueue(), this.context.getExchange(), declareOk.getQueue());
+        if (this.context.getName() != null && !this.context.getName().equals("")) {
+            channel.exchangeDeclare(this.context.getName(), BuiltinExchangeType.DIRECT, true);
+            channel.queueBind(declareOk.getQueue(), this.context.getName(), declareOk.getQueue());
         }
 
         channel.basicConsume(this.context.getBindingKeys()[0], true, this.callback, consumerTag -> {
@@ -145,7 +145,7 @@ public class AmqpConsumer {
     }
 
     private void declareTopic(Channel channel) throws IOException {
-        channel.exchangeDeclare(this.context.getExchange(), BuiltinExchangeType.TOPIC, true);
+        channel.exchangeDeclare(this.context.getName(), BuiltinExchangeType.TOPIC, true);
         AMQP.Queue.DeclareOk declareOk = channel.queueDeclare("", true, true, false, null);
 
         if (this.context.getBindingKeys() == null || this.context.getBindingKeys().length == 0) {
@@ -153,22 +153,22 @@ public class AmqpConsumer {
         }
 
         for (String bindingKey : context.getBindingKeys()) {
-            channel.queueBind(declareOk.getQueue(), context.getExchange(), bindingKey);
+            channel.queueBind(declareOk.getQueue(), context.getName(), bindingKey);
         }
         channel.basicConsume(declareOk.getQueue(), this.callback, consumerTag -> {
         });
     }
 
     private void declareFanout(Channel channel) throws IOException {
-        channel.exchangeDeclare(this.context.getExchange(), BuiltinExchangeType.FANOUT, true);
+        channel.exchangeDeclare(this.context.getName(), BuiltinExchangeType.FANOUT, true);
         AMQP.Queue.DeclareOk declareOk = channel.queueDeclare("", true, true, false, null);
-        channel.queueBind(declareOk.getQueue(), this.context.getExchange(), "");
+        channel.queueBind(declareOk.getQueue(), this.context.getName(), "");
         channel.basicConsume(declareOk.getQueue(), true, this.callback, consumerTag -> {
         });
     }
 
     private void createQueues(Channel channel) throws IOException {
-        String exchange = context.getExchange();
+        String exchange = context.getName();
         String versionQueue = "#";
         long ttl = context.getTtl();
         String deadLetter = context.getDeadLetterQueue();

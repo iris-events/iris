@@ -126,23 +126,23 @@ public class TopicTestIT {
         }
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.orange.fox")
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.orange.fox")
     public record ServiceALoggingEvent1(String log, Long level) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.yellow.rabbit")
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "quick.yellow.rabbit")
     public record ServiceALoggingEvent2(String log, Long level) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.blue.snail")
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.blue.snail")
     public record ServiceALoggingEvent3(String log, Long level) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.orange.rabbit")
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "lazy.orange.rabbit")
     public record ServiceALoggingEvent4(String log, Long level) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC)
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC)
     public record ServiceBLoggingEvent(String log, Long level) {
     }
 }

@@ -217,7 +217,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     }
 
-    @Message(routingKey = "kebab-case-queue", exchangeType = DIRECT)
+    @Message(name = "kebab-case-queue", routingKey = "kebab-case-queue", exchangeType = DIRECT)
     private static class ForwardedEventHandlerService {
 
         @SuppressWarnings("unused")
@@ -247,23 +247,23 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     }
 
-    @Message(routingKey = "kebab-case-queue", exchangeType = DIRECT)
+    @Message(name = "kebab-case-queue", routingKey = "kebab-case-queue", exchangeType = DIRECT)
     public record ValidDirectEvent() {
     }
 
-    @Message(exchangeType = TOPIC, exchange = "kebab-topic-exchange", routingKey = "valid.topic.event")
+    @Message(exchangeType = TOPIC, name = "kebab-topic-exchange", routingKey = "valid.topic.event")
     public record ValidTopicEvent() {
     }
 
-    @Message(routingKey = "CamelCaseQueue", exchangeType = DIRECT)
+    @Message(name = "camel-case-queue", routingKey = "CamelCaseQueue", exchangeType = DIRECT)
     public record CamelCaseDirectEvent() {
     }
 
-    @Message(exchangeType = TOPIC, exchange = "NonKebabExchange", routingKey = "non.kebab.exchange.topic")
+    @Message(exchangeType = TOPIC, name = "NonKebabExchange", routingKey = "non.kebab.exchange.topic")
     public record NonKebabExchangeTopicEvent() {
     }
 
-    @Message(exchangeType = ExchangeType.DIRECT, exchange = "direct-exchange", routingKey = "direct-queue-forwarded-event")
+    @Message(exchangeType = ExchangeType.DIRECT, name = "direct-exchange", routingKey = "direct-queue-forwarded-event")
     public record ForwardedEvent() {
 
     }

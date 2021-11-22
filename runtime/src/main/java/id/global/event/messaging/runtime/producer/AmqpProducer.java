@@ -266,7 +266,7 @@ public class AmqpProducer {
     }
 
     private String getExchange(id.global.common.annotations.amqp.Message messageAnnotation, String simpleName) {
-        final var exchange = messageAnnotation.exchange();
+        final var exchange = messageAnnotation.name();
         if (Objects.isNull(exchange) || exchange.isEmpty()) {
             return GidAnnotationParser.camelToKebabCase(simpleName);
         }

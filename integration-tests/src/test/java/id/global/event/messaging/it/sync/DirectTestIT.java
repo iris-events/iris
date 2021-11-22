@@ -144,19 +144,19 @@ public class DirectTestIT {
         }
     }
 
-    @Message(routingKey = EVENT_QUEUE, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE, name = EXCHANGE, exchangeType = DIRECT)
     public record Event(String name, Long age) {
     }
 
-    @Message(routingKey = EVENT_QUEUE_PRIORITY, exchange = EXCHANGE, exchangeType = DIRECT)
+    @Message(routingKey = EVENT_QUEUE_PRIORITY, name = EXCHANGE, exchangeType = DIRECT)
     public record PrioritizedEvent(String name, Long age) {
     }
 
-    @Message(routingKey = EVENT_QUEUE_BLANK, exchangeType = DIRECT)
+    @Message(name = "blank-exchange-event", routingKey = EVENT_QUEUE_BLANK, exchangeType = DIRECT)
     public record BlankExchangeEvent(String name, Long age) {
     }
 
-    @Message(exchangeType = DIRECT)
+    @Message(name = "minimum-event", exchangeType = DIRECT)
     public record MinimumEvent(String id) {
     }
 

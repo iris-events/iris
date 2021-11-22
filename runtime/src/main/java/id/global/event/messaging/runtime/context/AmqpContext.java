@@ -6,7 +6,7 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 
 public final class AmqpContext {
-    private String exchange;
+    private String name;
     private String[] bindingKeys;
     private ExchangeType exchangeType;
     private Scope scope;
@@ -20,7 +20,7 @@ public final class AmqpContext {
     public AmqpContext() {
     }
 
-    public AmqpContext(String exchange,
+    public AmqpContext(String name,
             String[] bindingKeys,
             ExchangeType exchangeType,
             Scope scope,
@@ -30,7 +30,7 @@ public final class AmqpContext {
             int prefetch,
             long ttl,
             String deadLetterQueue) {
-        this.exchange = exchange;
+        this.name = name;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
         this.scope = scope;
@@ -42,12 +42,12 @@ public final class AmqpContext {
         this.deadLetterQueue = deadLetterQueue;
     }
 
-    public String getExchange() {
-        return exchange;
+    public String getName() {
+        return name;
     }
 
-    public void setExchange(String exchange) {
-        this.exchange = exchange;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String[] getBindingKeys() {
@@ -129,7 +129,7 @@ public final class AmqpContext {
         if (obj == null || obj.getClass() != this.getClass())
             return false;
         var that = (AmqpContext) obj;
-        return Objects.equals(this.exchange, that.exchange) &&
+        return Objects.equals(this.name, that.name) &&
                 Objects.equals(this.bindingKeys, that.bindingKeys) &&
                 Objects.equals(this.exchangeType, that.exchangeType) &&
                 Objects.equals(this.scope, that.scope) &&
@@ -143,14 +143,14 @@ public final class AmqpContext {
 
     @Override
     public int hashCode() {
-        return Objects.hash(exchange, bindingKeys, exchangeType, scope, durable, autoDelete, consumerOnEveryInstance, prefetch,
+        return Objects.hash(name, bindingKeys, exchangeType, scope, durable, autoDelete, consumerOnEveryInstance, prefetch,
                 ttl, deadLetterQueue);
     }
 
     @Override
     public String toString() {
         return "AmqpContext[" +
-                "exchange=" + exchange + ", " +
+                "exchange=" + name + ", " +
                 "bindingKeys=" + bindingKeys + ", " +
                 "exchangeType=" + exchangeType + ", " +
                 "scope=" + scope + ", " +

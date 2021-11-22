@@ -231,47 +231,47 @@ public class AnnotatedEventsTestIT {
 
     }
 
-    @Message(exchange = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
+    @Message(name = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
     public record FanoutLoggingEvent(String log, Long level) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "something.nothing")
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "something.nothing")
     private record TopicReceivedEventOne(String name, long age) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "something.dummy")
+    @Message(name = TOPIC_EXCHANGE, exchangeType = TOPIC, routingKey = "something.dummy")
     private record TopicReceivedEventTwo(String name, long age) {
     }
 
-    @Message(exchange = ANNOTATED_EXCHANGE, routingKey = ANNOTATED_QUEUE, exchangeType = DIRECT)
+    @Message(name = ANNOTATED_EXCHANGE, routingKey = ANNOTATED_QUEUE, exchangeType = DIRECT)
     private record DirectEvent(String name, Long age) {
     }
 
-    @Message(exchange = ANNOTATED_EXCHANGE, exchangeType = DIRECT)
+    @Message(name = ANNOTATED_EXCHANGE, exchangeType = DIRECT)
     private record DirectEventEmptyRoutingKey(String name, Long age) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, routingKey = "nothing.a.nothing", exchangeType = TOPIC)
+    @Message(name = TOPIC_EXCHANGE, routingKey = "nothing.a.nothing", exchangeType = TOPIC)
     private record TopicEventOne(String name, Long age) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, routingKey = "something.a.b", exchangeType = TOPIC)
+    @Message(name = TOPIC_EXCHANGE, routingKey = "something.a.b", exchangeType = TOPIC)
     private record TopicEventTwo(String name, Long age) {
     }
 
-    @Message(exchange = TOPIC_EXCHANGE, routingKey = "something.a.everything", exchangeType = TOPIC)
+    @Message(name = TOPIC_EXCHANGE, routingKey = "something.a.everything", exchangeType = TOPIC)
     private record TopicEventThree(String name, Long age) {
     }
 
-    @Message(exchange = ANNOTATED_EXCHANGE_FANOUT, routingKey = ANNOTATED_QUEUE_FANOUT, exchangeType = FANOUT)
+    @Message(name = ANNOTATED_EXCHANGE_FANOUT, routingKey = ANNOTATED_QUEUE_FANOUT, exchangeType = FANOUT)
     private record FanoutEventWrongRoutingKey(String name, Long age) {
     }
 
-    @Message(exchange = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
+    @Message(name = ANNOTATED_EXCHANGE_FANOUT, exchangeType = FANOUT)
     private record FanoutEvent(String name, Long age) {
     }
 
-    @Message(exchange = ANNOTATED_EXCHANGE, exchangeType = TOPIC)
+    @Message(name = ANNOTATED_EXCHANGE, exchangeType = TOPIC)
     private record TopicEventWrongRoutingKey(String name, Long age) {
     }
 }
