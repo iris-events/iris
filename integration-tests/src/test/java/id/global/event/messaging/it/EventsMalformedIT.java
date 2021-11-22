@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -55,7 +55,7 @@ public class EventsMalformedIT {
     CorrelationIdProvider correlationIdProvider;
 
     @Inject
-    HostnameProvider hostnameProvider;
+    InstanceInfoProvider instanceInfoProvider;
 
     @Inject
     EventAppInfoProvider eventAppInfoProvider;
@@ -71,7 +71,7 @@ public class EventsMalformedIT {
                 });
 
         AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration,
-                transactionManager, correlationIdProvider, hostnameProvider, eventAppInfoProvider);
+                transactionManager, correlationIdProvider, instanceInfoProvider, eventAppInfoProvider);
 
         Assertions.assertThrows(AmqpSendException.class, () -> {
             producer.send(new TopicEventTmp("topic", 1L));

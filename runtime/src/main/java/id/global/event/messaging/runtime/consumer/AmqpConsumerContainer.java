@@ -8,13 +8,12 @@ import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -31,9 +30,7 @@ public class AmqpConsumerContainer {
     private final Map<String, AmqpConsumer> consumerMap;
     private final ConsumerChannelService consumerChannelService;
     private final AmqpProducer producer;
-    private final HostnameProvider hostnameProvider;
-    @ConfigProperty(name = "quarkus.application.name")
-    protected String applicationName;
+    private final InstanceInfoProvider instanceInfoProvider;
 
     @Inject
     public AmqpConsumerContainer(
@@ -41,10 +38,10 @@ public class AmqpConsumerContainer {
             final EventContext eventContext,
             final ConsumerChannelService consumerChannelService,
             final AmqpProducer producer,
-            final HostnameProvider hostnameProvider) {
+            final InstanceInfoProvider instanceInfoProvider) {
 
         this.consumerChannelService = consumerChannelService;
-        this.hostnameProvider = hostnameProvider;
+        this.instanceInfoProvider = instanceInfoProvider;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -75,7 +72,6 @@ public class AmqpConsumerContainer {
                 eventHandlerInstance,
                 eventContext,
                 producer,
-                hostnameProvider,
-                applicationName));
+                instanceInfoProvider));
     }
 }

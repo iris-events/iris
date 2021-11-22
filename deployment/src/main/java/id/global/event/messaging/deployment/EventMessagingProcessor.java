@@ -13,7 +13,7 @@ import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.ConsumerInitRecorder;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.EventAppRecorder;
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
@@ -67,7 +67,7 @@ class EventMessagingProcessor {
         additionalBeanBuildItemBuildProducer.produce(
                 new AdditionalBeanBuildItem.Builder()
                         .addBeanClasses(
-                                HostnameProvider.class,
+                                InstanceInfoProvider.class,
                                 ConsumerConnectionProvider.class,
                                 ProducerConnectionProvider.class,
                                 ConsumerChannelService.class,

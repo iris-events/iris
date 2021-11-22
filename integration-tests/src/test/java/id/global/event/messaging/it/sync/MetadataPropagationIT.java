@@ -20,7 +20,7 @@ import com.rabbitmq.client.AMQP;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
@@ -54,12 +54,12 @@ public class MetadataPropagationIT {
     CorrelationIdProvider correlationIdProvider;
 
     @InjectMock
-    HostnameProvider hostnameProvider;
+    InstanceInfoProvider instanceInfoProvider;
 
     @AfterEach
     void cleanup() {
         finalService.reset();
-        Mockito.reset(hostnameProvider);
+        Mockito.reset(instanceInfoProvider);
     }
 
     @Test

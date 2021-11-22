@@ -1,5 +1,7 @@
 package id.global.event.messaging.runtime.producer;
 
+import static java.util.function.Predicate.not;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,7 +37,7 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
-import id.global.event.messaging.runtime.HostnameProvider;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventAppContext;
@@ -62,7 +64,7 @@ public class AmqpProducer {
     private final AmqpConfiguration configuration;
     private final TransactionManager transactionManager;
     private final CorrelationIdProvider correlationIdProvider;
-    private final HostnameProvider hostnameProvider;
+    private final InstanceInfoProvider instanceInfoProvider;
     private final EventAppInfoProvider eventAppInfoProvider;
 
     private final AtomicInteger count = new AtomicInteger(0);
@@ -75,7 +77,7 @@ public class AmqpProducer {
     @Inject
     public AmqpProducer(ProducerChannelService channelService, ObjectMapper objectMapper, EventContext eventContext,
             AmqpConfiguration configuration, TransactionManager transactionManager,
-            CorrelationIdProvider correlationIdProvider, HostnameProvider hostnameProvider,
+            CorrelationIdProvider correlationIdProvider, InstanceInfoProvider instanceInfoProvider,
             EventAppInfoProvider eventAppInfoProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
@@ -83,7 +85,7 @@ public class AmqpProducer {
         this.configuration = configuration;
         this.transactionManager = transactionManager;
         this.correlationIdProvider = correlationIdProvider;
-        this.hostnameProvider = hostnameProvider;
+        this.instanceInfoProvider = instanceInfoProvider;
         this.eventAppInfoProvider = eventAppInfoProvider;
     }
 
@@ -98,9 +100,9 @@ public class AmqpProducer {
 
         final var messageClassSimpleName = message.getClass().getSimpleName();
         final var scope = getScope(messageAnnotation);
-        final var exchange = getExchange(messageAnnotation, messageClassSimpleName);
-        final var routingKey = getRoutingKey(messageAnnotation, messageClassSimpleName);
         final var exchangeType = getExchangeType(messageAnnotation);
+        final var exchange = getExchange(messageAnnotation);
+        final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
         final var amqpBasicProperties = getOrCreateAmqpBasicProperties(messageClassSimpleName, exchange);
 
         final var applicationId = eventAppInfoProvider.getApplicationId();
@@ -237,7 +239,7 @@ public class AmqpProducer {
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithAdditionalHeaders(final AMQP.BasicProperties basicProperties,
             final String serviceId, final String messageClassSimpleName, String exchange) {
 
-        final var hostName = hostnameProvider.getHostName();
+        final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
         headers.put(HEADER_INSTANCE_ID, hostName);
@@ -254,23 +256,21 @@ public class AmqpProducer {
     }
 
     private ExchangeType getExchangeType(id.global.common.annotations.amqp.Message messageAnnotation) {
-        return messageAnnotation.exchangeType();
+        return Optional.ofNullable(messageAnnotation.exchangeType()).orElse(ExchangeType.FANOUT);
     }
 
-    private String getRoutingKey(id.global.common.annotations.amqp.Message messageAnnotation, String simpleName) {
-        final var routingKey = messageAnnotation.routingKey();
-        if (Objects.isNull(routingKey) || routingKey.isEmpty()) {
-            return GidAnnotationParser.camelToKebabCase(simpleName);
+    private String getRoutingKey(id.global.common.annotations.amqp.Message messageAnnotation,
+            final ExchangeType exchangeType) {
+        if (exchangeType == ExchangeType.FANOUT) {
+            return "";
         }
-        return routingKey;
+        return Optional.ofNullable(messageAnnotation.routingKey())
+                .filter(not(String::isEmpty))
+                .orElseGet(messageAnnotation::name);
     }
 
-    private String getExchange(id.global.common.annotations.amqp.Message messageAnnotation, String simpleName) {
-        final var exchange = messageAnnotation.name();
-        if (Objects.isNull(exchange) || exchange.isEmpty()) {
-            return GidAnnotationParser.camelToKebabCase(simpleName);
-        }
-        return exchange;
+    private String getExchange(id.global.common.annotations.amqp.Message messageAnnotation) {
+        return messageAnnotation.name();
     }
 
     private Scope getScope(id.global.common.annotations.amqp.Message messageAnnotation) {
