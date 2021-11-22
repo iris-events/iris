@@ -65,5 +65,5 @@ public @interface MessageHandler {
      * 
      * @return number of messages to fetch
      */
-    long prefetchCount() default 1;
+    int prefetchCount() default 1;
 }
