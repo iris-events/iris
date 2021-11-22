@@ -55,10 +55,9 @@ public class EventAppRecorderIT {
                         HEADER_CURRENT_SERVICE_ID,
                         HEADER_INSTANCE_ID,
                         HEADER_EVENT_TYPE));
-
         assertThat(headers.get(HEADER_ORIGIN_SERVICE_ID).toString(), is(APP_ID));
         assertThat(headers.get(HEADER_CURRENT_SERVICE_ID).toString(), is(APP_ID));
-        assertThat(headers.get(HEADER_EVENT_TYPE).toString(), is(Event.class.getSimpleName()));
+        assertThat(headers.get(HEADER_EVENT_TYPE).toString(), is(EXCHANGE));
     }
 
     @SuppressWarnings("unused")

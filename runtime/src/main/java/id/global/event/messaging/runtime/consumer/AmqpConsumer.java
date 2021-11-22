@@ -18,6 +18,7 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 
+import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.HostnameProvider;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
@@ -117,7 +118,13 @@ public class AmqpConsumer {
 
     public void initChannel() throws IOException {
         Channel channel = channelService.getOrCreateChannelById(this.channelId);
-        createQueues(channel);
+        if (this.context.getExchangeType() == ExchangeType.DIRECT) {
+            declareDirect(channel);
+        } else if (this.context.getExchangeType() == ExchangeType.TOPIC) {
+            declareTopic(channel);
+        } else {
+            createQueues(channel);
+        }
     }
 
     public DeliverCallback getCallback() {
@@ -202,7 +209,7 @@ public class AmqpConsumer {
         try {
             //amqpAdmin.declareQueue(new Queue(nameSuffix, durable, false, autoDelete, args));
             AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(nameSuffix, durable, false, autoDelete, args);
-            log.info("queue: {}, consumer: {}, message count: {}", declareOk.getQueue(), declareOk.getConsumerCount(),
+            log.info("queue: {}, consumers: {}, message count: {}", declareOk.getQueue(), declareOk.getConsumerCount(),
                     declareOk.getMessageCount());
         } catch (IOException e) {
             long msgCount = channel.messageCount(nameSuffix);
@@ -213,8 +220,10 @@ public class AmqpConsumer {
                 log.error("The new settings of queue was not set, because was not empty! queue={}", nameSuffix, e);
             }
         }
+        //context.getExchangeType() todo maybe use annotation info for setting exchange
         channel.exchangeDeclare(exchange, BuiltinExchangeType.FANOUT);
-        String routingKey = "#." + exchange + "." + versionQueue;
+        //String routingKey = "#." + exchange + "." + versionQueue;
+        String routingKey = "#." + exchange;
         channel.queueBind(nameSuffix, exchange, routingKey);
         channel.basicConsume(nameSuffix, true, this.callback, consumerTag -> {
             log.warn("Channel canceled for {}", nameSuffix);
