@@ -1,12 +1,12 @@
 package id.global.asyncapi.runtime.scanner.model;
 
-import id.global.common.annotations.amqp.Message;
-
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.common.annotations.amqp.Scope.SESSION;
 
+import id.global.common.annotations.amqp.Message;
+
 @Message(
-        exchange = "sent-event-exchange",
+        name = "sent-event-exchange",
         routingKey = "sent-event-queue",
         scope = SESSION,
         exchangeType = DIRECT,

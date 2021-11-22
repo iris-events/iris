@@ -1,12 +1,11 @@
 package id.global.amqp;
 
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 
-import id.global.asyncapi.runtime.scanner.FilteredIndexView;
-import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 
-public class ExchangeDurableParser {
+public class QueueDurableParser {
 
     private static final String MESSAGE_HANDLER_DURABLE_PARAM = "durable";
 
@@ -14,8 +13,7 @@ public class ExchangeDurableParser {
         return messageHandlerAnnotation.durable();
     }
 
-    public static boolean getFromAnnotationInstance(AnnotationInstance annotation,
-            FilteredIndexView index) {
+    public static boolean getFromAnnotationInstance(AnnotationInstance annotation, IndexView index) {
         return annotation.valueWithDefault(index, MESSAGE_HANDLER_DURABLE_PARAM).asBoolean();
     }
 }

@@ -1,8 +1,8 @@
 package id.global.amqp;
 
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 
-import id.global.asyncapi.runtime.scanner.FilteredIndexView;
 import id.global.common.annotations.amqp.Message;
 
 public class ExchangeTtlParser {
@@ -17,7 +17,7 @@ public class ExchangeTtlParser {
         return null;
     }
 
-    public static Integer getFromAnnotationInstance(AnnotationInstance messageAnnotation, FilteredIndexView index) {
+    public static Integer getFromAnnotationInstance(AnnotationInstance messageAnnotation, IndexView index) {
         int ttl = messageAnnotation.valueWithDefault(index, MESSAGE_TTL_PARAM).asInt();
         if (ttl > -1) {
             return ttl;

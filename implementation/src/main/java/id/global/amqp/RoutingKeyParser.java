@@ -1,6 +1,6 @@
 package id.global.amqp;
 
-import static id.global.asyncapi.runtime.util.GidAnnotationParser.camelToKebabCase;
+import static id.global.asyncapi.runtime.util.CaseConverter.camelToKebabCase;
 
 import java.util.Objects;
 
