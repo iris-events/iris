@@ -24,7 +24,7 @@ public @interface Message {
      * annotated class info.
      * If the exchange doesn't exist it should be created.
      */
-    String exchange() default "";
+    String name() ;
 
     /**
      * Defines the routing of this message on the specified exchange. If not specified, the routing key should be generated from
