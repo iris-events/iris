@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -57,7 +58,7 @@ public class MessagePropagationIT {
 
         producer.send(new HandledEvent(eventPropertyValue));
 
-        final var forwardedEvent = forwardedToService.getForwardedEvent().get();
+        final var forwardedEvent = forwardedToService.getForwardedEvent().get(5, TimeUnit.SECONDS);
         assertThat(forwardedEvent, is(notNullValue()));
         assertThat(forwardedEvent.eventPropertyValue(), is(eventPropertyValue));
     }

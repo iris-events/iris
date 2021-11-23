@@ -162,8 +162,8 @@ public class AmqpConsumer {
 
         // start consuming
         channel.basicConsume(queueName, true, this.callback, consumerTag -> log.warn("Channel canceled for {}", queueName),
-                (consumerTag, sig) ->
-                        log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag));
+                (consumerTag, sig) -> log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName,
+                        consumerTag));
 
         log.info("consumer started on queue '{}' --> {} binding key(s): {}", queueName, exchange,
                 String.join(", ", bindingKeys));

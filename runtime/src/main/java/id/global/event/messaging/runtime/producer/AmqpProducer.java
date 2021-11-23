@@ -1,7 +1,5 @@
 package id.global.event.messaging.runtime.producer;
 
-import static java.util.function.Predicate.not;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -32,10 +30,12 @@ import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 
+import id.global.amqp.parsers.ExchangeParser;
+import id.global.amqp.parsers.ExchangeTypeParser;
 import id.global.amqp.parsers.MessageScopeParser;
+import id.global.amqp.parsers.RoutingKeyParser;
 import id.global.asyncapi.runtime.util.CaseConverter;
 import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
@@ -102,10 +102,10 @@ public class AmqpProducer {
         final var messageClassSimpleName = message.getClass().getSimpleName();
 
         final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
-        final var exchangeType = getExchangeType(messageAnnotation);
-        final var exchange = getExchange(messageAnnotation);
+        final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
+        final var exchange = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
-        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(messageClassSimpleName, exchange);
+        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(exchange);
 
         final var applicationId = eventAppInfoProvider.getApplicationId();
         final var messageClassKebabCase = CaseConverter.camelToKebabCase(messageClassSimpleName);
@@ -229,17 +229,17 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(final String messageClassSimpleName, String exchange) {
+    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(String exchange) {
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, messageClassSimpleName, exchange);
+        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, exchange);
     }
 
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithAdditionalHeaders(final AMQP.BasicProperties basicProperties,
-            final String serviceId, final String messageClassSimpleName, String exchange) {
+            final String serviceId, String exchange) {
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
@@ -257,26 +257,13 @@ public class AmqpProducer {
                 .build();
     }
 
-    private ExchangeType getExchangeType(id.global.common.annotations.amqp.Message messageAnnotation) {
-        return Optional.ofNullable(messageAnnotation.exchangeType()).orElse(ExchangeType.FANOUT);
-    }
-
     private String getRoutingKey(id.global.common.annotations.amqp.Message messageAnnotation,
             final ExchangeType exchangeType) {
         if (exchangeType == ExchangeType.FANOUT) {
             return "";
         }
-        return Optional.ofNullable(messageAnnotation.routingKey())
-                .filter(not(String::isEmpty))
-                .orElseGet(messageAnnotation::name);
-    }
 
-    private String getExchange(id.global.common.annotations.amqp.Message messageAnnotation) {
-        return messageAnnotation.name();
-    }
-
-    private Scope getScope(id.global.common.annotations.amqp.Message messageAnnotation) {
-        return messageAnnotation.scope();
+        return RoutingKeyParser.getFromAnnotationClass(messageAnnotation);
     }
 
     private boolean shouldWaitForConfirmations() {

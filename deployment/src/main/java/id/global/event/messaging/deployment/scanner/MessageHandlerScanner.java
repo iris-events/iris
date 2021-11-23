@@ -59,14 +59,13 @@ public class MessageHandlerScanner {
                     final var messageClassSimpleName = messageAnnotation.target().asClass().simpleName();
 
                     final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(messageAnnotation, index);
-                    final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation, messageClassSimpleName);
+                    final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation);
                     final var scope = MessageScopeParser.getFromAnnotationInstance(messageAnnotation, index);
                     final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);
                     final var deadLetter = DeadLetterQueueParser.getFromAnnotationInstance(messageAnnotation, index);
 
                     final var bindingKeys = exchangeType != FANOUT
-                            ? BindingKeysParser.getFromAnnotationInstance(messageHandlerAnnotation,
-                                    messageClassSimpleName)
+                            ? BindingKeysParser.getFromAnnotationInstance(messageHandlerAnnotation, messageAnnotation)
                             : null;
                     final var durable = QueueDurableParser.getFromAnnotationInstance(messageHandlerAnnotation, index);
                     final var autoDelete = QueueAutoDeleteParser.getFromAnnotationInstance(messageHandlerAnnotation, index);
