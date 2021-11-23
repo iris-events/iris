@@ -202,11 +202,11 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var channelInfos = new ArrayList<ChannelInfo>();
         final var messageTypes = new HashMap<String, Scope>();
 
-        for (AnnotationInstance annotationInstance : methodAnnotationInstances) {
+        for (AnnotationInstance messageHandlerAnnotation : methodAnnotationInstances) {
 
-            final var annotationName = annotationInstance.name();
-            final var annotationValues = annotationInstance.values();
-            final var methodInfo = (MethodInfo) annotationInstance.target();
+            final var annotationName = messageHandlerAnnotation.name();
+            final var annotationValues = messageHandlerAnnotation.values();
+            final var methodInfo = (MethodInfo) messageHandlerAnnotation.target();
             final var methodParameters = methodInfo.parameters();
 
             final var messageAnnotation = getMessageAnnotation(methodParameters, index);
@@ -215,14 +215,13 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var messageClass = messageAnnotation.target().asClass();
             final var messageClassSimpleName = messageClass.simpleName();
 
-            final var bindingKeys = BindingKeysParser.getFromAnnotationInstanceAsCsv(annotationInstance,
-                    messageClassSimpleName);
+            final var bindingKeys = BindingKeysParser.getFromAnnotationInstanceAsCsv(messageHandlerAnnotation, messageAnnotation);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(messageAnnotation, index);
             final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation);
             final var scope = MessageScopeParser.getFromAnnotationInstance(messageAnnotation, index);
 
-            final var durable = QueueDurableParser.getFromAnnotationInstance(annotationInstance, index);
-            final var autodelete = QueueAutoDeleteParser.getFromAnnotationInstance(annotationInstance, index);
+            final var durable = QueueDurableParser.getFromAnnotationInstance(messageHandlerAnnotation, index);
+            final var autodelete = QueueAutoDeleteParser.getFromAnnotationInstance(messageHandlerAnnotation, index);
             final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(messageAnnotation, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);
 
@@ -241,7 +240,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                     exchangeType,
                     durable,
                     autodelete,
-                    RolesAllowedParser.getFromAnnotationInstance(annotationInstance, index),
+                    RolesAllowedParser.getFromAnnotationInstance(messageHandlerAnnotation, index),
                     deadLetterQueue,
                     ttl);
 
