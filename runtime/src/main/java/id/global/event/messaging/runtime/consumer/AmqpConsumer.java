@@ -216,7 +216,7 @@ public class AmqpConsumer {
         }
 
         if (exchangeType == ExchangeType.DIRECT || exchangeType == ExchangeType.TOPIC) {
-            final var bindingKeys = String.join(".", context.getBindingKeys());
+            final var bindingKeys = String.join("-", context.getBindingKeys());
             stringBuffer.append(".").append(bindingKeys);
         }
 
