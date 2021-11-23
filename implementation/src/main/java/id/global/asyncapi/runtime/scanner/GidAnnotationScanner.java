@@ -168,7 +168,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
             final var routingKey = RoutingKeyParser.getFromAnnotationInstance(anno, classSimpleName);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(anno, index);
-            final var exchange = ExchangeParser.getFromAnnotationInstance(anno, classSimpleName);
+            final var exchange = ExchangeParser.getFromAnnotationInstance(anno);
             final var rolesAllowed = RolesAllowedParser.getFromAnnotationInstance(anno, index);
             final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(anno, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(anno, index);
@@ -218,7 +218,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var bindingKeys = BindingKeysParser.getFromAnnotationInstanceAsCsv(annotationInstance,
                     messageClassSimpleName);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(messageAnnotation, index);
-            final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation, messageClassSimpleName);
+            final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation);
             final var scope = MessageScopeParser.getFromAnnotationInstance(messageAnnotation, index);
 
             final var durable = QueueDurableParser.getFromAnnotationInstance(annotationInstance, index);
