@@ -1,6 +1,6 @@
-package id.global.amqp;
+package id.global.amqp.parsers;
 
-import static id.global.asyncapi.runtime.util.GidAnnotationParser.camelToKebabCase;
+import static id.global.asyncapi.runtime.util.CaseConverter.camelToKebabCase;
 
 import java.util.Objects;
 
@@ -11,11 +11,11 @@ import id.global.common.annotations.amqp.Message;
 
 public class ExchangeParser {
 
-    private static final String MESSAGE_EXCHANGE_PARAM = "exchange";
+    private static final String MESSAGE_EXCHANGE_PARAM = "name";
 
     public static String getFromAnnotationClass(Message messageAnnotation, String messageClassSimpleName) {
-        final var exchange = messageAnnotation.exchange();
-        if (!Objects.isNull(exchange) && !exchange.isEmpty()) {
+        final var exchange = messageAnnotation.name();
+        if (Objects.nonNull(exchange) && !exchange.isEmpty()) {
             return exchange;
         }
         return camelToKebabCase(messageClassSimpleName);

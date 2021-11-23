@@ -1,6 +1,6 @@
-package id.global.amqp;
+package id.global.amqp.parsers;
 
-import static id.global.asyncapi.runtime.util.GidAnnotationParser.camelToKebabCase;
+import static id.global.asyncapi.runtime.util.CaseConverter.camelToKebabCase;
 
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +15,7 @@ public class BindingKeysParser {
 
     public static String[] getFromAnnotationClass(MessageHandler messageHandler, String messageClassSimpleName) {
         var bindingKeys = messageHandler.bindingKeys();
-        if (!Objects.isNull(bindingKeys) && bindingKeys.length > 1) {
+        if (Objects.nonNull(bindingKeys) && bindingKeys.length > 1) {
             return bindingKeys;
         }
         return List.of(camelToKebabCase(messageClassSimpleName)).toArray(new String[0]);

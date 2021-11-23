@@ -45,12 +45,16 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
-import id.global.amqp.BindingKeysParser;
-import id.global.amqp.ExchangeParser;
-import id.global.amqp.ExchangeTtlParser;
-import id.global.amqp.ExchangeTypeParser;
-import id.global.amqp.MessageScopeParser;
-import id.global.amqp.RoutingKeyParser;
+import id.global.amqp.parsers.BindingKeysParser;
+import id.global.amqp.parsers.DeadLetterQueueParser;
+import id.global.amqp.parsers.ExchangeParser;
+import id.global.amqp.parsers.ExchangeTtlParser;
+import id.global.amqp.parsers.ExchangeTypeParser;
+import id.global.amqp.parsers.MessageScopeParser;
+import id.global.amqp.parsers.QueueAutoDeleteParser;
+import id.global.amqp.parsers.QueueDurableParser;
+import id.global.amqp.parsers.RolesAllowedParser;
+import id.global.amqp.parsers.RoutingKeyParser;
 import id.global.asyncapi.api.AsyncApiConfig;
 import id.global.asyncapi.api.util.MergeUtil;
 import id.global.asyncapi.runtime.generator.CustomDefinitionProvider;
@@ -60,7 +64,6 @@ import id.global.asyncapi.runtime.io.server.ServerReader;
 import id.global.asyncapi.runtime.scanner.model.ChannelInfo;
 import id.global.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import id.global.asyncapi.runtime.util.ChannelInfoGenerator;
-import id.global.asyncapi.runtime.util.GidAnnotationParser;
 import id.global.asyncapi.runtime.util.JandexUtil;
 import id.global.asyncapi.runtime.util.SchemeIdGenerator;
 import id.global.asyncapi.spec.annotations.EventApp;
@@ -166,8 +169,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var routingKey = RoutingKeyParser.getFromAnnotationInstance(anno, classSimpleName);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(anno, index);
             final var exchange = ExchangeParser.getFromAnnotationInstance(anno, classSimpleName);
-            final var rolesAllowed = GidAnnotationParser.getRolesAllowed(anno);
-            final var deadLetterQueue = GidAnnotationParser.getDeadLetterQueue(anno, index);
+            final var rolesAllowed = RolesAllowedParser.getFromAnnotationInstance(anno, index);
+            final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(anno, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(anno, index);
 
             channelInfos.add(ChannelInfoGenerator.generateSubscribeChannelInfo(
@@ -218,9 +221,9 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation, messageClassSimpleName);
             final var scope = MessageScopeParser.getFromAnnotationInstance(messageAnnotation, index);
 
-            final var durable = GidAnnotationParser.getDurable(annotationInstance, index);
-            final var autodelete = GidAnnotationParser.getAutodelete(annotationInstance, index);
-            final var deadLetterQueue = GidAnnotationParser.getDeadLetterQueue(messageAnnotation, index);
+            final var durable = QueueDurableParser.getFromAnnotationInstance(annotationInstance, index);
+            final var autodelete = QueueAutoDeleteParser.getFromAnnotationInstance(annotationInstance, index);
+            final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(messageAnnotation, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);
 
             final var isGeneratedClass = isGeneratedClass(messageClass);
@@ -238,7 +241,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                     exchangeType,
                     durable,
                     autodelete,
-                    GidAnnotationParser.getRolesAllowed(annotationInstance),
+                    RolesAllowedParser.getFromAnnotationInstance(annotationInstance, index),
                     deadLetterQueue,
                     ttl);
 

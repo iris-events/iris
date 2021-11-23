@@ -60,11 +60,11 @@ public class EventHandlersApp {
         LOG.info("Handling event with generated defaults");
     }
 
-    @Message(exchangeType = DIRECT)
+    @Message(name = "test-event-v1", exchangeType = DIRECT)
     public record TestEventV1(int id, String status, User user) {
     }
 
-    @Message(exchangeType = DIRECT, ttl = 10000)
+    @Message(name = "test-event-v2", exchangeType = DIRECT, ttl = 10000)
     public record TestEventV2(
             int id,
             String name,
@@ -74,30 +74,30 @@ public class EventHandlersApp {
             Map<String, String> someMap) {
     }
 
-    @Message(exchangeType = DIRECT)
+    @Message(name = "frontend-test-event-v1", exchangeType = DIRECT)
     public record FrontendTestEventV1(int id, String status, User user) {
     }
 
-    @Message(exchange = "test-topic-exchange", exchangeType = TOPIC)
+    @Message(name = "test-topic-exchange", exchangeType = TOPIC)
     public record TopicTestEventV1(int id, String status, User user) {
     }
 
-    @Message(exchange = "test-fanout-exchange", exchangeType = FANOUT)
+    @Message(name = "test-fanout-exchange", exchangeType = FANOUT)
     public record FanoutTestEventV1(int id, String status, User user) {
     }
 
-    @Message
+    @Message(name = "event-defaults")
     public record EventDefaults(int id) {
     }
 
     @GlobalIdGenerated
-    @Message(exchange = "test-generated-exchange", exchangeType = TOPIC)
+    @Message(name = "test-generated-exchange", exchangeType = TOPIC)
     public record GeneratedTestEvent(int id, String status) {
 
     }
 
     @SuppressWarnings("unused")
-    @Message(exchangeType = FANOUT)
+    @Message(name = "produced-event", exchangeType = FANOUT)
     public record ProducedEvent(int id) {
     }
 }

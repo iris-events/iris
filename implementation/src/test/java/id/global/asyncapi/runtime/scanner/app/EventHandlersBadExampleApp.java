@@ -24,7 +24,7 @@ public class EventHandlersBadExampleApp {
         LOG.info("Handle hash map event: " + event);
     }
 
-    @Message(exchangeType = DIRECT)
+    @Message(name = "map-event", exchangeType = DIRECT)
     public record MapEvent(Map<String, Object> mapProperty) {
     }
 }
