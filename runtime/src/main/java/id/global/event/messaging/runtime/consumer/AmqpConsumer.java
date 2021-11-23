@@ -36,7 +36,7 @@ public class AmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
     private static final int FRONT_MESSAGE_TTL = 15000;
     private static final String FRONTEND_DEAD_LETTER_QUEUE = "dead-letter-frontend";
-    public static final String FRONTEND_MESSAGE_EXCHANGE = "front-message";
+    public static final String FRONTEND_MESSAGE_EXCHANGE = "frontend";
     private static final String DEAD_LETTER = "dead-letter";
 
     private final ObjectMapper objectMapper;
