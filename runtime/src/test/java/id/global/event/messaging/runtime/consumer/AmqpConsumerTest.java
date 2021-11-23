@@ -1,5 +1,6 @@
 package id.global.event.messaging.runtime.consumer;
 
+import static id.global.asyncapi.runtime.util.GidAnnotationParser.camelToKebabCase;
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -47,7 +48,8 @@ public class AmqpConsumerTest {
                 new ObjectMapper(),
                 createHandle(),
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, void.class, TEST_METHOD_NAME),
-                new AmqpContext(EXCHANGE, List.of(), DIRECT, Scope.INTERNAL, false, false, false, 1, -1, ""),
+                new AmqpContext(EXCHANGE, List.of(), DIRECT, Scope.INTERNAL, false, false, false, 1, -1, "",
+                        camelToKebabCase(MyTestEvent.class.getSimpleName())),
                 new ConsumerChannelService(
                         new ConsumerConnectionProvider(
                                 new ConnectionFactoryProvider(amqpConfiguration),
