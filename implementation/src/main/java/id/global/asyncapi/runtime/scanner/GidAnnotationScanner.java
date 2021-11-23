@@ -166,7 +166,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             messageScopes.put(classSimpleName, MessageScopeParser.getFromAnnotationInstance(anno, index));
             producedMessages.put(classSimpleName, generateProducedMessageSchemaInfo(classInfo));
 
-            final var routingKey = RoutingKeyParser.getFromAnnotationInstance(anno, classSimpleName);
+            final var routingKey = RoutingKeyParser.getFromAnnotationInstance(anno);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(anno, index);
             final var exchange = ExchangeParser.getFromAnnotationInstance(anno);
             final var rolesAllowed = RolesAllowedParser.getFromAnnotationInstance(anno, index);
