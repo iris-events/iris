@@ -1,10 +1,8 @@
-package id.global.amqp;
-
-import static org.junit.Assert.*;
+package id.global.amqp.parsers;
 
 import org.junit.Test;
 
-public class QueueAutoDeleteParserTest {
+public class BindingKeysParserTest {
 
     @Test
     public void getFromAnnotationClass() {
@@ -12,5 +10,9 @@ public class QueueAutoDeleteParserTest {
 
     @Test
     public void getFromAnnotationInstance() {
+    }
+
+    @Test
+    public void getFromAnnotationInstanceAsCsv() {
     }
 }

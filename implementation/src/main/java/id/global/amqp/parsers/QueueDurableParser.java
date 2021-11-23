@@ -1,4 +1,4 @@
-package id.global.amqp;
+package id.global.amqp.parsers;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;

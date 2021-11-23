@@ -1,9 +1,8 @@
-package id.global.amqp;
-
+package id.global.amqp.parsers;
 
 import org.junit.Test;
 
-public class ExchangeParserTest {
+public class ExchangeTtlParserTest {
 
     @Test
     public void getFromAnnotationClass() {

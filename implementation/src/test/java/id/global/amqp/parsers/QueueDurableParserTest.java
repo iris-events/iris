@@ -1,10 +1,8 @@
-package id.global.amqp;
-
-import static org.junit.Assert.*;
+package id.global.amqp.parsers;
 
 import org.junit.Test;
 
-public class ExchangeTtlParserTest {
+public class QueueDurableParserTest {
 
     @Test
     public void getFromAnnotationClass() {

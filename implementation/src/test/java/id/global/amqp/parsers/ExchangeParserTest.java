@@ -1,10 +1,8 @@
-package id.global.amqp;
-
-import static org.junit.Assert.*;
+package id.global.amqp.parsers;
 
 import org.junit.Test;
 
-public class DeadLetterQueueParserTest {
+public class ExchangeParserTest {
 
     @Test
     public void getFromAnnotationClass() {

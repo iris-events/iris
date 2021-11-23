@@ -1,4 +1,4 @@
-package id.global.amqp;
+package id.global.amqp.parsers;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
@@ -9,11 +9,11 @@ public class ConsumerPrefetchCountParser {
 
     private static final String MESSAGE_HANDLER_PREFETCH_COUNT_PARAM = "prefetchCount";
 
-    public static long getFromAnnotationClass(MessageHandler messageHandlerAnnotation) {
+    public static int getFromAnnotationClass(MessageHandler messageHandlerAnnotation) {
         return messageHandlerAnnotation.prefetchCount();
     }
 
-    public static long getFromAnnotationInstance(AnnotationInstance annotation, IndexView index) {
-        return annotation.valueWithDefault(index, MESSAGE_HANDLER_PREFETCH_COUNT_PARAM).asLong();
+    public static int getFromAnnotationInstance(AnnotationInstance annotation, IndexView index) {
+        return annotation.valueWithDefault(index, MESSAGE_HANDLER_PREFETCH_COUNT_PARAM).asInt();
     }
 }

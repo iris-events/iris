@@ -1,4 +1,4 @@
-package id.global.amqp;
+package id.global.amqp.parsers;
 
 import static id.global.asyncapi.runtime.util.CaseConverter.camelToKebabCase;
 
@@ -14,7 +14,7 @@ public class RoutingKeyParser {
 
     public static String getFromAnnotationClass(final Message messageAnnotation, final String messageClassSimpleName) {
         final var routingKey = messageAnnotation.routingKey();
-        if (!Objects.isNull(routingKey) && !routingKey.isBlank()) {
+        if (Objects.nonNull(routingKey) && !routingKey.isBlank()) {
             return routingKey;
         }
         return camelToKebabCase(messageClassSimpleName);

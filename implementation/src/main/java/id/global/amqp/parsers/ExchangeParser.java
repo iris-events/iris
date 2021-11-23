@@ -1,4 +1,4 @@
-package id.global.amqp;
+package id.global.amqp.parsers;
 
 import static id.global.asyncapi.runtime.util.CaseConverter.camelToKebabCase;
 
@@ -15,7 +15,7 @@ public class ExchangeParser {
 
     public static String getFromAnnotationClass(Message messageAnnotation, String messageClassSimpleName) {
         final var exchange = messageAnnotation.name();
-        if (!Objects.isNull(exchange) && !exchange.isEmpty()) {
+        if (Objects.nonNull(exchange) && !exchange.isEmpty()) {
             return exchange;
         }
         return camelToKebabCase(messageClassSimpleName);
