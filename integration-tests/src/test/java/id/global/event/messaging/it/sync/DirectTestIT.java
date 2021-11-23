@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -71,10 +72,10 @@ public class DirectTestIT {
 
         assertDoesNotThrow(() -> producer.send(new MinimumEvent(MINIMUM_EVENT_ID)));
 
-        PrioritizedEvent priorityEvent = service.getHandledPriorityEvent().get();
-        Event event = service.getHandledEvent().get();
-        BlankExchangeEvent blankExchangeEvent = service.getHandledBlankExchangeEvent().get();
-        MinimumEvent minimumEvent = service.getHandledMinimumEvent().get();
+        PrioritizedEvent priorityEvent = service.getHandledPriorityEvent().get(5, TimeUnit.SECONDS);
+        Event event = service.getHandledEvent().get(5, TimeUnit.SECONDS);
+        BlankExchangeEvent blankExchangeEvent = service.getHandledBlankExchangeEvent().get(5, TimeUnit.SECONDS);
+        MinimumEvent minimumEvent = service.getHandledMinimumEvent().get(5, TimeUnit.SECONDS);
 
         assertThat(TestHandlerService.count.get(), is(4));
 
