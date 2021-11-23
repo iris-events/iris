@@ -1,34 +1,33 @@
 package id.global.amqp.parsers;
 
-import static id.global.asyncapi.runtime.util.CaseConverter.camelToKebabCase;
-
 import java.util.List;
 import java.util.Objects;
 
 import org.jboss.jandex.AnnotationInstance;
 
 import id.global.asyncapi.runtime.util.JandexUtil;
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 
 public class BindingKeysParser {
     private static final String MESSAGE_HANDLER_BINDING_KEYS_PARAM = "bindingKeys";
 
-    public static String[] getFromAnnotationClass(MessageHandler messageHandler, String messageClassSimpleName) {
+    public static List<String> getFromAnnotationClass(MessageHandler messageHandler, Message message) {
         var bindingKeys = messageHandler.bindingKeys();
         if (Objects.nonNull(bindingKeys) && bindingKeys.length > 1) {
-            return bindingKeys;
+            return List.of(bindingKeys);
         }
-        return List.of(camelToKebabCase(messageClassSimpleName)).toArray(new String[0]);
+        return List.of(message.routingKey());
     }
 
-    public static List<String> getFromAnnotationInstance(final AnnotationInstance annotation,
-            final String messageClassSimpleName) {
-        return JandexUtil.stringListValue(annotation, MESSAGE_HANDLER_BINDING_KEYS_PARAM)
-                .orElse(List.of(camelToKebabCase(messageClassSimpleName)));
+    public static List<String> getFromAnnotationInstance(final AnnotationInstance messageHandlerAnnotation,
+            final AnnotationInstance messageAnnotation) {
+        return JandexUtil.stringListValue(messageHandlerAnnotation, MESSAGE_HANDLER_BINDING_KEYS_PARAM)
+                .orElse(List.of(RoutingKeyParser.getFromAnnotationInstance(messageAnnotation)));
     }
 
-    public static String getFromAnnotationInstanceAsCsv(final AnnotationInstance annotation,
-            final String messageClassSimpleName) {
-        return String.join(",", getFromAnnotationInstance(annotation, messageClassSimpleName));
+    public static String getFromAnnotationInstanceAsCsv(final AnnotationInstance messageHandlerAnnotation,
+            final AnnotationInstance messageAnnotation) {
+        return String.join(",", getFromAnnotationInstance(messageHandlerAnnotation, messageAnnotation));
     }
 }
