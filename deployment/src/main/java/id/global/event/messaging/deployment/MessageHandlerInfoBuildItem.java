@@ -130,4 +130,5 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 ", deadLetterQueue='" + deadLetterQueue + '\'' +
                 '}';
     }
+
 }

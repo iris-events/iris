@@ -34,6 +34,11 @@
       <artifactId>quarkus-junit5-mockito</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.rabbitmqclient</groupId>
+      <artifactId>quarkus-rabbitmq-client</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -87,6 +92,7 @@
                 </env>
                 <ports>
                   <port>5672:5672</port>
+                  <port>5671:5671</port>
                 </ports>
                 <log>
                   <prefix>RabbitMQ:</prefix>

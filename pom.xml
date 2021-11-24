@@ -18,6 +18,7 @@
     <hamcrest.version>2.2</hamcrest.version>
     <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
     <globalid-common.version>1.0.18</globalid-common.version>
+    <version.quarkiverse.rabbitmqclient>0.4.1.Final</version.quarkiverse.rabbitmqclient>
 
   </properties>
   <scm>
@@ -67,6 +68,12 @@
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest</artifactId>
         <version>${hamcrest.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.rabbitmqclient</groupId>
+        <artifactId>quarkus-rabbitmq-client</artifactId>
+        <version>${version.quarkiverse.rabbitmqclient}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

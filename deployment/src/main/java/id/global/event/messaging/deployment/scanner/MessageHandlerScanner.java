@@ -1,6 +1,7 @@
 package id.global.event.messaging.deployment.scanner;
 
 import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
+import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_TYPE_PARAM;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,10 +20,10 @@ import id.global.amqp.parsers.ConsumerPrefetchCountParser;
 import id.global.amqp.parsers.DeadLetterQueueParser;
 import id.global.amqp.parsers.ExchangeParser;
 import id.global.amqp.parsers.ExchangeTtlParser;
-import id.global.amqp.parsers.ExchangeTypeParser;
 import id.global.amqp.parsers.MessageScopeParser;
 import id.global.amqp.parsers.QueueAutoDeleteParser;
 import id.global.amqp.parsers.QueueDurableParser;
+import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
@@ -56,9 +57,12 @@ public class MessageHandlerScanner {
                     final var messageAnnotation = getMessageAnnotation(methodParameters, index);
                     annotationValidator.validate(messageAnnotation);
 
-                    final var messageClassSimpleName = messageAnnotation.target().asClass().simpleName();
+                    final ExchangeType exchangeType = ExchangeType
+                            .valueOf(messageAnnotation.valueWithDefault(index, EXCHANGE_TYPE_PARAM)
+                                    .asString());
 
-                    final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(messageAnnotation, index);
+                    final var name = messageAnnotation.value("name").asString();
+
                     final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation);
                     final var scope = MessageScopeParser.getFromAnnotationInstance(messageAnnotation, index);
                     final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);

@@ -160,7 +160,7 @@ public final class AmqpContext {
                 "consumerOnEveryInstance=" + consumerOnEveryInstance + ", " +
                 "prefetch=" + prefetch + ", " +
                 "ttl=" + ttl + ", " +
-                "deadLetterQueue=" + deadLetterQueue + ']';
+                "deadLetterQueue=" + deadLetterQueue + "]";
     }
 
 }

@@ -36,6 +36,7 @@ public class AmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
     private static final int FRONT_MESSAGE_TTL = 15000;
     private static final String FRONTEND_DEAD_LETTER_QUEUE = "dead-letter-frontend";
+    public static final String FRONTEND_MESSAGE_EXCHANGE = "frontend";
     private static final String DEAD_LETTER = "dead-letter";
 
     private final ObjectMapper objectMapper;
@@ -127,7 +128,7 @@ public class AmqpConsumer {
 
     private void createQueues(Channel channel, final ExchangeType exchangeType) throws IOException {
         final Map<String, Object> queueDeclarationArgs = new HashMap<>();
-        final var exchange = context.getName();
+        final var exchange = isFrontendMessage() ? FRONTEND_MESSAGE_EXCHANGE : context.getName();
         final boolean consumerOnEveryInstance = context.isConsumerOnEveryInstance();
         final var queueName = getQueueName(exchange, exchangeType, consumerOnEveryInstance);
 
@@ -155,7 +156,7 @@ public class AmqpConsumer {
         declareExchange(channel, exchange, exchangeType);
 
         // bind queues
-        final var bindingKeys = getBindingKeys(exchangeType, exchange);
+        final var bindingKeys = getBindingKeys(exchangeType);
         for (String bindingKey : bindingKeys) {
             channel.queueBind(queueName, exchange, bindingKey);
         }
@@ -172,8 +173,12 @@ public class AmqpConsumer {
     private void declareExchange(final Channel channel, final String exchange, final ExchangeType exchangeType)
             throws IOException {
 
-        final var type = BuiltinExchangeType.valueOf(exchangeType.name());
-        channel.exchangeDeclare(exchange, type, true);
+        if (isFrontendMessage()) {
+            channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, false);
+        } else {
+            final var type = BuiltinExchangeType.valueOf(exchangeType.name());
+            channel.exchangeDeclare(exchange, type, true);
+        }
     }
 
     private void declareQueue(final Channel channel, final boolean consumerOnEveryInstance, final String queueName,
@@ -233,7 +238,12 @@ public class AmqpConsumer {
         return deadLetterQueue;
     }
 
-    private List<String> getBindingKeys(final ExchangeType exchangeType, final String name) {
+    private List<String> getBindingKeys(final ExchangeType exchangeType) {
+        final var name = context.getName();
+        if (isFrontendMessage()) {
+            return List.of("#." + name);
+        }
+
         return switch (exchangeType) {
             case DIRECT, TOPIC -> context.getBindingKeys();
             case FANOUT -> List.of("#." + name);
