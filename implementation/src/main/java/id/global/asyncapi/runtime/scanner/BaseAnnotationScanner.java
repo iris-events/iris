@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import id.global.asyncapi.api.Headers;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -43,13 +44,7 @@ public abstract class BaseAnnotationScanner {
     public static final String PROP_ID = "id";
     public static final String PROP_INFO = "info";
     public static final String PROP_SERVERS = "servers";
-    public static final String PROP_CHANNELS = "channels";
     public static final String COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
-
-    private static final String HEADER_ROLES_ALLOWED = "X-roles-allowed";
-    private static final String HEADER_SCOPE = "X-scope";
-    private static final String HEADER_TTL = "X-ttl";
-    private static final String HEADER_DEAD_LETTER = "X-dead-letter";
 
     protected final AnnotationScannerContext annotationScannerContext;
     protected ClassLoader classLoader = null;
@@ -106,13 +101,13 @@ public abstract class BaseAnnotationScanner {
             operation.message = new Aai20Message(eventKey);
 
             operation.message.headers = new Aai20HeaderItem();
-            operation.message.headers.addExtension(HEADER_ROLES_ALLOWED, getRolesAllowedExtension(channelInfo.getRolesAllowed()));
-            operation.message.headers.addExtension(HEADER_SCOPE, getScopeHeaderExtension(messageScopes, eventKey));
-            operation.message.headers.addExtension(HEADER_DEAD_LETTER, getDeadLetterHeaderExtension(channelInfo.getDeadLetterQueue()));
+            operation.message.headers.addExtension(Headers.HEADER_ROLES_ALLOWED, getRolesAllowedExtension(channelInfo.getRolesAllowed()));
+            operation.message.headers.addExtension(Headers.HEADER_SCOPE, getScopeHeaderExtension(messageScopes, eventKey));
+            operation.message.headers.addExtension(Headers.HEADER_DEAD_LETTER, getDeadLetterHeaderExtension(channelInfo.getDeadLetterQueue()));
 
             // Optional extensions
             Optional<Integer> ttl = Optional.ofNullable(channelInfo.getTtl());
-            ttl.ifPresent(ttlInt -> operation.message.headers.addExtension(HEADER_TTL, getTtlHeaderExtension(ttlInt)));
+            ttl.ifPresent(ttlInt -> operation.message.headers.addExtension(Headers.HEADER_TTL, getTtlHeaderExtension(ttlInt)));
 
             operation.message._name = eventKey;
             operation.message.name = eventKey;
@@ -188,7 +183,7 @@ public abstract class BaseAnnotationScanner {
 
     private Extension getScopeHeaderExtension(Map<String, Scope> messageScopes, String eventKey) {
         Extension scopeExtension = new Extension();
-        scopeExtension.name = HEADER_SCOPE;
+        scopeExtension.name = Headers.HEADER_SCOPE;
         scopeExtension.value = messageScopes.get(eventKey);
         return scopeExtension;
     }
@@ -199,14 +194,14 @@ public abstract class BaseAnnotationScanner {
         }
 
         Extension ttlExtension = new Extension();
-        ttlExtension.name = HEADER_TTL;
+        ttlExtension.name = Headers.HEADER_TTL;
         ttlExtension.value = ttl;
         return ttlExtension;
     }
 
     private Extension getRolesAllowedExtension(String[] rolesAllowed) {
         Extension rolesAllowedExtension = new Extension();
-        rolesAllowedExtension.name = HEADER_ROLES_ALLOWED;
+        rolesAllowedExtension.name = Headers.HEADER_ROLES_ALLOWED;
         rolesAllowedExtension.value = rolesAllowed;
 
         return rolesAllowedExtension;
@@ -214,7 +209,7 @@ public abstract class BaseAnnotationScanner {
 
     private Extension getDeadLetterHeaderExtension(String deadLetterQueue) {
         Extension deadLetterExtension = new Extension();
-        deadLetterExtension.name = HEADER_DEAD_LETTER;
+        deadLetterExtension.name = Headers.HEADER_DEAD_LETTER;
         deadLetterExtension.value = deadLetterQueue;
         return deadLetterExtension;
     }
