@@ -1,6 +1,7 @@
 package id.global.event.messaging.deployment.scanner;
 
 import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
+import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_TYPE_PARAM;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,18 +14,16 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
 
-import id.global.amqp.BindingKeysParser;
-import id.global.amqp.ExchangeParser;
-import id.global.amqp.BindingKeysParser;
-import id.global.amqp.ConsumerPerInstanceParser;
-import id.global.amqp.ConsumerPrefetchCountParser;
-import id.global.amqp.DeadLetterQueueParser;
-import id.global.amqp.ExchangeParser;
-import id.global.amqp.ExchangeTtlParser;
-import id.global.amqp.ExchangeTypeParser;
-import id.global.amqp.MessageScopeParser;
-import id.global.amqp.QueueAutoDeleteParser;
-import id.global.amqp.QueueDurableParser;
+import id.global.amqp.parsers.BindingKeysParser;
+import id.global.amqp.parsers.ConsumerPerInstanceParser;
+import id.global.amqp.parsers.ConsumerPrefetchCountParser;
+import id.global.amqp.parsers.DeadLetterQueueParser;
+import id.global.amqp.parsers.ExchangeParser;
+import id.global.amqp.parsers.ExchangeTtlParser;
+import id.global.amqp.parsers.MessageScopeParser;
+import id.global.amqp.parsers.QueueAutoDeleteParser;
+import id.global.amqp.parsers.QueueDurableParser;
+import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.deployment.MessageHandlerInfoBuildItem;
@@ -62,7 +61,6 @@ public class MessageHandlerScanner {
                             .valueOf(messageAnnotation.valueWithDefault(index, EXCHANGE_TYPE_PARAM)
                                     .asString());
 
-                    final var eventName = getMessageClassKebabCase(messageAnnotation);
                     final var name = messageAnnotation.value("name").asString();
 
                     final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation);
@@ -94,8 +92,7 @@ public class MessageHandlerScanner {
                             perInstance,
                             prefetchCount,
                             ttl,
-                            deadLetter,
-                            eventName);
+                            deadLetter);
                 });
     }
 

@@ -1,6 +1,5 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.asyncapi.runtime.util.GidAnnotationParser.camelToKebabCase;
 import static id.global.event.messaging.runtime.consumer.AmqpConsumer.FRONTEND_MESSAGE_EXCHANGE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 
+import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
@@ -31,6 +31,9 @@ import io.quarkus.test.junit.QuarkusTest;
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FrontendMessageIT {
+
+    public static final String FRONTEND_REQUEST_EVENT_NAME = "frontend-request-event";
+    public static final String FRONTEND_REQUEST_DIRECT_EVENT_NAME = "frontend-request-direct-event";
 
     @Inject
     HandlerService service;
@@ -51,22 +54,31 @@ public class FrontendMessageIT {
 
     @Test
     void consumeFrontendMessage() throws Exception {
-        final var event = new FrontendEvent("name", 10L);
+        final var event = new FrontendEvent(FRONTEND_REQUEST_EVENT_NAME, 10L);
+        final var directEvent = new FrontendEvent(FRONTEND_REQUEST_DIRECT_EVENT_NAME, 10L);
         final AMQP.BasicProperties basicProperties = new AMQP.BasicProperties();
 
         channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
-                camelToKebabCase(FrontendEvent.class.getSimpleName()),
+                FRONTEND_REQUEST_EVENT_NAME,
                 basicProperties,
                 writeValueAsBytes(event));
 
+        channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
+                FRONTEND_REQUEST_DIRECT_EVENT_NAME,
+                basicProperties,
+                writeValueAsBytes(directEvent));
+
         final var consumedEvent = service.getHandledEvent().get(5, TimeUnit.SECONDS);
+        final var consumedDirectEvent = service.getHandledDirectEvent().get(5, TimeUnit.SECONDS);
 
         assertThat(consumedEvent, is(notNullValue()));
+        assertThat(consumedDirectEvent, is(notNullValue()));
     }
 
     @ApplicationScoped
     public static class HandlerService {
         private final CompletableFuture<FrontendEvent> handledEvent = new CompletableFuture<>();
+        private final CompletableFuture<FrontendDirectEvent> handledDirectEvent = new CompletableFuture<>();
 
         @SuppressWarnings("unused")
         @MessageHandler
@@ -74,13 +86,31 @@ public class FrontendMessageIT {
             handledEvent.complete(event);
         }
 
+        @SuppressWarnings("unused")
+
+        @MessageHandler
+        public void handle(FrontendDirectEvent event) {
+            handledDirectEvent.complete(event);
+        }
+
         public CompletableFuture<FrontendEvent> getHandledEvent() {
             return handledEvent;
         }
+
+        public CompletableFuture<FrontendDirectEvent> getHandledDirectEvent() {
+            return handledDirectEvent;
+        }
     }
 
-    @Message(name = "frontend-request-event", scope = Scope.FRONTEND)
+    @Message(name = FRONTEND_REQUEST_EVENT_NAME, scope = Scope.FRONTEND)
     public record FrontendEvent(String name, Long age) {
+    }
+
+    /**
+     * Frontend event will always be sent to frontend TOPIC exchange regardless of exchangeType set here.
+     */
+    @Message(name = FRONTEND_REQUEST_DIRECT_EVENT_NAME, scope = Scope.FRONTEND, exchangeType = ExchangeType.DIRECT)
+    public record FrontendDirectEvent(String name, Long age) {
     }
 
     private byte[] writeValueAsBytes(Object value) throws RuntimeException {

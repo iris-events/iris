@@ -17,7 +17,6 @@ public final class AmqpContext {
     private int prefetch;
     private long ttl;
     private String deadLetterQueue;
-    private String eventName;
 
     public AmqpContext() {
     }
@@ -31,8 +30,7 @@ public final class AmqpContext {
             boolean consumerOnEveryInstance,
             int prefetch,
             long ttl,
-            String deadLetterQueue,
-            final String eventName) {
+            String deadLetterQueue) {
         this.name = name;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -43,7 +41,6 @@ public final class AmqpContext {
         this.prefetch = prefetch;
         this.ttl = ttl;
         this.deadLetterQueue = deadLetterQueue;
-        this.eventName = eventName;
     }
 
     public String getName() {
@@ -126,14 +123,6 @@ public final class AmqpContext {
         this.deadLetterQueue = deadLetterQueue;
     }
 
-    public String getEventName() {
-        return eventName;
-    }
-
-    public void setEventName(final String eventName) {
-        this.eventName = eventName;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this)
@@ -150,14 +139,13 @@ public final class AmqpContext {
                 this.consumerOnEveryInstance == that.consumerOnEveryInstance &&
                 this.prefetch == that.prefetch &&
                 this.ttl == that.ttl &&
-                Objects.equals(this.deadLetterQueue, that.deadLetterQueue) &&
-                Objects.equals(this.eventName, that.eventName);
+                Objects.equals(this.deadLetterQueue, that.deadLetterQueue);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(name, bindingKeys, exchangeType, scope, durable, autoDelete, consumerOnEveryInstance, prefetch,
-                ttl, deadLetterQueue, eventName);
+                ttl, deadLetterQueue);
     }
 
     @Override
@@ -172,8 +160,7 @@ public final class AmqpContext {
                 "consumerOnEveryInstance=" + consumerOnEveryInstance + ", " +
                 "prefetch=" + prefetch + ", " +
                 "ttl=" + ttl + ", " +
-                "deadLetterQueue=" + deadLetterQueue + ", " +
-                "eventName=" + eventName + ']';
+                "deadLetterQueue=" + deadLetterQueue + "]";
     }
 
 }

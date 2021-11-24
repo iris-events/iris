@@ -156,7 +156,7 @@ public class AmqpConsumer {
         declareExchange(channel, exchange, exchangeType);
 
         // bind queues
-        final var bindingKeys = getBindingKeys(exchangeType, exchange);
+        final var bindingKeys = getBindingKeys(exchangeType);
         for (String bindingKey : bindingKeys) {
             channel.queueBind(queueName, exchange, bindingKey);
         }
@@ -238,9 +238,10 @@ public class AmqpConsumer {
         return deadLetterQueue;
     }
 
-    private List<String> getBindingKeys(final ExchangeType exchangeType, final String name) {
+    private List<String> getBindingKeys(final ExchangeType exchangeType) {
+        final var name = context.getName();
         if (isFrontendMessage()) {
-            return List.of(context.getEventName());
+            return List.of("#." + name);
         }
 
         return switch (exchangeType) {

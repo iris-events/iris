@@ -24,7 +24,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final int prefetchCount;
     private final long ttl;
     private final String deadLetterQueue;
-    private final String eventName;
 
     public MessageHandlerInfoBuildItem(ClassInfo declaringClass,
             Type parameterType,
@@ -39,7 +38,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             boolean queuePerInstance,
             int prefetchCount,
             long ttl,
-            String deadLetterQueue, final String eventName) {
+            String deadLetterQueue) {
         this.declaringClass = declaringClass;
         this.parameterType = parameterType;
         this.returnType = returnType;
@@ -54,7 +53,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         this.prefetchCount = prefetchCount;
         this.ttl = ttl;
         this.deadLetterQueue = deadLetterQueue;
-        this.eventName = eventName;
     }
 
     public ClassInfo getDeclaringClass() {
@@ -113,10 +111,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return deadLetterQueue;
     }
 
-    public String getEventName() {
-        return eventName;
-    }
-
     @Override
     public String toString() {
         return "MessageHandlerInfoBuildItem{" +
@@ -134,7 +128,6 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 ", prefetchCount=" + prefetchCount +
                 ", ttl=" + ttl +
                 ", deadLetterQueue='" + deadLetterQueue + '\'' +
-                ", eventName='" + eventName + '\'' +
                 '}';
     }
 

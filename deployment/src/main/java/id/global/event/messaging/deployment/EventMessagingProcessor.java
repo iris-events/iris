@@ -144,8 +144,7 @@ class EventMessagingProcessor {
                         col.isQueuePerInstance(),
                         col.getPrefetchCount(),
                         col.getTtl(),
-                        col.getDeadLetterQueue(),
-                        col.getEventName());
+                        col.getDeadLetterQueue());
 
                 LOG.info("Registering handler. Handler class = " + handlerClass.getName() +
                         " eventClass = " + eventClass.getName() +
