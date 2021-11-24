@@ -2,8 +2,8 @@ package id.global.event.messaging.runtime.consumer;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -105,7 +105,7 @@ public class AmqpConsumer {
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             } catch (Throwable throwable) {
                 log.error("Could not invoke method handler on for bindingKey {} queue: ",
-                        Arrays.toString(this.context.getBindingKeys()), throwable);
+                        String.join(",", this.context.getBindingKeys()), throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
@@ -155,15 +155,15 @@ public class AmqpConsumer {
         declareExchange(channel, exchange, exchangeType);
 
         // bind queues
-        final String[] bindingKeys = getBindingKeys(exchangeType, exchange);
+        final var bindingKeys = getBindingKeys(exchangeType, exchange);
         for (String bindingKey : bindingKeys) {
             channel.queueBind(queueName, exchange, bindingKey);
         }
 
         // start consuming
         channel.basicConsume(queueName, true, this.callback, consumerTag -> log.warn("Channel canceled for {}", queueName),
-                (consumerTag, sig) ->
-                        log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag));
+                (consumerTag, sig) -> log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName,
+                        consumerTag));
 
         log.info("consumer started on queue '{}' --> {} binding key(s): {}", queueName, exchange,
                 String.join(", ", bindingKeys));
@@ -233,10 +233,10 @@ public class AmqpConsumer {
         return deadLetterQueue;
     }
 
-    private String[] getBindingKeys(final ExchangeType exchangeType, final String name) {
+    private List<String> getBindingKeys(final ExchangeType exchangeType, final String name) {
         return switch (exchangeType) {
             case DIRECT, TOPIC -> context.getBindingKeys();
-            case FANOUT -> new String[] { "#." + name };
+            case FANOUT -> List.of("#." + name);
         };
     }
 
@@ -266,17 +266,17 @@ public class AmqpConsumer {
         return Optional.ofNullable(context.getExchangeType()).orElse(ExchangeType.FANOUT);
     }
 
-    private static void validateBindingKeys(final String[] bindingKeys, final ExchangeType exchangeType) {
+    private static void validateBindingKeys(final List<String> bindingKeys, final ExchangeType exchangeType) {
         if (exchangeType == ExchangeType.FANOUT) {
             return;
         }
 
-        if (bindingKeys == null || bindingKeys.length == 0) {
+        if (bindingKeys == null || bindingKeys.size() == 0) {
             throw new IllegalArgumentException("Binding key(s) are required when declaring a "
                     + exchangeType.name() + " type exchange.");
         }
 
-        if (exchangeType == ExchangeType.DIRECT && bindingKeys.length > 1) {
+        if (exchangeType == ExchangeType.DIRECT && bindingKeys.size() > 1) {
             throw new IllegalArgumentException("Exactly one binding key is required when declaring a direct type exchange.");
         }
     }

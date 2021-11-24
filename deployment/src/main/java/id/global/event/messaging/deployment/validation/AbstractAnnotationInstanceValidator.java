@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.jandex.IndexView;
 
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
@@ -25,17 +26,17 @@ abstract class AbstractAnnotationInstanceValidator {
     protected abstract MessageHandlerValidationException createNonKebabCaseParamsFoundException(
             final AnnotationInstance annotationInstance, final Set<String> nonKebabCaseParams);
 
-    protected abstract ExchangeType getExchangeType(AnnotationInstance annotationInstance);
+    protected abstract ExchangeType getExchangeType(AnnotationInstance annotationInstance, IndexView index);
 
-    public void validate(final AnnotationInstance annotationInstance) {
-        validateParamsAreKebabCase(annotationInstance);
+    public void validate(final AnnotationInstance annotationInstance, IndexView index) {
+        validateParamsAreKebabCase(annotationInstance, index);
     }
 
-    private void validateParamsAreKebabCase(final AnnotationInstance annotationInstance) {
+    private void validateParamsAreKebabCase(final AnnotationInstance annotationInstance, IndexView index) {
         final var kebabCaseOnlyParams = new HashSet<String>();
         kebabCaseOnlyParams.add(EXCHANGE_PARAM);
 
-        final var exchangeType = getExchangeType(annotationInstance);
+        final var exchangeType = getExchangeType(annotationInstance, index);
         if (exchangeType != ExchangeType.TOPIC) {
             kebabCaseOnlyParams.add(ROUTING_KEY_PARAM);
         }

@@ -4,10 +4,11 @@ import java.util.Set;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
+import id.global.amqp.parsers.ExchangeTypeParser;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
-import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 
 class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
 
@@ -26,8 +27,8 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
     }
 
     @Override
-    protected ExchangeType getExchangeType(AnnotationInstance annotationInstance) {
-        return MessageHandlerScanner.getExchangeType(annotationInstance);
+    protected ExchangeType getExchangeType(AnnotationInstance annotationInstance, IndexView index) {
+        return ExchangeTypeParser.getFromAnnotationInstance(annotationInstance, index);
     }
 
     private DotName getTargetClassName(final AnnotationInstance annotationInstance) {

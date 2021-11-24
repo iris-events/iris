@@ -1,6 +1,6 @@
 package id.global.event.messaging.deployment;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
@@ -16,7 +16,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final String methodName;
     private final String name;
     private final ExchangeType exchangeType;
-    private final String[] bindingKeys;
+    private final List<String> bindingKeys;
     private final Scope scope;
     private final boolean durable;
     private final boolean autoDelete;
@@ -31,7 +31,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             String methodName,
             String name,
             ExchangeType exchangeType,
-            String[] bindingKeys,
+            List<String> bindingKeys,
             Scope scope,
             boolean durable,
             boolean autoDelete,
@@ -79,7 +79,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return exchangeType;
     }
 
-    public String[] getBindingKeys() {
+    public List<String> getBindingKeys() {
         return bindingKeys;
     }
 
@@ -120,7 +120,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 ", methodName='" + methodName + '\'' +
                 ", exchange='" + name + '\'' +
                 ", exchangeType=" + exchangeType +
-                ", bindingKeys=" + Arrays.toString(bindingKeys) +
+                ", bindingKeys=" + String.join(",", bindingKeys) +
                 ", scope=" + scope +
                 ", durable=" + durable +
                 ", autoDelete=" + autoDelete +

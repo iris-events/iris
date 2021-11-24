@@ -1,5 +1,6 @@
 package id.global.event.messaging.runtime.context;
 
+import java.util.List;
 import java.util.Objects;
 
 import id.global.common.annotations.amqp.ExchangeType;
@@ -7,7 +8,7 @@ import id.global.common.annotations.amqp.Scope;
 
 public final class AmqpContext {
     private String name;
-    private String[] bindingKeys;
+    private List<String> bindingKeys;
     private ExchangeType exchangeType;
     private Scope scope;
     private boolean durable;
@@ -21,7 +22,7 @@ public final class AmqpContext {
     }
 
     public AmqpContext(String name,
-            String[] bindingKeys,
+            List<String> bindingKeys,
             ExchangeType exchangeType,
             Scope scope,
             boolean durable,
@@ -50,11 +51,11 @@ public final class AmqpContext {
         this.name = name;
     }
 
-    public String[] getBindingKeys() {
+    public List<String> getBindingKeys() {
         return bindingKeys;
     }
 
-    public void setBindingKeys(String[] bindingKeys) {
+    public void setBindingKeys(List<String> bindingKeys) {
         this.bindingKeys = bindingKeys;
     }
 
