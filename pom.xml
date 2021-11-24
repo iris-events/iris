@@ -1,42 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>id.global</groupId>
         <artifactId>globalid-parent</artifactId>
         <version>5</version>
-        <relativePath />
+        <relativePath/>
     </parent>
-
     <groupId>id.global.events</groupId>
+
     <artifactId>maven-eda-plugin-parent</artifactId>
     <version>1.0.10-SNAPSHOT</version>
-
     <packaging>pom</packaging>
-    <name>Event Messaging - Maven Plugins</name>
 
+    <name>Event Messaging - Maven Plugins</name>
     <modules>
         <module>amqp-generator-plugin</module>
         <module>asyncapi-generator-plugin</module>
     </modules>
 
     <properties>
-        <version.smallrye.async.api>1.0.9</version.smallrye.async.api>
-        <httpclient.version>4.5.13</httpclient.version>
-        <commons-logging.version>1.2</commons-logging.version>
-        <jandex.version>2.4.1.Final</jandex.version>
-        <jsonschema2pojo-core.version>1.1.1</jsonschema2pojo-core.version>
-        <jackson-databind.version>2.13.0</jackson-databind.version>
-        <globalid-common.version>1.0.17</globalid-common.version>
-        <aether-api.version>1.1.0</aether-api.version>
-        <maven.version>3.8.3</maven.version>
-        <junit-jupiter-engine.version>5.8.1</junit-jupiter-engine.version>
-        <maven-plugin-annotations.version>3.6.1</maven-plugin-annotations.version>
-        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <maven-compat.version>3.8.1</maven-compat.version>
-        <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
-        <maven-resolver-api.version>1.7.2</maven-resolver-api.version>
+        <version.smallrye.async.api>1.0.11</version.smallrye.async.api>
+        <version.aether-api>1.1.0</version.aether-api>
+        <version.junit-jupiter-engine>5.8.1</version.junit-jupiter-engine>
+        <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
+        <version.maven-compat>3.8.1</version.maven-compat>
+        <version.maven-resolver-api>1.7.2</version.maven-resolver-api>
+        <version.globalid-common>1.0.18</version.globalid-common>
+        <version.maven>3.8.3</version.maven>
+        <version.maven-plugin-annotations>3.6.1</version.maven-plugin-annotations>
+        <version.maven-project>2.2.1</version.maven-project>
+        <version.httpclient>4.5.13</version.httpclient>
+        <version.commons-logging>1.2</version.commons-logging>
+        <version.jandex>2.4.1.Final</version.jandex>
+        <version.jsonschema2pojo-core>1.1.1</version.jsonschema2pojo-core>
+        <version.jackson-databind>2.13.0</version.jackson-databind>
+        <version.json-simple>1.1.1</version.json-simple>
+        <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
     </properties>
 
     <scm>
@@ -49,36 +51,45 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>id.global.common</groupId>
+                <artifactId>globalid-common</artifactId>
+                <version>${version.globalid-common}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-plugin-api</artifactId>
-                <version>${maven.version}</version>
+                <version>${version.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.plugin-tools</groupId>
                 <artifactId>maven-plugin-annotations</artifactId>
-                <version>${maven-plugin-annotations.version}</version>
+                <version>${version.maven-plugin-annotations}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-project</artifactId>
+                <version>${version.maven-project}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-core</artifactId>
-                <version>${maven.version}</version>
+                <version>${version.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>${httpclient.version}</version>
+                <version>${version.httpclient}</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
-                <version>${commons-logging.version}</version>
+                <version>${version.commons-logging}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jandex</artifactId>
-                <version>${jandex.version}</version>
+                <version>${version.jandex}</version>
             </dependency>
             <dependency>
                 <groupId>id.global.events</groupId>
@@ -89,42 +100,42 @@
             <dependency>
                 <groupId>org.jsonschema2pojo</groupId>
                 <artifactId>jsonschema2pojo-core</artifactId>
-                <version>${jsonschema2pojo-core.version}</version>
+                <version>${version.jsonschema2pojo-core}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jackson-databind.version}</version>
+                <version>${version.jackson-databind}</version>
             </dependency>
             <!-- Test dependencies -->
             <dependency>
                 <groupId>org.apache.maven.plugin-testing</groupId>
                 <artifactId>maven-plugin-testing-harness</artifactId>
-                <version>${maven-plugin-testing-harness.version}</version>
+                <version>${version.maven-plugin-testing-harness}</version>
                 <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>id.global.common</groupId>
-                <artifactId>globalid-common</artifactId>
-                <version>${globalid-common.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit-jupiter-engine.version}</version>
+                <version>${version.junit-jupiter-engine}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.resolver</groupId>
                 <artifactId>maven-resolver-api</artifactId>
-                <version>${maven-resolver-api.version}</version>
+                <version>${version.maven-resolver-api}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-api</artifactId>
-                <version>${aether-api.version}</version>
+                <version>${version.aether-api}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-compat</artifactId>
+                <version>${version.maven}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

@@ -4,7 +4,6 @@ import static id.global.plugin.model.generator.utils.StringConstants.EMPTY_STRIN
 
 import java.util.Optional;
 
-import id.global.common.annotations.amqp.Message;
 import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
@@ -12,25 +11,32 @@ import org.jsonschema2pojo.GenerationConfig;
 import org.jsonschema2pojo.Jackson2Annotator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.MissingNode;
+import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 
+import id.global.asyncapi.api.Headers;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
+import id.global.common.annotations.amqp.Message;
 
 public class MetadataAnnotator extends Jackson2Annotator {
 
-    public static final String EXCHANGE = "exchange";
-    public static final String EXCHANGE_TYPE = "exchangeType";
-    public static final String ROUTING_KEY = "routingKey";
-    public static final String MESSAGE = "message";
-    public static final String SUBSCRIBE = "subscribe";
-    public static final String PUBLISH = "publish";
-    public static final String QUEUE = "queue";
-    public static final String BINDINGS = "bindings";
-    public static final String AMQP = "amqp";
-    public static final String NAME = "name";
-    public static final String TYPE = "type";
+    private static final String EXCHANGE = "exchange";
+    private static final String EXCHANGE_TYPE = "exchangeType";
+    private static final String ROUTING_KEY = "routingKey";
+    private static final String MESSAGE = "message";
+    private static final String SUBSCRIBE = "subscribe";
+    private static final String PUBLISH = "publish";
+    private static final String QUEUE = "queue";
+    private static final String BINDINGS = "bindings";
+    private static final String AMQP = "amqp";
+    private static final String NAME = "name";
+    private static final String TYPE = "type";
+    private static final String HEADERS = "headers";
+    private static final String EXTENSIONS = "_extensions";
+    private static final String SCOPE = "scope";
+    private static final String DEAD_LETTER = "deadLetter";
+    private static final String TTL = "ttl";
 
     private final Log log;
     private final JsonNode channel;
@@ -58,38 +64,70 @@ public class MetadataAnnotator extends Jackson2Annotator {
         JsonNode subscribeMessage = channel.path(SUBSCRIBE).path(MESSAGE);
         JsonNode publishMessage = channel.path(PUBLISH).path(MESSAGE);
 
+        // MESSAGE HEADERS
+        JsonNode headers = null;
+        if (!publishMessage.isMissingNode()) {
+            headers = publishMessage.path(HEADERS);
+        } else if (!subscribeMessage.isMissingNode()) {
+            headers = subscribeMessage.path(HEADERS);
+        }
+        Optional<String> scope = getScope(headers);
+        Optional<String> deadLetter = getDeadLetter(headers);
+        Optional<Integer> ttl = getTtl(headers);
+
         //EXCHANGE
         String exchangeName = Optional.ofNullable(bindingsExchange.path(NAME).textValue()).orElseThrow();
-        ExchangeType exchangeType = ExchangeType.fromType(
-                Optional.ofNullable(bindingsExchange.path(TYPE).textValue()).orElse(""));
-        // TODO this is commented out, because some of it will be added to ProducedEvent and ConsumedEvent annotations
-        //        boolean exchangeDurable = Optional.of(bindingsExchange.path("durable").booleanValue()).orElse(Boolean.TRUE);
-        //        boolean exchangeAutoDelete = Optional.of(bindingsExchange.path("autoDelete").booleanValue()).orElse(Boolean.FALSE);
-        //        String exchangeVhost = Optional.ofNullable(bindingsExchange.path("vhost").textValue()).orElse("/");
-
-        //QUEUE
-        String routingKey = Optional.ofNullable(bindingsQueue.path(NAME).textValue()).orElseThrow();
-        // TODO this is commented out, because some of it will be added to ProducedEvent and ConsumedEvent annotations
-        //        boolean queueDurable = Optional.of(bindingsQueue.path("durable").booleanValue()).orElse(Boolean.TRUE);
-        //        boolean queueExclusive = Optional.of(bindingsQueue.path("exclusive").booleanValue()).orElse(Boolean.FALSE);
-        //        boolean queueAutoDelete = Optional.of(bindingsQueue.path("autoDelete").booleanValue()).orElse(Boolean.FALSE);
-        //        String queueVhost = Optional.ofNullable(bindingsQueue.path("vhost").textValue()).orElse("/");
+        Optional<ExchangeType> exchangeType = getExchangeType(bindingsExchange.path(TYPE));
+        Optional<String> routingKey = Optional.ofNullable(bindingsQueue.path(NAME).textValue());
 
         clazz.annotate(GlobalIdGenerated.class);
 
-        if (!(publishMessage instanceof MissingNode)) {
-            clazz.annotate(Message.class)
-                    .param(EXCHANGE, exchangeName)
-                    .param(EXCHANGE_TYPE, exchangeType)
-                    .param(ROUTING_KEY, routingKey);
-        }
+        JAnnotationUse annotatedClazz = clazz.annotate(Message.class)
+                .param(NAME, exchangeName);
 
-        if (!(subscribeMessage instanceof MissingNode)) {
-            clazz.annotate(Message.class)
-                    .param(EXCHANGE, exchangeName)
-                    .param(EXCHANGE_TYPE, exchangeType)
-                    .param(ROUTING_KEY, routingKey);
+        // optionals
+        exchangeType.ifPresent(type -> annotatedClazz.param(EXCHANGE_TYPE, type));
+        routingKey.ifPresent(s -> annotatedClazz.param(ROUTING_KEY, s));
+        scope.ifPresent(s -> annotatedClazz.param(SCOPE, s));
+        deadLetter.ifPresent(s -> annotatedClazz.param(DEAD_LETTER, s));
+        ttl.ifPresent(s -> annotatedClazz.param(TTL, s));
+    }
+
+    private Optional<ExchangeType> getExchangeType(JsonNode typeNode) {
+        if (typeNode.isMissingNode()) {
+            return Optional.empty();
         }
+        return Optional.of(ExchangeType.fromType(typeNode.textValue()));
+    }
+
+    private Optional<Integer> getTtl(JsonNode headers) {
+        JsonNode extensions = getExtensions(headers);
+        JsonNode ttlNode = extensions.path(Headers.HEADER_TTL);
+
+        if (ttlNode.isMissingNode()) {
+            return Optional.empty();
+        }
+        return Optional.of(ttlNode.asInt());
+    }
+
+    private Optional<String> getDeadLetter(JsonNode headers) {
+        JsonNode extensions = getExtensions(headers);
+        if (extensions.isMissingNode()) {
+            return Optional.empty();
+        }
+        return Optional.of(extensions.path(Headers.HEADER_DEAD_LETTER).textValue());
+    }
+
+    private Optional<String> getScope(JsonNode headers) {
+        JsonNode extensions = getExtensions(headers);
+        if (extensions.isMissingNode()) {
+            return Optional.empty();
+        }
+        return Optional.of(extensions.path(Headers.HEADER_SCOPE).textValue());
+    }
+
+    private JsonNode getExtensions(JsonNode headers) {
+        return headers.path(EXTENSIONS);
     }
 }
 

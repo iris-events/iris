@@ -1,14 +1,18 @@
 package io.smallrye.asyncapi.mavenplugin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import id.global.asyncapi.api.AsyncApiConfig;
-import id.global.asyncapi.api.AsyncApiConstants;
-import id.global.asyncapi.runtime.io.AsyncApiSerializer;
-import id.global.asyncapi.runtime.io.Format;
-import id.global.asyncapi.runtime.io.JsonUtil;
-import id.global.asyncapi.runtime.scanner.GidAnnotationScanner;
-import id.global.asyncapi.spec.AAIConfig;
-import io.apicurio.datamodels.asyncapi.models.AaiDocument;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -23,18 +27,16 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.jboss.jandex.IndexView;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import id.global.asyncapi.api.AsyncApiConfig;
+import id.global.asyncapi.api.AsyncApiConstants;
+import id.global.asyncapi.runtime.io.AsyncApiSerializer;
+import id.global.asyncapi.runtime.io.Format;
+import id.global.asyncapi.runtime.io.JsonUtil;
+import id.global.asyncapi.runtime.scanner.GidAnnotationScanner;
+import id.global.asyncapi.spec.AAIConfig;
+import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 
 @Mojo(name = "generate-schema", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class GenerateSchemaMojo extends AbstractMojo {
@@ -163,7 +165,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
 
     @SuppressWarnings("unused")
     @Parameter(property = "excludeFromSchemas")
-    private List<String> excludeFromSchemas ;
+    private List<String> excludeFromSchemas;
 
     @SuppressWarnings("unused")
     @Parameter(property = "annotationsArtifacts")
@@ -273,7 +275,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
         propertyMap.put(AsyncApiConstants.SCAN_DEPENDENCIES_JARS, scanDependenciesJars);
         propertyMap.put(AsyncApiConstants.CUSTOM_SCHEMA_REGISTRY_CLASS, customSchemaRegistryClass);
         propertyMap.put(AsyncApiConstants.VERSION, asyncApiVersion);
-        if (excludeFromSchemas == null ||excludeFromSchemas.isEmpty()){
+        if (excludeFromSchemas == null || excludeFromSchemas.isEmpty()) {
             excludeFromSchemas = List.of("com.fasterxml.jackson.databind.JsonNode");
         }
         propertyMap.put(AsyncApiConstants.EXCLUDE_FROM_SCHEMAS, excludeFromSchemas);
