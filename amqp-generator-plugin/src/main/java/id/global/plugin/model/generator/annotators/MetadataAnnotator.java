@@ -18,6 +18,7 @@ import id.global.asyncapi.api.Headers;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
 import id.global.common.annotations.amqp.Message;
+import id.global.common.annotations.amqp.Scope;
 
 public class MetadataAnnotator extends Jackson2Annotator {
 
@@ -37,6 +38,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
     private static final String SCOPE = "scope";
     private static final String DEAD_LETTER = "deadLetter";
     private static final String TTL = "ttl";
+    public static final String VALUE = "value";
 
     private final Log log;
     private final JsonNode channel;
@@ -71,7 +73,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
         } else if (!subscribeMessage.isMissingNode()) {
             headers = subscribeMessage.path(HEADERS);
         }
-        Optional<String> scope = getScope(headers);
+        Optional<Scope> scope = getScope(headers);
         Optional<String> deadLetter = getDeadLetter(headers);
         Optional<Integer> ttl = getTtl(headers);
 
@@ -102,7 +104,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
 
     private Optional<Integer> getTtl(JsonNode headers) {
         JsonNode extensions = getExtensions(headers);
-        JsonNode ttlNode = extensions.path(Headers.HEADER_TTL);
+        JsonNode ttlNode = extensions.path(Headers.HEADER_TTL).path(VALUE);
 
         if (ttlNode.isMissingNode()) {
             return Optional.empty();
@@ -115,15 +117,15 @@ public class MetadataAnnotator extends Jackson2Annotator {
         if (extensions.isMissingNode()) {
             return Optional.empty();
         }
-        return Optional.of(extensions.path(Headers.HEADER_DEAD_LETTER).textValue());
+        return Optional.of(extensions.path(Headers.HEADER_DEAD_LETTER).path(VALUE).textValue());
     }
 
-    private Optional<String> getScope(JsonNode headers) {
+    private Optional<Scope> getScope(JsonNode headers) {
         JsonNode extensions = getExtensions(headers);
         if (extensions.isMissingNode()) {
             return Optional.empty();
         }
-        return Optional.of(extensions.path(Headers.HEADER_SCOPE).textValue());
+        return Optional.of(extensions.path(Headers.HEADER_SCOPE).path(VALUE).textValue()).map(Scope::valueOf);
     }
 
     private JsonNode getExtensions(JsonNode headers) {

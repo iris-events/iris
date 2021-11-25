@@ -32,7 +32,7 @@
         <dependency>
             <groupId>id.global.common</groupId>
             <artifactId>globalid-common</artifactId>
-            <version>1.0.14-SNAPSHOT</version>
+            <version>1.0.18</version>
         </dependency>
     </dependencies>
 </project>
