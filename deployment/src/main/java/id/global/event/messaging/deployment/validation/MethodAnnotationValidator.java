@@ -52,7 +52,7 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
     @Override
     protected ExchangeType getExchangeType(final AnnotationInstance annotationInstance, IndexView index) {
         final var methodInfo = getMethodInfo(annotationInstance);
-        final var messageAnnotation = MessageHandlerScanner.getMessageAnnotation(methodInfo.parameters(), this.index);
+        final var messageAnnotation = MessageHandlerScanner.getMessageAnnotation(methodInfo, this.index);
 
         return ExchangeTypeParser.getFromAnnotationInstance(messageAnnotation, index);
     }

@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
 import id.global.amqp.parsers.BindingKeysParser;
@@ -52,9 +53,8 @@ public class MessageHandlerScanner {
 
                     annotationValidator.validate(messageHandlerAnnotation);
                     final var methodInfo = messageHandlerAnnotation.target().asMethod();
-                    final var methodParameters = methodInfo.parameters();
 
-                    final var messageAnnotation = getMessageAnnotation(methodParameters, index);
+                    final var messageAnnotation = getMessageAnnotation(methodInfo, index);
                     annotationValidator.validate(messageAnnotation);
 
                     final ExchangeType exchangeType = ExchangeType
@@ -104,8 +104,8 @@ public class MessageHandlerScanner {
         return new AnnotationInstanceValidator(index);
     }
 
-    public static AnnotationInstance getMessageAnnotation(final List<Type> parameters, final IndexView index) {
-
+    public static AnnotationInstance getMessageAnnotation(final MethodInfo methodInfo, final IndexView index) {
+        final var parameters = methodInfo.parameters();
         final var consumedEventTypes = parameters.stream()
                 .map(Type::name)
                 .map(index::getClassByName)
@@ -115,12 +115,14 @@ public class MessageHandlerScanner {
                 .collect(Collectors.toList());
 
         if (consumedEventTypes.isEmpty()) {
-            throw new IllegalArgumentException("Consumed Event not found");
+            throw new IllegalArgumentException(String.format("Consumed Event not found for method %s in class %s.",
+                    methodInfo.name(), methodInfo.declaringClass()));
         }
 
         if (consumedEventTypes.size() > 1) {
-            throw new IllegalArgumentException(
-                    "Multiple consumed Events detected. Message handler can only handle one event type.");
+            throw new IllegalArgumentException(String.format(
+                    "Multiple consumed Events detected for method %s in class %s. Message handler can only handle one event type.",
+                    methodInfo.name(), methodInfo.declaringClass()));
         }
 
         return consumedEventTypes.get(0);
