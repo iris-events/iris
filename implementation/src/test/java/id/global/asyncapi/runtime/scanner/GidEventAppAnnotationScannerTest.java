@@ -313,15 +313,15 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(testEventV2EntryOptional, is(notNullValue()));
         AaiHeaderItem headers = testEventV2EntryOptional.get().getValue().publish.message.headers;
         assertThat(headers, is(notNullValue()));
-        assertThat(headers.getExtension("X-ttl"), is(notNullValue()));
-        assertThat(headers.getExtension("X-ttl").name, is("X-ttl"));
-        assertThat(headers.getExtension("X-ttl").value, is(10000));
-        assertThat(headers.getExtension("X-scope"), is(notNullValue()));
-        assertThat(headers.getExtension("X-scope").name, is("X-scope"));
-        assertThat(headers.getExtension("X-scope").value, is(Scope.INTERNAL));
-        assertThat(headers.getExtension("X-roles-allowed"), is(notNullValue()));
-        assertThat(headers.getExtension("X-roles-allowed").name, is("X-roles-allowed"));
-        assertThat(headers.getExtension("X-roles-allowed").value, is(new String[0]));
+        assertThat(headers.getExtension("x-ttl"), is(notNullValue()));
+        assertThat(headers.getExtension("x-ttl").name, is("x-ttl"));
+        assertThat(headers.getExtension("x-ttl").value, is(10000));
+        assertThat(headers.getExtension("x-scope"), is(notNullValue()));
+        assertThat(headers.getExtension("x-scope").name, is("x-scope"));
+        assertThat(headers.getExtension("x-scope").value, is(Scope.INTERNAL));
+        assertThat(headers.getExtension("x-roles-allowed"), is(notNullValue()));
+        assertThat(headers.getExtension("x-roles-allowed").name, is("x-roles-allowed"));
+        assertThat(headers.getExtension("x-roles-allowed").value, is(new String[0]));
     }
 
     @Test
@@ -337,7 +337,7 @@ public class GidEventAppAnnotationScannerTest extends IndexScannerTestBase {
         assertThat(document, is(notNullValue()));
         assertThat(document.channels.size(), is(1));
 
-        var rolesAllowedHeader = "X-roles-allowed";
+        var rolesAllowedHeader = "x-roles-allowed";
 
         AaiHeaderItem headers = document.channels.get("sent-event-exchange/sent-event-queue").subscribe.message.headers;
         assertThat(headers.getExtension(rolesAllowedHeader), is(notNullValue()));
