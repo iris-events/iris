@@ -1,17 +1,15 @@
 package io.smallrye.asyncapi.mavenplugin;
 
-
-import id.global.asyncapi.api.AsyncApiConfig;
-import id.global.asyncapi.api.AsyncApiConstants;
-import id.global.asyncapi.spec.AAIConfig;
+import static id.global.asyncapi.api.util.ConfigUtil.asCsvSet;
+import static id.global.asyncapi.api.util.ConfigUtil.patternFromSet;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-
-import static id.global.asyncapi.api.util.ConfigUtil.asCsvSet;
-import static id.global.asyncapi.api.util.ConfigUtil.patternFromSet;
+import id.global.asyncapi.api.AsyncApiConfig;
+import id.global.asyncapi.api.AsyncApiConstants;
+import id.global.asyncapi.spec.AAIConfig;
 
 /**
  * Implementation of the {@link AsyncApiConfig} interface that gets config information from maven
