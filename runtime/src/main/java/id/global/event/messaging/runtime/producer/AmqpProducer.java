@@ -109,14 +109,13 @@ public class AmqpProducer {
 
         final var applicationId = eventAppInfoProvider.getApplicationId();
         final var messageClassKebabCase = CaseConverter.camelToKebabCase(messageClassSimpleName);
-        final var appPrefixedMessageClassRoutingKey = applicationId + "." + messageClassKebabCase;
 
         switch (scope) {
             case INTERNAL -> publish(message, exchange, routingKey, amqpBasicProperties, exchangeType);
             case USER -> publish(message, "user", "user", amqpBasicProperties, ExchangeType.TOPIC);
             case SESSION -> publish(message, "session", "session", amqpBasicProperties,
                     ExchangeType.TOPIC);
-            case BROADCAST -> publish(message, "broadcast", appPrefixedMessageClassRoutingKey, amqpBasicProperties,
+            case BROADCAST -> publish(message, "broadcast", "broadcast", amqpBasicProperties,
                     ExchangeType.TOPIC);
             default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
         }
