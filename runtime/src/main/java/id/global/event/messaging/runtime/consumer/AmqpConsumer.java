@@ -105,8 +105,8 @@ public class AmqpConsumer {
                 final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             } catch (Throwable throwable) {
-                log.error("Could not invoke method handler on for bindingKey {} queue: ",
-                        String.join(",", this.context.getBindingKeys()), throwable);
+                log.error(String.format("Could not invoke method handler on for bindingKey(s) %s",
+                        String.join(",", this.context.getBindingKeys())), throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
@@ -130,7 +130,7 @@ public class AmqpConsumer {
         final Map<String, Object> queueDeclarationArgs = new HashMap<>();
         final var exchange = isFrontendMessage() ? FRONTEND_MESSAGE_EXCHANGE : context.getName();
         final boolean consumerOnEveryInstance = context.isConsumerOnEveryInstance();
-        final var queueName = getQueueName(exchange, exchangeType, consumerOnEveryInstance);
+        final var queueName = getQueueName(context.getName(), exchangeType, consumerOnEveryInstance);
 
         // set prefetch count "quality of service"
         final int prefetchCount = context.getPrefetch();
