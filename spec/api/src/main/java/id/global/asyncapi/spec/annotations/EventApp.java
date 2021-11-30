@@ -14,13 +14,6 @@ import id.global.asyncapi.spec.annotations.servers.Server;
 @Inherited
 public @interface EventApp {
     /**
-     * The identifier property from an AsyncAPI instance.
-     *
-     * @return the api identifier
-     */
-    String id();
-
-    /**
      * Required: Provides metadata about the API. The metadata MAY be used by tooling as required.
      *
      * @return the metadata about this API
@@ -42,26 +35,4 @@ public @interface EventApp {
      * @return the servers of this API
      */
     Server[] servers() default {};
-
-    //    /**
-    //     * The available channels and messages for the API. This field is required
-    //     *
-    //     * @return the available channels
-    //     */
-    //    ChannelItem[] channels() default {};
-    //    /**
-    //     * A list of tags used by the specification with additional metadata. The order of the tags can be used to reflect on their
-    //     * order by the parsing
-    //     * tools.
-    //     *
-    //     * @return the tags used by the specification with any additional metadata
-    //     */
-    //    Tag[] tags() default {};
-    //
-    //    /**
-    //     * An element to hold various schemas for the specification.
-    //     *
-    //     * @return available components
-    //     */
-    //    Components components() default @Components;
 }
