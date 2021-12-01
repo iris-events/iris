@@ -107,8 +107,10 @@ public class AmqpConsumer {
                 final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             } catch (Throwable throwable) {
-                log.error(String.format("Could not invoke method handler on for bindingKey(s) %s",
-                        String.join(",", this.context.getBindingKeys())), throwable);
+                final var bindingKeysString = Optional.ofNullable(this.context.getBindingKeys())
+                        .map(bindingKeys -> "[" + String.join(", ", bindingKeys) + "]")
+                        .orElse("[]");
+                log.error(String.format("Could not invoke method handler for bindingKey(s) %s", bindingKeysString), throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
