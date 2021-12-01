@@ -56,6 +56,8 @@ public class AmqpProducer {
     public static final String HEADER_CURRENT_SERVICE_ID = "currentServiceId";
     public static final String HEADER_INSTANCE_ID = "instanceId";
     public static final String HEADER_EVENT_TYPE = "eventType";
+    public static final String HEADER_SESSION_ID = "sessionId";
+    public static final String HEADER_USER_ID = "userId";
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
@@ -91,6 +93,21 @@ public class AmqpProducer {
     }
 
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
+        doSend(message, null);
+    }
+
+    /**
+     * Send message and override userId header of the message.
+     * All following events caused by this event will have that user id set and any USER scoped messages will be sent to that user.
+     *
+     * @param message message
+     * @param userId  user id
+     */
+    public void send(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
+        doSend(message, userId);
+    }
+
+    private void doSend(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
         if (message == null) {
             throw new AmqpSendException("Null message can not be published!");
         }
@@ -105,7 +122,7 @@ public class AmqpProducer {
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
         final var exchange = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
-        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(exchange);
+        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(exchange, userId);
 
         final var applicationId = eventAppInfoProvider.getApplicationId();
         final var messageClassKebabCase = CaseConverter.camelToKebabCase(messageClassSimpleName);
@@ -228,23 +245,26 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(String exchange) {
+    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(String exchange, final String userId) {
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, exchange);
+        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, exchange, userId);
     }
 
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithAdditionalHeaders(final AMQP.BasicProperties basicProperties,
-            final String serviceId, String exchange) {
+            final String serviceId, String exchange, final String userId) {
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
         headers.put(HEADER_INSTANCE_ID, hostName);
         headers.put(HEADER_EVENT_TYPE, exchange);
+        if (userId != null) {
+            headers.put(HEADER_USER_ID, userId);
+        }
 
         return basicProperties.builder().headers(headers).build();
     }
