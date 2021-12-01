@@ -19,6 +19,7 @@ package id.global.asyncapi.runtime.scanner;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,7 +65,6 @@ import id.global.asyncapi.runtime.io.server.ServerReader;
 import id.global.asyncapi.runtime.scanner.model.ChannelInfo;
 import id.global.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import id.global.asyncapi.runtime.util.ChannelInfoGenerator;
-import id.global.asyncapi.runtime.util.JandexUtil;
 import id.global.asyncapi.runtime.util.SchemeIdGenerator;
 import id.global.asyncapi.spec.annotations.EventApp;
 import id.global.common.annotations.amqp.Message;
@@ -84,22 +84,30 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
     public static final DotName DOTNAME_EVENT_APP_DEFINITION = DotName.createSimple(EventApp.class.getName());
     public static final DotName DOTNAME_MESSAGE = DotName.createSimple(Message.class.getName());
+
+    public static final Set<String> DEFAULT_CONVERT_TO_OBJECT_CANDIDATES = Set.of("java.util",
+            "com.fasterxml.jackson.databind.JsonNode");
+
     private final SchemaGenerator schemaGenerator;
+    private final String projectName;
 
     /**
      * Constructor.
      *
-     * @param config AsyncApiConfig instance
-     * @param index  IndexView of deployment
+     * @param config      AsyncApiConfig instance
+     * @param index       IndexView of deployment
+     * @param projectName
      */
-    public GidAnnotationScanner(AsyncApiConfig config, IndexView index) {
+    public GidAnnotationScanner(AsyncApiConfig config, IndexView index, String projectName) {
         super(config, index);
         schemaGenerator = initSchemaGenerator(config);
+        this.projectName = projectName;
     }
 
-    public GidAnnotationScanner(AsyncApiConfig config, IndexView index, ClassLoader classLoader) {
+    public GidAnnotationScanner(AsyncApiConfig config, IndexView index, ClassLoader classLoader, String projectName) {
         super(config, index, classLoader);
         schemaGenerator = initSchemaGenerator(config);
+        this.projectName = projectName;
     }
 
     /**
@@ -128,9 +136,12 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         List<AnnotationInstance> allMessageAnnotations = getClassAnnotations(this.annotationScannerContext.getIndex()).collect(
                 Collectors.toList());
 
+        LOG.debug(String.format("Got %s message annotations", allMessageAnnotations.size()));
+
         // Process @MessageHandler
         List<AnnotationInstance> consumedMessageAnnotations = processMessageHandlerAnnotations(annotationScannerContext,
                 asyncApi);
+        LOG.debug(String.format("Got %s consumed message annotations", consumedMessageAnnotations.size()));
 
         processProducedMessages(annotationScannerContext, asyncApi, allMessageAnnotations, consumedMessageAnnotations);
         processContextDefinitionReferencedSchemas(annotationScannerContext, asyncApi);
@@ -273,7 +284,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         for (AnnotationInstance packageDef : packageDefs) {
             final var packageAai = new Aai20Document();
             try {
-                final var projectId = JandexUtil.stringValue(packageDef, PROP_ID);
+                final var projectId = projectName;
                 final var projectSchemaId = SchemeIdGenerator.buildId(projectId);
                 context.setProjectId(projectId);
                 packageAai.id = projectSchemaId;
@@ -339,14 +350,18 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 .with(Option.DEFINITIONS_FOR_ALL_OBJECTS)
                 .with(module);
 
-        Set<String> excludeFromSchemas = config.excludeFromSchemas();
-        if (!excludeFromSchemas.isEmpty()) {
-            LOG.info("Registering custom definition providers for package prefixes: " + excludeFromSchemas);
+        Set<String> conversionToObjectTypeCandidates = new HashSet<>(config.excludeFromSchemas());
+        conversionToObjectTypeCandidates.addAll(DEFAULT_CONVERT_TO_OBJECT_CANDIDATES);
+
+        if (!conversionToObjectTypeCandidates.isEmpty()) {
+            LOG.info("Registering custom definition providers for package prefixes: " + conversionToObjectTypeCandidates);
             configBuilder.forTypesInGeneral()
-                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownTypeToObject(excludeFromSchemas));
+                    .withCustomDefinitionProvider(
+                            CustomDefinitionProvider.convertTypesToObject(conversionToObjectTypeCandidates));
 
             configBuilder.forFields()
-                    .withCustomDefinitionProvider(CustomDefinitionProvider.convertUnknownFieldToObject(excludeFromSchemas));
+                    .withCustomDefinitionProvider(
+                            CustomDefinitionProvider.convertFieldsToObject(conversionToObjectTypeCandidates));
         }
 
         SchemaGeneratorConfig schemaGeneratorConfig = configBuilder.build();

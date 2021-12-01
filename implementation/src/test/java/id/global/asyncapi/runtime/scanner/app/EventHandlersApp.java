@@ -11,13 +11,14 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import id.global.asyncapi.runtime.scanner.model.User;
+import id.global.asyncapi.spec.annotations.EventApp;
+import id.global.asyncapi.spec.annotations.info.Info;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.asyncapi.spec.annotations.EventApp;
-import id.global.asyncapi.spec.annotations.info.Info;
+import id.global.common.annotations.amqp.Scope;
 
-@EventApp(id = EventHandlersApp.ID, info = @Info(title = EventHandlersApp.TITLE, version = EventHandlersApp.VERSION))
+@EventApp(info = @Info(title = EventHandlersApp.TITLE, version = EventHandlersApp.VERSION))
 public class EventHandlersApp {
     private static final Logger LOG = Logger.getLogger(EventHandlersApp.class);
 
@@ -25,39 +26,59 @@ public class EventHandlersApp {
     public static final String VERSION = "1.0.0";
     public static final String ID = "EventHandlersAppTest";
 
+    @SuppressWarnings("unused")
     @MessageHandler(bindingKeys = "default-test-event-v1")
     public void handleEventV1(TestEventV1 event) {
         LOG.info("Handle event: " + event);
     }
 
+    @SuppressWarnings("unused")
     @MessageHandler(bindingKeys = "test-event-v2")
     public void handleEventV1Params(TestEventV2 event) {
         LOG.info("Handle event: " + event + " with JsonNode and Map");
     }
 
+    @SuppressWarnings("unused")
     @MessageHandler(bindingKeys = "fe-test-event-v1")
     public void handleFrontendEvent(FrontendTestEventV1 event) {
         LOG.info("Handle event: " + event);
     }
 
+    @SuppressWarnings("unused")
     @MessageHandler(bindingKeys = { "*.*.rabbit", "fast.orange.*" })
     public void handleTopicEvent(TopicTestEventV1 event) {
         LOG.info("Handling topic event");
     }
 
+    @SuppressWarnings("unused")
     @MessageHandler
     public void handleFanoutEvent(FanoutTestEventV1 event) {
         LOG.info("Handling fanout event");
     }
 
+    @SuppressWarnings("unused")
     @MessageHandler
     public void handleOutsideGeneratedEvent(GeneratedTestEvent event) {
         LOG.info("Handling event generated in an external service");
     }
 
+    @SuppressWarnings("unused")
     @MessageHandler
     public void handleEventWithDefaults(EventDefaults event) {
         LOG.info("Handling event with generated defaults");
+    }
+
+    @SuppressWarnings("unused")
+    @MessageHandler
+    public PassthroughOutboundEvent handleAndPass(PassthroughInboundEvent event) {
+        LOG.info("Handling PassthroughInboundEvent");
+        return new PassthroughOutboundEvent(666);
+    }
+
+    @SuppressWarnings("unused")
+    @MessageHandler
+    public void handleMapPayloadEvent(MapPayloadEvent event) {
+        LOG.info("Handling event with map payload");
     }
 
     @Message(name = "test-event-v1", exchangeType = DIRECT)
@@ -74,7 +95,7 @@ public class EventHandlersApp {
             Map<String, String> someMap) {
     }
 
-    @Message(name = "frontend-test-event-v1", exchangeType = DIRECT)
+    @Message(name = "frontend-test-event-v1", exchangeType = DIRECT, scope = Scope.FRONTEND)
     public record FrontendTestEventV1(int id, String status, User user) {
     }
 
@@ -96,8 +117,22 @@ public class EventHandlersApp {
 
     }
 
+    // Event only produced, not being used in any handlers
     @SuppressWarnings("unused")
     @Message(name = "produced-event", exchangeType = FANOUT)
     public record ProducedEvent(int id) {
+    }
+
+    @Message(name = "passthrough-inbound-event")
+    public record PassthroughInboundEvent(int id) {
+    }
+
+    // Event only returned as a passthrough
+    @Message(name = "passthrough-outbound-event")
+    public record PassthroughOutboundEvent(int id) {
+    }
+
+    @Message(name = "map-payload-event")
+    public record MapPayloadEvent(Map<String, User> userMap) {
     }
 }

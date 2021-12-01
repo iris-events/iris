@@ -9,14 +9,4 @@ public enum Status {
     LIVE(),
     @JsonProperty("dead")
     DEAD();
-
-    //    private final String status;
-
-    //    Status(String status) {
-    //        this.status = status;
-    //    }
-
-    //    public String getStatus() {
-    //        return status;
-    //    }
 }
