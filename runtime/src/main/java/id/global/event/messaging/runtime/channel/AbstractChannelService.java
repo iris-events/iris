@@ -3,6 +3,10 @@ package id.global.event.messaging.runtime.channel;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Channel;
 
@@ -11,6 +15,7 @@ import id.global.event.messaging.runtime.connection.AbstractConnectionProvider;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 
 public abstract class AbstractChannelService {
+    private final static Logger log = LoggerFactory.getLogger(AbstractChannelService.class);
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private AbstractConnectionProvider connectionProvider;
     private AmqpConfiguration configuration;
@@ -30,6 +35,18 @@ public abstract class AbstractChannelService {
             throw new AmqpConnectionException("Could not create channel.");
         }
         return channel;
+    }
+
+    public void removeChannel(String oldChannelId) throws IOException {
+        Channel channel = channelMap.get(oldChannelId);
+        if (channel.isOpen()) {
+            try {
+                channel.close();
+            } catch (IOException | TimeoutException e) {
+                log.warn(String.format("Exception while closing channel %s", oldChannelId), e);
+            }
+        }
+        channelMap.remove(oldChannelId);
     }
 
     private Channel createChanel(String channelId) throws RuntimeException {
