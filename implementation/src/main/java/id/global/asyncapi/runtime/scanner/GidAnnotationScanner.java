@@ -180,6 +180,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var routingKey = RoutingKeyParser.getFromAnnotationInstance(anno);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(anno, index);
             final var exchange = ExchangeParser.getFromAnnotationInstance(anno);
+
+            // Header values
             final var rolesAllowed = RolesAllowedParser.getFromAnnotationInstance(anno, index);
             final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(anno, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(anno, index);

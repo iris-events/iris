@@ -27,7 +27,7 @@ public class EventHandlersApp {
     public static final String ID = "EventHandlersAppTest";
 
     @SuppressWarnings("unused")
-    @MessageHandler(bindingKeys = "default-test-event-v1")
+    @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = { "admin", "user" })
     public void handleEventV1(TestEventV1 event) {
         LOG.info("Handle event: " + event);
     }
@@ -81,7 +81,7 @@ public class EventHandlersApp {
         LOG.info("Handling event with map payload");
     }
 
-    @Message(name = "test-event-v1", exchangeType = DIRECT)
+    @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { "user", "guest" })
     public record TestEventV1(int id, String status, User user) {
     }
 
