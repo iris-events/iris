@@ -18,6 +18,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
@@ -48,8 +49,9 @@ public class AmqpConsumer {
     private final EventContext eventContext;
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
-    private final String channelId;
     private final DeliverCallback callback;
+
+    private String channelId;
 
     public AmqpConsumer(
             final ObjectMapper objectMapper,
@@ -162,12 +164,23 @@ public class AmqpConsumer {
         }
 
         // start consuming
-        channel.basicConsume(queueName, true, this.callback, consumerTag -> log.warn("Channel canceled for {}", queueName),
-                (consumerTag, sig) -> log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName,
-                        consumerTag));
+        channel.basicConsume(queueName, true, this.callback,
+                consumerTag -> log.warn("Channel canceled for {}", queueName),
+                (consumerTag, sig) -> reInitChannel(sig, queueName, consumerTag));
 
         log.info("consumer started on queue '{}' --> {} binding key(s): {}", queueName, exchange,
                 String.join(", ", bindingKeys));
+    }
+
+    private void reInitChannel(ShutdownSignalException sig, String queueName, String consumerTag) {
+        log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag);
+        try {
+            this.channelService.removeChannel(this.channelId);
+            this.channelId = UUID.randomUUID().toString();
+            initChannel();
+        } catch (IOException e) {
+            log.error(String.format("Could not re-initialize channel for queue %s", queueName), e);
+        }
     }
 
     private void declareExchange(final Channel channel, final String exchange, final ExchangeType exchangeType)
