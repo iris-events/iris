@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import id.global.asyncapi.api.Headers;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -16,10 +15,16 @@ import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import id.global.asyncapi.api.AsyncApiConfig;
+import id.global.asyncapi.api.Headers;
 import id.global.asyncapi.runtime.io.channel.operation.OperationConstant;
+import id.global.asyncapi.runtime.io.schema.SchemaReader;
 import id.global.asyncapi.runtime.scanner.model.AaiSchemaAdditionalProperties;
+import id.global.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.asyncapi.runtime.scanner.model.ChannelInfo;
 import id.global.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
+import id.global.asyncapi.runtime.scanner.model.GidAaiHeaderItem;
+import id.global.asyncapi.runtime.scanner.model.GidAaiHeaderItems;
 import id.global.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
 import id.global.common.annotations.amqp.Scope;
@@ -30,18 +35,12 @@ import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelBindings;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelItem;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Components;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20HeaderItem;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Message;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Operation;
-import io.apicurio.datamodels.core.models.Extension;
 import io.apicurio.datamodels.core.models.common.Schema;
-import id.global.asyncapi.api.AsyncApiConfig;
-import id.global.asyncapi.runtime.io.schema.SchemaReader;
-import id.global.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 
 public abstract class BaseAnnotationScanner {
 
-    public static final String PROP_ID = "id";
     public static final String PROP_INFO = "info";
     public static final String PROP_SERVERS = "servers";
     public static final String COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
@@ -57,7 +56,7 @@ public abstract class BaseAnnotationScanner {
     public BaseAnnotationScanner(AsyncApiConfig config, IndexView index) {
         FilteredIndexView filteredIndexView;
         if (index instanceof FilteredIndexView) {
-            filteredIndexView = FilteredIndexView.class.cast(index);
+            filteredIndexView = (FilteredIndexView) index;
         } else {
             filteredIndexView = new FilteredIndexView(index, config);
         }
@@ -85,8 +84,8 @@ public abstract class BaseAnnotationScanner {
         }
 
         channelInfos.forEach(channelInfo -> {
-            String eventKey = channelInfo.getEventKey();
-            AaiChannelItem channelItem = new Aai20ChannelItem(eventKey);
+            String messageKey = channelInfo.getEventKey();
+            AaiChannelItem channelItem = new Aai20ChannelItem(messageKey);
             AaiOperation operation;
             if (channelInfo.getOperationType().equals(OperationConstant.PROP_SUBSCRIBE)) {
                 channelItem.subscribe = new Aai20Operation(OperationConstant.PROP_SUBSCRIBE);
@@ -98,23 +97,16 @@ public abstract class BaseAnnotationScanner {
                 throw new IllegalArgumentException("opType argument should be one of [publish, subscribe]");
             }
 
-            operation.message = new Aai20Message(eventKey);
+            operation.message = new Aai20Message(messageKey);
 
-            operation.message.headers = new Aai20HeaderItem();
-            operation.message.headers.addExtension(Headers.HEADER_ROLES_ALLOWED, getRolesAllowedExtension(channelInfo.getRolesAllowed()));
-            operation.message.headers.addExtension(Headers.HEADER_SCOPE, getScopeHeaderExtension(messageScopes, eventKey));
-            operation.message.headers.addExtension(Headers.HEADER_DEAD_LETTER, getDeadLetterHeaderExtension(channelInfo.getDeadLetterQueue()));
+            operation.message.headers = buildHeaders(channelInfo, messageScopes);
 
-            // Optional extensions
-            Optional<Integer> ttl = Optional.ofNullable(channelInfo.getTtl());
-            ttl.ifPresent(ttlInt -> operation.message.headers.addExtension(Headers.HEADER_TTL, getTtlHeaderExtension(ttlInt)));
-
-            operation.message._name = eventKey;
-            operation.message.name = eventKey;
-            operation.message.title = eventKey;
+            operation.message._name = messageKey;
+            operation.message.name = messageKey;
+            operation.message.title = messageKey;
 
             Schema payloadSchema = new Schema();
-            payloadSchema.setReference(COMPONENTS_SCHEMAS_PREFIX + eventKey);
+            payloadSchema.setReference(COMPONENTS_SCHEMAS_PREFIX + messageKey);
             operation.message.payload = payloadSchema;
 
             channelItem.bindings = new Aai20ChannelBindings();
@@ -181,36 +173,27 @@ public abstract class BaseAnnotationScanner {
                 .anyMatch(annotationInstance -> annotationInstance.target().asClass().name().equals(eventClass.name()));
     }
 
-    private Extension getScopeHeaderExtension(Map<String, Scope> messageScopes, String eventKey) {
-        Extension scopeExtension = new Extension();
-        scopeExtension.name = Headers.HEADER_SCOPE;
-        scopeExtension.value = messageScopes.get(eventKey);
-        return scopeExtension;
+    private GidAaiHeaderItems buildHeaders(ChannelInfo channelInfo, Map<String, Scope> messageScopes) {
+        Map<String, GidAaiHeaderItem> headerProps = new HashMap<>();
+        headerProps.put(Headers.HEADER_ROLES_ALLOWED,
+                new GidAaiHeaderItem("Allowed roles for this message. Default is empty", "array",
+                        channelInfo.getRolesAllowed()));
+        headerProps.put(Headers.HEADER_SCOPE,
+                new GidAaiHeaderItem("Message scope. Default is INTERNAL", "string",
+                        getScope(messageScopes, channelInfo.getEventKey())));
+        headerProps.put(Headers.HEADER_DEAD_LETTER,
+                new GidAaiHeaderItem("Dead letter queue definition. Default is dead-letter", "string",
+                        channelInfo.getDeadLetterQueue()));
+        Optional<Integer> ttl = Optional.ofNullable(channelInfo.getTtl());
+        ttl.ifPresent(ttlInt -> headerProps.put(Headers.HEADER_TTL,
+                new GidAaiHeaderItem("TTL of the message. If set to -1 (default) will use brokers default.", "integer",
+                        ttlInt)));
+
+        return new GidAaiHeaderItems("object", headerProps);
     }
 
-    private Extension getTtlHeaderExtension(int ttl) {
-        if (ttl <= -1) {
-            return null;
-        }
-
-        Extension ttlExtension = new Extension();
-        ttlExtension.name = Headers.HEADER_TTL;
-        ttlExtension.value = ttl;
-        return ttlExtension;
+    private Scope getScope(Map<String, Scope> messageScopes, String messageKey) {
+        return messageScopes.get(messageKey);
     }
 
-    private Extension getRolesAllowedExtension(String[] rolesAllowed) {
-        Extension rolesAllowedExtension = new Extension();
-        rolesAllowedExtension.name = Headers.HEADER_ROLES_ALLOWED;
-        rolesAllowedExtension.value = rolesAllowed;
-
-        return rolesAllowedExtension;
-    }
-
-    private Extension getDeadLetterHeaderExtension(String deadLetterQueue) {
-        Extension deadLetterExtension = new Extension();
-        deadLetterExtension.name = Headers.HEADER_DEAD_LETTER;
-        deadLetterExtension.value = deadLetterQueue;
-        return deadLetterExtension;
-    }
 }

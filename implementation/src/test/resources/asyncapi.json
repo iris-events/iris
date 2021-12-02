@@ -10,16 +10,29 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": [
+                  "admin",
+                  "user"
+                ]
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -55,21 +68,27 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
-              "x-dead-letter": {
-                "name": "x-dead-letter",
-                "value": "dead-letter"
-              },
               "x-ttl": {
-                "name": "x-ttl",
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
                 "value": 10000
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead-letter"
               }
             }
           },
@@ -104,16 +123,26 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "FRONTEND"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -149,16 +178,26 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -194,16 +233,26 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -239,16 +288,26 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -284,16 +343,26 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -329,16 +398,26 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -374,16 +453,26 @@
       "publish": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -419,16 +508,26 @@
       "subscribe": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
@@ -462,16 +561,26 @@
       "subscribe": {
         "message": {
           "headers": {
-            "_extensions": {
-              "x-roles-allowed": {
-                "name": "x-roles-allowed"
-              },
+            "type": "object",
+            "properties": {
               "x-scope": {
-                "name": "x-scope",
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
                 "value": "INTERNAL"
               },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
               "x-dead-letter": {
-                "name": "x-dead-letter",
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
                 "value": "dead-letter"
               }
             }
