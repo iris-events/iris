@@ -58,6 +58,7 @@ public class AmqpProducer {
     public static final String HEADER_EVENT_TYPE = "eventType";
     public static final String HEADER_SESSION_ID = "sessionId";
     public static final String HEADER_USER_ID = "userId";
+    public static final String HEADER_ROUTER = "router";
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
@@ -262,11 +263,18 @@ public class AmqpProducer {
         headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
         headers.put(HEADER_INSTANCE_ID, hostName);
         headers.put(HEADER_EVENT_TYPE, exchange);
+
+        final var builder = basicProperties.builder();
         if (userId != null) {
+            // when overriding user header, make sure, to clean possible existing event context properties
+            builder.correlationId(correlationIdProvider.getCorrelationId());
+            headers.put(HEADER_ORIGIN_SERVICE_ID, serviceId);
+            headers.remove(HEADER_ROUTER);
+            headers.remove(HEADER_SESSION_ID);
             headers.put(HEADER_USER_ID, userId);
         }
 
-        return basicProperties.builder().headers(headers).build();
+        return builder.headers(headers).build();
     }
 
     private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
