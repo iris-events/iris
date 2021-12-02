@@ -1,5 +1,8 @@
 package id.global.event.messaging.runtime.context;
 
+import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_SESSION_ID;
+import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_USER_ID;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -10,8 +13,6 @@ import com.rabbitmq.client.AMQP;
 
 @ApplicationScoped
 public class EventContext {
-    public static final String SESSION_ID_HEADER = "sessionId";
-    public static final String USER_ID_HEADER = "userId";
     private final ThreadLocal<EventContextHolder> eventContextThreadLocal;
 
     public EventContext() {
@@ -50,11 +51,11 @@ public class EventContext {
     }
 
     public Optional<String> getUserId() {
-        return getHeaderValue(USER_ID_HEADER);
+        return getHeaderValue(HEADER_USER_ID);
     }
 
     public Optional<String> getSessionId() {
-        return getHeaderValue(SESSION_ID_HEADER);
+        return getHeaderValue(HEADER_SESSION_ID);
     }
 
     private Optional<String> getHeaderValue(final String header) {
