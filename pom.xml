@@ -11,7 +11,7 @@
 
     <groupId>id.global.events</groupId>
     <artifactId>smallrye-async-api-parent</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>SmallRye: MicroProfile AsyncAPI Parent</name>
@@ -79,7 +79,7 @@
         <connection>scm:git:git@gitlab.com:globalid/experiments/smallrye-eda.git</connection>
         <developerConnection>scm:git:git@gitlab.com:globalid/experiments/smallrye-eda.git</developerConnection>
         <url>https://gitlab.com/globalid/experiments/smallrye-eda</url>
-        <tag>v1.0.12</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <modules>
