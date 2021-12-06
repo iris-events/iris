@@ -34,7 +34,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
     private static final String NAME = "name";
     private static final String TYPE = "type";
     private static final String HEADERS = "headers";
-    private static final String EXTENSIONS = "_extensions";
+    private static final String PROPERTIES = "properties";
     private static final String SCOPE = "scope";
     private static final String DEAD_LETTER = "deadLetter";
     private static final String TTL = "ttl";
@@ -103,7 +103,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
     }
 
     private Optional<Integer> getTtl(JsonNode headers) {
-        JsonNode extensions = getExtensions(headers);
+        JsonNode extensions = getProperties(headers);
         JsonNode ttlNode = extensions.path(Headers.HEADER_TTL).path(VALUE);
 
         if (ttlNode.isMissingNode()) {
@@ -113,7 +113,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
     }
 
     private Optional<String> getDeadLetter(JsonNode headers) {
-        JsonNode extensions = getExtensions(headers);
+        JsonNode extensions = getProperties(headers);
         if (extensions.isMissingNode()) {
             return Optional.empty();
         }
@@ -121,15 +121,15 @@ public class MetadataAnnotator extends Jackson2Annotator {
     }
 
     private Optional<Scope> getScope(JsonNode headers) {
-        JsonNode extensions = getExtensions(headers);
-        if (extensions.isMissingNode()) {
+        JsonNode properties = getProperties(headers);
+        if (properties.isMissingNode()) {
             return Optional.empty();
         }
-        return Optional.of(extensions.path(Headers.HEADER_SCOPE).path(VALUE).textValue()).map(Scope::valueOf);
+        return Optional.of(properties.path(Headers.HEADER_SCOPE).path(VALUE).textValue()).map(Scope::valueOf);
     }
 
-    private JsonNode getExtensions(JsonNode headers) {
-        return headers.path(EXTENSIONS);
+    private JsonNode getProperties(JsonNode headers) {
+        return headers.path(PROPERTIES);
     }
 }
 
