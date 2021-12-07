@@ -6,6 +6,7 @@ import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
+import id.global.event.messaging.runtime.auth.GidAuthenticationRequestContext;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -37,6 +39,10 @@ import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
+import io.quarkus.arc.Arc;
+import io.quarkus.security.identity.request.TokenAuthenticationRequest;
+import io.quarkus.smallrye.jwt.runtime.auth.JsonWebTokenCredential;
+import io.quarkus.smallrye.jwt.runtime.auth.MpJwtValidator;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import id.global.event.messaging.runtime.requeue.RetryQueues;
 
@@ -46,6 +52,7 @@ public class AmqpConsumer {
     private static final String FRONTEND_DEAD_LETTER_QUEUE = "dead-letter-frontend";
     public static final String FRONTEND_MESSAGE_EXCHANGE = "frontend";
     private static final String DEAD_LETTER = "dead-letter";
+    protected static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final ObjectMapper objectMapper;
     private final MethodHandle methodHandle;
@@ -56,6 +63,7 @@ public class AmqpConsumer {
     private final EventContext eventContext;
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
+    private final MpJwtValidator mpJwtValidator;
     private final DeliverCallback callback;
     private final MessageRequeueHandler retryEnqueuer;
     private final RetryQueues retryQueues;
@@ -73,7 +81,8 @@ public class AmqpConsumer {
             final AmqpProducer producer,
             final InstanceInfoProvider instanceInfoProvider,
             final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues) {
+            final RetryQueues retryQueues,
+            final MpJwtValidator mpJwtValidator) {
 
         this.objectMapper = objectMapper;
         this.methodHandle = methodHandle;
@@ -84,6 +93,7 @@ public class AmqpConsumer {
         this.eventContext = eventContext;
         this.producer = producer;
         this.instanceInfoProvider = instanceInfoProvider;
+        this.mpJwtValidator = mpJwtValidator;
         this.channelId = UUID.randomUUID().toString();
         this.callback = createDeliverCallback();
         this.retryEnqueuer = retryEnqueuer;
@@ -111,7 +121,21 @@ public class AmqpConsumer {
             MDC.clear();
             Channel channel = channelService.getOrCreateChannelById(this.channelId);
             try {
-                this.eventContext.setAmqpBasicProperties(message.getProperties());
+                Arc.container().requestContext().activate();
+                final var properties = message.getProperties();
+                this.eventContext.setAmqpBasicProperties(properties);
+                if (mpJwtValidator != null) {
+                    log.info("MpJwtValidator found, trying to validate jwt if present.");
+                    final var bearerToken = getBearerToken();
+                    bearerToken.ifPresent(token -> {
+                        log.info("JWT found...validating: {}", token);
+                        final var jwtToken = new TokenAuthenticationRequest(new JsonWebTokenCredential(token));
+                        final var authenticationRequestContext = new GidAuthenticationRequestContext();
+                        final var await = mpJwtValidator.authenticate(jwtToken, authenticationRequestContext).await().atMost(
+                                Duration.ofSeconds(5));
+                        log.info("is anonymous {}", await.isAnonymous());
+                    });
+                }
 
                 final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
                 final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
@@ -334,5 +358,10 @@ public class AmqpConsumer {
         if (exchangeType == ExchangeType.DIRECT && bindingKeys.size() > 1) {
             throw new IllegalArgumentException("Exactly one binding key is required when declaring a direct type exchange.");
         }
+    }
+
+    public Optional<String> getBearerToken() {
+        return Optional.ofNullable(eventContext.getHeaders().get(AUTHORIZATION_HEADER))
+                .map(Object::toString);
     }
 }

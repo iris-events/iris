@@ -37,6 +37,10 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-narayana-jta</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
 
         <!-- TEST DEPENDENCIES   -->
         <dependency>

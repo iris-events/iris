@@ -59,6 +59,11 @@
         <artifactId>quarkus-narayana-jta</artifactId>
         <version>${version.quarkus}</version>
       </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-smallrye-jwt</artifactId>
+        <version>${version.quarkus}</version>
+      </dependency>
      <!-- <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-narayana-jta-deployment</artifactId>

@@ -23,6 +23,7 @@ import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import id.global.event.messaging.runtime.requeue.RetryQueues;
+import io.quarkus.smallrye.jwt.runtime.auth.MpJwtValidator;
 
 @ApplicationScoped
 public class AmqpConsumerContainer {
@@ -36,6 +37,7 @@ public class AmqpConsumerContainer {
     private final InstanceInfoProvider instanceInfoProvider;
     private final MessageRequeueHandler retryEnqueuer;
     private final RetryQueues retryQueues;
+    private final MpJwtValidator mpJwtValidator;
 
     @Inject
     public AmqpConsumerContainer(
@@ -45,10 +47,12 @@ public class AmqpConsumerContainer {
             final AmqpProducer producer,
             final InstanceInfoProvider instanceInfoProvider,
             final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues) {
+            final RetryQueues retryQueues,
+            final MpJwtValidator mpJwtValidator) {
 
         this.consumerChannelService = consumerChannelService;
         this.instanceInfoProvider = instanceInfoProvider;
+        this.mpJwtValidator = mpJwtValidator;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -83,6 +87,7 @@ public class AmqpConsumerContainer {
                 producer,
                 instanceInfoProvider,
                 retryEnqueuer,
-                retryQueues));
+                retryQueues,
+                mpJwtValidator));
     }
 }

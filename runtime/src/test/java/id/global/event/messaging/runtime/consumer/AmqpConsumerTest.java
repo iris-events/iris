@@ -55,7 +55,8 @@ public class AmqpConsumerTest {
                 null,
                 instanceInfoProvider,
                 new MessageRequeueHandler(channelService, testRetryQueues),
-                testRetryQueues);
+                testRetryQueues,
+                null);
 
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);
