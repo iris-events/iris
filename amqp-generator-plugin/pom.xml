@@ -48,6 +48,11 @@
             <artifactId>junit-jupiter-engine</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
         </dependency>
@@ -58,6 +63,11 @@
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -1,0 +1,28 @@
+{
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : "integer"
+    },
+    "name" : {
+      "type" : "string"
+    },
+    "payload" : {
+      "type" : "any"
+    },
+    "someMap" : {
+      "type" : "any"
+    },
+    "surname" : {
+      "type" : "string"
+    },
+    "user" : {
+      "type" : "object",
+      "javaType" : "id.global.amqp.test.amqpGeneratorTest.payload.User"
+    }
+  },
+  "additionalProperties" : {
+    "isGeneratedClass" : false,
+    "generatedClass" : false
+  }
+}

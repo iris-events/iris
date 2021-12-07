@@ -1,0 +1,12 @@
+{
+  "type" : "object",
+  "properties" : {
+    "userMap" : {
+      "type" : "any"
+    }
+  },
+  "additionalProperties" : {
+    "isGeneratedClass" : false,
+    "generatedClass" : false
+  }
+}
