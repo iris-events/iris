@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>id.global</groupId>
+        <artifactId>globalid-parent</artifactId>
+        <version>4</version>
+    </parent>
+    <properties>
+        <appName>APPLICATION_NAME</appName>
+        <appVersion>APPLICATION_VERSION</appVersion>
+        <version.jandex-maven-plugin>1.2.1</version.jandex-maven-plugin>
+        <version.globalid-common>1.0.18</version.globalid-common>
+        <version.jackson-annotations>2.12.3</version.jackson-annotations>
+        <version.jackson-databind>2.5.4</version.jackson-databind>
+    </properties>
+
+
+    <groupId>id.global.amqp</groupId>
+    <artifactId>amqp-models-${appName}</artifactId>
+    <version>${appVersion}</version>
+    <name>Models for ${appName}</name>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${version.jackson-databind}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${version.jackson-annotations}</version>
+        </dependency>
+        <dependency>
+            <groupId>id.global.common</groupId>
+            <artifactId>globalid-common</artifactId>
+            <version>${version.globalid-common}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jboss.jandex</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <version>${version.jandex-maven-plugin}</version>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                        <configuration>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

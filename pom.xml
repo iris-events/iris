@@ -23,7 +23,7 @@
     <properties>
         <version.smallrye.async.api>1.0.13</version.smallrye.async.api>
         <version.aether-api>1.1.0</version.aether-api>
-        <version.junit-jupiter-engine>5.8.1</version.junit-jupiter-engine>
+        <version.junit-jupiter>5.8.1</version.junit-jupiter>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
         <version.maven-compat>3.8.1</version.maven-compat>
         <version.maven-resolver-api>1.7.2</version.maven-resolver-api>
@@ -38,6 +38,7 @@
         <version.jackson-databind>2.13.0</version.jackson-databind>
         <version.json-simple>1.1.1</version.json-simple>
         <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
+        <version.hamcrest>2.2</version.hamcrest>
     </properties>
 
     <scm>
@@ -116,7 +117,13 @@
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
-                <version>${version.junit-jupiter-engine}</version>
+                <version>${version.junit-jupiter}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${version.junit-jupiter}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -135,6 +142,12 @@
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-compat</artifactId>
                 <version>${version.maven}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>${version.hamcrest}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

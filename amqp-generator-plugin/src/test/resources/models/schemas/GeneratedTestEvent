@@ -1,0 +1,15 @@
+{
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : "integer"
+    },
+    "status" : {
+      "type" : "string"
+    }
+  },
+  "additionalProperties" : {
+    "isGeneratedClass" : true,
+    "generatedClass" : true
+  }
+}

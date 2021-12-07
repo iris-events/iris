@@ -735,7 +735,7 @@
         "type": "object",
         "properties": {
           "userMap": {
-            "type": "object"
+            "type": "any"
           }
         },
         "additionalProperties": {
@@ -765,10 +765,10 @@
             "type": "string"
           },
           "payload": {
-            "type": "object"
+            "type": "any"
           },
           "someMap": {
-            "type": "object"
+            "type": "any"
           },
           "surname": {
             "type": "string"
