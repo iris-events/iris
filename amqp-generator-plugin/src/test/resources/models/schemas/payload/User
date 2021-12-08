@@ -9,7 +9,7 @@
     },
     "status" : {
       "type" : "object",
-      "javaType" : "id.global.amqp.test.amqpGeneratorTest.payload.Status"
+      "javaType" : "id.global.amqp.test.amqpgeneratortest.payload.Status"
     },
     "surname" : {
       "type" : "string"

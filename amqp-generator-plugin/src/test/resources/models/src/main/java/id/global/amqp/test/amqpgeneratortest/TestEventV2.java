@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpGeneratorTest;
+package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import javax.annotation.processing.Generated;
@@ -7,7 +7,7 @@ import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import id.global.amqp.test.amqpGeneratorTest.payload.User;
+import id.global.amqp.test.amqpgeneratortest.payload.User;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
 import id.global.common.annotations.amqp.Message;
@@ -41,7 +41,7 @@ public class TestEventV2 implements Serializable
     @JsonProperty("user")
     @Valid
     private User user;
-    private final static long serialVersionUID = -6551040547463879970L;
+    private final static long serialVersionUID = 1002643179796705193L;
 
     /**
      * No args constructor for use in serialization

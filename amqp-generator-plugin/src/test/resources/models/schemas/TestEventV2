@@ -18,7 +18,7 @@
     },
     "user" : {
       "type" : "object",
-      "javaType" : "id.global.amqp.test.amqpGeneratorTest.payload.User"
+      "javaType" : "id.global.amqp.test.amqpgeneratortest.payload.User"
     }
   },
   "additionalProperties" : {

@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpGeneratorTest;
+package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import javax.annotation.processing.Generated;
@@ -7,14 +7,14 @@ import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import id.global.amqp.test.amqpGeneratorTest.payload.User;
+import id.global.amqp.test.amqpgeneratortest.payload.User;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.GlobalIdGenerated;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.Scope;
 
 @GlobalIdGenerated
-@Message(name = "frontend-test-event-v1", exchangeType = ExchangeType.DIRECT, routingKey = "fe-test-event-v1", scope = Scope.FRONTEND, deadLetter = "dead-letter", ttl = -1)
+@Message(name = "test-topic-exchange", exchangeType = ExchangeType.TOPIC, routingKey = "*.*.rabbit,fast.orange.*", scope = Scope.INTERNAL, deadLetter = "dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id",
@@ -22,7 +22,7 @@ import id.global.common.annotations.amqp.Scope;
     "user"
 })
 @Generated("jsonschema2pojo")
-public class FrontendTestEventV1 implements Serializable
+public class TopicTestEventV1 implements Serializable
 {
 
     @JsonProperty("id")
@@ -32,13 +32,13 @@ public class FrontendTestEventV1 implements Serializable
     @JsonProperty("user")
     @Valid
     private User user;
-    private final static long serialVersionUID = 3514406410842066731L;
+    private final static long serialVersionUID = 2255678088829292346L;
 
     /**
      * No args constructor for use in serialization
      * 
      */
-    public FrontendTestEventV1() {
+    public TopicTestEventV1() {
     }
 
     /**
@@ -47,7 +47,7 @@ public class FrontendTestEventV1 implements Serializable
      * @param user
      * @param status
      */
-    public FrontendTestEventV1(int id, String status, User user) {
+    public TopicTestEventV1(int id, String status, User user) {
         super();
         this.id = id;
         this.status = status;
@@ -87,7 +87,7 @@ public class FrontendTestEventV1 implements Serializable
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(FrontendTestEventV1 .class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(TopicTestEventV1 .class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("id");
         sb.append('=');
         sb.append(this.id);
@@ -122,10 +122,10 @@ public class FrontendTestEventV1 implements Serializable
         if (other == this) {
             return true;
         }
-        if ((other instanceof FrontendTestEventV1) == false) {
+        if ((other instanceof TopicTestEventV1) == false) {
             return false;
         }
-        FrontendTestEventV1 rhs = ((FrontendTestEventV1) other);
+        TopicTestEventV1 rhs = ((TopicTestEventV1) other);
         return (((this.id == rhs.id)&&((this.user == rhs.user)||((this.user!= null)&&this.user.equals(rhs.user))))&&((this.status == rhs.status)||((this.status!= null)&&this.status.equals(rhs.status))));
     }
 

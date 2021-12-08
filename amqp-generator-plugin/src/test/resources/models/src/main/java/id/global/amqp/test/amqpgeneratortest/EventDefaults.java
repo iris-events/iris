@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpGeneratorTest;
+package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import javax.annotation.processing.Generated;
@@ -12,52 +12,52 @@ import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.Scope;
 
 @GlobalIdGenerated
-@Message(name = "map-payload-event", exchangeType = ExchangeType.FANOUT, routingKey = "map-payload-event", scope = Scope.INTERNAL, deadLetter = "dead-letter", ttl = -1)
+@Message(name = "event-defaults", exchangeType = ExchangeType.FANOUT, routingKey = "event-defaults", scope = Scope.INTERNAL, deadLetter = "dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "userMap"
+    "id"
 })
 @Generated("jsonschema2pojo")
-public class MapPayloadEvent implements Serializable
+public class EventDefaults implements Serializable
 {
 
-    @JsonProperty("userMap")
-    private Object userMap;
-    private final static long serialVersionUID = 204023508954648902L;
+    @JsonProperty("id")
+    private int id;
+    private final static long serialVersionUID = -4370213701096544325L;
 
     /**
      * No args constructor for use in serialization
      * 
      */
-    public MapPayloadEvent() {
+    public EventDefaults() {
     }
 
     /**
      * 
-     * @param userMap
+     * @param id
      */
-    public MapPayloadEvent(Object userMap) {
+    public EventDefaults(int id) {
         super();
-        this.userMap = userMap;
+        this.id = id;
     }
 
-    @JsonProperty("userMap")
-    public Object getUserMap() {
-        return userMap;
+    @JsonProperty("id")
+    public int getId() {
+        return id;
     }
 
-    @JsonProperty("userMap")
-    public void setUserMap(Object userMap) {
-        this.userMap = userMap;
+    @JsonProperty("id")
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(MapPayloadEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("userMap");
+        sb.append(EventDefaults.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("id");
         sb.append('=');
-        sb.append(((this.userMap == null)?"<null>":this.userMap));
+        sb.append(this.id);
         sb.append(',');
         if (sb.charAt((sb.length()- 1)) == ',') {
             sb.setCharAt((sb.length()- 1), ']');
@@ -70,7 +70,7 @@ public class MapPayloadEvent implements Serializable
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+((this.userMap == null)? 0 :this.userMap.hashCode()));
+        result = ((result* 31)+ this.id);
         return result;
     }
 
@@ -79,11 +79,11 @@ public class MapPayloadEvent implements Serializable
         if (other == this) {
             return true;
         }
-        if ((other instanceof MapPayloadEvent) == false) {
+        if ((other instanceof EventDefaults) == false) {
             return false;
         }
-        MapPayloadEvent rhs = ((MapPayloadEvent) other);
-        return ((this.userMap == rhs.userMap)||((this.userMap!= null)&&this.userMap.equals(rhs.userMap)));
+        EventDefaults rhs = ((EventDefaults) other);
+        return (this.id == rhs.id);
     }
 
 }

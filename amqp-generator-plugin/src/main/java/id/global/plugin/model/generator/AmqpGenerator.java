@@ -13,8 +13,8 @@ import static id.global.plugin.model.generator.utils.StringConstants.PUBLISH;
 import static id.global.plugin.model.generator.utils.StringConstants.REF;
 import static id.global.plugin.model.generator.utils.StringConstants.REF_REGEX;
 import static id.global.plugin.model.generator.utils.StringConstants.SUBSCRIBE;
-import static id.global.plugin.model.generator.utils.StringReplacement.getRefToBeReplaced;
-import static id.global.plugin.model.generator.utils.StringReplacement.getReplacementForRef;
+import static id.global.plugin.model.generator.utils.AmqpStringUtils.getRefToBeReplaced;
+import static id.global.plugin.model.generator.utils.AmqpStringUtils.getReplacementForRef;
 import static java.util.stream.Collectors.joining;
 
 import java.io.File;
@@ -62,6 +62,7 @@ import id.global.plugin.model.generator.graph.GraphUtils;
 import id.global.plugin.model.generator.models.ArtifactSource;
 import id.global.plugin.model.generator.models.ChannelDetails;
 import id.global.plugin.model.generator.models.JsonSchemaWrapper;
+import id.global.plugin.model.generator.utils.AmqpStringUtils;
 import id.global.plugin.model.generator.utils.FileInteractor;
 import id.global.plugin.model.generator.utils.JsonUtils;
 import id.global.plugin.model.generator.utils.PathResolver;
@@ -376,7 +377,7 @@ public class AmqpGenerator {
 
     private void replaceFileContent(File file, String fileContent, Map.Entry<String, String> nameWithLocation) {
         String fileName = nameWithLocation.getKey();
-        String replaceWith = getReplacementForRef(fileName, packageName, modelName);
+        String replaceWith = getReplacementForRef(fileName, packageName, AmqpStringUtils.getPackageName(modelName));
 
         String fileLocation = nameWithLocation.getValue();
         String toReplace = getRefToBeReplaced(fileLocation);
@@ -394,7 +395,7 @@ public class AmqpGenerator {
                 var toReplace = matcher.group(0);
                 var name = Arrays.stream(matcher.group(2).split(FORWARD_SLASH))
                         .reduce((first, second) -> second).orElse(EMPTY_STRING);
-                fileContent = fileContent.replace(toReplace, getReplacementForRef(name, packageName, modelName));
+                fileContent = fileContent.replace(toReplace, getReplacementForRef(name, packageName, AmqpStringUtils.getPackageName(modelName)));
             }
         }
         fileInteractor.writeFile(Path.of(file.toURI()), jsonUtils.getFormattedJson(fileContent));
@@ -506,13 +507,14 @@ public class AmqpGenerator {
     private String preparePomTemplate() {
         var pomTemplate = fileInteractor.readResourceFileContent(POM_TEMPLATE_XML);
         return pomTemplate
-                .replace("APPLICATION_NAME", modelName)
+                .replace("APPLICATION_NAME", AmqpStringUtils.getPomArtifactId(modelName))
                 .replace("APPLICATION_VERSION", modelVersion);
 
     }
 
     private String generatePackageName(String locationForGeneratedClass) {
-        return Stream.of(packageName, modelName, locationForGeneratedClass)
+        String modelPackage = AmqpStringUtils.getPackageName(modelName);
+        return Stream.of(packageName, modelPackage, locationForGeneratedClass)
                 .filter(s -> !s.isBlank())
                 .collect(joining(DOT));
     }
