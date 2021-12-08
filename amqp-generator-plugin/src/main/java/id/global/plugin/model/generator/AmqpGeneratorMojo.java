@@ -29,7 +29,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "asyncApiDirectory", defaultValue = "target,generated")
     String asyncApiDirectory;
 
-    @Parameter(property = "packageName", defaultValue = "id.global.amqp.models")
+    @Parameter(property = "packageName", defaultValue = "id.global.amqp")
     String packageName;
 
     @Parameter(property = "modelVersion", required = true)
@@ -56,12 +56,10 @@ public class AmqpGeneratorMojo extends AbstractMojo {
 
         SchemaFileGenerator schemaFileGenerator = new SchemaFileGenerator(log, pathResolver, fileInteractor,
                 objectMapper);
-
-        var modelNameClean = getCleanModelName(modelName);
         fileInteractor.cleanUpDirectories(pathResolver.getWorkingDirectory());
 
         AmqpGenerator generator = new AmqpGenerator(schemaFileGenerator, objectMapper, pathResolver, fileInteractor, log,
-                packageName, modelVersion, modelNameClean,
+                packageName, modelVersion, modelName,
                 asyncApiFilename, asyncApiDirectory, apicurioUrl);
 
         try {
@@ -71,9 +69,4 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         }
         log.info("Models generated successfully!");
     }
-
-    private String getCleanModelName(final String modelName) {
-        return modelName.toLowerCase().replace("-", "_");
-    }
-
 }

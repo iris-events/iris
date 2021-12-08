@@ -18,7 +18,7 @@
 
 
     <groupId>id.global.amqp</groupId>
-    <artifactId>amqp-models-${appName}</artifactId>
+    <artifactId>${appName}-models</artifactId>
     <version>${appVersion}</version>
     <name>Models for ${appName}</name>
     <dependencies>

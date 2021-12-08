@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpGeneratorTest;
+package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import javax.annotation.processing.Generated;
@@ -12,52 +12,52 @@ import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.Scope;
 
 @GlobalIdGenerated
-@Message(name = "passthrough-inbound-event", exchangeType = ExchangeType.FANOUT, routingKey = "passthrough-inbound-event", scope = Scope.INTERNAL, deadLetter = "dead-letter", ttl = -1)
+@Message(name = "map-payload-event", exchangeType = ExchangeType.FANOUT, routingKey = "map-payload-event", scope = Scope.INTERNAL, deadLetter = "dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "id"
+    "userMap"
 })
 @Generated("jsonschema2pojo")
-public class PassthroughInboundEvent implements Serializable
+public class MapPayloadEvent implements Serializable
 {
 
-    @JsonProperty("id")
-    private int id;
-    private final static long serialVersionUID = 5538233487192071850L;
+    @JsonProperty("userMap")
+    private Object userMap;
+    private final static long serialVersionUID = 5999294610289307180L;
 
     /**
      * No args constructor for use in serialization
      * 
      */
-    public PassthroughInboundEvent() {
+    public MapPayloadEvent() {
     }
 
     /**
      * 
-     * @param id
+     * @param userMap
      */
-    public PassthroughInboundEvent(int id) {
+    public MapPayloadEvent(Object userMap) {
         super();
-        this.id = id;
+        this.userMap = userMap;
     }
 
-    @JsonProperty("id")
-    public int getId() {
-        return id;
+    @JsonProperty("userMap")
+    public Object getUserMap() {
+        return userMap;
     }
 
-    @JsonProperty("id")
-    public void setId(int id) {
-        this.id = id;
+    @JsonProperty("userMap")
+    public void setUserMap(Object userMap) {
+        this.userMap = userMap;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(PassthroughInboundEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("id");
+        sb.append(MapPayloadEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("userMap");
         sb.append('=');
-        sb.append(this.id);
+        sb.append(((this.userMap == null)?"<null>":this.userMap));
         sb.append(',');
         if (sb.charAt((sb.length()- 1)) == ',') {
             sb.setCharAt((sb.length()- 1), ']');
@@ -70,7 +70,7 @@ public class PassthroughInboundEvent implements Serializable
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+ this.id);
+        result = ((result* 31)+((this.userMap == null)? 0 :this.userMap.hashCode()));
         return result;
     }
 
@@ -79,11 +79,11 @@ public class PassthroughInboundEvent implements Serializable
         if (other == this) {
             return true;
         }
-        if ((other instanceof PassthroughInboundEvent) == false) {
+        if ((other instanceof MapPayloadEvent) == false) {
             return false;
         }
-        PassthroughInboundEvent rhs = ((PassthroughInboundEvent) other);
-        return (this.id == rhs.id);
+        MapPayloadEvent rhs = ((MapPayloadEvent) other);
+        return ((this.userMap == rhs.userMap)||((this.userMap!= null)&&this.userMap.equals(rhs.userMap)));
     }
 
 }

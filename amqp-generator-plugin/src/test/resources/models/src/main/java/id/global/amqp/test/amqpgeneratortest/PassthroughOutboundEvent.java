@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpGeneratorTest;
+package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import javax.annotation.processing.Generated;
@@ -23,7 +23,7 @@ public class PassthroughOutboundEvent implements Serializable
 
     @JsonProperty("id")
     private int id;
-    private final static long serialVersionUID = -2837379688555384133L;
+    private final static long serialVersionUID = -717248270109992202L;
 
     /**
      * No args constructor for use in serialization

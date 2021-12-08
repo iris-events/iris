@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpGeneratorTest;
+package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import javax.annotation.processing.Generated;
@@ -12,33 +12,38 @@ import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.Scope;
 
 @GlobalIdGenerated
-@Message(name = "event-defaults", exchangeType = ExchangeType.FANOUT, routingKey = "event-defaults", scope = Scope.INTERNAL, deadLetter = "dead-letter", ttl = -1)
+@Message(name = "test-generated-exchange", exchangeType = ExchangeType.TOPIC, routingKey = "test-generated-exchange", scope = Scope.INTERNAL, deadLetter = "dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "id"
+    "id",
+    "status"
 })
 @Generated("jsonschema2pojo")
-public class EventDefaults implements Serializable
+public class GeneratedTestEvent implements Serializable
 {
 
     @JsonProperty("id")
     private int id;
-    private final static long serialVersionUID = -8920013717322134813L;
+    @JsonProperty("status")
+    private String status;
+    private final static long serialVersionUID = -6088058124903146385L;
 
     /**
      * No args constructor for use in serialization
      * 
      */
-    public EventDefaults() {
+    public GeneratedTestEvent() {
     }
 
     /**
      * 
      * @param id
+     * @param status
      */
-    public EventDefaults(int id) {
+    public GeneratedTestEvent(int id, String status) {
         super();
         this.id = id;
+        this.status = status;
     }
 
     @JsonProperty("id")
@@ -51,13 +56,27 @@ public class EventDefaults implements Serializable
         this.id = id;
     }
 
+    @JsonProperty("status")
+    public String getStatus() {
+        return status;
+    }
+
+    @JsonProperty("status")
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(EventDefaults.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(GeneratedTestEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("id");
         sb.append('=');
         sb.append(this.id);
+        sb.append(',');
+        sb.append("status");
+        sb.append('=');
+        sb.append(((this.status == null)?"<null>":this.status));
         sb.append(',');
         if (sb.charAt((sb.length()- 1)) == ',') {
             sb.setCharAt((sb.length()- 1), ']');
@@ -71,6 +90,7 @@ public class EventDefaults implements Serializable
     public int hashCode() {
         int result = 1;
         result = ((result* 31)+ this.id);
+        result = ((result* 31)+((this.status == null)? 0 :this.status.hashCode()));
         return result;
     }
 
@@ -79,11 +99,11 @@ public class EventDefaults implements Serializable
         if (other == this) {
             return true;
         }
-        if ((other instanceof EventDefaults) == false) {
+        if ((other instanceof GeneratedTestEvent) == false) {
             return false;
         }
-        EventDefaults rhs = ((EventDefaults) other);
-        return (this.id == rhs.id);
+        GeneratedTestEvent rhs = ((GeneratedTestEvent) other);
+        return ((this.id == rhs.id)&&((this.status == rhs.status)||((this.status!= null)&&this.status.equals(rhs.status))));
     }
 
 }

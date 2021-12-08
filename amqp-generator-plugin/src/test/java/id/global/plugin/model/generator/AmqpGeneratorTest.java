@@ -82,30 +82,30 @@ class AmqpGeneratorTest {
         return Stream.of(
                 Arguments.of(new GenerateArguments("models")),
                 Arguments.of(new GenerateArguments("models/src/main/java")),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest")),
+                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest")),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest/EventDefaults.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventDefaults.java")),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpGeneratorTest/FanoutTestEventV1.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FanoutTestEventV1.java")),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpGeneratorTest/FrontendTestEventV1.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FrontendTestEventV1.java")),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpGeneratorTest/GeneratedTestEvent.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/GeneratedTestEvent.java")),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpGeneratorTest/PassthroughInboundEvent.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughInboundEvent.java")),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpGeneratorTest/PassthroughOutboundEvent.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughOutboundEvent.java")),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest/ProducedEvent.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/ProducedEvent.java")),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest/TestEventV1.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV1.java")),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest/TestEventV2.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV2.java")),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpGeneratorTest/TopicTestEventV1.java")),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest/payload")),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest/payload/Status.java")),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpGeneratorTest/payload/User.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/TopicTestEventV1.java")),
+                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload")),
+                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Status.java")),
+                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/User.java")),
                 Arguments.of(new GenerateArguments("models/pom.xml"))
 
         );
