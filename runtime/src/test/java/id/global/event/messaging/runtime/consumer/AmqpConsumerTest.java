@@ -20,11 +20,9 @@ import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 
 import id.global.common.annotations.amqp.Scope;
+import id.global.event.messaging.runtime.TestChannelService;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
-import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -48,12 +46,7 @@ public class AmqpConsumerTest {
                 createHandle(),
                 new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, void.class, TEST_METHOD_NAME),
                 new AmqpContext(EXCHANGE, List.of(), DIRECT, Scope.INTERNAL, false, false, false, 1, -1, ""),
-                new ConsumerChannelService(
-                        new ConsumerConnectionProvider(
-                                new ConnectionFactoryProvider(amqpConfiguration),
-                                new InstanceInfoProvider(),
-                                amqpConfiguration),
-                        amqpConfiguration),
+                new TestChannelService(),
                 handler,
                 new EventContext(),
                 null, instanceInfoProvider);

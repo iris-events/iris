@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
@@ -39,7 +40,7 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.channel.ProducerChannelService;
+import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -62,7 +63,7 @@ public class AmqpProducer {
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
-    private final ProducerChannelService channelService;
+    private final ChannelService channelService;
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
     private final AmqpConfiguration configuration;
@@ -79,7 +80,8 @@ public class AmqpProducer {
     private TransactionCallback transactionCallback;
 
     @Inject
-    public AmqpProducer(ProducerChannelService channelService, ObjectMapper objectMapper, EventContext eventContext,
+    public AmqpProducer(@Named("producerChannelService") ChannelService channelService, ObjectMapper objectMapper,
+            EventContext eventContext,
             AmqpConfiguration configuration, TransactionManager transactionManager,
             CorrelationIdProvider correlationIdProvider, InstanceInfoProvider instanceInfoProvider,
             EventAppInfoProvider eventAppInfoProvider) {
@@ -99,10 +101,11 @@ public class AmqpProducer {
 
     /**
      * Send message and override userId header of the message.
-     * All following events caused by this event will have that user id set and any USER scoped messages will be sent to that user.
+     * All following events caused by this event will have that user id set and any USER scoped messages will be sent to that
+     * user.
      *
      * @param message message
-     * @param userId  user id
+     * @param userId user id
      */
     public void send(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
         doSend(message, userId);

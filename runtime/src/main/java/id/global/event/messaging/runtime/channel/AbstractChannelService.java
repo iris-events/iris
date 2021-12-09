@@ -14,7 +14,7 @@ import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.connection.AbstractConnectionProvider;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 
-public abstract class AbstractChannelService {
+public abstract class AbstractChannelService implements ChannelService {
     private final static Logger log = LoggerFactory.getLogger(AbstractChannelService.class);
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private AbstractConnectionProvider connectionProvider;
@@ -29,6 +29,7 @@ public abstract class AbstractChannelService {
         this.configuration = configuration;
     }
 
+    @Override
     public Channel getOrCreateChannelById(String channelId) throws IOException {
         Channel channel = channelMap.computeIfAbsent(channelId, this::createChanel);
         if (channel == null) {
@@ -37,6 +38,7 @@ public abstract class AbstractChannelService {
         return channel;
     }
 
+    @Override
     public void removeChannel(String oldChannelId) throws IOException {
         Channel channel = channelMap.get(oldChannelId);
         if (channel.isOpen()) {
