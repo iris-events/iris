@@ -1,6 +1,5 @@
 package id.global.event.messaging.deployment.scanner;
 
-import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EVENT_APP_ID_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EVENT_APP_INFO_DESCRIPTION_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EVENT_APP_INFO_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EVENT_APP_INFO_TITLE_PARAM;
@@ -18,9 +17,11 @@ public class EventAppScanner {
     private final DotName DOT_NAME_EVENT_APP = DotName.createSimple(EventApp.class.getCanonicalName());
 
     private final IndexView index;
+    private final String appName;
 
-    public EventAppScanner(IndexView index) {
+    public EventAppScanner(IndexView index, String appName) {
         this.index = index;
+        this.appName = appName;
     }
 
     public Optional<EventAppContext> findEventAppContext() {
@@ -31,12 +32,11 @@ public class EventAppScanner {
                 .findFirst();
 
         return optionalEventAppAnnotation.map(annotationInstance -> {
-            final var id = annotationInstance.value(EVENT_APP_ID_PARAM).asString();
             final var info = annotationInstance.value(EVENT_APP_INFO_PARAM).asNested();
             final var title = info.value(EVENT_APP_INFO_TITLE_PARAM).asString();
             final var description = info.value(EVENT_APP_INFO_DESCRIPTION_PARAM).asString();
 
-            return new EventAppContext(id, title, description);
+            return new EventAppContext(appName, title, description);
         });
     }
 }

@@ -32,7 +32,7 @@ public class EventAppRecorderIT {
 
     private static final String EVENT_QUEUE = "event-queue";
     private static final String EXCHANGE = "event-app-recorder-exchange";
-    public static final String APP_ID = "TestEventApp";
+    public static final String APP_ID = "test-app";
 
     @Inject
     AmqpProducer producer;
