@@ -2,11 +2,13 @@ package id.global.event.messaging.runtime.channel;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 
-@ApplicationScoped
+@Named("consumerChannelService")
+@ApplicationScoped()
 public class ConsumerChannelService extends AbstractChannelService {
 
     @Inject

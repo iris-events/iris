@@ -23,7 +23,7 @@ import com.rabbitmq.client.ShutdownSignalException;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.channel.ConsumerChannelService;
+import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -44,7 +44,7 @@ public class AmqpConsumer {
     private final MethodHandle methodHandle;
     private final MethodHandleContext methodHandleContext;
     private final AmqpContext context;
-    private final ConsumerChannelService channelService;
+    private final ChannelService channelService;
     private final Object eventHandlerInstance;
     private final EventContext eventContext;
     private final AmqpProducer producer;
@@ -58,7 +58,7 @@ public class AmqpConsumer {
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
             final AmqpContext context,
-            final ConsumerChannelService channelService,
+            final ChannelService channelService,
             final Object eventHandlerInstance,
             final EventContext eventContext,
             final AmqpProducer producer,
@@ -96,6 +96,7 @@ public class AmqpConsumer {
         return (consumerTag, message) -> {
             final var currentContextMap = MDC.getCopyOfContextMap();
             MDC.clear();
+            Channel channel = channelService.getOrCreateChannelById(this.channelId);
             try {
                 this.eventContext.setAmqpBasicProperties(message.getProperties());
 
@@ -106,11 +107,13 @@ public class AmqpConsumer {
 
                 final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
+                channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
             } catch (Throwable throwable) {
                 final var bindingKeysString = Optional.ofNullable(this.context.getBindingKeys())
                         .map(bindingKeys -> "[" + String.join(", ", bindingKeys) + "]")
                         .orElse("[]");
                 log.error(String.format("Could not invoke method handler for bindingKey(s) %s", bindingKeysString), throwable);
+                channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
@@ -166,7 +169,7 @@ public class AmqpConsumer {
         }
 
         // start consuming
-        channel.basicConsume(queueName, true, this.callback,
+        channel.basicConsume(queueName, false, this.callback,
                 consumerTag -> log.warn("Channel canceled for {}", queueName),
                 (consumerTag, sig) -> reInitChannel(sig, queueName, consumerTag));
 

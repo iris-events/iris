@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.transaction.TransactionManager;
 
 import org.junit.jupiter.api.Assertions;
@@ -21,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.global.common.annotations.amqp.Message;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.channel.ProducerChannelService;
+import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
@@ -40,7 +41,8 @@ public class EventsMalformedIT {
     private static final String TOPIC_QUEUE = "mt-queue";
 
     @Inject
-    ProducerChannelService producerChannelService;
+    @Named("producerChannelService")
+    ChannelService producerChannelService;
 
     @Inject
     AmqpConfiguration configuration;

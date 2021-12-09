@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.channel.ConsumerChannelService;
+import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -28,7 +29,7 @@ public class AmqpConsumerContainer {
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
     private final Map<String, AmqpConsumer> consumerMap;
-    private final ConsumerChannelService consumerChannelService;
+    private final ChannelService consumerChannelService;
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
 
@@ -36,7 +37,7 @@ public class AmqpConsumerContainer {
     public AmqpConsumerContainer(
             final ObjectMapper objectMapper,
             final EventContext eventContext,
-            final ConsumerChannelService consumerChannelService,
+            @Named("consumerChannelService") final ChannelService consumerChannelService,
             final AmqpProducer producer,
             final InstanceInfoProvider instanceInfoProvider) {
 
