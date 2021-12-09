@@ -4,6 +4,6 @@ import id.global.asyncapi.spec.annotations.EventApp;
 import id.global.asyncapi.spec.annotations.info.Info;
 
 @SuppressWarnings("unused")
-@EventApp(id = "TestEventApp", info = @Info(title = "Test dummy event app", description = "Test dummy event app"))
+@EventApp(info = @Info(title = "Test dummy event app", description = "Test dummy event app"))
 public class TestEventApp {
 }

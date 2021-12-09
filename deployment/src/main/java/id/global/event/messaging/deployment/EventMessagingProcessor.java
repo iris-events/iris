@@ -36,6 +36,7 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
@@ -85,8 +86,8 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    EventAppInfoBuildItem scanForEventApp(final CombinedIndexBuildItem index) {
-        final var eventAppScanner = new EventAppScanner(index.getIndex());
+    EventAppInfoBuildItem scanForEventApp(final CombinedIndexBuildItem index, final ApplicationInfoBuildItem appInfoBuildItem) {
+        final var eventAppScanner = new EventAppScanner(index.getIndex(), appInfoBuildItem.getName());
         return new EventAppInfoBuildItem(eventAppScanner.findEventAppContext().orElseThrow(() -> {
             throw new EventAppMissingException("EventApp annotation with basic info missing");
         }));
