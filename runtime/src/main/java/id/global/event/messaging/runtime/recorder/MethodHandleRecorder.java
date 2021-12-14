@@ -1,4 +1,4 @@
-package id.global.event.messaging.runtime;
+package id.global.event.messaging.runtime.recorder;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;

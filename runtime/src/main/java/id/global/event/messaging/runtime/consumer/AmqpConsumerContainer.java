@@ -21,10 +21,12 @@ import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
+import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
+import id.global.event.messaging.runtime.requeue.RetryQueues;
 
 @ApplicationScoped
 public class AmqpConsumerContainer {
-    private static final Logger LOG = LoggerFactory.getLogger(AmqpConsumerContainer.class);
+    private static final Logger log = LoggerFactory.getLogger(AmqpConsumerContainer.class);
 
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
@@ -32,6 +34,8 @@ public class AmqpConsumerContainer {
     private final ChannelService consumerChannelService;
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
+    private final MessageRequeueHandler retryEnqueuer;
+    private final RetryQueues retryQueues;
 
     @Inject
     public AmqpConsumerContainer(
@@ -39,7 +43,9 @@ public class AmqpConsumerContainer {
             final EventContext eventContext,
             @Named("consumerChannelService") final ChannelService consumerChannelService,
             final AmqpProducer producer,
-            final InstanceInfoProvider instanceInfoProvider) {
+            final InstanceInfoProvider instanceInfoProvider,
+            final MessageRequeueHandler retryEnqueuer,
+            final RetryQueues retryQueues) {
 
         this.consumerChannelService = consumerChannelService;
         this.instanceInfoProvider = instanceInfoProvider;
@@ -47,6 +53,8 @@ public class AmqpConsumerContainer {
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.producer = producer;
+        this.retryEnqueuer = retryEnqueuer;
+        this.retryQueues = retryQueues;
     }
 
     public void initConsumers() {
@@ -56,7 +64,7 @@ public class AmqpConsumerContainer {
             } catch (Exception e) {
                 String msg = String.format("Could not initialize consumer for exchange: '%s' queue '%s'",
                         consumer.getContext().getName(), queueName);
-                LOG.error(msg, e);
+                log.error(msg, e);
                 throw new AmqpConnectionException(msg, e);
             }
         });
@@ -73,6 +81,8 @@ public class AmqpConsumerContainer {
                 eventHandlerInstance,
                 eventContext,
                 producer,
-                instanceInfoProvider));
+                instanceInfoProvider,
+                retryEnqueuer,
+                retryQueues));
     }
 }

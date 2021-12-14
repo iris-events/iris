@@ -9,7 +9,7 @@ import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 @ApplicationScoped
 public class ProducerConnectionProvider extends AbstractConnectionProvider {
 
-    public static final String PRODUCER_PREFIX = "producer_";
+    private static final String PRODUCER_PREFIX = "producer_";
 
     @Inject
     public ProducerConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,

@@ -1,5 +1,7 @@
 package id.global.event.messaging.runtime.consumer;
 
+import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.*;
+
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.common.annotations.amqp.ExchangeType;
@@ -32,6 +35,8 @@ import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
+import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
+import id.global.event.messaging.runtime.requeue.RetryQueues;
 
 public class AmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
@@ -50,6 +55,8 @@ public class AmqpConsumer {
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
     private final DeliverCallback callback;
+    private final MessageRequeueHandler retryEnqueuer;
+    private final RetryQueues retryQueues;
 
     private String channelId;
 
@@ -62,7 +69,9 @@ public class AmqpConsumer {
             final Object eventHandlerInstance,
             final EventContext eventContext,
             final AmqpProducer producer,
-            final InstanceInfoProvider instanceInfoProvider) {
+            final InstanceInfoProvider instanceInfoProvider,
+            final MessageRequeueHandler retryEnqueuer,
+            final RetryQueues retryQueues) {
 
         this.objectMapper = objectMapper;
         this.methodHandle = methodHandle;
@@ -75,6 +84,8 @@ public class AmqpConsumer {
         this.instanceInfoProvider = instanceInfoProvider;
         this.channelId = UUID.randomUUID().toString();
         this.callback = createDeliverCallback();
+        this.retryEnqueuer = retryEnqueuer;
+        this.retryQueues = retryQueues;
     }
 
     public void initChannel() throws IOException {
@@ -113,11 +124,25 @@ public class AmqpConsumer {
                         .map(bindingKeys -> "[" + String.join(", ", bindingKeys) + "]")
                         .orElse("[]");
                 log.error(String.format("Could not invoke method handler for bindingKey(s) %s", bindingKeysString), throwable);
-                channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
+                handleProcessingFailed(message, channel);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
         };
+    }
+
+    private void handleProcessingFailed(Delivery message, Channel channel) throws IOException {
+        // get retry count from event context
+        int retryCount = eventContext.getRetryCount();
+
+        // TODO move headers..
+        if (retryCount >= retryQueues.getMaxRetryCount()) {
+            channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
+        } else {
+            channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+            // Requeue with backoff
+            retryEnqueuer.enqueueWithBackoff(message, retryCount);
+        }
     }
 
     private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
@@ -146,7 +171,7 @@ public class AmqpConsumer {
         // time to leave of queue
         final long ttl = getTtl();
         if (ttl >= 0) {
-            queueDeclarationArgs.put("x-message-ttl", ttl);
+            queueDeclarationArgs.put(X_MESSAGE_TTL, ttl);
         }
 
         // setup dead letter queue
@@ -154,8 +179,8 @@ public class AmqpConsumer {
         if (!deadLetterQueue.isBlank()) {
             final var deadLetterQueuePrefixed = "dead." + deadLetterQueue;
             declareAndBindDeadLetterQueue(channel, deadLetterQueuePrefixed);
-            queueDeclarationArgs.put("x-dead-letter-routing-key", "dead." + queueName);
-            queueDeclarationArgs.put("x-dead-letter-exchange", deadLetterQueuePrefixed);
+            queueDeclarationArgs.put(X_DEAD_LETTER_ROUTING_KEY, "dead." + queueName);
+            queueDeclarationArgs.put(X_DEAD_LETTER_EXCHANGE, deadLetterQueuePrefixed);
         }
 
         // declare queue & exchange

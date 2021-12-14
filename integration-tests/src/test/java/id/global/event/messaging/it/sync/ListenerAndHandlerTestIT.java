@@ -23,7 +23,7 @@ import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.event.messaging.runtime.Common;
+import id.global.event.messaging.runtime.channel.ChannelKey;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -107,13 +107,13 @@ public class ListenerAndHandlerTestIT {
     @DisplayName("Adding NULL as confirm and return listeners should not be accepted.")
     void testNullListeners() {
         assertThrows(NullPointerException.class,
-                () -> producer.addConfirmListener(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null));
+                () -> producer.addConfirmListener(ChannelKey.create(EXCHANGE, EVENT_QUEUE), null));
 
         assertThrows(NullPointerException.class,
-                () -> producer.addReturnListener(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null));
+                () -> producer.addReturnListener(ChannelKey.create(EXCHANGE, EVENT_QUEUE), null));
 
         assertThrows(NullPointerException.class,
-                () -> producer.addReturnCallback(Common.createChannelKey(EXCHANGE, EVENT_QUEUE), null));
+                () -> producer.addReturnCallback(ChannelKey.create(EXCHANGE, EVENT_QUEUE), null));
     }
 
     @SuppressWarnings("unused")

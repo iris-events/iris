@@ -1,4 +1,4 @@
-package id.global.event.messaging.runtime;
+package id.global.event.messaging.runtime.recorder;
 
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import io.quarkus.arc.runtime.BeanContainer;
