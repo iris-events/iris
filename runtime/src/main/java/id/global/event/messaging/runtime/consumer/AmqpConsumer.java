@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import io.quarkus.security.identity.CurrentIdentityAssociation;
+import io.quarkus.security.identity.SecurityIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -29,8 +31,8 @@ import com.rabbitmq.client.ShutdownSignalException;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.auth.GidAuthenticationRequestContext;
+import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -45,6 +47,9 @@ import io.quarkus.smallrye.jwt.runtime.auth.JsonWebTokenCredential;
 import io.quarkus.smallrye.jwt.runtime.auth.MpJwtValidator;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import id.global.event.messaging.runtime.requeue.RetryQueues;
+
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.CDI;
 
 public class AmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
@@ -131,9 +136,18 @@ public class AmqpConsumer {
                         log.info("JWT found...validating: {}", token);
                         final var jwtToken = new TokenAuthenticationRequest(new JsonWebTokenCredential(token));
                         final var authenticationRequestContext = new GidAuthenticationRequestContext();
-                        final var await = mpJwtValidator.authenticate(jwtToken, authenticationRequestContext).await().atMost(
-                                Duration.ofSeconds(5));
-                        log.info("is anonymous {}", await.isAnonymous());
+                        final SecurityIdentity securityIdentity = mpJwtValidator.authenticate(jwtToken, authenticationRequestContext)
+                                                                     .await()
+                                                                     .atMost(Duration.ofSeconds(5));
+                        Instance<CurrentIdentityAssociation> association = CDI.current().select(CurrentIdentityAssociation.class);
+                        if (!association.isResolvable()) {
+                            log.error(" no idea what to do here");
+                        }else{
+                            association.get().setIdentity(securityIdentity);
+                        }
+
+
+                        log.info("is anonymous {}", securityIdentity.isAnonymous());
                     });
                 }
 
