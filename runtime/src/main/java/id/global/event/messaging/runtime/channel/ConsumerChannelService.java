@@ -10,7 +10,6 @@ import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 @Named("consumerChannelService")
 @ApplicationScoped()
 public class ConsumerChannelService extends AbstractChannelService {
-
     @Inject
     public ConsumerChannelService(ConsumerConnectionProvider connectionProvider, AmqpConfiguration configuration) {
         super(connectionProvider, configuration);

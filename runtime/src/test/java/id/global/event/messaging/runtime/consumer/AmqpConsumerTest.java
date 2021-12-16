@@ -26,6 +26,8 @@ import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
+import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
+import id.global.event.messaging.runtime.requeue.RetryQueues;
 
 public class AmqpConsumerTest {
 
@@ -40,16 +42,20 @@ public class AmqpConsumerTest {
     void consumerMethodHandleShouldCorrectlyInvoke() throws NoSuchMethodException, IllegalAccessException, IOException {
         TestEventHandler handler = new TestEventHandler();
 
-        AmqpConfiguration amqpConfiguration = new AmqpConfiguration();
+        TestChannelService channelService = new TestChannelService();
+        RetryQueues testRetryQueues = getTestRetryQueues();
         AmqpConsumer consumer = new AmqpConsumer(
                 new ObjectMapper(),
                 createHandle(),
-                new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, void.class, TEST_METHOD_NAME),
+                new MethodHandleContext(TestEventHandler.class, MyTestEvent.class, null, TEST_METHOD_NAME),
                 new AmqpContext(EXCHANGE, List.of(), DIRECT, Scope.INTERNAL, false, false, false, 1, -1, ""),
-                new TestChannelService(),
+                channelService,
                 handler,
                 new EventContext(),
-                null, instanceInfoProvider);
+                null,
+                instanceInfoProvider,
+                new MessageRequeueHandler(channelService, testRetryQueues),
+                testRetryQueues);
 
         MyTestEvent event = new MyTestEvent(PAYLOAD);
         byte[] eventAsBytes = new ObjectMapper().writeValueAsBytes(event);
@@ -63,6 +69,16 @@ public class AmqpConsumerTest {
 
         assertThat(handler.isEventReceived(), is(true));
         assertThat(handler.getPayload(), is(PAYLOAD));
+    }
+
+    private RetryQueues getTestRetryQueues() {
+        AmqpConfiguration config = new AmqpConfiguration();
+
+        config.setRetryFactor(3);
+        config.setRetryInitialInterval(200);
+        config.setRetryFactor(1.1);
+
+        return new RetryQueues(config);
     }
 
     private MethodHandle createHandle() throws NoSuchMethodException, IllegalAccessException {

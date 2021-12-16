@@ -35,11 +35,11 @@ import id.global.amqp.parsers.ExchangeParser;
 import id.global.amqp.parsers.ExchangeTypeParser;
 import id.global.amqp.parsers.MessageScopeParser;
 import id.global.amqp.parsers.RoutingKeyParser;
-import id.global.asyncapi.runtime.util.CaseConverter;
 import id.global.common.annotations.amqp.ExchangeType;
-import id.global.event.messaging.runtime.Common;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
+import id.global.event.messaging.runtime.Headers;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.channel.ChannelKey;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.EventAppContext;
@@ -53,13 +53,6 @@ import id.global.event.messaging.runtime.tx.TransactionCallback;
 public class AmqpProducer {
     private static final Logger log = LoggerFactory.getLogger(AmqpProducer.class);
 
-    public static final String HEADER_ORIGIN_SERVICE_ID = "originServiceId";
-    public static final String HEADER_CURRENT_SERVICE_ID = "currentServiceId";
-    public static final String HEADER_INSTANCE_ID = "instanceId";
-    public static final String HEADER_EVENT_TYPE = "eventType";
-    public static final String HEADER_SESSION_ID = "sessionId";
-    public static final String HEADER_USER_ID = "userId";
-    public static final String HEADER_ROUTER = "router";
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
 
@@ -127,9 +120,6 @@ public class AmqpProducer {
         final var exchange = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
         final var amqpBasicProperties = getOrCreateAmqpBasicProperties(exchange, userId);
-
-        final var applicationId = eventAppInfoProvider.getApplicationId();
-        final var messageClassKebabCase = CaseConverter.camelToKebabCase(messageClassSimpleName);
 
         switch (scope) {
             case INTERNAL -> publish(message, exchange, routingKey, amqpBasicProperties, exchangeType);
@@ -224,7 +214,7 @@ public class AmqpProducer {
         try {
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
             synchronized (this.lock) {
-                String channelKey = Common.createChannelKey(exchange, routingKey);
+                String channelKey = ChannelKey.create(exchange, routingKey);
                 Channel channel = channelService.getOrCreateChannelById(channelKey);
                 log.info("publishing event to exchange: {}, routing key: {}, props: {}{", exchange, routingKey, properties);
                 channel.basicPublish(exchange, routingKey, true, properties, bytes);
@@ -263,18 +253,18 @@ public class AmqpProducer {
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
-        headers.put(HEADER_CURRENT_SERVICE_ID, serviceId);
-        headers.put(HEADER_INSTANCE_ID, hostName);
-        headers.put(HEADER_EVENT_TYPE, exchange);
+        headers.put(Headers.CURRENT_SERVICE_ID, serviceId);
+        headers.put(Headers.INSTANCE_ID, hostName);
+        headers.put(Headers.EVENT_TYPE, exchange);
 
         final var builder = basicProperties.builder();
         if (userId != null) {
             // when overriding user header, make sure, to clean possible existing event context properties
             builder.correlationId(correlationIdProvider.getCorrelationId());
-            headers.put(HEADER_ORIGIN_SERVICE_ID, serviceId);
-            headers.remove(HEADER_ROUTER);
-            headers.remove(HEADER_SESSION_ID);
-            headers.put(HEADER_USER_ID, userId);
+            headers.put(Headers.ORIGIN_SERVICE_ID, serviceId);
+            headers.remove(Headers.ROUTER);
+            headers.remove(Headers.SESSION_ID);
+            headers.put(Headers.USER_ID, userId);
         }
 
         return builder.headers(headers).build();
@@ -283,7 +273,7 @@ public class AmqpProducer {
     private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
         return new AMQP.BasicProperties().builder()
                 .correlationId(correlationIdProvider.getCorrelationId())
-                .headers(Map.of(HEADER_ORIGIN_SERVICE_ID, serviceId))
+                .headers(Map.of(Headers.ORIGIN_SERVICE_ID, serviceId))
                 .build();
     }
 

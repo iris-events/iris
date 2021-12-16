@@ -10,11 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import id.global.event.messaging.deployment.scanner.EventAppScanner;
 import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
-import id.global.event.messaging.runtime.ConsumerInitRecorder;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
-import id.global.event.messaging.runtime.EventAppRecorder;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.MethodHandleRecorder;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpBuildConfiguration;
@@ -27,6 +24,13 @@ import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.CorrelationIdProvider;
+import id.global.event.messaging.runtime.recorder.ConsumerInitRecorder;
+import id.global.event.messaging.runtime.recorder.EventAppRecorder;
+import id.global.event.messaging.runtime.recorder.MessageRequeueConsumerRecorder;
+import id.global.event.messaging.runtime.recorder.MethodHandleRecorder;
+import id.global.event.messaging.runtime.requeue.MessageRequeueConsumer;
+import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
+import id.global.event.messaging.runtime.requeue.RetryQueues;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
@@ -78,6 +82,9 @@ class EventMessagingProcessor {
                                 EventContext.class,
                                 AmqpProducer.class,
                                 ConnectionFactoryProvider.class,
+                                MessageRequeueHandler.class,
+                                MessageRequeueConsumer.class,
+                                RetryQueues.class,
                                 CorrelationIdProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
@@ -117,6 +124,19 @@ class EventMessagingProcessor {
         if (!messageHandlerInfoBuildItems.isEmpty()) {
             consumerInitRecorder.initConsumers(beanContainer.getValue());
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Record(ExecutionTime.RUNTIME_INIT)
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void declareMessageRequeueConsumer(final BeanContainerBuildItem beanContainer,
+            MessageRequeueConsumerRecorder messageRequeueConsumerRecorder) {
+        try {
+            messageRequeueConsumerRecorder.registerMessageRequeueConsumer(beanContainer.getValue());
+        } catch (IOException e) {
+            LOG.error("Could not record retry consumer init", e);
+        }
+
     }
 
     @SuppressWarnings("unused")
@@ -170,6 +190,7 @@ class EventMessagingProcessor {
         eventAppRecorder.registerEventAppContext(beanContainer.getValue(), eventAppInfoBuildItems.getEventAppContext());
     }
 
+    @SuppressWarnings("unused")
     @BuildStep
     void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("id.global.common", "globalid-common"));

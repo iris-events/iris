@@ -1,10 +1,10 @@
 package id.global.event.messaging.it;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
-import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_CURRENT_SERVICE_ID;
-import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_EVENT_TYPE;
-import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_INSTANCE_ID;
-import static id.global.event.messaging.runtime.producer.AmqpProducer.HEADER_ORIGIN_SERVICE_ID;
+import static id.global.event.messaging.runtime.Headers.CURRENT_SERVICE_ID;
+import static id.global.event.messaging.runtime.Headers.EVENT_TYPE;
+import static id.global.event.messaging.runtime.Headers.INSTANCE_ID;
+import static id.global.event.messaging.runtime.Headers.ORIGIN_SERVICE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -51,13 +51,13 @@ public class EventAppRecorderIT {
         final var headers = basicProperties.getHeaders();
         assertThat(headers.keySet(),
                 containsInAnyOrder(
-                        HEADER_ORIGIN_SERVICE_ID,
-                        HEADER_CURRENT_SERVICE_ID,
-                        HEADER_INSTANCE_ID,
-                        HEADER_EVENT_TYPE));
-        assertThat(headers.get(HEADER_ORIGIN_SERVICE_ID).toString(), is(APP_ID));
-        assertThat(headers.get(HEADER_CURRENT_SERVICE_ID).toString(), is(APP_ID));
-        assertThat(headers.get(HEADER_EVENT_TYPE).toString(), is(EXCHANGE));
+                        ORIGIN_SERVICE_ID,
+                        CURRENT_SERVICE_ID,
+                        INSTANCE_ID,
+                        EVENT_TYPE));
+        assertThat(headers.get(ORIGIN_SERVICE_ID).toString(), is(APP_ID));
+        assertThat(headers.get(CURRENT_SERVICE_ID).toString(), is(APP_ID));
+        assertThat(headers.get(EVENT_TYPE).toString(), is(EXCHANGE));
     }
 
     @SuppressWarnings("unused")

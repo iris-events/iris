@@ -1,8 +1,9 @@
-package id.global.event.messaging.runtime;
+package id.global.event.messaging.runtime.recorder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.context.EventAppContext;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
