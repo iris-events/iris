@@ -20,8 +20,8 @@ import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 
 import id.global.common.annotations.amqp.Scope;
-import id.global.event.messaging.runtime.TestChannelService;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.TestChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
