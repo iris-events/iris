@@ -8,6 +8,8 @@ public class Headers {
     public static final String SESSION_ID = "sessionId";
     public static final String USER_ID = "userId";
     public static final String ROUTER = "router";
+    public static final String JWT = "jwt";
+    public static final String ANONYMOUS_ID = "anon-id";
 
     public static class QueueDeclarationHeaders {
         public static final String X_MESSAGE_TTL = "x-message-ttl";

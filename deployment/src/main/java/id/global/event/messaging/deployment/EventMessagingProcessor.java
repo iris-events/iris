@@ -12,6 +12,7 @@ import id.global.event.messaging.deployment.scanner.EventAppScanner;
 import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpBuildConfiguration;
@@ -85,7 +86,8 @@ class EventMessagingProcessor {
                                 MessageRequeueHandler.class,
                                 MessageRequeueConsumer.class,
                                 RetryQueues.class,
-                                CorrelationIdProvider.class)
+                                CorrelationIdProvider.class,
+                                GidJwtValidator.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());

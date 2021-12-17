@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -23,7 +24,6 @@ import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import id.global.event.messaging.runtime.requeue.RetryQueues;
-import io.quarkus.smallrye.jwt.runtime.auth.MpJwtValidator;
 
 @ApplicationScoped
 public class AmqpConsumerContainer {
@@ -37,7 +37,7 @@ public class AmqpConsumerContainer {
     private final InstanceInfoProvider instanceInfoProvider;
     private final MessageRequeueHandler retryEnqueuer;
     private final RetryQueues retryQueues;
-    private final MpJwtValidator mpJwtValidator;
+    private final GidJwtValidator jwtValidator;
 
     @Inject
     public AmqpConsumerContainer(
@@ -48,11 +48,11 @@ public class AmqpConsumerContainer {
             final InstanceInfoProvider instanceInfoProvider,
             final MessageRequeueHandler retryEnqueuer,
             final RetryQueues retryQueues,
-            final MpJwtValidator mpJwtValidator) {
+            final GidJwtValidator jwtValidator) {
 
         this.consumerChannelService = consumerChannelService;
         this.instanceInfoProvider = instanceInfoProvider;
-        this.mpJwtValidator = mpJwtValidator;
+        this.jwtValidator = jwtValidator;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -88,6 +88,6 @@ public class AmqpConsumerContainer {
                 instanceInfoProvider,
                 retryEnqueuer,
                 retryQueues,
-                mpJwtValidator));
+                jwtValidator));
     }
 }

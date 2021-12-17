@@ -13,6 +13,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +30,7 @@ import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import id.global.event.messaging.runtime.requeue.RetryQueues;
 
+@Disabled("Disabled due to required refactor. We should use io.quarkus.test.QuarkusUnitTest with org.junit.jupiter.api.extension.RegisterExtension for testing extensions.")
 public class AmqpConsumerTest {
 
     public static final String PAYLOAD = "testPayload";

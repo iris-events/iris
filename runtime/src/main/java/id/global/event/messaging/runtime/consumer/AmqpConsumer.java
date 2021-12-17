@@ -6,7 +6,6 @@ import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import io.quarkus.security.identity.CurrentIdentityAssociation;
-import io.quarkus.security.identity.SecurityIdentity;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.CDI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -31,7 +31,7 @@ import com.rabbitmq.client.ShutdownSignalException;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
-import id.global.event.messaging.runtime.auth.GidAuthenticationRequestContext;
+import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -41,15 +41,12 @@ import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import io.quarkus.arc.Arc;
-import io.quarkus.security.identity.request.TokenAuthenticationRequest;
-import io.quarkus.smallrye.jwt.runtime.auth.JsonWebTokenCredential;
-import io.quarkus.smallrye.jwt.runtime.auth.MpJwtValidator;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import id.global.event.messaging.runtime.requeue.RetryQueues;
-
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
+import io.quarkus.arc.Arc;
+import io.quarkus.security.AuthenticationFailedException;
+import io.quarkus.security.identity.CurrentIdentityAssociation;
+import io.quarkus.security.identity.SecurityIdentity;
 
 public class AmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
@@ -57,7 +54,6 @@ public class AmqpConsumer {
     private static final String FRONTEND_DEAD_LETTER_QUEUE = "dead-letter-frontend";
     public static final String FRONTEND_MESSAGE_EXCHANGE = "frontend";
     private static final String DEAD_LETTER = "dead-letter";
-    protected static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final ObjectMapper objectMapper;
     private final MethodHandle methodHandle;
@@ -68,7 +64,7 @@ public class AmqpConsumer {
     private final EventContext eventContext;
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
-    private final MpJwtValidator mpJwtValidator;
+    private final GidJwtValidator jwtValidator;
     private final DeliverCallback callback;
     private final MessageRequeueHandler retryEnqueuer;
     private final RetryQueues retryQueues;
@@ -87,7 +83,7 @@ public class AmqpConsumer {
             final InstanceInfoProvider instanceInfoProvider,
             final MessageRequeueHandler retryEnqueuer,
             final RetryQueues retryQueues,
-            final MpJwtValidator mpJwtValidator) {
+            final GidJwtValidator jwtValidator) {
 
         this.objectMapper = objectMapper;
         this.methodHandle = methodHandle;
@@ -98,7 +94,7 @@ public class AmqpConsumer {
         this.eventContext = eventContext;
         this.producer = producer;
         this.instanceInfoProvider = instanceInfoProvider;
-        this.mpJwtValidator = mpJwtValidator;
+        this.jwtValidator = jwtValidator;
         this.channelId = UUID.randomUUID().toString();
         this.callback = createDeliverCallback();
         this.retryEnqueuer = retryEnqueuer;
@@ -129,60 +125,71 @@ public class AmqpConsumer {
                 Arc.container().requestContext().activate();
                 final var properties = message.getProperties();
                 this.eventContext.setAmqpBasicProperties(properties);
-                if (mpJwtValidator != null) {
-                    log.info("MpJwtValidator found, trying to validate jwt if present.");
-                    final var bearerToken = getBearerToken();
-                    bearerToken.ifPresent(token -> {
-                        log.info("JWT found...validating: {}", token);
-                        final var jwtToken = new TokenAuthenticationRequest(new JsonWebTokenCredential(token));
-                        final var authenticationRequestContext = new GidAuthenticationRequestContext();
-                        final SecurityIdentity securityIdentity = mpJwtValidator.authenticate(jwtToken, authenticationRequestContext)
-                                                                     .await()
-                                                                     .atMost(Duration.ofSeconds(5));
-                        Instance<CurrentIdentityAssociation> association = CDI.current().select(CurrentIdentityAssociation.class);
-                        if (!association.isResolvable()) {
-                            log.error(" no idea what to do here");
-                        }else{
-                            association.get().setIdentity(securityIdentity);
-                        }
 
-
-                        log.info("is anonymous {}", securityIdentity.isAnonymous());
-                    });
-                }
+                authorizeMessage();
 
                 final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
                 final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
-
                 final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
-
                 final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
                 channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+            } catch (AuthenticationFailedException authenticationFailedException) {
+                handleAuthenticationException(message, channel, authenticationFailedException);
             } catch (Throwable throwable) {
-                final var bindingKeysString = Optional.ofNullable(this.context.getBindingKeys())
-                        .map(bindingKeys -> "[" + String.join(", ", bindingKeys) + "]")
-                        .orElse("[]");
-                log.error(String.format("Could not invoke method handler for bindingKey(s) %s", bindingKeysString), throwable);
-                handleProcessingFailed(message, channel);
+                handleMessageHandlingException(message, channel, throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
         };
     }
 
-    private void handleProcessingFailed(Delivery message, Channel channel) throws IOException {
-        // get retry count from event context
-        int retryCount = eventContext.getRetryCount();
+    private void handleMessageHandlingException(final Delivery message, final Channel channel, final Throwable throwable)
+            throws IOException {
 
-        // TODO move headers..
-        if (retryCount >= retryQueues.getMaxRetryCount()) {
+        final var retryCount = eventContext.getRetryCount();
+        final var maxRetryCount = retryQueues.getMaxRetryCount();
+        final var maxRetriesReached = retryCount >= maxRetryCount;
+
+        final var bindingKeysString = getBindingKeysString();
+        if (maxRetriesReached) {
+            log.error(String.format(
+                    "Could not invoke method handler and max retries (%d) are reached,"
+                            + " message with given binding key(s) is being sent to DLQ. bindingKey(s): %s",
+                    maxRetryCount, bindingKeysString), throwable);
             channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
         } else {
+            log.error(String.format(
+                    "Could not invoke method handler,"
+                            + " message with given binding key(s) is being re-queued. bindingKey(s): %s, retry count: %s",
+                    bindingKeysString, retryCount), throwable);
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-            // Requeue with backoff
             retryEnqueuer.enqueueWithBackoff(message, retryCount);
         }
+    }
+
+    private void handleAuthenticationException(final Delivery message, final Channel channel,
+            final AuthenticationFailedException authenticationFailedException) throws IOException {
+        final var bindingKeysString = getBindingKeysString();
+        log.error(String.format(
+                "Authentication failed, message with given binding keys(s) is being discarded (acknowledged). bindingKey(s): %s",
+                bindingKeysString), authenticationFailedException);
+        channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+    }
+
+    private String getBindingKeysString() {
+        return Optional.ofNullable(this.context.getBindingKeys())
+                .map(bindingKeys -> "[" + String.join(", ", bindingKeys) + "]")
+                .orElse("[]");
+    }
+
+    private void authorizeMessage() {
+        final SecurityIdentity securityIdentity = jwtValidator.authenticate();
+        final Instance<CurrentIdentityAssociation> association = CDI.current().select(CurrentIdentityAssociation.class);
+        if (!association.isResolvable()) {
+            throw new AuthenticationFailedException("JWT identity association not resolvable.");
+        }
+        association.get().setIdentity(securityIdentity);
     }
 
     private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
@@ -372,10 +379,5 @@ public class AmqpConsumer {
         if (exchangeType == ExchangeType.DIRECT && bindingKeys.size() > 1) {
             throw new IllegalArgumentException("Exactly one binding key is required when declaring a direct type exchange.");
         }
-    }
-
-    public Optional<String> getBearerToken() {
-        return Optional.ofNullable(eventContext.getHeaders().get(AUTHORIZATION_HEADER))
-                .map(Object::toString);
     }
 }

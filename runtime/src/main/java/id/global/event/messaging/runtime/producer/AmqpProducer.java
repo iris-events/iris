@@ -36,6 +36,7 @@ import id.global.amqp.parsers.ExchangeTypeParser;
 import id.global.amqp.parsers.MessageScopeParser;
 import id.global.amqp.parsers.RoutingKeyParser;
 import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.Headers;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
@@ -113,13 +114,11 @@ public class AmqpProducer {
                 .ofNullable(message.getClass().getAnnotation(id.global.common.annotations.amqp.Message.class))
                 .orElseThrow(() -> new AmqpSendException("Message annotation is required."));
 
-        final var messageClassSimpleName = message.getClass().getSimpleName();
-
         final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
         final var exchange = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
-        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(exchange, userId);
+        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(exchange, scope, userId);
 
         switch (scope) {
             case INTERNAL -> publish(message, exchange, routingKey, amqpBasicProperties, exchangeType);
@@ -239,23 +238,28 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(String exchange, final String userId) {
+    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(String exchange,
+            final Scope messageScope, final String userId) {
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildAmqpBasicPropertiesWithAdditionalHeaders(basicProperties, serviceId, exchange, userId);
+        return buildAmqpBasicPropertiesWithCustomHeaders(basicProperties, serviceId, exchange, messageScope, userId);
     }
 
-    private AMQP.BasicProperties buildAmqpBasicPropertiesWithAdditionalHeaders(final AMQP.BasicProperties basicProperties,
-            final String serviceId, String exchange, final String userId) {
+    private AMQP.BasicProperties buildAmqpBasicPropertiesWithCustomHeaders(final AMQP.BasicProperties basicProperties,
+            final String serviceId, String exchange, final Scope messageScope, final String userId) {
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(Headers.CURRENT_SERVICE_ID, serviceId);
         headers.put(Headers.INSTANCE_ID, hostName);
         headers.put(Headers.EVENT_TYPE, exchange);
+        if (messageScope != Scope.INTERNAL) {
+            // never propagate JWT when "leaving" backend
+            headers.remove(Headers.JWT);
+        }
 
         final var builder = basicProperties.builder();
         if (userId != null) {
