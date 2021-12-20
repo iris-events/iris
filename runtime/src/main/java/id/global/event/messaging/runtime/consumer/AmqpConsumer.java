@@ -1,6 +1,8 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.*;
+import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_DEAD_LETTER_EXCHANGE;
+import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_DEAD_LETTER_ROUTING_KEY;
+import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_MESSAGE_TTL;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
