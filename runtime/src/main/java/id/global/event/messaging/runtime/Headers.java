@@ -1,12 +1,12 @@
 package id.global.event.messaging.runtime;
 
 public class Headers {
-    public static final String ORIGIN_SERVICE_ID = "origin-service-id";
-    public static final String CURRENT_SERVICE_ID = "current-service-id";
-    public static final String INSTANCE_ID = "instance-id";
-    public static final String EVENT_TYPE = "event-type";
-    public static final String SESSION_ID = "session-id";
-    public static final String USER_ID = "user-id";
+    public static final String ORIGIN_SERVICE_ID = "originServiceId";
+    public static final String CURRENT_SERVICE_ID = "currentServiceId";
+    public static final String INSTANCE_ID = "instanceId";
+    public static final String EVENT_TYPE = "eventType";
+    public static final String SESSION_ID = "sessionId";
+    public static final String USER_ID = "userId";
     public static final String ROUTER = "router";
 
     public static class QueueDeclarationHeaders {
