@@ -17,6 +17,7 @@ import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
@@ -39,8 +40,7 @@ public class MessageRequeueHandler {
         RetryQueue retryQueue = retryQueues.getNextQueue(retryCount);
         String retryQueueName = retryQueue.queueName();
 
-        setOriginHeaders(message);
-        incrementRetryCount(message, retryCount);
+        Delivery newMessage = getMessageWithNewHeaders(message, retryCount);
 
         final Map<String, Object> queueDeclarationArgs = getRequeueDeclarationParams(retryQueue);
 
@@ -48,7 +48,7 @@ public class MessageRequeueHandler {
         channel.queueDeclare(retryQueueName, false, false, true, queueDeclarationArgs);
         channel.queueBind(retryQueueName, RETRY_EXCHANGE, retryQueueName);
 
-        channel.basicPublish(RETRY_EXCHANGE, retryQueueName, message.getProperties(), message.getBody());
+        channel.basicPublish(RETRY_EXCHANGE, retryQueueName, newMessage.getProperties(), newMessage.getBody());
     }
 
     private Map<String, Object> getRequeueDeclarationParams(RetryQueue retryQueue) {
@@ -59,15 +59,33 @@ public class MessageRequeueHandler {
         return queueDeclarationArgs;
     }
 
-    private void setOriginHeaders(Delivery message) {
-        message.getProperties().getHeaders().put(X_ORIGINAL_EXCHANGE,
-                message.getEnvelope().getExchange());
-        message.getProperties().getHeaders().put(X_ORIGINAL_ROUTING_KEY,
-                message.getEnvelope().getRoutingKey());
-    }
+    private Delivery getMessageWithNewHeaders(Delivery message, int retryCount) {
+        retryCount += 1;
+        AMQP.BasicProperties properties = message.getProperties();
+        Map<String, Object> headers = properties.getHeaders();
 
-    private void incrementRetryCount(Delivery message, int retryCount) {
-        retryCount = retryCount + 1;
-        message.getProperties().getHeaders().put(X_RETRY_COUNT, retryCount);
+        Map<String, Object> newHeaders = new HashMap<>(headers);
+        newHeaders.put(X_ORIGINAL_EXCHANGE,
+                message.getEnvelope().getExchange());
+        newHeaders.put(X_ORIGINAL_ROUTING_KEY,
+                message.getEnvelope().getRoutingKey());
+        newHeaders.put(X_RETRY_COUNT, retryCount);
+
+        AMQP.BasicProperties basicProperties = new AMQP.BasicProperties().builder().headers(newHeaders)
+                .appId(properties.getAppId())
+                .correlationId(properties.getCorrelationId())
+                .messageId(properties.getMessageId())
+                .clusterId(properties.getClusterId())
+                .contentEncoding(properties.getContentEncoding())
+                .contentType(properties.getContentType())
+                .deliveryMode(properties.getDeliveryMode())
+                .expiration(properties.getExpiration())
+                .priority(properties.getPriority())
+                .replyTo(properties.getReplyTo())
+                .timestamp(properties.getTimestamp())
+                .type(properties.getType())
+                .build();
+
+        return new Delivery(message.getEnvelope(), basicProperties, message.getBody());
     }
 }
