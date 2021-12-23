@@ -1,6 +1,6 @@
 package id.global.event.messaging.runtime.auth;
 
-import static id.global.event.messaging.runtime.Headers.JWT;
+import static id.global.common.headers.amqp.MessageHeaders.JWT;
 
 import java.util.Optional;
 

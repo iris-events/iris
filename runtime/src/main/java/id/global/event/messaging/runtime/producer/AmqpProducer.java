@@ -1,5 +1,14 @@
 package id.global.event.messaging.runtime.producer;
 
+import static id.global.common.headers.amqp.MessageHeaders.CURRENT_SERVICE_ID;
+import static id.global.common.headers.amqp.MessageHeaders.EVENT_TYPE;
+import static id.global.common.headers.amqp.MessageHeaders.INSTANCE_ID;
+import static id.global.common.headers.amqp.MessageHeaders.JWT;
+import static id.global.common.headers.amqp.MessageHeaders.ORIGIN_SERVICE_ID;
+import static id.global.common.headers.amqp.MessageHeaders.ROUTER;
+import static id.global.common.headers.amqp.MessageHeaders.SESSION_ID;
+import static id.global.common.headers.amqp.MessageHeaders.USER_ID;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -38,7 +47,6 @@ import id.global.amqp.parsers.RoutingKeyParser;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
-import id.global.event.messaging.runtime.Headers;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ChannelKey;
 import id.global.event.messaging.runtime.channel.ChannelService;
@@ -99,7 +107,7 @@ public class AmqpProducer {
      * user.
      *
      * @param message message
-     * @param userId user id
+     * @param userId  user id
      */
     public void send(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
         doSend(message, userId);
@@ -253,22 +261,22 @@ public class AmqpProducer {
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
-        headers.put(Headers.CURRENT_SERVICE_ID, serviceId);
-        headers.put(Headers.INSTANCE_ID, hostName);
-        headers.put(Headers.EVENT_TYPE, exchange);
+        headers.put(CURRENT_SERVICE_ID, serviceId);
+        headers.put(INSTANCE_ID, hostName);
+        headers.put(EVENT_TYPE, exchange);
         if (messageScope != Scope.INTERNAL) {
             // never propagate JWT when "leaving" backend
-            headers.remove(Headers.JWT);
+            headers.remove(JWT);
         }
 
         final var builder = basicProperties.builder();
         if (userId != null) {
             // when overriding user header, make sure, to clean possible existing event context properties
             builder.correlationId(correlationIdProvider.getCorrelationId());
-            headers.put(Headers.ORIGIN_SERVICE_ID, serviceId);
-            headers.remove(Headers.ROUTER);
-            headers.remove(Headers.SESSION_ID);
-            headers.put(Headers.USER_ID, userId);
+            headers.put(ORIGIN_SERVICE_ID, serviceId);
+            headers.remove(ROUTER);
+            headers.remove(SESSION_ID);
+            headers.put(USER_ID, userId);
         }
 
         return builder.headers(headers).build();
@@ -277,7 +285,7 @@ public class AmqpProducer {
     private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
         return new AMQP.BasicProperties().builder()
                 .correlationId(correlationIdProvider.getCorrelationId())
-                .headers(Map.of(Headers.ORIGIN_SERVICE_ID, serviceId))
+                .headers(Map.of(ORIGIN_SERVICE_ID, serviceId))
                 .build();
     }
 
