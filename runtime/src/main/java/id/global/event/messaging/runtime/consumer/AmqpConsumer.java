@@ -3,6 +3,7 @@ package id.global.event.messaging.runtime.consumer;
 import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_DEAD_LETTER_EXCHANGE;
 import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_DEAD_LETTER_ROUTING_KEY;
 import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_MESSAGE_TTL;
+import static java.util.Collections.emptyMap;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
@@ -30,12 +31,14 @@ import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
+import id.global.common.headers.amqp.MessageHeaders;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
+import id.global.event.messaging.runtime.error.ErrorMessage;
 import id.global.event.messaging.runtime.exception.AmqpRuntimeException;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
@@ -51,9 +54,13 @@ import io.quarkus.security.identity.SecurityIdentity;
 public class AmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
     private static final int FRONT_MESSAGE_TTL = 15000;
+    public static final String ERROR_MESSAGE_QUEUE = "error";
+    public static final String ERROR_MESSAGE_EXCHANGE = "error";
     private static final String FRONTEND_DEAD_LETTER_QUEUE = "dead-letter-frontend";
     public static final String FRONTEND_MESSAGE_EXCHANGE = "frontend";
     private static final String DEAD_LETTER = "dead-letter";
+    public static final String AUTHORIZATION_FAILED = "AUTHORIZATION_FAILED";
+    public static final String MESSAGE_PROCESSING_ERROR = "MESSAGE_PROCESSING_ERROR";
 
     private final ObjectMapper objectMapper;
     private final MethodHandle methodHandle;
@@ -120,7 +127,7 @@ public class AmqpConsumer {
         return (consumerTag, message) -> {
             final var currentContextMap = MDC.getCopyOfContextMap();
             MDC.clear();
-            Channel channel = channelService.getOrCreateChannelById(this.channelId);
+            final Channel channel = channelService.getOrCreateChannelById(this.channelId);
             try {
                 Arc.container().requestContext().activate();
                 final var properties = message.getProperties();
@@ -157,6 +164,9 @@ public class AmqpConsumer {
                     "Could not invoke method handler and max retries (%d) are reached,"
                             + " message with given binding key(s) is being sent to DLQ. bindingKey(s): %s",
                     maxRetryCount, bindingKeysString), throwable);
+
+            final var errorMessage = new ErrorMessage(MESSAGE_PROCESSING_ERROR, throwable.getMessage());
+            sendErrorMessage(errorMessage, message, channel);
             channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
         } else {
             log.error(String.format(
@@ -174,6 +184,8 @@ public class AmqpConsumer {
         log.error(String.format(
                 "Authentication failed, message with given binding keys(s) is being discarded (acknowledged). bindingKey(s): %s",
                 bindingKeysString), authenticationFailedException);
+        final var errorMessage = new ErrorMessage(AUTHORIZATION_FAILED, authenticationFailedException.getMessage());
+        sendErrorMessage(errorMessage, message, channel);
         channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
     }
 
@@ -190,6 +202,20 @@ public class AmqpConsumer {
             throw new AuthenticationFailedException("JWT identity association not resolvable.");
         }
         association.get().setIdentity(securityIdentity);
+    }
+
+    private void sendErrorMessage(ErrorMessage message, Delivery consumedMessage, Channel channel) {
+        final var headers = new HashMap<>(eventContext.getHeaders());
+        headers.remove(MessageHeaders.JWT);
+        final var basicProperties = consumedMessage.getProperties().builder()
+                .headers(headers)
+                .build();
+        final var routingKey = consumedMessage.getEnvelope().getRoutingKey();
+        try {
+            channel.basicPublish(ERROR_MESSAGE_EXCHANGE, routingKey, basicProperties, objectMapper.writeValueAsBytes(message));
+        } catch (IOException e) {
+            log.error("Unable to write error message as bytes. Discarding error message. Message: {}", message);
+        }
     }
 
     private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
@@ -233,6 +259,10 @@ public class AmqpConsumer {
         // declare queue & exchange
         declareQueue(channel, consumerOnEveryInstance, queueName, queueDeclarationArgs);
         declareExchange(channel, exchange, exchangeType);
+        // declare error queue & exchange
+        declareErrorQueue(channel);
+        declareErrorExchange(channel);
+        channel.queueBind(ERROR_MESSAGE_QUEUE, ERROR_MESSAGE_EXCHANGE, "*");
 
         // bind queues
         final var bindingKeys = getBindingKeys(exchangeType);
@@ -289,6 +319,26 @@ public class AmqpConsumer {
                 log.error("The new settings of queue was not set, because was not empty! queue={}", queueName, e);
             }
         }
+    }
+
+    private void declareErrorQueue(final Channel channel) throws IOException {
+        try {
+            AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(ERROR_MESSAGE_QUEUE, false, false, false, emptyMap());
+            log.info("queue: {}, consumers: {}, message count: {}", declareOk.getQueue(), declareOk.getConsumerCount(),
+                    declareOk.getMessageCount());
+        } catch (IOException e) {
+            long msgCount = channel.messageCount(ERROR_MESSAGE_QUEUE);
+            if (msgCount <= 0) {
+                channel.queueDelete(ERROR_MESSAGE_QUEUE, false, true);
+                channel.queueDeclare(ERROR_MESSAGE_QUEUE, false, false, false, emptyMap());
+            } else {
+                log.error("The new settings of queue was not set, because was not empty! queue={}", ERROR_MESSAGE_QUEUE, e);
+            }
+        }
+    }
+
+    private void declareErrorExchange(final Channel channel) throws IOException {
+        channel.exchangeDeclare(ERROR_MESSAGE_EXCHANGE, BuiltinExchangeType.TOPIC, true);
     }
 
     private void declareAndBindDeadLetterQueue(final Channel channel, final String deadLetterQueue) throws IOException {

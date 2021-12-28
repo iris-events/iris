@@ -45,9 +45,9 @@ public class GidJwtValidator {
                     .addCredential(jsonWebTokenCredential)
                     .addRoles(jwtPrincipal.getGroups())
                     .addAttribute("quarkus.user", jwtPrincipal).build();
-        } catch (ParseException var3) {
-            log.debug("Authentication failed", var3);
-            throw new AuthenticationFailedException(var3);
+        } catch (ParseException e) {
+            log.error("Authentication failed. Error message: " + e.getMessage(), e);
+            throw new AuthenticationFailedException("Invalid authorization token", e);
         }
     }
 
