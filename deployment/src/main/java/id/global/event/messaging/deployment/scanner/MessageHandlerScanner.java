@@ -24,6 +24,7 @@ import id.global.amqp.parsers.ExchangeTtlParser;
 import id.global.amqp.parsers.MessageScopeParser;
 import id.global.amqp.parsers.QueueAutoDeleteParser;
 import id.global.amqp.parsers.QueueDurableParser;
+import id.global.amqp.parsers.RolesAllowedParser;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
@@ -61,8 +62,6 @@ public class MessageHandlerScanner {
                             .valueOf(messageAnnotation.valueWithDefault(index, EXCHANGE_TYPE_PARAM)
                                     .asString());
 
-                    final var name = messageAnnotation.value("name").asString();
-
                     final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation);
                     final var scope = MessageScopeParser.getFromAnnotationInstance(messageAnnotation, index);
                     final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);
@@ -76,6 +75,8 @@ public class MessageHandlerScanner {
                     final var perInstance = ConsumerPerInstanceParser.getFromAnnotationInstance(messageHandlerAnnotation,
                             index);
                     final var prefetchCount = ConsumerPrefetchCountParser.getFromAnnotationInstance(messageHandlerAnnotation,
+                            index);
+                    final var handlerRolesAllowed = RolesAllowedParser.getFromAnnotationInstance(messageHandlerAnnotation,
                             index);
 
                     return new MessageHandlerInfoBuildItem(
@@ -92,7 +93,8 @@ public class MessageHandlerScanner {
                             perInstance,
                             prefetchCount,
                             ttl,
-                            deadLetter);
+                            deadLetter,
+                            handlerRolesAllowed);
                 });
     }
 

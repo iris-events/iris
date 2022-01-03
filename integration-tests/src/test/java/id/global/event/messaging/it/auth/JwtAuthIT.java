@@ -29,6 +29,7 @@ import com.rabbitmq.client.AMQP;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.auth.jwt.Role;
 import id.global.common.headers.amqp.MessageHeaders;
 import id.global.event.messaging.it.AbstractIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
@@ -38,6 +39,7 @@ import io.quarkus.test.junit.QuarkusTest;
 public class JwtAuthIT extends AbstractIntegrationTest {
 
     public static final String JWT_AUTH_MESSAGE = "jwt-auth-message";
+    public static final String JWT_ROLE_SECURED_HANDLER_MESSAGE = "jwt-role-secured-handler";
 
     @Inject
     JwtTestService service;
@@ -54,12 +56,13 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
         channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_AUTH_MESSAGE);
+        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_ROLE_SECURED_HANDLER_MESSAGE);
     }
 
     @DisplayName("Resolve valid JWT")
     @Test
     void resolveJwt() throws Exception {
-        final var token = TokenUtils.generateTokenString("/Token1.json");
+        final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
                 .headers(Map.of(MessageHeaders.JWT, token))
@@ -74,7 +77,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
     @DisplayName("Throw exception on non parseable JWT")
     @Test
     void nonParseableJwt() throws Exception {
-        final var token = TokenUtils.generateTokenString("/Token1.json");
+        final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var nonParseableToken = token + "some_suffix";
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
@@ -89,11 +92,44 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 
+    @DisplayName("Consume on role protected handler")
+    @Test
+    void roleProtectedHandler() throws Exception {
+        final var token = TokenUtils.generateTokenString("/GroupOwnerToken.json");
+        final var message = new JwtAuthMessage(UUID.randomUUID().toString());
+        final var basicProperties = new AMQP.BasicProperties().builder()
+                .headers(Map.of(MessageHeaders.JWT, token))
+                .build();
+
+        channel.basicPublish(JWT_AUTH_MESSAGE, JWT_AUTH_MESSAGE, basicProperties, objectMapper.writeValueAsBytes(message));
+
+        final var jwtSubject = service.getJwtSubject().get(5, TimeUnit.SECONDS);
+        assertThat(jwtSubject, is("a777fa3d-6ff7-401f-94d0-e708e80619ad"));
+    }
+
+    @DisplayName("Throw exception on missing role")
+    @Test
+    void missingRole() throws Exception {
+        final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
+        final var message = new JwtRoleSecuredHandlerMessage(UUID.randomUUID().toString());
+        final var basicProperties = new AMQP.BasicProperties().builder()
+                .headers(Map.of(MessageHeaders.JWT, token))
+                .build();
+
+        channel.basicPublish(JWT_ROLE_SECURED_HANDLER_MESSAGE, JWT_ROLE_SECURED_HANDLER_MESSAGE, basicProperties,
+                objectMapper.writeValueAsBytes(message));
+
+        final var errorMessage = getErrorResponse(5);
+        assertThat(errorMessage, is(notNullValue()));
+        assertThat(errorMessage.error(), is("FORBIDDEN"));
+        assertThat(errorMessage.message(), is("Role is not allowed"));
+    }
+
     @DisplayName("Throw exception on invalid claim")
     @ParameterizedTest
     @EnumSource(value = TokenUtils.InvalidClaims.class, names = { "EXP", "ISSUER", "SIGNER", "ALG" })
     void expiredToken() throws Exception {
-        final var token = TokenUtils.generateTokenString("/Token1.json", Set.of(TokenUtils.InvalidClaims.EXP));
+        final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json", Set.of(TokenUtils.InvalidClaims.EXP));
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
                 .headers(Map.of(MessageHeaders.JWT, token))
@@ -123,6 +159,11 @@ public class JwtAuthIT extends AbstractIntegrationTest {
             jwtSubCompletableFuture.complete(jsonWebToken.getSubject());
         }
 
+        @MessageHandler(rolesAllowed = { Role.GROUP_OWNER })
+        public void handle(JwtRoleSecuredHandlerMessage message) {
+            jwtSubCompletableFuture.complete(jsonWebToken.getSubject());
+        }
+
         public CompletableFuture<String> getJwtSubject() {
             return jwtSubCompletableFuture;
         }
@@ -130,5 +171,9 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
     @Message(name = JWT_AUTH_MESSAGE)
     public record JwtAuthMessage(String name) {
+    }
+
+    @Message(name = JWT_ROLE_SECURED_HANDLER_MESSAGE)
+    public record JwtRoleSecuredHandlerMessage(String name) {
     }
 }

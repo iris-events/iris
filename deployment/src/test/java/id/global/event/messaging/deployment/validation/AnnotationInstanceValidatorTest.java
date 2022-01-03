@@ -26,6 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.auth.jwt.Role;
 import id.global.event.messaging.BaseIndexingTest;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 
@@ -184,7 +185,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
     private static class DirectEventHandlerService {
 
         @SuppressWarnings("unused")
-        @MessageHandler(rolesAllowed = { "USER" })
+        @MessageHandler(rolesAllowed = { Role.AUTHENTICATED })
         public void handle(ValidDirectEvent event) {
         }
 

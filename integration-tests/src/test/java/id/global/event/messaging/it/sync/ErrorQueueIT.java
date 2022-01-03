@@ -50,7 +50,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     @DisplayName("Throw exception on corrupted message")
     @Test
     void corruptedMessage() throws Exception {
-        final var token = TokenUtils.generateTokenString("/Token1.json");
+        final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new ErrorQueueMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
                 .headers(Map.of(MessageHeaders.JWT, token))

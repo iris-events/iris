@@ -48,6 +48,8 @@ import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import id.global.event.messaging.runtime.requeue.RetryQueues;
 import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
+import io.quarkus.security.ForbiddenException;
+import io.quarkus.security.UnauthorizedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
 import io.quarkus.security.identity.SecurityIdentity;
 
@@ -59,7 +61,9 @@ public class AmqpConsumer {
     private static final String FRONTEND_DEAD_LETTER_QUEUE = "dead-letter-frontend";
     public static final String FRONTEND_MESSAGE_EXCHANGE = "frontend";
     private static final String DEAD_LETTER = "dead-letter";
-    public static final String AUTHORIZATION_FAILED = "AUTHORIZATION_FAILED";
+    public static final String AUTHORIZATION_FAILED_ERROR = "AUTHORIZATION_FAILED";
+    public static final String UNAUTHORIZED_ERROR = "UNAUTHORIZED";
+    public static final String FORBIDDEN_ERROR = "FORBIDDEN";
     public static final String MESSAGE_PROCESSING_ERROR = "MESSAGE_PROCESSING_ERROR";
 
     private final ObjectMapper objectMapper;
@@ -134,15 +138,14 @@ public class AmqpConsumer {
                 this.eventContext.setAmqpBasicProperties(properties);
 
                 authorizeMessage();
-
                 final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
                 final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
                 final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
                 final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
                 channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-            } catch (AuthenticationFailedException authenticationFailedException) {
-                handleAuthenticationException(message, channel, authenticationFailedException);
+            } catch (SecurityException securityException) {
+                handleSecurityException(message, channel, securityException);
             } catch (Throwable throwable) {
                 handleMessageHandlingException(message, channel, throwable);
             } finally {
@@ -178,15 +181,32 @@ public class AmqpConsumer {
         }
     }
 
-    private void handleAuthenticationException(final Delivery message, final Channel channel,
-            final AuthenticationFailedException authenticationFailedException) throws IOException {
+    private void handleSecurityException(final Delivery message, final Channel channel,
+            final SecurityException securityException) throws IOException {
+
+        final var error = getSecurityExceptionError(securityException);
         final var bindingKeysString = getBindingKeysString();
         log.error(String.format(
-                "Authentication failed, message with given binding keys(s) is being discarded (acknowledged). bindingKey(s): %s",
-                bindingKeysString), authenticationFailedException);
-        final var errorMessage = new ErrorMessage(AUTHORIZATION_FAILED, authenticationFailedException.getMessage());
+                "Authentication failed, message with given binding keys(s) is being discarded (acknowledged). error: %s, bindingKey(s): %s",
+                error, bindingKeysString), securityException);
+        final var errorMessage = new ErrorMessage(error, securityException.getMessage());
         sendErrorMessage(errorMessage, message, channel);
         channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+    }
+
+    static String getSecurityExceptionError(SecurityException securityException) {
+        // TODO: change with switch once available as non-preview
+        String error;
+        if (securityException instanceof AuthenticationFailedException) {
+            error = AUTHORIZATION_FAILED_ERROR;
+        } else if (securityException instanceof ForbiddenException) {
+            error = FORBIDDEN_ERROR;
+        } else if (securityException instanceof UnauthorizedException) {
+            error = UNAUTHORIZED_ERROR;
+        } else {
+            error = AUTHORIZATION_FAILED_ERROR;
+        }
+        return error;
     }
 
     private String getBindingKeysString() {
@@ -196,7 +216,7 @@ public class AmqpConsumer {
     }
 
     private void authorizeMessage() {
-        final SecurityIdentity securityIdentity = jwtValidator.authenticate();
+        final SecurityIdentity securityIdentity = jwtValidator.authenticate(this.context.getHandlerRolesAllowed());
         final Instance<CurrentIdentityAssociation> association = CDI.current().select(CurrentIdentityAssociation.class);
         if (!association.isResolvable()) {
             throw new AuthenticationFailedException("JWT identity association not resolvable.");

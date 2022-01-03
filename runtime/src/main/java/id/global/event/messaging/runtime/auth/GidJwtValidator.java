@@ -3,6 +3,7 @@ package id.global.event.messaging.runtime.auth;
 import static id.global.common.headers.amqp.MessageHeaders.JWT;
 
 import java.util.Optional;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -10,8 +11,11 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import id.global.common.auth.jwt.Role;
 import id.global.event.messaging.runtime.context.EventContext;
 import io.quarkus.security.AuthenticationFailedException;
+import io.quarkus.security.ForbiddenException;
+import io.quarkus.security.UnauthorizedException;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.quarkus.smallrye.jwt.runtime.auth.JsonWebTokenCredential;
@@ -30,10 +34,35 @@ public class GidJwtValidator {
         this.parser = parser;
     }
 
-    public SecurityIdentity authenticate() {
+    public SecurityIdentity authenticate(Set<Role> rolesAllowed) {
         final var optionalToken = getToken();
-        return optionalToken.map(this::createSecurityIdentity)
-                .orElse(null);
+        if (optionalToken.isPresent()) {
+            final var token = optionalToken.get();
+            final var securityIdentity = createSecurityIdentity(token);
+            checkRolesAllowed(securityIdentity, rolesAllowed);
+
+            return securityIdentity;
+        }
+
+        if (rolesAllowed.isEmpty()) {
+            return null;
+        }
+
+        throw new UnauthorizedException("Client is not authorized");
+    }
+
+    private void checkRolesAllowed(final SecurityIdentity securityIdentity, final Set<Role> rolesAllowed) {
+        if (rolesAllowed.isEmpty()) {
+            return;
+        }
+
+        final var isAnyRoleAllowed = rolesAllowed.stream()
+                .map(Role::value)
+                .anyMatch(role -> securityIdentity.hasRole(role) || "**".equals(role));
+
+        if (!isAnyRoleAllowed) {
+            throw new ForbiddenException("Role is not allowed");
+        }
     }
 
     private SecurityIdentity createSecurityIdentity(final String jwtToken) {

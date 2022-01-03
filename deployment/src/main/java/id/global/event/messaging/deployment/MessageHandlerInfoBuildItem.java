@@ -1,12 +1,15 @@
 package id.global.event.messaging.deployment;
 
 import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
+import id.global.common.auth.jwt.Role;
 import io.quarkus.builder.item.MultiBuildItem;
 
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
@@ -24,6 +27,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final int prefetchCount;
     private final long ttl;
     private final String deadLetterQueue;
+    private final Set<Role> rolesAllowed;
 
     public MessageHandlerInfoBuildItem(ClassInfo declaringClass,
             Type parameterType,
@@ -38,7 +42,8 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             boolean queuePerInstance,
             int prefetchCount,
             long ttl,
-            String deadLetterQueue) {
+            String deadLetterQueue,
+            Set<Role> rolesAllowed) {
         this.declaringClass = declaringClass;
         this.parameterType = parameterType;
         this.returnType = returnType;
@@ -53,6 +58,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         this.prefetchCount = prefetchCount;
         this.ttl = ttl;
         this.deadLetterQueue = deadLetterQueue;
+        this.rolesAllowed = rolesAllowed;
     }
 
     public ClassInfo getDeclaringClass() {
@@ -111,8 +117,16 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return deadLetterQueue;
     }
 
+    public Set<Role> getRolesAllowed() {
+        return rolesAllowed;
+    }
+
     @Override
     public String toString() {
+        final var rolesJoiner = new StringJoiner(", ", "[", "]");
+        if (rolesAllowed != null) {
+            rolesAllowed.forEach(role -> rolesJoiner.add(role.value()));
+        }
         return "MessageHandlerInfoBuildItem{" +
                 "declaringClass=" + declaringClass +
                 ", parameterType=" + parameterType +
@@ -128,6 +142,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 ", prefetchCount=" + prefetchCount +
                 ", ttl=" + ttl +
                 ", deadLetterQueue='" + deadLetterQueue + '\'' +
+                ", rolesAllowed='" + rolesJoiner + '\'' +
                 '}';
     }
 

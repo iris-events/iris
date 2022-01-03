@@ -167,7 +167,8 @@ class EventMessagingProcessor {
                         col.isQueuePerInstance(),
                         col.getPrefetchCount(),
                         col.getTtl(),
-                        col.getDeadLetterQueue());
+                        col.getDeadLetterQueue(),
+                        col.getRolesAllowed());
 
                 LOG.info("Registering handler. Handler class = " + handlerClass.getName() +
                         " eventClass = " + eventClass.getName() +
