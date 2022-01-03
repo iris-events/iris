@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -46,7 +47,7 @@ public class EventAppRecorderIT {
 
         producer.send(new Event());
 
-        final var basicProperties = service.getEventContext().get();
+        final var basicProperties = service.getEventContext().get(5, TimeUnit.SECONDS);
 
         final var headers = basicProperties.getHeaders();
         assertThat(headers.keySet(),

@@ -76,18 +76,22 @@ public class AmqpConsumerContainer {
 
     public void addConsumer(MethodHandle methodHandle, MethodHandleContext methodHandleContext, AmqpContext amqpContext,
             Object eventHandlerInstance) {
-        consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
-                objectMapper,
+
+        final var deliverCallbackProvider = new DeliverCallbackProvider(objectMapper,
+                producer,
+                amqpContext,
+                eventContext,
+                eventHandlerInstance,
                 methodHandle,
                 methodHandleContext,
-                amqpContext,
-                consumerChannelService,
-                eventHandlerInstance,
-                eventContext,
-                producer,
-                instanceInfoProvider,
                 retryEnqueuer,
                 retryQueues,
-                jwtValidator));
+                jwtValidator);
+
+        consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
+                amqpContext,
+                consumerChannelService,
+                instanceInfoProvider,
+                deliverCallbackProvider));
     }
 }

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -71,7 +72,7 @@ public class MetadataPropagationIT {
 
         producer.send(new Event1());
 
-        final var basicProperties = finalService.getEventContext().get();
+        final var basicProperties = finalService.getEventContext().get(5, TimeUnit.SECONDS);
         assertThat(basicProperties.getCorrelationId(), is(correlationId));
     }
 

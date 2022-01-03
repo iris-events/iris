@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -67,7 +69,7 @@ public class ListenerAndHandlerTestIT {
 
     @Test
     @DisplayName("Publishing message to unknown queue with return listener set, should invoke return callback")
-    void publishToUnknownQueue() throws ExecutionException, InterruptedException {
+    void publishToUnknownQueue() throws ExecutionException, InterruptedException, TimeoutException {
 
         CompletableFuture<String> completedSignal = new CompletableFuture<>();
 
@@ -77,12 +79,12 @@ public class ListenerAndHandlerTestIT {
         assertDoesNotThrow(
                 () -> producer.send(new UnknownQueueEvent(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
 
-        assertThat(completedSignal.get(), is("FAIL"));
+        assertThat(completedSignal.get(5, TimeUnit.SECONDS), is("FAIL"));
     }
 
     @Test
     @DisplayName("Publishing message to known exchange and queue and confirm listener set, should invoke handleAck")
-    void publishInvokeHandleAck() throws ExecutionException, InterruptedException {
+    void publishInvokeHandleAck() throws ExecutionException, InterruptedException, TimeoutException {
 
         CompletableFuture<String> completedSignal = new CompletableFuture<>();
 
@@ -100,7 +102,7 @@ public class ListenerAndHandlerTestIT {
 
         assertDoesNotThrow(() -> producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
 
-        assertThat(completedSignal.get(), is("ACK"));
+        assertThat(completedSignal.get(5, TimeUnit.SECONDS), is("ACK"));
     }
 
     @Test
