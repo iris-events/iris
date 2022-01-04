@@ -1,4 +1,4 @@
-package id.global.event.messaging.runtime;
+package id.global.event.messaging.runtime.connection;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -7,7 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.jupiter.api.Test;
 
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
 
 class ConnectionFactoryProviderTest {
 

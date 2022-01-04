@@ -2,9 +2,12 @@ package id.global.event.messaging.runtime.context;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.StringJoiner;
 
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
+import id.global.common.auth.jwt.Role;
 
 public final class AmqpContext {
     private String name;
@@ -17,6 +20,7 @@ public final class AmqpContext {
     private int prefetch;
     private long ttl;
     private String deadLetterQueue;
+    private Set<Role> handlerRolesAllowed;
 
     public AmqpContext() {
     }
@@ -30,7 +34,8 @@ public final class AmqpContext {
             boolean consumerOnEveryInstance,
             int prefetch,
             long ttl,
-            String deadLetterQueue) {
+            String deadLetterQueue,
+            final Set<Role> handlerRolesAllowed) {
         this.name = name;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -41,6 +46,7 @@ public final class AmqpContext {
         this.prefetch = prefetch;
         this.ttl = ttl;
         this.deadLetterQueue = deadLetterQueue;
+        this.handlerRolesAllowed = handlerRolesAllowed;
     }
 
     public String getName() {
@@ -123,6 +129,14 @@ public final class AmqpContext {
         this.deadLetterQueue = deadLetterQueue;
     }
 
+    public Set<Role> getHandlerRolesAllowed() {
+        return handlerRolesAllowed;
+    }
+
+    public void setHandlerRolesAllowed(final Set<Role> handlerRolesAllowed) {
+        this.handlerRolesAllowed = handlerRolesAllowed;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this)
@@ -139,17 +153,22 @@ public final class AmqpContext {
                 this.consumerOnEveryInstance == that.consumerOnEveryInstance &&
                 this.prefetch == that.prefetch &&
                 this.ttl == that.ttl &&
-                Objects.equals(this.deadLetterQueue, that.deadLetterQueue);
+                Objects.equals(this.deadLetterQueue, that.deadLetterQueue) &&
+                Objects.equals(this.handlerRolesAllowed, that.handlerRolesAllowed);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(name, bindingKeys, exchangeType, scope, durable, autoDelete, consumerOnEveryInstance, prefetch,
-                ttl, deadLetterQueue);
+                ttl, deadLetterQueue, handlerRolesAllowed);
     }
 
     @Override
     public String toString() {
+        final var handlerRolesJoiner = new StringJoiner(", ", "[", "]");
+        if (handlerRolesAllowed != null) {
+            handlerRolesAllowed.forEach(role -> handlerRolesJoiner.add(role.value()));
+        }
         return "AmqpContext[" +
                 "exchange=" + name + ", " +
                 "bindingKeys=" + bindingKeys + ", " +
@@ -160,7 +179,9 @@ public final class AmqpContext {
                 "consumerOnEveryInstance=" + consumerOnEveryInstance + ", " +
                 "prefetch=" + prefetch + ", " +
                 "ttl=" + ttl + ", " +
-                "deadLetterQueue=" + deadLetterQueue + "]";
+                "deadLetterQueue=" + deadLetterQueue + "," +
+                "handlerRolesAllowed=" + handlerRolesJoiner +
+                "]";
     }
 
 }

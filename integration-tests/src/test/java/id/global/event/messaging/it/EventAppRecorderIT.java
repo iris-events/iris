@@ -1,15 +1,16 @@
 package id.global.event.messaging.it;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
-import static id.global.event.messaging.runtime.Headers.CURRENT_SERVICE_ID;
-import static id.global.event.messaging.runtime.Headers.EVENT_TYPE;
-import static id.global.event.messaging.runtime.Headers.INSTANCE_ID;
-import static id.global.event.messaging.runtime.Headers.ORIGIN_SERVICE_ID;
+import static id.global.common.headers.amqp.MessageHeaders.CURRENT_SERVICE_ID;
+import static id.global.common.headers.amqp.MessageHeaders.EVENT_TYPE;
+import static id.global.common.headers.amqp.MessageHeaders.INSTANCE_ID;
+import static id.global.common.headers.amqp.MessageHeaders.ORIGIN_SERVICE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -46,7 +47,7 @@ public class EventAppRecorderIT {
 
         producer.send(new Event());
 
-        final var basicProperties = service.getEventContext().get();
+        final var basicProperties = service.getEventContext().get(5, TimeUnit.SECONDS);
 
         final var headers = basicProperties.getHeaders();
         assertThat(headers.keySet(),

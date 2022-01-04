@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -36,6 +37,7 @@ public class AmqpConsumerContainer {
     private final InstanceInfoProvider instanceInfoProvider;
     private final MessageRequeueHandler retryEnqueuer;
     private final RetryQueues retryQueues;
+    private final GidJwtValidator jwtValidator;
 
     @Inject
     public AmqpConsumerContainer(
@@ -45,10 +47,12 @@ public class AmqpConsumerContainer {
             final AmqpProducer producer,
             final InstanceInfoProvider instanceInfoProvider,
             final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues) {
+            final RetryQueues retryQueues,
+            final GidJwtValidator jwtValidator) {
 
         this.consumerChannelService = consumerChannelService;
         this.instanceInfoProvider = instanceInfoProvider;
+        this.jwtValidator = jwtValidator;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -72,17 +76,22 @@ public class AmqpConsumerContainer {
 
     public void addConsumer(MethodHandle methodHandle, MethodHandleContext methodHandleContext, AmqpContext amqpContext,
             Object eventHandlerInstance) {
-        consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
-                objectMapper,
+
+        final var deliverCallbackProvider = new DeliverCallbackProvider(objectMapper,
+                producer,
+                amqpContext,
+                eventContext,
+                eventHandlerInstance,
                 methodHandle,
                 methodHandleContext,
+                retryEnqueuer,
+                retryQueues,
+                jwtValidator);
+
+        consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
                 amqpContext,
                 consumerChannelService,
-                eventHandlerInstance,
-                eventContext,
-                producer,
                 instanceInfoProvider,
-                retryEnqueuer,
-                retryQueues));
+                deliverCallbackProvider));
     }
 }

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.contains;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -56,8 +57,8 @@ public class TopicTestIT {
         producer.send(l3);
         producer.send(l4);
 
-        internalLoggingServiceA.getCompletionSignal().get();
-        internalLoggingServiceB.getCompletionSignal().get();
+        internalLoggingServiceA.getCompletionSignal().get(5, TimeUnit.SECONDS);
+        internalLoggingServiceB.getCompletionSignal().get(5, TimeUnit.SECONDS);
 
         assertThat(internalLoggingServiceA.getEvents(),
                 contains("Quick orange fox", "Lazy orange rabbit"));

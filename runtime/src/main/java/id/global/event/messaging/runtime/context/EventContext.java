@@ -1,7 +1,7 @@
 package id.global.event.messaging.runtime.context;
 
-import static id.global.event.messaging.runtime.Headers.SESSION_ID;
-import static id.global.event.messaging.runtime.Headers.USER_ID;
+import static id.global.common.headers.amqp.MessageHeaders.SESSION_ID;
+import static id.global.common.headers.amqp.MessageHeaders.USER_ID;
 
 import java.util.Collections;
 import java.util.Map;
