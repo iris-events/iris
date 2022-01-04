@@ -17,6 +17,7 @@ import id.global.common.annotations.amqp.GlobalIdGenerated;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
+import id.global.common.auth.jwt.Role;
 
 @EventApp(info = @Info(title = EventHandlersApp.TITLE, version = EventHandlersApp.VERSION))
 public class EventHandlersApp {
@@ -27,7 +28,7 @@ public class EventHandlersApp {
     public static final String ID = "EventHandlersAppTest";
 
     @SuppressWarnings("unused")
-    @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = { "admin", "user" })
+    @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = { Role.ADMIN_REWARD, Role.AUTHENTICATED })
     public void handleEventV1(TestEventV1 event) {
         LOG.info("Handle event: " + event);
     }
@@ -81,7 +82,7 @@ public class EventHandlersApp {
         LOG.info("Handling event with map payload");
     }
 
-    @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { "user", "guest" })
+    @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD, Role.ADMIN_MERCHANT })
     public record TestEventV1(int id, String status, User user) {
     }
 

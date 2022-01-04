@@ -1,22 +1,40 @@
 package id.global.amqp.parsers;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
+import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.auth.jwt.Role;
 
 public class RolesAllowedParser {
-    private static final String MESSAGE_HANDLER_ROLES_ALLOWED_PARAM = "rolesAllowed";
+    private static final String ROLES_ALLOWED_PARAM = "rolesAllowed";
 
-    public static String[] getFromAnnotationClass(MessageHandler messageHandler) {
-        return messageHandler.rolesAllowed();
+    public static Set<Role> getFromHandlerAnnotationClass(MessageHandler messageHandler) {
+        final var rolesAllowed = messageHandler.rolesAllowed();
+        return new HashSet<>(Arrays.asList(rolesAllowed));
     }
 
-    public static String[] getFromAnnotationInstance(final AnnotationInstance annotation, IndexView index) {
-        return annotation.valueWithDefault(index, MESSAGE_HANDLER_ROLES_ALLOWED_PARAM).asStringArray();
+    public static Set<Role> getFromMessageAnnotationClass(Message message) {
+        final var rolesAllowed = message.rolesAllowed();
+        return new HashSet<>(Arrays.asList(rolesAllowed));
+    }
+
+    public static Set<Role> getFromAnnotationInstance(final AnnotationInstance annotation, IndexView index) {
+        return Arrays.stream(annotation.valueWithDefault(index, ROLES_ALLOWED_PARAM).asEnumArray())
+                .map(Role::valueOf)
+                .collect(Collectors.toSet());
     }
 
     public static String getFromAnnotationInstanceAsCsv(final AnnotationInstance annotation, IndexView index) {
-        return String.join(",", getFromAnnotationInstance(annotation, index));
+        return getFromAnnotationInstance(annotation, index)
+                .stream()
+                .map(Role::value)
+                .collect(Collectors.joining(","));
     }
 }

@@ -1,9 +1,12 @@
 package id.global.asyncapi.runtime.util;
 
+import java.util.Set;
+
 import id.global.asyncapi.runtime.io.channel.operation.OperationConstant;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.asyncapi.runtime.scanner.model.ChannelInfo;
+import id.global.common.auth.jwt.Role;
 
 public class ChannelInfoGenerator {
 
@@ -12,7 +15,7 @@ public class ChannelInfoGenerator {
             final String bindingKeysCsv,
             final String eventClassSimpleName,
             final ExchangeType exchangeType,
-            final String[] rolesAllowed,
+            final Set<Role> rolesAllowed,
             final String deadLetterQueue,
             final Integer ttl) {
 
@@ -27,7 +30,7 @@ public class ChannelInfoGenerator {
             final ExchangeType exchangeType,
             final boolean durable,
             final boolean autodelete,
-            final String[] rolesAllowed,
+            final Set<Role> rolesAllowed,
             final String deadLetterQueue,
             final Integer ttl) {
 

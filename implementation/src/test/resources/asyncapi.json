@@ -26,8 +26,8 @@
                 "description": "Allowed roles for this message. Default is empty",
                 "type": "array",
                 "value": [
-                  "admin",
-                  "user"
+                  "AUTHENTICATED",
+                  "admin.reward"
                 ]
               },
               "x-dead-letter": {

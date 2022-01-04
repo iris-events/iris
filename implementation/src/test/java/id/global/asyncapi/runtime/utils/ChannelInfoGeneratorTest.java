@@ -1,5 +1,6 @@
 package id.global.asyncapi.runtime.utils;
 
+import static java.util.Collections.emptySet;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -7,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Collections;
 
 import org.junit.Test;
 
@@ -27,7 +30,7 @@ public class ChannelInfoGeneratorTest {
         final var exchangeType = ExchangeType.DIRECT;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
-                .generateSubscribeChannelInfo(exchange, queue, eventClass, exchangeType, new String[0], deadLetterQueue, ttl);
+                .generateSubscribeChannelInfo(exchange, queue, eventClass, exchangeType, emptySet(), deadLetterQueue, ttl);
 
         assertNotNull(channelInfo);
         assertEquals(eventClass, channelInfo.getEventKey());
@@ -57,7 +60,7 @@ public class ChannelInfoGeneratorTest {
         final var exchangeType = ExchangeType.DIRECT;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
-                .generateSubscribeChannelInfo(exchange, queueName, eventClass, exchangeType, new String[0], deadLetterQueue,
+                .generateSubscribeChannelInfo(exchange, queueName, eventClass, exchangeType, emptySet(), deadLetterQueue,
                         ttl);
 
         assertThat(channelInfo.getBindingsInfo().getQueue(), is(queueName));
