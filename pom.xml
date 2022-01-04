@@ -27,7 +27,7 @@
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
         <version.maven-compat>3.8.1</version.maven-compat>
         <version.maven-resolver-api>1.7.2</version.maven-resolver-api>
-        <version.globalid-common>1.0.18</version.globalid-common>
+        <version.globalid-common>1.0.19</version.globalid-common>
         <version.maven>3.8.3</version.maven>
         <version.maven-plugin-annotations>3.6.1</version.maven-plugin-annotations>
         <version.maven-project>2.2.1</version.maven-project>
