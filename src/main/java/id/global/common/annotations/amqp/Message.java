@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import id.global.common.auth.jwt.Role;
+
 /**
  * Amqp producible event. Events annotated with this annotation should be used as a parameter in an Amqp producer send method.
  */
@@ -37,7 +39,7 @@ public @interface Message {
     /**
      * Defines allowed roles to produce this event
      */
-    String[] rolesAllowed() default {};
+    Role[] rolesAllowed() default {};
 
     /**
      * Whether the event is an internal system event or an external communication event

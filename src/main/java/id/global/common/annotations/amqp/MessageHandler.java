@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import id.global.common.auth.jwt.Role;
+
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
@@ -49,7 +51,7 @@ public @interface MessageHandler {
     /**
      * Defines allowed roles to use this event handler
      */
-    String[] rolesAllowed() default {};
+    Role[] rolesAllowed() default {};
 
     /**
      * Defines consumer per service instance, in case there are multiple replicas / pods of same service running
