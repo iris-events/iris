@@ -14,10 +14,10 @@
   <name>Event Messaging - Parent</name>
   <properties>
     <rabbit.amqp-client.version>5.13.1</rabbit.amqp-client.version>
-    <smallrye.asyncapi.version>1.0.15-SNAPSHOT</smallrye.asyncapi.version>
+    <smallrye.asyncapi.version>1.0.16</smallrye.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
     <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
-    <globalid-common.version>1.0.20-SNAPSHOT</globalid-common.version>
+    <globalid-common.version>1.0.20</globalid-common.version>
     <version.quarkiverse.rabbitmqclient>0.4.1.Final</version.quarkiverse.rabbitmqclient>
 
   </properties>
