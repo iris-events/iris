@@ -32,7 +32,6 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
 
     @Override
     public void validate(final AnnotationInstance annotationInstance, IndexView index) {
-        super.validate(annotationInstance, index);
         validateBindingKeysValidity(annotationInstance);
         validateMethodReturnType(annotationInstance);
     }
