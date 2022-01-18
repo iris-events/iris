@@ -28,6 +28,15 @@ public class MethodHandleRecorder {
                         eventHandlerInstance);
     }
 
+    public void registerFrontendCallback(final BeanContainer beanContainer, MethodHandleContext methodHandleContext,
+            AmqpContext amqpContext) throws NoSuchMethodException, IllegalAccessException, IOException {
+
+        Object eventHandlerInstance = beanContainer.instance(methodHandleContext.getHandlerClass());
+        beanContainer.instance(AmqpConsumerContainer.class)
+                .addFrontendCallback(createMethodHandle(methodHandleContext), methodHandleContext, amqpContext, eventHandlerInstance);
+
+    }
+
     private MethodHandle createMethodHandle(MethodHandleContext methodHandleContext)
             throws NoSuchMethodException, IllegalAccessException {
 

@@ -3,6 +3,7 @@ package id.global.event.messaging.runtime.consumer;
 import java.lang.invoke.MethodHandle;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -38,6 +39,7 @@ public class AmqpConsumerContainer {
     private final MessageRequeueHandler retryEnqueuer;
     private final RetryQueues retryQueues;
     private final GidJwtValidator jwtValidator;
+    private final FrontendAmqpConsumer frontendAmqpConsumer;
 
     @Inject
     public AmqpConsumerContainer(
@@ -48,7 +50,8 @@ public class AmqpConsumerContainer {
             final InstanceInfoProvider instanceInfoProvider,
             final MessageRequeueHandler retryEnqueuer,
             final RetryQueues retryQueues,
-            final GidJwtValidator jwtValidator) {
+            final GidJwtValidator jwtValidator,
+            final FrontendAmqpConsumer frontendAmqpConsumer) {
 
         this.consumerChannelService = consumerChannelService;
         this.instanceInfoProvider = instanceInfoProvider;
@@ -59,6 +62,7 @@ public class AmqpConsumerContainer {
         this.producer = producer;
         this.retryEnqueuer = retryEnqueuer;
         this.retryQueues = retryQueues;
+        this.frontendAmqpConsumer = frontendAmqpConsumer;
     }
 
     public void initConsumers() {
@@ -93,5 +97,27 @@ public class AmqpConsumerContainer {
                 consumerChannelService,
                 instanceInfoProvider,
                 deliverCallbackProvider));
+    }
+
+    public void addFrontendCallback(MethodHandle methodHandle, MethodHandleContext methodHandleContext,
+            AmqpContext amqpContext, Object eventHandlerInstance) {
+
+        DeliverCallbackProvider deliverCallbackProvider = new DeliverCallbackProvider(
+                objectMapper,
+                producer,
+                amqpContext,
+                eventContext,
+                eventHandlerInstance,
+                methodHandle,
+                methodHandleContext,
+                retryEnqueuer,
+                retryQueues,
+                jwtValidator);
+
+        frontendAmqpConsumer.addDeliverCallbackProvider(getFrontendRoutingKey(amqpContext), deliverCallbackProvider);
+    }
+
+    private String getFrontendRoutingKey(AmqpContext amqpContext) {
+        return Optional.ofNullable(amqpContext.getBindingKeys()).map(strings -> strings.get(0)).orElse(amqpContext.getName());
     }
 }
