@@ -2,7 +2,8 @@ package id.global.event.messaging.deployment.validation;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
-import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.EXCHANGE_PARAM;
+import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.DEAD_LETTER_PARAM;
+import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.NAME_PARAM;
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY_PARAM;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
@@ -167,7 +168,8 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
         private static Stream<Arguments> validateMessageParamsAreNotKebabCase() {
             return Stream.of(
                     Arguments.of(CamelCaseDirectEvent.class, Set.of(ROUTING_KEY_PARAM)),
-                    Arguments.of(NonKebabExchangeTopicEvent.class, Set.of(EXCHANGE_PARAM)));
+                    Arguments.of(NonKebabExchangeTopicEvent.class, Set.of(NAME_PARAM)),
+                    Arguments.of(NonKebabDeadLetterEvent.class, Set.of(DEAD_LETTER_PARAM)));
         }
     }
 
@@ -248,7 +250,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     }
 
-    @Message(name = "kebab-case-queue", routingKey = "kebab-case-queue", exchangeType = DIRECT)
+    @Message(name = "kebab-case-queue", routingKey = "kebab-case-queue", exchangeType = DIRECT, deadLetter = "valid-dead-letter")
     public record ValidDirectEvent() {
     }
 
@@ -264,9 +266,12 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
     public record NonKebabExchangeTopicEvent() {
     }
 
+    @Message(name = "kebab-case-queue", deadLetter = "nonKebabCaseDeadLetter")
+    public record NonKebabDeadLetterEvent() {
+    }
+
     @Message(exchangeType = ExchangeType.DIRECT, name = "direct-exchange", routingKey = "direct-queue-forwarded-event")
     public record ForwardedEvent() {
-
     }
 
     public record ForwardedEventWithoutAnnotation() {
