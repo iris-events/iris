@@ -8,6 +8,7 @@ import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.deployment.scanner.EventAppScanner;
 import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
@@ -20,6 +21,7 @@ import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
+import id.global.event.messaging.runtime.consumer.FrontendAmqpConsumer;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
@@ -87,7 +89,8 @@ class EventMessagingProcessor {
                                 MessageRequeueConsumer.class,
                                 RetryQueues.class,
                                 CorrelationIdProvider.class,
-                                GidJwtValidator.class)
+                                GidJwtValidator.class,
+                                FrontendAmqpConsumer.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
@@ -138,7 +141,6 @@ class EventMessagingProcessor {
         } catch (IOException e) {
             LOG.error("Could not record retry consumer init", e);
         }
-
     }
 
     @SuppressWarnings("unused")
@@ -177,7 +179,11 @@ class EventMessagingProcessor {
                     LOG.info("we have reply event: {}", returnEventClass);
                 }
 
-                methodHandleRecorder.registerConsumer(beanContainer.getValue(), methodHandleContext, amqpContext);
+                if (col.getScope() != Scope.FRONTEND) {
+                    methodHandleRecorder.registerConsumer(beanContainer.getValue(), methodHandleContext, amqpContext);
+                } else {
+                    methodHandleRecorder.registerFrontendCallback(beanContainer.getValue(), methodHandleContext, amqpContext);
+                }
 
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IOException e) {
                 LOG.error("Could not record method handle", e);

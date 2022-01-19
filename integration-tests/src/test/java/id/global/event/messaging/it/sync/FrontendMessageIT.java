@@ -34,6 +34,7 @@ public class FrontendMessageIT {
 
     public static final String FRONTEND_REQUEST_EVENT_NAME = "frontend-request-event";
     public static final String FRONTEND_REQUEST_DIRECT_EVENT_NAME = "frontend-request-direct-event";
+    public static final String UNREGISTERED_FRONTEND_REQUEST = "unregistered-request";
 
     @Inject
     HandlerService service;
@@ -62,6 +63,13 @@ public class FrontendMessageIT {
                 FRONTEND_REQUEST_EVENT_NAME,
                 basicProperties,
                 writeValueAsBytes(event));
+
+        // should not disrupt, there is no binding
+        channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
+                UNREGISTERED_FRONTEND_REQUEST,
+                basicProperties,
+                writeValueAsBytes(new UnregisteredFrontendEvent("unregistered", "data"))
+        );
 
         channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
                 FRONTEND_REQUEST_DIRECT_EVENT_NAME,
@@ -111,6 +119,9 @@ public class FrontendMessageIT {
      */
     @Message(name = FRONTEND_REQUEST_DIRECT_EVENT_NAME, scope = Scope.FRONTEND, exchangeType = ExchangeType.DIRECT)
     public record FrontendDirectEvent(String name, Long age) {
+    }
+
+    public record UnregisteredFrontendEvent(String name, String data) {
     }
 
     private byte[] writeValueAsBytes(Object value) throws RuntimeException {

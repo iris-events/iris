@@ -31,7 +31,7 @@ public abstract class AbstractChannelService implements ChannelService {
 
     @Override
     public Channel getOrCreateChannelById(String channelId) throws IOException {
-        Channel channel = channelMap.computeIfAbsent(channelId, this::createChanel);
+        Channel channel = channelMap.computeIfAbsent(channelId, this::createChannel);
         if (channel == null) {
             throw new AmqpConnectionException("Could not create channel.");
         }
@@ -51,7 +51,7 @@ public abstract class AbstractChannelService implements ChannelService {
         channelMap.remove(oldChannelId);
     }
 
-    private Channel createChanel(String channelId) throws RuntimeException {
+    private Channel createChannel(String channelId) throws RuntimeException {
         try {
             Channel channel = connectionProvider.getConnection().createChannel();
 
