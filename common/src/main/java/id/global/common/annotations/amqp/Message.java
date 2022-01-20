@@ -55,4 +55,9 @@ public @interface Message {
      * Dead letter queue definition.
      */
     String deadLetter() default "dead-letter";
+
+    /**
+     * Defines the optional response message type. Applies only to the asyncapi definition.
+     */
+    String response() default "";
 }
