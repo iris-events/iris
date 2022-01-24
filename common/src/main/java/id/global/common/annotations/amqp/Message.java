@@ -55,4 +55,11 @@ public @interface Message {
      * Dead letter queue definition.
      */
     String deadLetter() default "dead-letter";
+
+    /**
+     * Defines the optional response message type. Applies only to the asyncapi definition. Response class must also be
+     * annotated
+     * with the @see id.global.common.annotations.amqp.Message annotation
+     */
+    Class<?> response() default Void.class;
 }
