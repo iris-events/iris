@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import id.global.common.annotations.amqp.Scope;
-import id.global.event.messaging.deployment.scanner.EventAppScanner;
 import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
@@ -23,6 +22,7 @@ import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
 import id.global.event.messaging.runtime.consumer.FrontendAmqpConsumer;
 import id.global.event.messaging.runtime.context.AmqpContext;
+import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -94,15 +94,6 @@ class EventMessagingProcessor {
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
-    }
-
-    @SuppressWarnings("unused")
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
-    EventAppInfoBuildItem scanForEventApp(final CombinedIndexBuildItem index, final ApplicationInfoBuildItem appInfoBuildItem) {
-        final var eventAppScanner = new EventAppScanner(index.getIndex(), appInfoBuildItem.getName());
-        return new EventAppInfoBuildItem(eventAppScanner.findEventAppContext().orElseThrow(() -> {
-            throw new EventAppMissingException("EventApp annotation with basic info missing");
-        }));
     }
 
     @SuppressWarnings("unused")
@@ -194,9 +185,10 @@ class EventMessagingProcessor {
     @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void provideEventAppContext(final BeanContainerBuildItem beanContainer, EventAppInfoBuildItem eventAppInfoBuildItems,
+    void provideEventAppContext(final BeanContainerBuildItem beanContainer, ApplicationInfoBuildItem applicationInfoBuildItem,
             EventAppRecorder eventAppRecorder) {
-        eventAppRecorder.registerEventAppContext(beanContainer.getValue(), eventAppInfoBuildItems.getEventAppContext());
+        eventAppRecorder.registerEventAppContext(beanContainer.getValue(), new EventAppContext(
+                applicationInfoBuildItem.getName()));
     }
 
     @SuppressWarnings("unused")

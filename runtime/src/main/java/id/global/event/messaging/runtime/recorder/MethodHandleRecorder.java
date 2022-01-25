@@ -33,7 +33,8 @@ public class MethodHandleRecorder {
 
         Object eventHandlerInstance = beanContainer.instance(methodHandleContext.getHandlerClass());
         beanContainer.instance(AmqpConsumerContainer.class)
-                .addFrontendCallback(createMethodHandle(methodHandleContext), methodHandleContext, amqpContext, eventHandlerInstance);
+                .addFrontendCallback(createMethodHandle(methodHandleContext), methodHandleContext, amqpContext,
+                        eventHandlerInstance);
 
     }
 
