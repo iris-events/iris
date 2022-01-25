@@ -1,12 +1,11 @@
 package id.global.event.messaging.runtime.exception;
 
-public class AmqpSendException extends Exception {
-
+public class AmqpSendException extends RuntimeException {
     public AmqpSendException(String message) {
         super(message);
     }
 
-    public AmqpSendException(String message, Throwable cause) {
+    public AmqpSendException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

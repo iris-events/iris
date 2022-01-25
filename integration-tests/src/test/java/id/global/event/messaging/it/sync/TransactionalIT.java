@@ -30,7 +30,6 @@ import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
-import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.tx.TransactionCallback;
 import io.quarkus.test.junit.QuarkusTest;
@@ -161,7 +160,7 @@ public class TransactionalIT {
                 cause = cause.getCause();
             }
 
-            Optional<Throwable> optionalThrowable = causes.stream().filter(c -> c instanceof AmqpTransactionRuntimeException)
+            Optional<Throwable> optionalThrowable = causes.stream().filter(c -> c instanceof AmqpTransactionException)
                     .findFirst();
 
             assertThat(optionalThrowable.isPresent(), is(true));
