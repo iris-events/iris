@@ -1,12 +1,11 @@
 package id.global.event.messaging.runtime.exception;
 
-public class AmqpTransactionException extends Exception {
-
+public class AmqpTransactionException extends RuntimeException {
     public AmqpTransactionException(String message) {
         super(message);
     }
 
-    public AmqpTransactionException(String message, Throwable cause) {
+    public AmqpTransactionException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

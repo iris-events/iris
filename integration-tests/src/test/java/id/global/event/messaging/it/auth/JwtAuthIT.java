@@ -32,6 +32,7 @@ import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.auth.jwt.Role;
 import id.global.common.headers.amqp.MessageHeaders;
 import id.global.event.messaging.it.AbstractIntegrationTest;
+import id.global.event.messaging.runtime.api.error.MessagingError;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -55,8 +56,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         channel = connection.createChannel(ThreadLocalRandom.current().nextInt(0, 1000));
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
-        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_AUTH_MESSAGE);
-        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_ROLE_SECURED_HANDLER_MESSAGE);
+        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_AUTH_MESSAGE + ".error");
+        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_ROLE_SECURED_HANDLER_MESSAGE + ".error");
     }
 
     @DisplayName("Resolve valid JWT")
@@ -88,7 +89,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.error(), is("AUTHORIZATION_FAILED"));
+        assertThat(errorMessage.name(), is(MessagingError.ERR_AUTHORIZATION_FAILED.getName()));
         assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 
@@ -121,7 +122,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.error(), is("FORBIDDEN"));
+        assertThat(errorMessage.name(), is(MessagingError.ERR_FORBIDDEN.name()));
         assertThat(errorMessage.message(), is("Role is not allowed"));
     }
 
@@ -139,7 +140,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.error(), is("AUTHORIZATION_FAILED"));
+        assertThat(errorMessage.name(), is(MessagingError.ERR_AUTHORIZATION_FAILED.name()));
         assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 
