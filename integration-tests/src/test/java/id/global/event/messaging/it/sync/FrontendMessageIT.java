@@ -68,8 +68,7 @@ public class FrontendMessageIT {
         channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
                 UNREGISTERED_FRONTEND_REQUEST,
                 basicProperties,
-                writeValueAsBytes(new UnregisteredFrontendEvent("unregistered", "data"))
-        );
+                writeValueAsBytes(new UnregisteredFrontendEvent("unregistered", "data")));
 
         channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
                 FRONTEND_REQUEST_DIRECT_EVENT_NAME,

@@ -94,7 +94,8 @@ public class FrontendAmqpConsumer {
 
             DeliverCallback deliverCallback = deliverCallbackMap.get(msgRoutingKey);
             if (deliverCallback == null) {
-                log.warn(String.format("No handler registered for frontend message with routingKey = %s, NACK-ing message", msgRoutingKey));
+                log.warn(String.format("No handler registered for frontend message with routingKey = %s, NACK-ing message",
+                        msgRoutingKey));
                 channelService.getOrCreateChannelById(channelId)
                         .basicNack(message.getEnvelope().getDeliveryTag(), false, false);
             } else {
