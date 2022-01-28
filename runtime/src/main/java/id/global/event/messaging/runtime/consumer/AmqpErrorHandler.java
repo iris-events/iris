@@ -4,6 +4,7 @@ import static id.global.common.headers.amqp.MessageHeaders.EVENT_TYPE;
 import static id.global.event.messaging.runtime.consumer.AmqpConsumer.ERROR_MESSAGE_EXCHANGE;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -27,7 +28,6 @@ import id.global.event.messaging.runtime.error.ErrorMessage;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.event.messaging.runtime.requeue.RetryQueues;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -40,20 +40,17 @@ public class AmqpErrorHandler {
     private final AmqpContext amqpContext;
     private final EventContext eventContext;
     private final MessageRequeueHandler retryEnqueuer;
-    private final RetryQueues retryQueues;
 
     public AmqpErrorHandler(
             final ObjectMapper objectMapper,
             final AmqpContext amqpContext,
             final EventContext eventContext,
-            final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues) {
+            final MessageRequeueHandler retryEnqueuer) {
 
         this.objectMapper = objectMapper;
         this.amqpContext = amqpContext;
         this.eventContext = eventContext;
         this.retryEnqueuer = retryEnqueuer;
-        this.retryQueues = retryQueues;
     }
 
     public void handleException(final Delivery message, final Channel channel, final Throwable throwable) {
@@ -76,7 +73,7 @@ public class AmqpErrorHandler {
             }
         } catch (IOException exception) {
             log.error("IOException encountered while handling error. Handled message will be requeued.", exception);
-            throw new RuntimeException(exception);
+            throw new UncheckedIOException(exception);
         }
     }
 
@@ -108,31 +105,9 @@ public class AmqpErrorHandler {
 
     private void handleServerException(final IMessagingError messageError, final Delivery message, final Channel channel,
             boolean shouldNotifyFrontend, final Throwable throwable) throws IOException {
-
-        final var retryCount = eventContext.getRetryCount();
-        final var maxRetryCount = retryQueues.getMaxRetryCount();
-        final var maxRetriesReached = retryCount >= maxRetryCount;
-
-        final var bindingKeysString = getBindingKeysString();
-        if (maxRetriesReached) {
-            log.error(String.format(
-                    "Could not invoke method handler and max retries (%d) are reached,"
-                            + " message with given binding key(s) is being sent to DLQ. bindingKey(s): %s",
-                    maxRetryCount, bindingKeysString), throwable);
-
-            if (shouldNotifyFrontend) {
-                final var errorMessage = new ErrorMessage(messageError, throwable.getMessage());
-                sendErrorMessage(errorMessage, message, channel);
-            }
-            channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
-        } else {
-            log.error(String.format(
-                    "Could not invoke method handler,"
-                            + " message with given binding key(s) is being re-queued. bindingKey(s): %s, retry count: %s",
-                    bindingKeysString, retryCount), throwable);
-            channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-            retryEnqueuer.enqueueWithBackoff(message, retryCount);
-        }
+        log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
+        channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+        retryEnqueuer.enqueueWithBackoff(message, messageError.getName(), shouldNotifyFrontend);
     }
 
     private void acknowledgeMessage(final Delivery message, final Channel channel, final MessagingException exception)

@@ -75,18 +75,6 @@ public final class AmqpConfiguration {
     @ConfigItem(defaultValue = "3")
     int retryMaxCount;
 
-    /**
-     * Initial retry backoff interval in milliseconds
-     */
-    @ConfigItem(defaultValue = "5000")
-    long retryInitialInterval;
-
-    /**
-     * Retry backoff multiplier
-     */
-    @ConfigItem(defaultValue = "1.5")
-    double retryFactor;
-
     public String getUrl() {
         return url;
     }
@@ -187,22 +175,6 @@ public final class AmqpConfiguration {
         this.retryMaxCount = retryMaxCount;
     }
 
-    public long getRetryInitialInterval() {
-        return retryInitialInterval;
-    }
-
-    public void setRetryInitialInterval(long retryInitialInterval) {
-        this.retryInitialInterval = retryInitialInterval;
-    }
-
-    public double getRetryFactor() {
-        return retryFactor;
-    }
-
-    public void setRetryFactor(double retryFactor) {
-        this.retryFactor = retryFactor;
-    }
-
     @Override
     public String toString() {
         return "AmqpConfiguration{" +
@@ -216,8 +188,6 @@ public final class AmqpConfiguration {
                 ", maxRetries=" + maxRetries +
                 ", confirmationBatchSize=" + confirmationBatchSize +
                 ", retryMaxCount=" + retryMaxCount +
-                ", retryInitialInterval=" + retryInitialInterval +
-                ", retryFactor=" + retryFactor +
                 '}';
     }
 }

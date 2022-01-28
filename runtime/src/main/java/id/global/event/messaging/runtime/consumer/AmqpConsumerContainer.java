@@ -24,7 +24,6 @@ import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.event.messaging.runtime.requeue.RetryQueues;
 
 @ApplicationScoped
 public class AmqpConsumerContainer {
@@ -37,7 +36,6 @@ public class AmqpConsumerContainer {
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
     private final MessageRequeueHandler retryEnqueuer;
-    private final RetryQueues retryQueues;
     private final GidJwtValidator jwtValidator;
     private final FrontendAmqpConsumer frontendAmqpConsumer;
 
@@ -49,7 +47,6 @@ public class AmqpConsumerContainer {
             final AmqpProducer producer,
             final InstanceInfoProvider instanceInfoProvider,
             final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues,
             final GidJwtValidator jwtValidator,
             final FrontendAmqpConsumer frontendAmqpConsumer) {
 
@@ -61,7 +58,6 @@ public class AmqpConsumerContainer {
         this.eventContext = eventContext;
         this.producer = producer;
         this.retryEnqueuer = retryEnqueuer;
-        this.retryQueues = retryQueues;
         this.frontendAmqpConsumer = frontendAmqpConsumer;
     }
 
@@ -89,7 +85,6 @@ public class AmqpConsumerContainer {
                 methodHandle,
                 methodHandleContext,
                 retryEnqueuer,
-                retryQueues,
                 jwtValidator);
 
         consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
@@ -111,7 +106,6 @@ public class AmqpConsumerContainer {
                 methodHandle,
                 methodHandleContext,
                 retryEnqueuer,
-                retryQueues,
                 jwtValidator);
 
         frontendAmqpConsumer.addDeliverCallbackProvider(getFrontendRoutingKey(amqpContext), deliverCallbackProvider);
