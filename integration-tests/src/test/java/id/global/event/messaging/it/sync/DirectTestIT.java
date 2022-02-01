@@ -25,6 +25,7 @@ import com.rabbitmq.client.Connection;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.event.messaging.it.IsolatedEventContextTest;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -33,7 +34,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class DirectTestIT {
+public class DirectTestIT extends IsolatedEventContextTest {
     private static final String EVENT_PAYLOAD_NAME = "event";
     private static final String EVENT_PAYLOAD_NAME_PRIORITY = "priority";
     private static final String EVENT_PAYLOAD_NAME_BLANK = "blank";

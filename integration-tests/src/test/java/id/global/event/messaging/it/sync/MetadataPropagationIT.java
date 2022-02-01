@@ -21,6 +21,7 @@ import com.rabbitmq.client.AMQP;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.event.messaging.it.IsolatedEventContextTest;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
@@ -32,7 +33,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MetadataPropagationIT {
+public class MetadataPropagationIT extends IsolatedEventContextTest {
 
     private static final String EVENT_QUEUE1 = "mpi-queue1";
     private static final String EVENT_QUEUE2 = "mpi-queue2";

@@ -28,6 +28,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.event.messaging.it.IsolatedEventContextTest;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -36,7 +37,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TransactionalIT {
+public class TransactionalIT extends IsolatedEventContextTest {
     private static final String EVENT_QUEUE = "test-eventqueue-transactional-it";
     private static final String EXCHANGE = "test-exchange-transactional-it";
 
