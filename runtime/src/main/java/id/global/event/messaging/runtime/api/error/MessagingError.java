@@ -4,6 +4,4 @@ public interface MessagingError {
     String getStatus();
 
     String getClientCode();
-
-    String getName();
 }

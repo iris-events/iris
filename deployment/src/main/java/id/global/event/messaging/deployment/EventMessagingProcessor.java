@@ -20,6 +20,7 @@ import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
+import id.global.event.messaging.runtime.consumer.AmqpErrorHandler;
 import id.global.event.messaging.runtime.consumer.FrontendAmqpConsumer;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventAppContext;
@@ -90,7 +91,8 @@ class EventMessagingProcessor {
                                 RetryQueues.class,
                                 CorrelationIdProvider.class,
                                 GidJwtValidator.class,
-                                FrontendAmqpConsumer.class)
+                                FrontendAmqpConsumer.class,
+                                AmqpErrorHandler.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());

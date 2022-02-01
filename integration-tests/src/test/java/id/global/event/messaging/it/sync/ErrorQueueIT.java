@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -18,17 +17,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import com.rabbitmq.client.AMQP;
-
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.headers.amqp.MessageHeaders;
 import id.global.event.messaging.it.AbstractIntegrationTest;
-import id.global.event.messaging.it.auth.TokenUtils;
 import id.global.event.messaging.runtime.api.error.ClientError;
 import id.global.event.messaging.runtime.api.error.ServerError;
 import id.global.event.messaging.runtime.api.exception.BadMessageException;
 import id.global.event.messaging.runtime.api.exception.ServerException;
+import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -37,6 +33,9 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
     private static final String ERROR_QUEUE_BAD_REQUEST = "error-queue-bad-request";
     private static final String ERROR_QUEUE_SERVER_ERROR = "error-queue-server-error";
+
+    @Inject
+    AmqpProducer producer;
 
     @Override
     public String getErrorMessageQueue() {
@@ -56,36 +55,26 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     @DisplayName("Send bad request error message on corrupted message")
     @Test
     void corruptedMessage() throws Exception {
-        final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new BadRequestMessage(UUID.randomUUID().toString());
-        final var basicProperties = new AMQP.BasicProperties().builder()
-                .headers(Map.of(MessageHeaders.JWT, token))
-                .build();
 
-        channel.basicPublish(ERROR_QUEUE_BAD_REQUEST, ERROR_QUEUE_BAD_REQUEST, basicProperties,
-                objectMapper.writeValueAsBytes(message));
+        producer.send(message);
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.name(), is(ClientError.BAD_REQUEST.getName()));
+        assertThat(errorMessage.code(), is(ClientError.BAD_REQUEST.getClientCode()));
         assertThat(errorMessage.message(), is("Unable to process message. Message corrupted."));
     }
 
     @DisplayName("Send server error message on server exception")
     @Test
     void serverException() throws Exception {
-        final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new ServerErrorMessage(UUID.randomUUID().toString());
-        final var basicProperties = new AMQP.BasicProperties().builder()
-                .headers(Map.of(MessageHeaders.JWT, token))
-                .build();
 
-        channel.basicPublish(ERROR_QUEUE_SERVER_ERROR, ERROR_QUEUE_SERVER_ERROR, basicProperties,
-                objectMapper.writeValueAsBytes(message));
+        producer.send(message);
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.name(), is(ServerError.SERVER_ERROR.name()));
+        assertThat(errorMessage.code(), is(ServerError.INTERNAL_SERVER_ERROR.getClientCode()));
         assertThat(errorMessage.message(), is("Internal service error."));
     }
 
@@ -104,7 +93,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         @MessageHandler
         public void handle(ServerErrorMessage message) {
-            throw new ServerException(ServerError.SERVER_ERROR, "Internal service error.", true);
+            throw new ServerException(ServerError.INTERNAL_SERVER_ERROR, "Internal service error.", true);
         }
     }
 

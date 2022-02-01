@@ -20,8 +20,6 @@ import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.event.messaging.runtime.requeue.RetryQueues;
 import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
@@ -47,9 +45,8 @@ public class DeliverCallbackProvider {
             final Object eventHandlerInstance,
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
-            final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues,
-            final GidJwtValidator jwtValidator) {
+            final GidJwtValidator jwtValidator,
+            final AmqpErrorHandler errorHandler) {
 
         this.objectMapper = objectMapper;
         this.producer = producer;
@@ -59,7 +56,7 @@ public class DeliverCallbackProvider {
         this.methodHandleContext = methodHandleContext;
         this.jwtValidator = jwtValidator;
         this.eventContext = eventContext;
-        this.errorHandler = new AmqpErrorHandler(objectMapper, amqpContext, eventContext, retryEnqueuer, retryQueues);
+        this.errorHandler = errorHandler;
     }
 
     public DeliverCallback createDeliverCallback(final Channel channel) {

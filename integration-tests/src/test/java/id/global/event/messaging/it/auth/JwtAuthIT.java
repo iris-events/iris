@@ -89,7 +89,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.name(), is(SecurityError.AUTHORIZATION_FAILED.getName()));
+        assertThat(errorMessage.code(), is(SecurityError.AUTHORIZATION_FAILED.getClientCode()));
         assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 
@@ -122,7 +122,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.name(), is(SecurityError.FORBIDDEN.name()));
+        assertThat(errorMessage.code(), is(SecurityError.FORBIDDEN.getClientCode()));
         assertThat(errorMessage.message(), is("Role is not allowed"));
     }
 
@@ -140,7 +140,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.name(), is(SecurityError.AUTHORIZATION_FAILED.name()));
+        assertThat(errorMessage.code(), is(SecurityError.AUTHORIZATION_FAILED.getClientCode()));
         assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 

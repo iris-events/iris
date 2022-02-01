@@ -34,10 +34,10 @@ import io.quarkus.test.junit.mockito.InjectMock;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MetadataPropagationIT {
 
-    private static final String EVENT_QUEUE1 = "queue1";
-    private static final String EVENT_QUEUE2 = "queue2";
-    private static final String EVENT_QUEUE3 = "queue3";
-    private static final String EXCHANGE = "exchange";
+    private static final String EVENT_QUEUE1 = "mpi-queue1";
+    private static final String EVENT_QUEUE2 = "mpi-queue2";
+    private static final String EVENT_QUEUE3 = "mpi-queue3";
+    private static final String EXCHANGE = "metadata-propagation-it";
 
     @Inject
     AmqpProducer producer;

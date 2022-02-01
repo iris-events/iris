@@ -23,8 +23,6 @@ import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.event.messaging.runtime.requeue.RetryQueues;
 
 @ApplicationScoped
 public class AmqpConsumerContainer {
@@ -36,10 +34,9 @@ public class AmqpConsumerContainer {
     private final ChannelService consumerChannelService;
     private final AmqpProducer producer;
     private final InstanceInfoProvider instanceInfoProvider;
-    private final MessageRequeueHandler retryEnqueuer;
-    private final RetryQueues retryQueues;
     private final GidJwtValidator jwtValidator;
     private final FrontendAmqpConsumer frontendAmqpConsumer;
+    private final AmqpErrorHandler errorHandler;
 
     @Inject
     public AmqpConsumerContainer(
@@ -48,20 +45,18 @@ public class AmqpConsumerContainer {
             @Named("consumerChannelService") final ChannelService consumerChannelService,
             final AmqpProducer producer,
             final InstanceInfoProvider instanceInfoProvider,
-            final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues,
             final GidJwtValidator jwtValidator,
-            final FrontendAmqpConsumer frontendAmqpConsumer) {
+            final FrontendAmqpConsumer frontendAmqpConsumer,
+            final AmqpErrorHandler errorHandler) {
 
         this.consumerChannelService = consumerChannelService;
         this.instanceInfoProvider = instanceInfoProvider;
         this.jwtValidator = jwtValidator;
+        this.errorHandler = errorHandler;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.producer = producer;
-        this.retryEnqueuer = retryEnqueuer;
-        this.retryQueues = retryQueues;
         this.frontendAmqpConsumer = frontendAmqpConsumer;
     }
 
@@ -88,9 +83,8 @@ public class AmqpConsumerContainer {
                 eventHandlerInstance,
                 methodHandle,
                 methodHandleContext,
-                retryEnqueuer,
-                retryQueues,
-                jwtValidator);
+                jwtValidator,
+                errorHandler);
 
         consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
                 amqpContext,
@@ -110,9 +104,8 @@ public class AmqpConsumerContainer {
                 eventHandlerInstance,
                 methodHandle,
                 methodHandleContext,
-                retryEnqueuer,
-                retryQueues,
-                jwtValidator);
+                jwtValidator,
+                errorHandler);
 
         frontendAmqpConsumer.addDeliverCallbackProvider(getFrontendRoutingKey(amqpContext), deliverCallbackProvider);
     }
