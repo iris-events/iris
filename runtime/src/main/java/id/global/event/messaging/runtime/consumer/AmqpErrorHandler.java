@@ -4,12 +4,11 @@ import static id.global.common.headers.amqp.MessageHeaders.EVENT_TYPE;
 import static id.global.event.messaging.runtime.consumer.AmqpConsumer.ERROR_MESSAGE_EXCHANGE;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.UncheckedIOException;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,18 +21,15 @@ import id.global.common.headers.amqp.MessageHeaders;
 import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.error.SecurityError;
 import id.global.event.messaging.runtime.api.error.ServerError;
-import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.exception.BadMessageException;
 import id.global.event.messaging.runtime.api.exception.MessagingException;
 import id.global.event.messaging.runtime.api.exception.SecurityException;
 import id.global.event.messaging.runtime.api.exception.ServerException;
-import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.error.ErrorMessage;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.event.messaging.runtime.requeue.RetryQueues;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -45,18 +41,16 @@ public class AmqpErrorHandler {
     public static final String ERROR_ROUTING_KEY_SUFFIX = ".error";
 
     private final ObjectMapper objectMapper;
-    private final AmqpContext amqpContext;
     private final EventContext eventContext;
     private final MessageRequeueHandler retryEnqueuer;
 
+    @Inject
     public AmqpErrorHandler(
             final ObjectMapper objectMapper,
-            final AmqpContext amqpContext,
             final EventContext eventContext,
             final MessageRequeueHandler retryEnqueuer) {
 
         this.objectMapper = objectMapper;
-        this.amqpContext = amqpContext;
         this.eventContext = eventContext;
         this.retryEnqueuer = retryEnqueuer;
     }
@@ -116,7 +110,7 @@ public class AmqpErrorHandler {
             boolean shouldNotifyFrontend, final Throwable throwable) throws IOException {
         log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
         channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-        retryEnqueuer.enqueueWithBackoff(message, messageError.getCode(), shouldNotifyFrontend);
+        retryEnqueuer.enqueueWithBackoff(message, messageError.getClientCode(), shouldNotifyFrontend);
     }
 
     private void acknowledgeMessage(final Delivery message, final Channel channel, final MessagingException exception)
