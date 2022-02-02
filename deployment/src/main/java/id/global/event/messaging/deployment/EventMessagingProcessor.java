@@ -30,11 +30,8 @@ import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.CorrelationIdProvider;
 import id.global.event.messaging.runtime.recorder.ConsumerInitRecorder;
 import id.global.event.messaging.runtime.recorder.EventAppRecorder;
-import id.global.event.messaging.runtime.recorder.MessageRequeueConsumerRecorder;
 import id.global.event.messaging.runtime.recorder.MethodHandleRecorder;
-import id.global.event.messaging.runtime.requeue.MessageRequeueConsumer;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.event.messaging.runtime.requeue.RetryQueues;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
@@ -87,8 +84,6 @@ class EventMessagingProcessor {
                                 AmqpProducer.class,
                                 ConnectionFactoryProvider.class,
                                 MessageRequeueHandler.class,
-                                MessageRequeueConsumer.class,
-                                RetryQueues.class,
                                 CorrelationIdProvider.class,
                                 GidJwtValidator.class,
                                 FrontendAmqpConsumer.class,
@@ -121,18 +116,6 @@ class EventMessagingProcessor {
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
         if (!messageHandlerInfoBuildItems.isEmpty()) {
             consumerInitRecorder.initConsumers(beanContainer.getValue());
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Record(ExecutionTime.RUNTIME_INIT)
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void declareMessageRequeueConsumer(final BeanContainerBuildItem beanContainer,
-            MessageRequeueConsumerRecorder messageRequeueConsumerRecorder) {
-        try {
-            messageRequeueConsumerRecorder.registerMessageRequeueConsumer(beanContainer.getValue());
-        } catch (IOException e) {
-            LOG.error("Could not record retry consumer init", e);
         }
     }
 

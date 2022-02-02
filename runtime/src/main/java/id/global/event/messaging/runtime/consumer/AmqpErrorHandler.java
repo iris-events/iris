@@ -8,6 +8,8 @@ import java.util.HashMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +22,12 @@ import id.global.common.headers.amqp.MessageHeaders;
 import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.error.SecurityError;
 import id.global.event.messaging.runtime.api.error.ServerError;
+import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.exception.BadMessageException;
 import id.global.event.messaging.runtime.api.exception.MessagingException;
 import id.global.event.messaging.runtime.api.exception.SecurityException;
 import id.global.event.messaging.runtime.api.exception.ServerException;
+import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.error.ErrorMessage;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
@@ -41,21 +45,20 @@ public class AmqpErrorHandler {
     public static final String ERROR_ROUTING_KEY_SUFFIX = ".error";
 
     private final ObjectMapper objectMapper;
+    private final AmqpContext amqpContext;
     private final EventContext eventContext;
     private final MessageRequeueHandler retryEnqueuer;
-    private final RetryQueues retryQueues;
 
-    @Inject
     public AmqpErrorHandler(
             final ObjectMapper objectMapper,
+            final AmqpContext amqpContext,
             final EventContext eventContext,
-            final MessageRequeueHandler retryEnqueuer,
-            final RetryQueues retryQueues) {
+            final MessageRequeueHandler retryEnqueuer) {
 
         this.objectMapper = objectMapper;
+        this.amqpContext = amqpContext;
         this.eventContext = eventContext;
         this.retryEnqueuer = retryEnqueuer;
-        this.retryQueues = retryQueues;
     }
 
     public void handleException(final Delivery message, final Channel channel, final Throwable throwable) {
@@ -78,7 +81,7 @@ public class AmqpErrorHandler {
             }
         } catch (IOException exception) {
             log.error("IOException encountered while handling error. Handled message will be requeued.", exception);
-            throw new RuntimeException(exception);
+            throw new UncheckedIOException(exception);
         }
     }
 
@@ -111,32 +114,9 @@ public class AmqpErrorHandler {
 
     private void handleServerException(final MessagingError messageError, final Delivery message, final Channel channel,
             boolean shouldNotifyFrontend, final Throwable throwable) throws IOException {
-
-        final var retryCount = eventContext.getRetryCount();
-        final var maxRetryCount = retryQueues.getMaxRetryCount();
-        final var maxRetriesReached = retryCount >= maxRetryCount;
-        final var originalExchange = message.getEnvelope().getExchange();
-        final var originalRoutingKey = message.getEnvelope().getRoutingKey();
-
-        if (maxRetriesReached) {
-            log.error(String.format(
-                    "Could not invoke method handler and max retries (%d) are reached,"
-                            + " message is being sent to DLQ. exchange: '%s', routingKey: '%s'.",
-                    maxRetryCount, originalExchange, originalRoutingKey), throwable);
-
-            if (shouldNotifyFrontend) {
-                final var errorMessage = new ErrorMessage(messageError, throwable.getMessage());
-                sendErrorMessage(errorMessage, message, channel);
-            }
-            channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
-        } else {
-            log.error(String.format(
-                    "Could not invoke method handler,"
-                            + " message is being re-queued. exchange: %s, routingKey: %s, retry count: %s",
-                    originalExchange, originalRoutingKey, retryCount), throwable);
-            channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-            retryEnqueuer.enqueueWithBackoff(message, retryCount);
-        }
+        log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
+        channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+        retryEnqueuer.enqueueWithBackoff(message, messageError.getCode(), shouldNotifyFrontend);
     }
 
     private void acknowledgeMessage(final Delivery message, final Channel channel, final MessagingException exception)
