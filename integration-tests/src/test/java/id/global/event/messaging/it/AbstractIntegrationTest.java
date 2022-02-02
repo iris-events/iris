@@ -8,7 +8,7 @@ import com.rabbitmq.client.Channel;
 import id.global.event.messaging.runtime.error.ErrorMessage;
 import io.quarkiverse.rabbitmqclient.RabbitMQClient;
 
-public abstract class AbstractIntegrationTest {
+public abstract class AbstractIntegrationTest extends IsolatedEventContextTest {
 
     @Inject
     public RabbitMQClient rabbitMQClient;

@@ -24,7 +24,6 @@ import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.CorrelationIdProvider;
@@ -32,7 +31,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class EventsMalformedIT {
+public class EventsMalformedIT extends IsolatedEventContextTest {
 
     private static final String DIRECT_EXCHANGE = "md-exchange";
     private static final String TOPIC_EXCHANGE = "mt-exchange";
@@ -46,9 +45,6 @@ public class EventsMalformedIT {
 
     @Inject
     AmqpConfiguration configuration;
-
-    @Inject
-    EventContext eventContext;
 
     @Inject
     TransactionManager transactionManager;

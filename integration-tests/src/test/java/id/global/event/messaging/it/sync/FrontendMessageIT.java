@@ -25,12 +25,13 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
+import id.global.event.messaging.it.IsolatedEventContextTest;
 import io.quarkiverse.rabbitmqclient.RabbitMQClient;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class FrontendMessageIT {
+public class FrontendMessageIT extends IsolatedEventContextTest {
 
     public static final String FRONTEND_REQUEST_EVENT_NAME = "frontend-request-event";
     public static final String FRONTEND_REQUEST_DIRECT_EVENT_NAME = "frontend-request-direct-event";

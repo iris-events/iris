@@ -20,6 +20,7 @@ import org.mockito.Mockito;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.event.messaging.it.IsolatedEventContextTest;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
@@ -28,7 +29,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MessagePropagationIT {
+public class MessagePropagationIT extends IsolatedEventContextTest {
 
     private static final String INITIAL_CONSUMING_QUEUE = "initial-consuming-queue";
     private static final String FORWARDING_QUEUE = "forwarding-queue";

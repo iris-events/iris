@@ -29,7 +29,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class EventAppRecorderIT {
+public class EventAppRecorderIT extends IsolatedEventContextTest {
 
     private static final String EVENT_QUEUE = "event-queue";
     private static final String EXCHANGE = "event-app-recorder-exchange";

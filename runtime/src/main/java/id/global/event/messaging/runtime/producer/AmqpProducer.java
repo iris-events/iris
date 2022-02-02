@@ -55,7 +55,6 @@ import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
-import id.global.event.messaging.runtime.exception.AmqpTransactionRuntimeException;
 import id.global.event.messaging.runtime.tx.TransactionCallback;
 
 @ApplicationScoped
@@ -324,7 +323,7 @@ public class AmqpProducer {
                 }
             } catch (IOException | AmqpSendException e) {
                 log.error("Exception completing send transaction.", e);
-                throw new AmqpTransactionRuntimeException("Exception completing send transaction");
+                throw new AmqpTransactionException("Exception completing send transaction");
             }
         }
 

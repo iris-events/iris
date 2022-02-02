@@ -22,13 +22,14 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.event.messaging.it.IsolatedEventContextTest;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AnnotatedEventsTestIT {
+public class AnnotatedEventsTestIT extends IsolatedEventContextTest {
     // TODO this looks more like it should be a unit test for AmqpProducer.
     /*
      * That means only checking if the produce method returns expected results according to inputs (correctly/incorrectly

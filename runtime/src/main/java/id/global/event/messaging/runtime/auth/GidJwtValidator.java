@@ -5,6 +5,7 @@ import static id.global.common.headers.amqp.MessageHeaders.JWT;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -22,6 +23,7 @@ import io.quarkus.smallrye.jwt.runtime.auth.JsonWebTokenCredential;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 
+@ApplicationScoped
 public class GidJwtValidator {
     private static final Logger log = LoggerFactory.getLogger(GidJwtValidator.class);
 

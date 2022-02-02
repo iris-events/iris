@@ -19,12 +19,13 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.event.messaging.it.IsolatedEventContextTest;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TopicTestIT {
+public class TopicTestIT extends IsolatedEventContextTest {
     private static final String TOPIC_EXCHANGE = "topic-test-2222";
 
     @Inject
