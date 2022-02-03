@@ -1,7 +1,8 @@
 package id.global.event.messaging.runtime.context;
 
-import static id.global.common.headers.amqp.MessageHeaders.SESSION_ID;
-import static id.global.common.headers.amqp.MessageHeaders.USER_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.SESSION_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
 
 import java.util.Collections;
 import java.util.Map;
@@ -10,8 +11,6 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 
 import com.rabbitmq.client.AMQP;
-
-import id.global.event.messaging.runtime.Headers;
 
 @ApplicationScoped
 public class EventContext {
@@ -61,7 +60,7 @@ public class EventContext {
     }
 
     public Integer getRetryCount() {
-        return getHeaderValue(Headers.RequeueHeaders.X_RETRY_COUNT).map(Integer::valueOf).orElse(0);
+        return getHeaderValue(X_RETRY_COUNT).map(Integer::valueOf).orElse(0);
     }
 
     private Optional<String> getHeaderValue(final String header) {

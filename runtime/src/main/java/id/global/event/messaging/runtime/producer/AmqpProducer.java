@@ -1,13 +1,13 @@
 package id.global.event.messaging.runtime.producer;
 
-import static id.global.common.headers.amqp.MessageHeaders.CURRENT_SERVICE_ID;
-import static id.global.common.headers.amqp.MessageHeaders.EVENT_TYPE;
-import static id.global.common.headers.amqp.MessageHeaders.INSTANCE_ID;
-import static id.global.common.headers.amqp.MessageHeaders.JWT;
-import static id.global.common.headers.amqp.MessageHeaders.ORIGIN_SERVICE_ID;
-import static id.global.common.headers.amqp.MessageHeaders.ROUTER;
-import static id.global.common.headers.amqp.MessageHeaders.SESSION_ID;
-import static id.global.common.headers.amqp.MessageHeaders.USER_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.INSTANCE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.JWT;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.ROUTER;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.SESSION_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -106,7 +106,7 @@ public class AmqpProducer {
      * user.
      *
      * @param message message
-     * @param userId user id
+     * @param userId  user id
      */
     public void send(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
         doSend(message, userId);

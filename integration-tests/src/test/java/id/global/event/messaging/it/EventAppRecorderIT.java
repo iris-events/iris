@@ -1,10 +1,10 @@
 package id.global.event.messaging.it;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
-import static id.global.common.headers.amqp.MessageHeaders.CURRENT_SERVICE_ID;
-import static id.global.common.headers.amqp.MessageHeaders.EVENT_TYPE;
-import static id.global.common.headers.amqp.MessageHeaders.INSTANCE_ID;
-import static id.global.common.headers.amqp.MessageHeaders.ORIGIN_SERVICE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.INSTANCE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;

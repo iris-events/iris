@@ -5,8 +5,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,19 +20,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
+import org.mockito.ArgumentCaptor;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.event.messaging.it.IsolatedEventContextTest;
+import id.global.event.messaging.runtime.api.error.ServerError;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
-import io.quarkiverse.rabbitmqclient.RabbitMQClient;
+import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -50,6 +51,9 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
     @Inject
     TestHandlerService service;
+
+    @InjectMock
+    MessageRequeueHandler requeueHandler;
 
     @BeforeEach
     public void setup() {
@@ -96,68 +100,36 @@ public class DirectTestIT extends IsolatedEventContextTest {
     }
 
     @Test
-    @DisplayName("Failed consume should redirect message to dead-letter queue")
+    @DisplayName("Failed consume should redirect message to retry queue")
     void testDlqDelivery() throws Exception {
         String id = "id";
         String payload = "payload";
+
         producer.send(new FailEvent(id, payload));
-        Dead dead = service.getHandledDLQEvent().get(5, TimeUnit.SECONDS);
-        int retryCount = service.getFinalRetryCount().get(5, TimeUnit.SECONDS);
 
-        assertThat(dead.id, is(id));
-        assertThat(dead.data, is(payload));
-        assertThat(retryCount, is(3));
-    }
+        final var errorCodeCaptor = ArgumentCaptor.forClass(String.class);
+        final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
+        verify(requeueHandler, timeout(500).times(1))
+                .enqueueWithBackoff(any(), errorCodeCaptor.capture(), notifyFrontendCaptor.capture());
 
-    @Test
-    @DisplayName("Eventually successful delivery after 2 retries")
-    void testEventuallySuccessfulDelivery() throws Exception {
-        String id = "id";
-        String payload = "payload";
-        producer.send(new EventualEvent(id, payload));
-        EventualEvent event = service.getHandledEventualEvent().get(5, TimeUnit.SECONDS);
-        int retryCount = service.getEventualRetryCount().get(5, TimeUnit.SECONDS);
+        final var errorCode = errorCodeCaptor.getValue();
+        final var notifyFrontend = notifyFrontendCaptor.getValue();
 
-        assertThat(event.id, is(id));
-        assertThat(event.data, is(payload));
-        assertThat(retryCount, is(2));
+        assertThat(errorCode, is(ServerError.INTERNAL_SERVER_ERROR.getClientCode()));
+        assertThat(notifyFrontend, is(false));
     }
 
     @ApplicationScoped
     public static class TestHandlerService {
-        RabbitMQClient rabbitMQClient;
         EventContext eventContext;
 
         private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
         private final CompletableFuture<PrioritizedEvent> handledPriorityEvent = new CompletableFuture<>();
         private final CompletableFuture<BlankExchangeEvent> handledBlankExchangeEvent = new CompletableFuture<>();
         private final CompletableFuture<MinimumEvent> handledMinimumEvent = new CompletableFuture<>();
-        private final CompletableFuture<Dead> handledDLQEvent = new CompletableFuture<>();
         private final CompletableFuture<Integer> finalRetryCount = new CompletableFuture<>();
-        private final CompletableFuture<EventualEvent> handledEventualEvent = new CompletableFuture<>();
-        private final CompletableFuture<Integer> eventualRetryCount = new CompletableFuture<>();
-        private final ObjectMapper objectMapper;
 
         public static final AtomicInteger count = new AtomicInteger(0);
-
-        private final Channel dlqChannel;
-
-        @Inject
-        public TestHandlerService(RabbitMQClient rabbitMQClient, EventContext eventContext) throws IOException {
-            this.rabbitMQClient = rabbitMQClient;
-            this.eventContext = eventContext;
-            this.objectMapper = new ObjectMapper();
-
-            Connection connect = rabbitMQClient.connect("dead.test-dead-letter");
-            dlqChannel = connect.createChannel();
-
-            dlqChannel.basicConsume("dead.test-dead-letter", true, (consumerTag, message) -> {
-                Dead dlqEvent = objectMapper.readValue(message.getBody(), Dead.class);
-                handledDLQEvent.complete(dlqEvent);
-            }, consumerTag -> {
-                // none
-            });
-        }
 
         public void reset() {
             count.set(0);
@@ -202,20 +174,6 @@ public class DirectTestIT extends IsolatedEventContextTest {
             throw new RuntimeException();
         }
 
-        @SuppressWarnings("unused")
-        @MessageHandler
-        public void handleEventually(EventualEvent eventualEvent) {
-            count.incrementAndGet();
-            Integer retryCount = eventContext.getRetryCount();
-
-            if (retryCount < 2) {
-                throw new RuntimeException();
-            } else {
-                eventualRetryCount.complete(retryCount);
-                handledEventualEvent.complete(eventualEvent);
-            }
-        }
-
         public CompletableFuture<Event> getHandledEvent() {
             return handledEvent;
         }
@@ -230,22 +188,6 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
         public CompletableFuture<MinimumEvent> getHandledMinimumEvent() {
             return handledMinimumEvent;
-        }
-
-        public CompletableFuture<Dead> getHandledDLQEvent() {
-            return handledDLQEvent;
-        }
-
-        public CompletableFuture<Integer> getFinalRetryCount() {
-            return finalRetryCount;
-        }
-
-        public CompletableFuture<EventualEvent> getHandledEventualEvent() {
-            return handledEventualEvent;
-        }
-
-        public CompletableFuture<Integer> getEventualRetryCount() {
-            return eventualRetryCount;
         }
     }
 
@@ -267,11 +209,6 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
     @Message(name = "fail-event", exchangeType = DIRECT, deadLetter = "test-dead-letter")
     public record FailEvent(String id, String data) {
-    }
-
-    @Message(name = "eventual-event", exchangeType = DIRECT)
-    public record EventualEvent(String id, String data) {
-
     }
 
     public record Dead(String id, String data) {

@@ -1,13 +1,10 @@
 package id.global.event.messaging.runtime.requeue;
 
-import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_DEAD_LETTER_EXCHANGE;
-import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_DEAD_LETTER_ROUTING_KEY;
-import static id.global.event.messaging.runtime.Headers.QueueDeclarationHeaders.X_MESSAGE_TTL;
-import static id.global.event.messaging.runtime.Headers.RequeueHeaders.X_ORIGINAL_EXCHANGE;
-import static id.global.event.messaging.runtime.Headers.RequeueHeaders.X_ORIGINAL_ROUTING_KEY;
-import static id.global.event.messaging.runtime.Headers.RequeueHeaders.X_RETRY_COUNT;
-import static id.global.event.messaging.runtime.requeue.MessageRequeueConsumer.RETRY_EXCHANGE;
-import static id.global.event.messaging.runtime.requeue.MessageRequeueConsumer.RETRY_WAIT_ENDED_QUEUE;
+import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_ERROR_CODE;
+import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_MAX_RETRIES;
+import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_NOTIFY_CLIENT;
+import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_ORIGINAL_EXCHANGE;
+import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,61 +12,50 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
 import id.global.event.messaging.runtime.channel.ChannelService;
+import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 
 @ApplicationScoped
 public class MessageRequeueHandler {
-    private final RetryQueues retryQueues;
-    private final Channel channel;
 
+    private static final String RETRY_QUEUE = "retry";
+    private static final String RETRY_EXCHANGE = "retry";
+
+    private final Channel channel;
+    private final AmqpConfiguration configuration;
+
+    @Inject
     public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
-            RetryQueues retryQueues) throws IOException {
+            AmqpConfiguration configuration) throws IOException {
+
+        this.configuration = configuration;
         String channelId = UUID.randomUUID().toString();
         this.channel = channelService.getOrCreateChannelById(channelId);
-        this.retryQueues = retryQueues;
     }
 
-    public void enqueueWithBackoff(Delivery message, int retryCount) throws IOException {
-        RetryQueue retryQueue = retryQueues.getNextQueue(retryCount);
-        String retryQueueName = retryQueue.queueName();
-
-        Delivery newMessage = getMessageWithNewHeaders(message, retryCount);
-
-        final Map<String, Object> queueDeclarationArgs = getRequeueDeclarationParams(retryQueue);
-
-        channel.exchangeDeclare(RETRY_EXCHANGE, BuiltinExchangeType.DIRECT);
-        channel.queueDeclare(retryQueueName, false, false, true, queueDeclarationArgs);
-        channel.queueBind(retryQueueName, RETRY_EXCHANGE, retryQueueName);
-
-        channel.basicPublish(RETRY_EXCHANGE, retryQueueName, newMessage.getProperties(), newMessage.getBody());
+    public void enqueueWithBackoff(Delivery message, final String errorCode, final boolean shouldNotifyFrontend)
+            throws IOException {
+        Delivery newMessage = getMessageWithNewHeaders(message, errorCode, shouldNotifyFrontend);
+        channel.basicPublish(RETRY_EXCHANGE, RETRY_QUEUE, newMessage.getProperties(), newMessage.getBody());
     }
 
-    private Map<String, Object> getRequeueDeclarationParams(RetryQueue retryQueue) {
-        final Map<String, Object> queueDeclarationArgs = new HashMap<>();
-        queueDeclarationArgs.put(X_MESSAGE_TTL, retryQueue.ttl());
-        queueDeclarationArgs.put(X_DEAD_LETTER_ROUTING_KEY, RETRY_WAIT_ENDED_QUEUE);
-        queueDeclarationArgs.put(X_DEAD_LETTER_EXCHANGE, RETRY_EXCHANGE);
-        return queueDeclarationArgs;
-    }
-
-    private Delivery getMessageWithNewHeaders(Delivery message, int retryCount) {
-        retryCount += 1;
+    private Delivery getMessageWithNewHeaders(Delivery message, final String errorCode, final boolean shouldNotifyFrontend) {
         AMQP.BasicProperties properties = message.getProperties();
         Map<String, Object> headers = properties.getHeaders();
 
         Map<String, Object> newHeaders = new HashMap<>(headers);
-        newHeaders.put(X_ORIGINAL_EXCHANGE,
-                message.getEnvelope().getExchange());
-        newHeaders.put(X_ORIGINAL_ROUTING_KEY,
-                message.getEnvelope().getRoutingKey());
-        newHeaders.put(X_RETRY_COUNT, retryCount);
+        newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
+        newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
+        newHeaders.put(X_MAX_RETRIES, configuration.getRetryMaxCount());
+        newHeaders.put(X_ERROR_CODE, errorCode);
+        newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
 
         AMQP.BasicProperties basicProperties = new AMQP.BasicProperties().builder().headers(newHeaders)
                 .appId(properties.getAppId())
