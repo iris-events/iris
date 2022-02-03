@@ -1,6 +1,6 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.common.headers.amqp.MessageHeaders.EVENT_TYPE;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
 import static id.global.event.messaging.runtime.consumer.AmqpConsumer.ERROR_MESSAGE_EXCHANGE;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-import id.global.common.headers.amqp.MessageHeaders;
+import id.global.common.headers.amqp.MessagingHeaders;
 import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.error.SecurityError;
 import id.global.event.messaging.runtime.api.error.ServerError;
@@ -124,7 +124,7 @@ public class AmqpErrorHandler {
 
     private void sendErrorMessage(ErrorMessage message, Delivery consumedMessage, Channel channel) {
         final var headers = new HashMap<>(eventContext.getHeaders());
-        headers.remove(MessageHeaders.JWT);
+        headers.remove(MessagingHeaders.Message.JWT);
         headers.put(EVENT_TYPE, ERROR_MESSAGE_EXCHANGE);
         final var basicProperties = consumedMessage.getProperties().builder()
                 .headers(headers)

@@ -30,7 +30,7 @@ import com.rabbitmq.client.AMQP;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.auth.jwt.Role;
-import id.global.common.headers.amqp.MessageHeaders;
+import id.global.common.headers.amqp.MessagingHeaders;
 import id.global.event.messaging.it.AbstractIntegrationTest;
 import id.global.event.messaging.runtime.api.error.SecurityError;
 import io.quarkus.test.junit.QuarkusTest;
@@ -66,7 +66,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
-                .headers(Map.of(MessageHeaders.JWT, token))
+                .headers(Map.of(MessagingHeaders.Message.JWT, token))
                 .build();
 
         channel.basicPublish(JWT_AUTH_MESSAGE, JWT_AUTH_MESSAGE, basicProperties, objectMapper.writeValueAsBytes(message));
@@ -82,7 +82,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         final var nonParseableToken = token + "some_suffix";
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
-                .headers(Map.of(MessageHeaders.JWT, nonParseableToken))
+                .headers(Map.of(MessagingHeaders.Message.JWT, nonParseableToken))
                 .build();
 
         channel.basicPublish(JWT_AUTH_MESSAGE, JWT_AUTH_MESSAGE, basicProperties, objectMapper.writeValueAsBytes(message));
@@ -99,7 +99,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         final var token = TokenUtils.generateTokenString("/GroupOwnerToken.json");
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
-                .headers(Map.of(MessageHeaders.JWT, token))
+                .headers(Map.of(MessagingHeaders.Message.JWT, token))
                 .build();
 
         channel.basicPublish(JWT_AUTH_MESSAGE, JWT_AUTH_MESSAGE, basicProperties, objectMapper.writeValueAsBytes(message));
@@ -114,7 +114,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new JwtRoleSecuredHandlerMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
-                .headers(Map.of(MessageHeaders.JWT, token))
+                .headers(Map.of(MessagingHeaders.Message.JWT, token))
                 .build();
 
         channel.basicPublish(JWT_ROLE_SECURED_HANDLER_MESSAGE, JWT_ROLE_SECURED_HANDLER_MESSAGE, basicProperties,
@@ -133,7 +133,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json", Set.of(TokenUtils.InvalidClaims.EXP));
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
-                .headers(Map.of(MessageHeaders.JWT, token))
+                .headers(Map.of(MessagingHeaders.Message.JWT, token))
                 .build();
 
         channel.basicPublish(JWT_AUTH_MESSAGE, JWT_AUTH_MESSAGE, basicProperties, objectMapper.writeValueAsBytes(message));

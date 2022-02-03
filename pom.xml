@@ -4,7 +4,7 @@
   <parent>
     <groupId>id.global</groupId>
     <artifactId>masterpom</artifactId>
-    <version>10</version>
+    <version>11</version>
     <relativePath />
   </parent>
   <groupId>id.global.events</groupId>
@@ -17,7 +17,7 @@
     <smallrye.asyncapi.version>1.1.1</smallrye.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
     <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
-    <globalid-common.version>1.1.0</globalid-common.version>
+    <globalid-common.version>1.1.2</globalid-common.version>
     <version.quarkiverse.rabbitmqclient>0.4.2.Final</version.quarkiverse.rabbitmqclient>
 
   </properties>
