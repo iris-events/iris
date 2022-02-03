@@ -14,7 +14,7 @@
   <name>Event Messaging - Parent</name>
   <properties>
     <rabbit.amqp-client.version>5.14.0</rabbit.amqp-client.version>
-    <smallrye.asyncapi.version>1.1.1</smallrye.asyncapi.version>
+    <smallrye.asyncapi.version>1.1.2</smallrye.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
     <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
     <globalid-common.version>1.1.2</globalid-common.version>
