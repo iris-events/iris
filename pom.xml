@@ -9,7 +9,7 @@
   </parent>
   <groupId>id.global.events</groupId>
   <artifactId>quarkus-extension-parent</artifactId>
-  <version>1.2.4-SNAPSHOT</version>
+  <version>1.2.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Event Messaging - Parent</name>
   <properties>
