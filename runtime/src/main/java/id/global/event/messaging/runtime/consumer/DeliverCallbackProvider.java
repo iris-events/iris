@@ -76,11 +76,15 @@ public class DeliverCallbackProvider {
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
                 channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
             } catch (Throwable throwable) {
-                errorHandler.handleException(message, channel, throwable);
+                errorHandler.handleException(amqpContext, message, channel, throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
         };
+    }
+
+    public AmqpContext getAmqpContext() {
+        return amqpContext;
     }
 
     private void authorizeMessage() {

@@ -26,6 +26,7 @@ import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
+import id.global.event.messaging.runtime.infrastructure.DefaultInfrastructureDeclarator;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.CorrelationIdProvider;
 import id.global.event.messaging.runtime.recorder.ConsumerInitRecorder;
@@ -87,7 +88,8 @@ class EventMessagingProcessor {
                                 CorrelationIdProvider.class,
                                 GidJwtValidator.class,
                                 FrontendAmqpConsumer.class,
-                                AmqpErrorHandler.class)
+                                AmqpErrorHandler.class,
+                                DefaultInfrastructureDeclarator.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());

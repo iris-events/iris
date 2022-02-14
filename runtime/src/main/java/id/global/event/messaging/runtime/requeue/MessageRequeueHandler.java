@@ -1,5 +1,7 @@
 package id.global.event.messaging.runtime.requeue;
 
+import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
+import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
 import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_ERROR_CODE;
 import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_MAX_RETRIES;
 import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_NOTIFY_CLIENT;
@@ -19,34 +21,39 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
+import id.global.common.iris.Exchanges;
+import id.global.common.iris.Queues;
+import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.context.AmqpContext;
 
 @ApplicationScoped
 public class MessageRequeueHandler {
 
-    private static final String RETRY_QUEUE = "retry";
-    private static final String RETRY_EXCHANGE = "retry";
-
     private final Channel channel;
     private final AmqpConfiguration configuration;
+    private final InstanceInfoProvider instanceInfoProvider;
 
     @Inject
     public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
-            AmqpConfiguration configuration) throws IOException {
+            AmqpConfiguration configuration, InstanceInfoProvider instanceInfoProvider) throws IOException {
 
         this.configuration = configuration;
+        this.instanceInfoProvider = instanceInfoProvider;
         String channelId = UUID.randomUUID().toString();
         this.channel = channelService.getOrCreateChannelById(channelId);
     }
 
-    public void enqueueWithBackoff(Delivery message, final String errorCode, final boolean shouldNotifyFrontend)
+    public void enqueueWithBackoff(final AmqpContext amqpContext, Delivery message,
+            final String errorCode, final boolean shouldNotifyFrontend)
             throws IOException {
-        Delivery newMessage = getMessageWithNewHeaders(message, errorCode, shouldNotifyFrontend);
-        channel.basicPublish(RETRY_EXCHANGE, RETRY_QUEUE, newMessage.getProperties(), newMessage.getBody());
+        Delivery newMessage = getMessageWithNewHeaders(amqpContext, message, errorCode, shouldNotifyFrontend);
+        channel.basicPublish(Exchanges.RETRY, Queues.RETRY, newMessage.getProperties(), newMessage.getBody());
     }
 
-    private Delivery getMessageWithNewHeaders(Delivery message, final String errorCode, final boolean shouldNotifyFrontend) {
+    private Delivery getMessageWithNewHeaders(final AmqpContext amqpContext,
+            Delivery message, final String errorCode, final boolean shouldNotifyFrontend) {
         AMQP.BasicProperties properties = message.getProperties();
         Map<String, Object> headers = properties.getHeaders();
 
@@ -56,6 +63,16 @@ public class MessageRequeueHandler {
         newHeaders.put(X_MAX_RETRIES, configuration.getRetryMaxCount());
         newHeaders.put(X_ERROR_CODE, errorCode);
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
+
+        final var deadLetterExchangeName = amqpContext.getDeadLetterExchangeName();
+        if (deadLetterExchangeName.isPresent()) {
+            final var applicationName = instanceInfoProvider.getApplicationName();
+            final var instanceName = instanceInfoProvider.getInstanceName();
+            final var queueName = amqpContext.buildQueueName(applicationName, instanceName);
+            final var deadLetterRoutingKey = amqpContext.getDeadLetterRoutingKey(queueName);
+            newHeaders.put(X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
+            newHeaders.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
+        }
 
         AMQP.BasicProperties basicProperties = new AMQP.BasicProperties().builder().headers(newHeaders)
                 .appId(properties.getAppId())

@@ -1,7 +1,6 @@
 package id.global.event.messaging.runtime.consumer;
 
 import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.event.messaging.runtime.consumer.AmqpConsumer.ERROR_MESSAGE_EXCHANGE;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -18,6 +17,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
 import id.global.common.headers.amqp.MessagingHeaders;
+import id.global.common.iris.Exchanges;
 import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.error.SecurityError;
 import id.global.event.messaging.runtime.api.error.ServerError;
@@ -25,6 +25,7 @@ import id.global.event.messaging.runtime.api.exception.BadMessageException;
 import id.global.event.messaging.runtime.api.exception.MessagingException;
 import id.global.event.messaging.runtime.api.exception.SecurityException;
 import id.global.event.messaging.runtime.api.exception.ServerException;
+import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.error.ErrorMessage;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
@@ -55,7 +56,8 @@ public class AmqpErrorHandler {
         this.retryEnqueuer = retryEnqueuer;
     }
 
-    public void handleException(final Delivery message, final Channel channel, final Throwable throwable) {
+    public void handleException(final AmqpContext amqpContext, final Delivery message, final Channel channel,
+            final Throwable throwable) {
         try {
             if (throwable instanceof AmqpSendException) {
                 log.error("Exception sending/forwarding event.", throwable);
@@ -69,9 +71,9 @@ public class AmqpErrorHandler {
             } else if (throwable instanceof BadMessageException) {
                 handleBadMessageException(message, channel, (BadMessageException) throwable);
             } else if (throwable instanceof ServerException) {
-                handleServerException(message, channel, (ServerException) throwable);
+                handleServerException(amqpContext, message, channel, (ServerException) throwable);
             } else {
-                handleServerException(ServerError.INTERNAL_SERVER_ERROR, message, channel, false, throwable);
+                handleServerException(amqpContext, ServerError.INTERNAL_SERVER_ERROR, message, channel, false, throwable);
             }
         } catch (IOException exception) {
             log.error("IOException encountered while handling error. Handled message will be requeued.", exception);
@@ -101,16 +103,23 @@ public class AmqpErrorHandler {
         acknowledgeMessage(message, channel, exception);
     }
 
-    private void handleServerException(final Delivery message, final Channel channel, final ServerException e)
+    private void handleServerException(final AmqpContext amqpContext, final Delivery message, final Channel channel,
+            final ServerException e)
             throws IOException {
-        handleServerException(e.getMessagingError(), message, channel, e.shouldNotifyFrontend(), e);
+        handleServerException(amqpContext, e.getMessagingError(), message, channel, e.shouldNotifyFrontend(), e);
     }
 
-    private void handleServerException(final MessagingError messageError, final Delivery message, final Channel channel,
-            boolean shouldNotifyFrontend, final Throwable throwable) throws IOException {
+    private void handleServerException(final AmqpContext amqpContext,
+            final MessagingError messageError,
+            final Delivery message,
+            final Channel channel,
+            boolean shouldNotifyFrontend,
+            final Throwable throwable)
+            throws IOException {
+
         log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
         channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-        retryEnqueuer.enqueueWithBackoff(message, messageError.getClientCode(), shouldNotifyFrontend);
+        retryEnqueuer.enqueueWithBackoff(amqpContext, message, messageError.getClientCode(), shouldNotifyFrontend);
     }
 
     private void acknowledgeMessage(final Delivery message, final Channel channel, final MessagingException exception)
@@ -125,13 +134,13 @@ public class AmqpErrorHandler {
     private void sendErrorMessage(ErrorMessage message, Delivery consumedMessage, Channel channel) {
         final var headers = new HashMap<>(eventContext.getHeaders());
         headers.remove(MessagingHeaders.Message.JWT);
-        headers.put(EVENT_TYPE, ERROR_MESSAGE_EXCHANGE);
+        headers.put(EVENT_TYPE, Exchanges.ERROR);
         final var basicProperties = consumedMessage.getProperties().builder()
                 .headers(headers)
                 .build();
         final var routingKey = consumedMessage.getEnvelope().getExchange() + ERROR_ROUTING_KEY_SUFFIX;
         try {
-            channel.basicPublish(ERROR_MESSAGE_EXCHANGE, routingKey, basicProperties, objectMapper.writeValueAsBytes(message));
+            channel.basicPublish(Exchanges.ERROR, routingKey, basicProperties, objectMapper.writeValueAsBytes(message));
         } catch (IOException e) {
             log.error("Unable to write error message as bytes. Discarding error message. Message: {}", message);
         }

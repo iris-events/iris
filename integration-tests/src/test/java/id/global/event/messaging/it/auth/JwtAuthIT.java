@@ -1,6 +1,5 @@
 package id.global.event.messaging.it.auth;
 
-import static id.global.event.messaging.runtime.consumer.AmqpConsumer.ERROR_MESSAGE_EXCHANGE;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -31,6 +30,7 @@ import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.auth.jwt.Role;
 import id.global.common.headers.amqp.MessagingHeaders;
+import id.global.common.iris.Exchanges;
 import id.global.event.messaging.it.AbstractIntegrationTest;
 import id.global.event.messaging.runtime.api.error.SecurityError;
 import io.quarkus.test.junit.QuarkusTest;
@@ -56,8 +56,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         channel = connection.createChannel(ThreadLocalRandom.current().nextInt(0, 1000));
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
-        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_AUTH_MESSAGE + ".error");
-        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, JWT_ROLE_SECURED_HANDLER_MESSAGE + ".error");
+        channel.queueBind(errorMessageQueue, Exchanges.ERROR, JWT_AUTH_MESSAGE + ".error");
+        channel.queueBind(errorMessageQueue, Exchanges.ERROR, JWT_ROLE_SECURED_HANDLER_MESSAGE + ".error");
     }
 
     @DisplayName("Resolve valid JWT")

@@ -30,7 +30,7 @@ public abstract class AbstractChannelService implements ChannelService {
     }
 
     @Override
-    public Channel getOrCreateChannelById(String channelId) throws IOException {
+    public Channel getOrCreateChannelById(String channelId) {
         Channel channel = channelMap.computeIfAbsent(channelId, this::createChannel);
         if (channel == null) {
             throw new AmqpConnectionException("Could not create channel.");
@@ -39,7 +39,7 @@ public abstract class AbstractChannelService implements ChannelService {
     }
 
     @Override
-    public void removeChannel(String oldChannelId) throws IOException {
+    public void removeChannel(String oldChannelId) {
         Channel channel = channelMap.get(oldChannelId);
         if (channel.isOpen()) {
             try {
