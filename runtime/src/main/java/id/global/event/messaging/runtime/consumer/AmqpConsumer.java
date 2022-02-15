@@ -20,7 +20,7 @@ import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.common.annotations.amqp.ExchangeType;
-import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.QueueNameProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 
@@ -31,8 +31,8 @@ public class AmqpConsumer {
 
     private final AmqpContext context;
     private final ChannelService channelService;
-    private final InstanceInfoProvider instanceInfoProvider;
     private final DeliverCallbackProvider deliverCallbackProvider;
+    private final QueueNameProvider queueNameProvider;
 
     private DeliverCallback callback;
     private String channelId;
@@ -40,13 +40,13 @@ public class AmqpConsumer {
     public AmqpConsumer(
             final AmqpContext context,
             final ChannelService channelService,
-            final InstanceInfoProvider instanceInfoProvider,
-            final DeliverCallbackProvider deliverCallbackProvider) {
+            final DeliverCallbackProvider deliverCallbackProvider,
+            final QueueNameProvider queueNameProvider) {
 
         this.context = context;
         this.channelService = channelService;
-        this.instanceInfoProvider = instanceInfoProvider;
         this.deliverCallbackProvider = deliverCallbackProvider;
+        this.queueNameProvider = queueNameProvider;
         this.channelId = UUID.randomUUID().toString();
     }
 
@@ -70,9 +70,7 @@ public class AmqpConsumer {
         final var queueDeclarationArgs = new HashMap<String, Object>();
         final var exchange = context.getName();
         final var consumerOnEveryInstance = context.isConsumerOnEveryInstance();
-        final var applicationName = instanceInfoProvider.getApplicationName();
-        final var instanceName = instanceInfoProvider.getInstanceName();
-        final var queueName = context.buildQueueName(applicationName, instanceName);
+        final var queueName = queueNameProvider.getQueueName(context);
 
         // set prefetch count "quality of service"
         final int prefetchCount = context.getPrefetch();
@@ -154,13 +152,11 @@ public class AmqpConsumer {
     }
 
     private void declareAndBindDeadLetterQueue(final Channel channel, final String deadLetterQueue) throws IOException {
-        if (context.isDefaultDeadLetterQueue()) {
-            // default is already declared
-            return;
+        if (context.isCustomDeadLetterQueue()) {
+            channel.exchangeDeclare(deadLetterQueue, BuiltinExchangeType.TOPIC, true);
+            channel.queueDeclare(deadLetterQueue, true, false, false, null);
+            channel.queueBind(deadLetterQueue, deadLetterQueue, "#");
         }
-        channel.exchangeDeclare(deadLetterQueue, BuiltinExchangeType.TOPIC, true);
-        channel.queueDeclare(deadLetterQueue, true, false, false, null);
-        channel.queueBind(deadLetterQueue, deadLetterQueue, "#");
     }
 
     private boolean getDurable() {

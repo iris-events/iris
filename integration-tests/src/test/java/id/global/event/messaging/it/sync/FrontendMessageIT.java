@@ -26,7 +26,6 @@ import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
 import id.global.common.iris.Exchanges;
 import id.global.event.messaging.it.IsolatedEventContextTest;
-import id.global.event.messaging.runtime.infrastructure.DefaultInfrastructureDeclarator;
 import io.quarkiverse.rabbitmqclient.RabbitMQClient;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -46,9 +45,6 @@ public class FrontendMessageIT extends IsolatedEventContextTest {
 
     @Inject
     ObjectMapper objectMapper;
-
-    @Inject
-    DefaultInfrastructureDeclarator defaultInfrastructureDeclarator;
 
     private Channel channel;
 

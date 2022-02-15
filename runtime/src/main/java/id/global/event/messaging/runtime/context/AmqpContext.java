@@ -13,8 +13,6 @@ import id.global.common.iris.Queues;
 
 public final class AmqpContext {
 
-    private static final String DEAD_PREFIX = "dead.";
-    private static final String DEAD_LETTER = "dead-letter";
     private static final ExchangeType DEFAULT_EXCHANGE_TYPE = ExchangeType.FANOUT;
 
     private String name;
@@ -64,40 +62,34 @@ public final class AmqpContext {
         return scope == Scope.FRONTEND;
     }
 
-    public String buildQueueName(final String applicationName, final String instanceName) {
-
-        StringBuilder stringBuffer = new StringBuilder()
-                .append(applicationName)
-                .append(".")
-                .append(name);
-
-        if (consumerOnEveryInstance && Objects.nonNull(instanceName) && !instanceName.isBlank()) {
-            stringBuffer.append(".").append(instanceName);
-        }
-
-        if (exchangeType == ExchangeType.DIRECT || exchangeType == ExchangeType.TOPIC) {
-            final var bindingKeys = String.join("-", getBindingKeys());
-            stringBuffer.append(".").append(bindingKeys);
-        }
-
-        return stringBuffer.toString();
-    }
-
     public Optional<String> getDeadLetterQueueName() {
         final var deadLetterQueue = getDeadLetterQueue();
         if (deadLetterQueue.isBlank()) {
             return Optional.empty();
         }
 
-        if (isFrontendMessage() && isDefaultDeadLetterQueue()) {
-            return Optional.of(Queues.DEAD_LETTER_FRONTEND);
+        if (isFrontendMessage()) {
+            return Optional.empty();
         }
 
-        return Optional.of(DEAD_PREFIX + deadLetterQueue);
+        if (deadLetterQueue.startsWith(Queues.DEAD_LETTER_PREFIX)) {
+            return Optional.of(deadLetterQueue);
+        }
+
+        return Optional.of(Queues.DEAD_LETTER_PREFIX + deadLetterQueue);
     }
 
-    public boolean isDefaultDeadLetterQueue() {
-        return deadLetterQueue.equals(DEAD_LETTER);
+    /**
+     * @return true when dead letter queue is set and is not default
+     */
+    public boolean isCustomDeadLetterQueue() {
+        return getDeadLetterQueueName()
+                .map(deadLetterQueueName -> !isDefaultDeadLetterQueueName(deadLetterQueueName))
+                .orElse(false);
+    }
+
+    private boolean isDefaultDeadLetterQueueName(final String deadLetterQueueName) {
+        return deadLetterQueueName.equals(Queues.DEAD_LETTER);
     }
 
     public Optional<String> getDeadLetterExchangeName() {
@@ -105,7 +97,7 @@ public final class AmqpContext {
     }
 
     public String getDeadLetterRoutingKey(final String queueName) {
-        return DEAD_PREFIX + queueName;
+        return Queues.DEAD_LETTER_PREFIX + queueName;
     }
 
     public String getName() {

@@ -16,14 +16,15 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.QueueNameProvider;
 import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
-import id.global.event.messaging.runtime.infrastructure.DefaultInfrastructureDeclarator;
+import id.global.event.messaging.runtime.exception.AmqpExceptionHandler;
+import id.global.event.messaging.runtime.infrastructure.AmqpInfrastructureDeclarator;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 
 @ApplicationScoped
@@ -35,11 +36,11 @@ public class AmqpConsumerContainer {
     private final Map<String, AmqpConsumer> consumerMap;
     private final ChannelService consumerChannelService;
     private final AmqpProducer producer;
-    private final InstanceInfoProvider instanceInfoProvider;
+    private final QueueNameProvider queueNameProvider;
     private final GidJwtValidator jwtValidator;
     private final FrontendAmqpConsumer frontendAmqpConsumer;
-    private final AmqpErrorHandler errorHandler;
-    private final DefaultInfrastructureDeclarator infrastructureDeclarator;
+    private final AmqpExceptionHandler errorHandler;
+    private final AmqpInfrastructureDeclarator infrastructureDeclarator;
 
     @Inject
     public AmqpConsumerContainer(
@@ -47,14 +48,13 @@ public class AmqpConsumerContainer {
             final EventContext eventContext,
             @Named("consumerChannelService") final ChannelService consumerChannelService,
             final AmqpProducer producer,
-            final InstanceInfoProvider instanceInfoProvider,
-            final GidJwtValidator jwtValidator,
+            final QueueNameProvider queueNameProvider, final GidJwtValidator jwtValidator,
             final FrontendAmqpConsumer frontendAmqpConsumer,
-            final AmqpErrorHandler errorHandler,
-            final DefaultInfrastructureDeclarator infrastructureDeclarator) {
+            final AmqpExceptionHandler errorHandler,
+            final AmqpInfrastructureDeclarator infrastructureDeclarator) {
 
         this.consumerChannelService = consumerChannelService;
-        this.instanceInfoProvider = instanceInfoProvider;
+        this.queueNameProvider = queueNameProvider;
         this.jwtValidator = jwtValidator;
         this.errorHandler = errorHandler;
         this.infrastructureDeclarator = infrastructureDeclarator;
@@ -67,7 +67,7 @@ public class AmqpConsumerContainer {
 
     public void initConsumers() {
         try {
-            infrastructureDeclarator.init();
+            infrastructureDeclarator.declareBackboneInfrastructure();
         } catch (IOException e) {
             final var msg = "Could not initialize default infrastructure";
             log.error(msg, e);
@@ -101,8 +101,8 @@ public class AmqpConsumerContainer {
         consumerMap.put(UUID.randomUUID().toString(), new AmqpConsumer(
                 amqpContext,
                 consumerChannelService,
-                instanceInfoProvider,
-                deliverCallbackProvider));
+                deliverCallbackProvider,
+                queueNameProvider));
     }
 
     public void addFrontendCallback(MethodHandle methodHandle, MethodHandleContext methodHandleContext,

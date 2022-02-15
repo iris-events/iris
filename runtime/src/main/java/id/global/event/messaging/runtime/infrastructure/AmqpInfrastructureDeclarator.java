@@ -21,9 +21,9 @@ import id.global.common.iris.Queues;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
 
 @ApplicationScoped
-public class DefaultInfrastructureDeclarator {
+public class AmqpInfrastructureDeclarator {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultInfrastructureDeclarator.class);
+    private static final Logger log = LoggerFactory.getLogger(AmqpInfrastructureDeclarator.class);
     public static final int RETRY_QUEUE_TTL = 5000;
     public static final String CHANNEL_ID = "infrastructureDeclarator";
 
@@ -32,13 +32,9 @@ public class DefaultInfrastructureDeclarator {
     @Inject
     ProducerChannelService channelService;
 
-    public void init() throws IOException {
-        log.info("Initializing default iris exchanges and queues...");
+    public void declareBackboneInfrastructure() throws IOException {
+        log.info("Initializing backbone Iris infrastructure (exchanges, queues).");
         channel = channelService.getOrCreateChannelById(CHANNEL_ID);
-        declareDefaultExchangeAndQueues();
-    }
-
-    private void declareDefaultExchangeAndQueues() throws IOException {
         declareError();
         declareRetry();
         declareDeadLetter();
@@ -73,11 +69,8 @@ public class DefaultInfrastructureDeclarator {
 
     private void declareDeadLetter() throws IOException {
         channel.exchangeDeclare(Exchanges.DEAD_LETTER, BuiltinExchangeType.TOPIC, true);
-        channel.exchangeDeclare(Exchanges.DEAD_LETTER_FRONTEND, BuiltinExchangeType.TOPIC, true);
         channel.queueDeclare(Queues.DEAD_LETTER, true, false, false, null);
-        channel.queueDeclare(Queues.DEAD_LETTER_FRONTEND, true, false, false, null);
         channel.queueBind(Queues.DEAD_LETTER, Exchanges.DEAD_LETTER, "#");
-        channel.queueBind(Queues.DEAD_LETTER_FRONTEND, Exchanges.DEAD_LETTER_FRONTEND, "#");
     }
 
     private void declareFrontend() throws IOException {

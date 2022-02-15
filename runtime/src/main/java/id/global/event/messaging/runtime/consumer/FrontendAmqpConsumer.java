@@ -1,7 +1,5 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
-import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
 import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 import java.io.IOException;
@@ -22,7 +20,6 @@ import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 
 import id.global.common.iris.Exchanges;
-import id.global.common.iris.Queues;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
@@ -61,8 +58,6 @@ public class FrontendAmqpConsumer {
             Channel channel = this.channelService.getOrCreateChannelById(this.channelId);
             String frontendQueue = getFrontendQueue();
             final var queueDeclarationArgs = new HashMap<String, Object>();
-            queueDeclarationArgs.put(X_DEAD_LETTER_ROUTING_KEY, Queues.DEAD_LETTER_FRONTEND);
-            queueDeclarationArgs.put(X_DEAD_LETTER_EXCHANGE, Exchanges.DEAD_LETTER_FRONTEND);
             queueDeclarationArgs.put(X_MESSAGE_TTL, DEFAULT_MESSAGE_TTL);
             channel.queueDeclare(frontendQueue, true, false, false, queueDeclarationArgs);
 

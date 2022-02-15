@@ -1,4 +1,4 @@
-package id.global.event.messaging.runtime.consumer;
+package id.global.event.messaging.runtime.exception;
 
 import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
 
@@ -28,17 +28,15 @@ import id.global.event.messaging.runtime.api.exception.ServerException;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.error.ErrorMessage;
-import id.global.event.messaging.runtime.exception.AmqpSendException;
-import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
 
 @ApplicationScoped
-public class AmqpErrorHandler {
+public class AmqpExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(AmqpErrorHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(AmqpExceptionHandler.class);
     public static final String ERROR_ROUTING_KEY_SUFFIX = ".error";
 
     private final ObjectMapper objectMapper;
@@ -46,7 +44,7 @@ public class AmqpErrorHandler {
     private final MessageRequeueHandler retryEnqueuer;
 
     @Inject
-    public AmqpErrorHandler(
+    public AmqpExceptionHandler(
             final ObjectMapper objectMapper,
             final EventContext eventContext,
             final MessageRequeueHandler retryEnqueuer) {
@@ -70,10 +68,8 @@ public class AmqpErrorHandler {
                 handleSecurityException(message, channel, (SecurityException) throwable);
             } else if (throwable instanceof BadMessageException) {
                 handleBadMessageException(message, channel, (BadMessageException) throwable);
-            } else if (throwable instanceof ServerException) {
-                handleServerException(amqpContext, message, channel, (ServerException) throwable);
             } else {
-                handleServerException(amqpContext, ServerError.INTERNAL_SERVER_ERROR, message, channel, false, throwable);
+                handleServerException(amqpContext, message, channel, throwable);
             }
         } catch (IOException exception) {
             log.error("IOException encountered while handling error. Handled message will be requeued.", exception);
@@ -89,7 +85,7 @@ public class AmqpErrorHandler {
                 "Authentication failed, message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s'",
                 exception.getCode(), originalExchange, originalRoutingKey), exception);
 
-        acknowledgeMessage(message, channel, exception);
+        acknowledgeMessageAndSendError(message, channel, exception);
     }
 
     private void handleBadMessageException(final Delivery message, final Channel channel,
@@ -100,34 +96,39 @@ public class AmqpErrorHandler {
                 "Bad message received, message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s'",
                 exception.getCode(), originalExchange, originalRoutingKey), exception);
 
-        acknowledgeMessage(message, channel, exception);
-    }
-
-    private void handleServerException(final AmqpContext amqpContext, final Delivery message, final Channel channel,
-            final ServerException e)
-            throws IOException {
-        handleServerException(amqpContext, e.getMessagingError(), message, channel, e.shouldNotifyFrontend(), e);
+        acknowledgeMessageAndSendError(message, channel, exception);
     }
 
     private void handleServerException(final AmqpContext amqpContext,
-            final MessagingError messageError,
             final Delivery message,
             final Channel channel,
-            boolean shouldNotifyFrontend,
             final Throwable throwable)
             throws IOException {
 
+        MessagingError messageError = ServerError.INTERNAL_SERVER_ERROR;
+        boolean shouldNotifyFrontend = false;
+        if (throwable instanceof ServerException serverException) {
+            messageError = serverException.getMessagingError();
+            shouldNotifyFrontend = serverException.shouldNotifyFrontend();
+        }
+
         log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
-        channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+        acknowledgeMessage(channel, message);
         retryEnqueuer.enqueueWithBackoff(amqpContext, message, messageError.getClientCode(), shouldNotifyFrontend);
     }
 
-    private void acknowledgeMessage(final Delivery message, final Channel channel, final MessagingException exception)
-            throws IOException {
+    private void acknowledgeMessageAndSendError(
+            final Delivery message,
+            final Channel channel,
+            final MessagingException exception) throws IOException {
 
         final var errorMessage = new ErrorMessage(exception.getMessagingError(), exception.getMessage());
         sendErrorMessage(errorMessage, message, channel);
 
+        acknowledgeMessage(channel, message);
+    }
+
+    private void acknowledgeMessage(final Channel channel, final Delivery message) throws IOException {
         channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
     }
 
@@ -146,7 +147,7 @@ public class AmqpErrorHandler {
         }
     }
 
-    protected static MessagingError getSecurityMessageError(java.lang.SecurityException securityException) {
+    public static MessagingError getSecurityMessageError(java.lang.SecurityException securityException) {
         // TODO: change with switch once available as non-preview
         MessagingError error;
         if (securityException instanceof AuthenticationFailedException) {

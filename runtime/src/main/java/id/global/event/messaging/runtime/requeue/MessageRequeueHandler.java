@@ -23,7 +23,7 @@ import com.rabbitmq.client.Delivery;
 
 import id.global.common.iris.Exchanges;
 import id.global.common.iris.Queues;
-import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.QueueNameProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.AmqpContext;
@@ -33,14 +33,14 @@ public class MessageRequeueHandler {
 
     private final Channel channel;
     private final AmqpConfiguration configuration;
-    private final InstanceInfoProvider instanceInfoProvider;
+    private final QueueNameProvider queueNameProvider;
 
     @Inject
     public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
-            AmqpConfiguration configuration, InstanceInfoProvider instanceInfoProvider) throws IOException {
+            AmqpConfiguration configuration, QueueNameProvider queueNameProvider) throws IOException {
 
         this.configuration = configuration;
-        this.instanceInfoProvider = instanceInfoProvider;
+        this.queueNameProvider = queueNameProvider;
         String channelId = UUID.randomUUID().toString();
         this.channel = channelService.getOrCreateChannelById(channelId);
     }
@@ -66,9 +66,7 @@ public class MessageRequeueHandler {
 
         final var deadLetterExchangeName = amqpContext.getDeadLetterExchangeName();
         if (deadLetterExchangeName.isPresent()) {
-            final var applicationName = instanceInfoProvider.getApplicationName();
-            final var instanceName = instanceInfoProvider.getInstanceName();
-            final var queueName = amqpContext.buildQueueName(applicationName, instanceName);
+            final var queueName = queueNameProvider.getQueueName(amqpContext);
             final var deadLetterRoutingKey = amqpContext.getDeadLetterRoutingKey(queueName);
             newHeaders.put(X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
             newHeaders.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);

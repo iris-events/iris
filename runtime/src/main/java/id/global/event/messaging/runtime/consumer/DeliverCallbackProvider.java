@@ -1,6 +1,6 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.event.messaging.runtime.consumer.AmqpErrorHandler.getSecurityMessageError;
+import static id.global.event.messaging.runtime.exception.AmqpExceptionHandler.getSecurityMessageError;
 
 import java.lang.invoke.MethodHandle;
 import java.util.Optional;
@@ -19,6 +19,7 @@ import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
+import id.global.event.messaging.runtime.exception.AmqpExceptionHandler;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
@@ -35,7 +36,7 @@ public class DeliverCallbackProvider {
     private final MethodHandle methodHandle;
     private final MethodHandleContext methodHandleContext;
     private final GidJwtValidator jwtValidator;
-    private final AmqpErrorHandler errorHandler;
+    private final AmqpExceptionHandler errorHandler;
 
     public DeliverCallbackProvider(
             final ObjectMapper objectMapper,
@@ -46,7 +47,7 @@ public class DeliverCallbackProvider {
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
             final GidJwtValidator jwtValidator,
-            final AmqpErrorHandler errorHandler) {
+            final AmqpExceptionHandler errorHandler) {
 
         this.objectMapper = objectMapper;
         this.producer = producer;
