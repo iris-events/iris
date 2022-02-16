@@ -20,6 +20,7 @@ import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 
 import id.global.common.iris.Exchanges;
+import id.global.common.iris.Queues;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
@@ -29,7 +30,6 @@ public class FrontendAmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(FrontendAmqpConsumer.class);
 
     private static final int DEFAULT_MESSAGE_TTL = 15000;
-    private final static String FRONTEND_QUEUE_POSTFIX = "frontend";
 
     private final ChannelService channelService;
     private final InstanceInfoProvider instanceInfoProvider;
@@ -120,6 +120,6 @@ public class FrontendAmqpConsumer {
     }
 
     private String getFrontendQueue() {
-        return String.format("%s.%s", this.instanceInfoProvider.getApplicationName(), FRONTEND_QUEUE_POSTFIX);
+        return String.format("%s.%s", this.instanceInfoProvider.getApplicationName(), Queues.FRONTEND_SUFFIX);
     }
 }
