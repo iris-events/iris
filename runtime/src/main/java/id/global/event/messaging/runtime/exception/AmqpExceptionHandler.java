@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-import id.global.common.headers.amqp.MessagingHeaders;
 import id.global.common.iris.Exchanges;
 import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.error.SecurityError;
@@ -134,7 +133,6 @@ public class AmqpExceptionHandler {
 
     private void sendErrorMessage(ErrorMessage message, Delivery consumedMessage, Channel channel) {
         final var headers = new HashMap<>(eventContext.getHeaders());
-        headers.remove(MessagingHeaders.Message.JWT);
         headers.put(EVENT_TYPE, Exchanges.ERROR);
         final var basicProperties = consumedMessage.getProperties().builder()
                 .headers(headers)

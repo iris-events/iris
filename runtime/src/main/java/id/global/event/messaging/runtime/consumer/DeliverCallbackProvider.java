@@ -28,6 +28,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 
 public class DeliverCallbackProvider {
 
+    public static final String GID_UUID = "gidUuid";
     private final EventContext eventContext;
     private final ObjectMapper objectMapper;
     private final AmqpProducer producer;
@@ -95,6 +96,8 @@ public class DeliverCallbackProvider {
             if (!association.isResolvable()) {
                 throw new AuthenticationFailedException("JWT identity association not resolvable.");
             }
+            Optional.ofNullable(securityIdentity.getPrincipal().getName())
+                    .ifPresent(subject -> MDC.put(GID_UUID, subject.toString()));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
             final var securityMessageError = getSecurityMessageError(securityException);
