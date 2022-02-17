@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import id.global.common.auth.jwt.Role;
+import id.global.common.iris.Queues;
 
 /**
  * Amqp producible event. Events annotated with this annotation should be used as a parameter in an Amqp producer send method.
@@ -54,7 +55,7 @@ public @interface Message {
     /**
      * Dead letter queue definition.
      */
-    String deadLetter() default "dead-letter";
+    String deadLetter() default Queues.DEAD_LETTER;
 
     /**
      * Defines the optional response message type. Applies only to the asyncapi definition. Response class must also be
