@@ -2,14 +2,19 @@ package id.global.event.messaging.runtime.context;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.common.auth.jwt.Role;
+import id.global.common.iris.Queues;
 
 public final class AmqpContext {
+
+    private static final ExchangeType DEFAULT_EXCHANGE_TYPE = ExchangeType.FANOUT;
+
     private String name;
     private List<String> bindingKeys;
     private ExchangeType exchangeType;
@@ -35,7 +40,7 @@ public final class AmqpContext {
             int prefetch,
             long ttl,
             String deadLetterQueue,
-            final Set<Role> handlerRolesAllowed) {
+            Set<Role> handlerRolesAllowed) {
         this.name = name;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -47,6 +52,52 @@ public final class AmqpContext {
         this.ttl = ttl;
         this.deadLetterQueue = deadLetterQueue;
         this.handlerRolesAllowed = handlerRolesAllowed;
+    }
+
+    public ExchangeType exchangeType() {
+        return Optional.ofNullable(exchangeType).orElse(DEFAULT_EXCHANGE_TYPE);
+    }
+
+    public boolean isFrontendMessage() {
+        return scope == Scope.FRONTEND;
+    }
+
+    public Optional<String> getDeadLetterQueueName() {
+        final var deadLetterQueue = getDeadLetterQueue();
+        if (deadLetterQueue.isBlank()) {
+            return Optional.empty();
+        }
+
+        if (isFrontendMessage()) {
+            return Optional.empty();
+        }
+
+        if (deadLetterQueue.startsWith(Queues.DEAD_LETTER_PREFIX)) {
+            return Optional.of(deadLetterQueue);
+        }
+
+        return Optional.of(Queues.DEAD_LETTER_PREFIX + deadLetterQueue);
+    }
+
+    /**
+     * @return true when dead letter queue is set and is not default
+     */
+    public boolean isCustomDeadLetterQueue() {
+        return getDeadLetterQueueName()
+                .map(deadLetterQueueName -> !isDefaultDeadLetterQueueName(deadLetterQueueName))
+                .orElse(false);
+    }
+
+    private boolean isDefaultDeadLetterQueueName(final String deadLetterQueueName) {
+        return deadLetterQueueName.equals(Queues.DEAD_LETTER);
+    }
+
+    public Optional<String> getDeadLetterExchangeName() {
+        return getDeadLetterQueueName();
+    }
+
+    public String getDeadLetterRoutingKey(final String queueName) {
+        return Queues.DEAD_LETTER_PREFIX + queueName;
     }
 
     public String getName() {
@@ -126,7 +177,7 @@ public final class AmqpContext {
     }
 
     public void setDeadLetterQueue(String deadLetterQueue) {
-        this.deadLetterQueue = deadLetterQueue;
+        this.deadLetterQueue = deadLetterQueue.trim();
     }
 
     public Set<Role> getHandlerRolesAllowed() {
@@ -159,8 +210,8 @@ public final class AmqpContext {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, bindingKeys, exchangeType, scope, durable, autoDelete, consumerOnEveryInstance, prefetch,
-                ttl, deadLetterQueue, handlerRolesAllowed);
+        return Objects.hash(name, bindingKeys, exchangeType, scope, durable, autoDelete, consumerOnEveryInstance, prefetch, ttl,
+                deadLetterQueue, handlerRolesAllowed);
     }
 
     @Override
@@ -170,7 +221,7 @@ public final class AmqpContext {
             handlerRolesAllowed.forEach(role -> handlerRolesJoiner.add(role.value()));
         }
         return "AmqpContext[" +
-                "exchange=" + name + ", " +
+                "name=" + name + ", " +
                 "bindingKeys=" + bindingKeys + ", " +
                 "exchangeType=" + exchangeType + ", " +
                 "scope=" + scope + ", " +
@@ -179,9 +230,8 @@ public final class AmqpContext {
                 "consumerOnEveryInstance=" + consumerOnEveryInstance + ", " +
                 "prefetch=" + prefetch + ", " +
                 "ttl=" + ttl + ", " +
-                "deadLetterQueue=" + deadLetterQueue + "," +
-                "handlerRolesAllowed=" + handlerRolesJoiner +
-                "]";
+                "deadLetterQueue=" + deadLetterQueue + ", " +
+                "handlerRolesAllowed=" + handlerRolesJoiner + ']';
     }
 
 }

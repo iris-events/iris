@@ -106,7 +106,7 @@ public class AmqpProducer {
      * user.
      *
      * @param message message
-     * @param userId  user id
+     * @param userId user id
      */
     public void send(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
         doSend(message, userId);

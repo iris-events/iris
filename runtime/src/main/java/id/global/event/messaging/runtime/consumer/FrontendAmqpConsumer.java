@@ -1,7 +1,6 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
-import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
+import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,12 +14,13 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.CancelCallback;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 
+import id.global.common.iris.Exchanges;
+import id.global.common.iris.Queues;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.exception.AmqpConnectionException;
@@ -29,8 +29,7 @@ import id.global.event.messaging.runtime.exception.AmqpConnectionException;
 public class FrontendAmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(FrontendAmqpConsumer.class);
 
-    private final static String FRONTEND_EXCHANGE = "frontend";
-    private final static String FRONTEND_QUEUE_POSTFIX = "frontend";
+    private static final int DEFAULT_MESSAGE_TTL = 15000;
 
     private final ChannelService channelService;
     private final InstanceInfoProvider instanceInfoProvider;
@@ -57,11 +56,9 @@ public class FrontendAmqpConsumer {
     public void initChannel() {
         try {
             Channel channel = this.channelService.getOrCreateChannelById(this.channelId);
-            channel.exchangeDeclare(FRONTEND_EXCHANGE, BuiltinExchangeType.TOPIC, false);
             String frontendQueue = getFrontendQueue();
             final var queueDeclarationArgs = new HashMap<String, Object>();
-            queueDeclarationArgs.put(X_DEAD_LETTER_ROUTING_KEY, "dead." + frontendQueue);
-            queueDeclarationArgs.put(X_DEAD_LETTER_EXCHANGE, "dead." + FRONTEND_EXCHANGE);
+            queueDeclarationArgs.put(X_MESSAGE_TTL, DEFAULT_MESSAGE_TTL);
             channel.queueDeclare(frontendQueue, true, false, false, queueDeclarationArgs);
 
             setupDeliverCallbacks(channel);
@@ -78,7 +75,7 @@ public class FrontendAmqpConsumer {
     private void setupDeliverCallbacks(Channel channel) {
         deliverCallbackProviderMap.forEach((routingKey, callbackProvider) -> {
             try {
-                channel.queueBind(getFrontendQueue(), FRONTEND_EXCHANGE, routingKey);
+                channel.queueBind(getFrontendQueue(), Exchanges.FRONTEND, routingKey);
                 deliverCallbackMap.put(routingKey, callbackProvider.createDeliverCallback(channel));
             } catch (IOException e) {
                 String msg = String.format("Could not setup deliver callback for routing key = %s", routingKey);
@@ -123,6 +120,6 @@ public class FrontendAmqpConsumer {
     }
 
     private String getFrontendQueue() {
-        return String.format("%s.%s", this.instanceInfoProvider.getApplicationName(), FRONTEND_QUEUE_POSTFIX);
+        return String.format("%s.%s", this.instanceInfoProvider.getApplicationName(), Queues.FRONTEND_SUFFIX);
     }
 }

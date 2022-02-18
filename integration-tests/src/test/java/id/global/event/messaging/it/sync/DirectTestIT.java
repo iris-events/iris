@@ -110,7 +110,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
         final var errorCodeCaptor = ArgumentCaptor.forClass(String.class);
         final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
         verify(requeueHandler, timeout(500).times(1))
-                .enqueueWithBackoff(any(), errorCodeCaptor.capture(), notifyFrontendCaptor.capture());
+                .enqueueWithBackoff(any(), any(), errorCodeCaptor.capture(), notifyFrontendCaptor.capture());
 
         final var errorCode = errorCodeCaptor.getValue();
         final var notifyFrontend = notifyFrontendCaptor.getValue();

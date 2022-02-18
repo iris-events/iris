@@ -1,6 +1,5 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.event.messaging.runtime.consumer.AmqpConsumer.FRONTEND_MESSAGE_EXCHANGE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,6 +24,7 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.annotations.amqp.Scope;
+import id.global.common.iris.Exchanges;
 import id.global.event.messaging.it.IsolatedEventContextTest;
 import io.quarkiverse.rabbitmqclient.RabbitMQClient;
 import io.quarkus.test.junit.QuarkusTest;
@@ -60,18 +60,18 @@ public class FrontendMessageIT extends IsolatedEventContextTest {
         final var directEvent = new FrontendEvent(FRONTEND_REQUEST_DIRECT_EVENT_NAME, 10L);
         final AMQP.BasicProperties basicProperties = new AMQP.BasicProperties();
 
-        channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
+        channel.basicPublish(Exchanges.FRONTEND,
                 FRONTEND_REQUEST_EVENT_NAME,
                 basicProperties,
                 writeValueAsBytes(event));
 
         // should not disrupt, there is no binding
-        channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
+        channel.basicPublish(Exchanges.FRONTEND,
                 UNREGISTERED_FRONTEND_REQUEST,
                 basicProperties,
                 writeValueAsBytes(new UnregisteredFrontendEvent("unregistered", "data")));
 
-        channel.basicPublish(FRONTEND_MESSAGE_EXCHANGE,
+        channel.basicPublish(Exchanges.FRONTEND,
                 FRONTEND_REQUEST_DIRECT_EVENT_NAME,
                 basicProperties,
                 writeValueAsBytes(directEvent));

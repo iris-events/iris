@@ -1,8 +1,9 @@
 package id.global.event.messaging.runtime.consumer;
 
-import static id.global.event.messaging.runtime.consumer.AmqpErrorHandler.getSecurityMessageError;
+import static id.global.event.messaging.runtime.exception.AmqpExceptionHandler.getSecurityMessageError;
 
 import java.lang.invoke.MethodHandle;
+import java.security.Principal;
 import java.util.Optional;
 
 import javax.enterprise.inject.Instance;
@@ -19,6 +20,7 @@ import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
+import id.global.event.messaging.runtime.exception.AmqpExceptionHandler;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
@@ -27,6 +29,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 
 public class DeliverCallbackProvider {
 
+    public static final String GID_UUID = "gidUuid";
     private final EventContext eventContext;
     private final ObjectMapper objectMapper;
     private final AmqpProducer producer;
@@ -35,7 +38,7 @@ public class DeliverCallbackProvider {
     private final MethodHandle methodHandle;
     private final MethodHandleContext methodHandleContext;
     private final GidJwtValidator jwtValidator;
-    private final AmqpErrorHandler errorHandler;
+    private final AmqpExceptionHandler errorHandler;
 
     public DeliverCallbackProvider(
             final ObjectMapper objectMapper,
@@ -46,7 +49,7 @@ public class DeliverCallbackProvider {
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
             final GidJwtValidator jwtValidator,
-            final AmqpErrorHandler errorHandler) {
+            final AmqpExceptionHandler errorHandler) {
 
         this.objectMapper = objectMapper;
         this.producer = producer;
@@ -76,11 +79,15 @@ public class DeliverCallbackProvider {
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
                 channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
             } catch (Throwable throwable) {
-                errorHandler.handleException(message, channel, throwable);
+                errorHandler.handleException(amqpContext, message, channel, throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
         };
+    }
+
+    public AmqpContext getAmqpContext() {
+        return amqpContext;
     }
 
     private void authorizeMessage() {
@@ -90,6 +97,10 @@ public class DeliverCallbackProvider {
             if (!association.isResolvable()) {
                 throw new AuthenticationFailedException("JWT identity association not resolvable.");
             }
+            Optional.ofNullable(securityIdentity)
+                    .map(SecurityIdentity::getPrincipal)
+                    .map(Principal::getName)
+                    .ifPresent(subject -> MDC.put(GID_UUID, subject));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
             final var securityMessageError = getSecurityMessageError(securityException);

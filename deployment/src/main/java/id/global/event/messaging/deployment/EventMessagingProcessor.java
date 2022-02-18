@@ -12,6 +12,7 @@ import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.QueueNameProvider;
 import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
@@ -20,12 +21,13 @@ import id.global.event.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.event.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.event.messaging.runtime.connection.ProducerConnectionProvider;
 import id.global.event.messaging.runtime.consumer.AmqpConsumerContainer;
-import id.global.event.messaging.runtime.consumer.AmqpErrorHandler;
 import id.global.event.messaging.runtime.consumer.FrontendAmqpConsumer;
 import id.global.event.messaging.runtime.context.AmqpContext;
 import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
+import id.global.event.messaging.runtime.exception.AmqpExceptionHandler;
+import id.global.event.messaging.runtime.infrastructure.AmqpInfrastructureDeclarator;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.CorrelationIdProvider;
 import id.global.event.messaging.runtime.recorder.ConsumerInitRecorder;
@@ -87,7 +89,9 @@ class EventMessagingProcessor {
                                 CorrelationIdProvider.class,
                                 GidJwtValidator.class,
                                 FrontendAmqpConsumer.class,
-                                AmqpErrorHandler.class)
+                                AmqpExceptionHandler.class,
+                                AmqpInfrastructureDeclarator.class,
+                                QueueNameProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());

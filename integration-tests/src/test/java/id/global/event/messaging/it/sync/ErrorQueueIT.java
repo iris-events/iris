@@ -1,6 +1,5 @@
 package id.global.event.messaging.it.sync;
 
-import static id.global.event.messaging.runtime.consumer.AmqpConsumer.ERROR_MESSAGE_EXCHANGE;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -24,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.iris.Exchanges;
 import id.global.event.messaging.it.AbstractIntegrationTest;
 import id.global.event.messaging.runtime.api.error.ClientError;
 import id.global.event.messaging.runtime.api.error.ServerError;
@@ -58,8 +58,8 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         channel = connection.createChannel();
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
-        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, ERROR_QUEUE_BAD_REQUEST + ".error");
-        channel.queueBind(errorMessageQueue, ERROR_MESSAGE_EXCHANGE, ERROR_QUEUE_SERVER_ERROR + ".error");
+        channel.queueBind(errorMessageQueue, Exchanges.ERROR, ERROR_QUEUE_BAD_REQUEST + ".error");
+        channel.queueBind(errorMessageQueue, Exchanges.ERROR, ERROR_QUEUE_SERVER_ERROR + ".error");
     }
 
     @DisplayName("Send bad request error message on corrupted message")
@@ -85,7 +85,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         final var errorCodeCaptor = ArgumentCaptor.forClass(String.class);
         final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
         verify(requeueHandler, timeout(500).times(1))
-                .enqueueWithBackoff(any(), errorCodeCaptor.capture(), notifyFrontendCaptor.capture());
+                .enqueueWithBackoff(any(), any(), errorCodeCaptor.capture(), notifyFrontendCaptor.capture());
 
         final var errorCode = errorCodeCaptor.getValue();
         final var notifyFrontend = notifyFrontendCaptor.getValue();
