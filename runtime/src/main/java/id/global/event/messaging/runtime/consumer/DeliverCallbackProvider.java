@@ -3,6 +3,7 @@ package id.global.event.messaging.runtime.consumer;
 import static id.global.event.messaging.runtime.exception.AmqpExceptionHandler.getSecurityMessageError;
 
 import java.lang.invoke.MethodHandle;
+import java.security.Principal;
 import java.util.Optional;
 
 import javax.enterprise.inject.Instance;
@@ -96,8 +97,10 @@ public class DeliverCallbackProvider {
             if (!association.isResolvable()) {
                 throw new AuthenticationFailedException("JWT identity association not resolvable.");
             }
-            Optional.ofNullable(securityIdentity.getPrincipal().getName())
-                    .ifPresent(subject -> MDC.put(GID_UUID, subject.toString()));
+            Optional.ofNullable(securityIdentity)
+                    .map(SecurityIdentity::getPrincipal)
+                    .map(Principal::getName)
+                    .ifPresent(subject -> MDC.put(GID_UUID, subject));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
             final var securityMessageError = getSecurityMessageError(securityException);
