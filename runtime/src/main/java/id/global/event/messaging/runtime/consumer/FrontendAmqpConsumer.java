@@ -75,7 +75,7 @@ public class FrontendAmqpConsumer {
     private void setupDeliverCallbacks(Channel channel) {
         deliverCallbackProviderMap.forEach((routingKey, callbackProvider) -> {
             try {
-                channel.queueBind(getFrontendQueue(), Exchanges.FRONTEND, routingKey);
+                channel.queueBind(getFrontendQueue(), Exchanges.FRONTEND.getValue(), routingKey);
                 deliverCallbackMap.put(routingKey, callbackProvider.createDeliverCallback(channel));
             } catch (IOException e) {
                 String msg = String.format("Could not setup deliver callback for routing key = %s", routingKey);
@@ -120,6 +120,6 @@ public class FrontendAmqpConsumer {
     }
 
     private String getFrontendQueue() {
-        return String.format("%s.%s", this.instanceInfoProvider.getApplicationName(), Queues.FRONTEND_SUFFIX);
+        return String.format("%s.%s", this.instanceInfoProvider.getApplicationName(), Queues.FRONTEND_SUFFIX.getValue());
     }
 }

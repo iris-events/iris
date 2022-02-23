@@ -41,6 +41,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
     public static final String JWT_AUTH_MESSAGE = "jwt-auth-message";
     public static final String JWT_ROLE_SECURED_HANDLER_MESSAGE = "jwt-role-secured-handler";
+    private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
 
     @Inject
     JwtTestService service;
@@ -56,8 +57,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         channel = connection.createChannel(ThreadLocalRandom.current().nextInt(0, 1000));
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
-        channel.queueBind(errorMessageQueue, Exchanges.ERROR, JWT_AUTH_MESSAGE + ".error");
-        channel.queueBind(errorMessageQueue, Exchanges.ERROR, JWT_ROLE_SECURED_HANDLER_MESSAGE + ".error");
+        channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, JWT_AUTH_MESSAGE + ".error");
+        channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, JWT_ROLE_SECURED_HANDLER_MESSAGE + ".error");
     }
 
     @DisplayName("Resolve valid JWT")
