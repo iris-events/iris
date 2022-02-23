@@ -6,7 +6,7 @@ public enum Exchanges {
     ERROR("error"),
     FRONTEND("frontend"),
     RETRY("retry"),
-    ROADCAST("broadcast"),
+    BROADCAST("broadcast"),
     SESSION("session"),
     USER("user");
 
