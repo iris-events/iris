@@ -171,6 +171,29 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
                     Arguments.of(NonKebabExchangeTopicEvent.class, Set.of(NAME_PARAM)),
                     Arguments.of(NonKebabDeadLetterEvent.class, Set.of(DEAD_LETTER_PARAM)));
         }
+
+        @ParameterizedTest
+        @MethodSource
+        public void validateReservedNames(Class<?> eventClass) {
+            final var annotationInstance = getAnnotationInstance(CONSUMED_EVENT_ANNOTATION_CLASS, eventClass);
+            final var validator = getValidatorService(eventClass);
+
+            final var exception = assertThrows(MessageHandlerValidationException.class,
+                    () -> validator.validate(annotationInstance));
+
+            assertThat(exception.getMessage(), containsString("is using reserved names"));
+            assertThat(exception.getMessage(), containsString(annotationInstance.name().toString()));
+            assertThat(exception.getMessage(), containsString(eventClass.getName()));
+        }
+
+        @SuppressWarnings("unused")
+        private static Stream<Arguments> validateReservedNames() {
+            return Stream.of(
+                    Arguments.of(RetryNameEvent.class),
+                    Arguments.of(RetryRoutingKeyEvent.class),
+                    Arguments.of(ErrorNameEvent.class),
+                    Arguments.of(ErrorRoutingKeyEvent.class));
+        }
     }
 
     private AnnotationInstanceValidator getValidatorService(Class<?>... annotatedClasses) {
@@ -272,6 +295,22 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     @Message(exchangeType = ExchangeType.DIRECT, name = "direct-exchange", routingKey = "direct-queue-forwarded-event")
     public record ForwardedEvent() {
+    }
+
+    @Message(name = "retry")
+    public record RetryNameEvent() {
+    }
+
+    @Message(name = "valid", routingKey = "retry")
+    public record RetryRoutingKeyEvent() {
+    }
+
+    @Message(name = "error")
+    public record ErrorNameEvent() {
+    }
+
+    @Message(name = "alsoValid", routingKey = "error")
+    public record ErrorRoutingKeyEvent() {
     }
 
     public record ForwardedEventWithoutAnnotation() {

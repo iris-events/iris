@@ -40,7 +40,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
     private static final String ERROR_QUEUE_BAD_REQUEST = "error-queue-bad-request";
     private static final String ERROR_QUEUE_SERVER_ERROR = "error-queue-server-error";
-    public static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
+    private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
 
     @Inject
     AmqpProducer producer;

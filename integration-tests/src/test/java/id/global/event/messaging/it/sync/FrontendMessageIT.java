@@ -61,7 +61,6 @@ public class FrontendMessageIT extends IsolatedEventContextTest {
         final var directEvent = new FrontendEvent(FRONTEND_REQUEST_DIRECT_EVENT_NAME, 10L);
         final AMQP.BasicProperties basicProperties = new AMQP.BasicProperties();
 
-
         channel.basicPublish(FRONTEND_EXCHANGE,
                 FRONTEND_REQUEST_EVENT_NAME,
                 basicProperties,
