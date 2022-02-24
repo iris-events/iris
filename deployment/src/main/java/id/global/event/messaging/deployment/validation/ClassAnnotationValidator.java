@@ -5,6 +5,7 @@ import static id.global.event.messaging.deployment.constants.AnnotationInstanceP
 import static id.global.event.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY_PARAM;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
 import id.global.amqp.parsers.ExchangeTypeParser;
+import id.global.asyncapi.runtime.scanner.validator.ReservedAmqpNamesProvider;
 import id.global.common.annotations.amqp.ExchangeType;
 import id.global.event.messaging.deployment.MessageHandlerValidationException;
 
@@ -27,7 +29,23 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
 
     @Override
     public void validate(final AnnotationInstance annotationInstance, final IndexView index) {
+        validateReservedQueuesExchanges(annotationInstance, index);
         validateParamsAreKebabCase(annotationInstance, index);
+    }
+
+    private void validateReservedQueuesExchanges(AnnotationInstance annotationInstance, IndexView index) {
+        final var params = Stream.of(NAME_PARAM, ROUTING_KEY_PARAM);
+
+        final var illigalNames = ReservedAmqpNamesProvider.getReservedNames();
+        final var paramsWithIllegalNames = params
+                .filter(param -> illigalNames.contains(annotationInstance.valueWithDefault(index, param).asString()))
+                .toList();
+
+        if (paramsWithIllegalNames.isEmpty()) {
+            return;
+        }
+
+        throw createUsingReservedNamesException(annotationInstance, paramsWithIllegalNames);
     }
 
     private void validateParamsAreKebabCase(final AnnotationInstance annotationInstance, IndexView index) {
@@ -70,6 +88,14 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
         throw new MessageHandlerValidationException(
                 String.format("Parameter(s) \"%s\" of annotation %s on class %s is not formatted in kebab case.",
                         nonKebabCaseParamsString, annotationInstance.name(), getTargetClassName(annotationInstance)));
+    }
+
+    private MessageHandlerValidationException createUsingReservedNamesException(AnnotationInstance annotationInstance,
+            List<String> usedReservedNamesList) {
+        final var usedReservedNames = String.join(", ", usedReservedNamesList);
+        throw new MessageHandlerValidationException(
+                String.format("Annotation %s on class %s is using reserved names [%s]",
+                        annotationInstance.name(), getTargetClassName(annotationInstance), usedReservedNames));
     }
 
     @Override

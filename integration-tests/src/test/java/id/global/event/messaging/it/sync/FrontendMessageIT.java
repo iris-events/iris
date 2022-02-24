@@ -36,6 +36,7 @@ public class FrontendMessageIT extends IsolatedEventContextTest {
     public static final String FRONTEND_REQUEST_EVENT_NAME = "frontend-request-event";
     public static final String FRONTEND_REQUEST_DIRECT_EVENT_NAME = "frontend-request-direct-event";
     public static final String UNREGISTERED_FRONTEND_REQUEST = "unregistered-request";
+    private static final String FRONTEND_EXCHANGE = Exchanges.FRONTEND.getValue();
 
     @Inject
     HandlerService service;
@@ -60,18 +61,18 @@ public class FrontendMessageIT extends IsolatedEventContextTest {
         final var directEvent = new FrontendEvent(FRONTEND_REQUEST_DIRECT_EVENT_NAME, 10L);
         final AMQP.BasicProperties basicProperties = new AMQP.BasicProperties();
 
-        channel.basicPublish(Exchanges.FRONTEND,
+        channel.basicPublish(FRONTEND_EXCHANGE,
                 FRONTEND_REQUEST_EVENT_NAME,
                 basicProperties,
                 writeValueAsBytes(event));
 
         // should not disrupt, there is no binding
-        channel.basicPublish(Exchanges.FRONTEND,
+        channel.basicPublish(FRONTEND_EXCHANGE,
                 UNREGISTERED_FRONTEND_REQUEST,
                 basicProperties,
                 writeValueAsBytes(new UnregisteredFrontendEvent("unregistered", "data")));
 
-        channel.basicPublish(Exchanges.FRONTEND,
+        channel.basicPublish(FRONTEND_EXCHANGE,
                 FRONTEND_REQUEST_DIRECT_EVENT_NAME,
                 basicProperties,
                 writeValueAsBytes(directEvent));

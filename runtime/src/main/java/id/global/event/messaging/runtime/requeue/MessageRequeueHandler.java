@@ -49,7 +49,8 @@ public class MessageRequeueHandler {
             final String errorCode, final boolean shouldNotifyFrontend)
             throws IOException {
         Delivery newMessage = getMessageWithNewHeaders(amqpContext, message, errorCode, shouldNotifyFrontend);
-        channel.basicPublish(Exchanges.RETRY, Queues.RETRY, newMessage.getProperties(), newMessage.getBody());
+        channel.basicPublish(Exchanges.RETRY.getValue(), Queues.RETRY.getValue(), newMessage.getProperties(),
+                newMessage.getBody());
     }
 
     private Delivery getMessageWithNewHeaders(final AmqpContext amqpContext,

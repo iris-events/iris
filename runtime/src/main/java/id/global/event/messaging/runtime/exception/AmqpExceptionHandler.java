@@ -135,13 +135,14 @@ public class AmqpExceptionHandler {
     private void sendErrorMessage(ErrorMessage message, Delivery consumedMessage, Channel channel) {
         final var headers = new HashMap<>(eventContext.getHeaders());
         headers.remove(MessagingHeaders.Message.JWT);
-        headers.put(EVENT_TYPE, Exchanges.ERROR);
+        headers.put(EVENT_TYPE, Exchanges.ERROR.getValue());
         final var basicProperties = consumedMessage.getProperties().builder()
                 .headers(headers)
                 .build();
         final var routingKey = consumedMessage.getEnvelope().getExchange() + ERROR_ROUTING_KEY_SUFFIX;
         try {
-            channel.basicPublish(Exchanges.ERROR, routingKey, basicProperties, objectMapper.writeValueAsBytes(message));
+            channel.basicPublish(Exchanges.ERROR.getValue(), routingKey, basicProperties,
+                    objectMapper.writeValueAsBytes(message));
         } catch (IOException e) {
             log.error("Unable to write error message as bytes. Discarding error message. Message: {}", message);
         }

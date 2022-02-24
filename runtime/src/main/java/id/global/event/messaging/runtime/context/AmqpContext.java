@@ -72,11 +72,11 @@ public final class AmqpContext {
             return Optional.empty();
         }
 
-        if (deadLetterQueue.startsWith(Queues.DEAD_LETTER_PREFIX)) {
+        if (deadLetterQueue.startsWith(Queues.Constants.DEAD_LETTER_PREFIX)) {
             return Optional.of(deadLetterQueue);
         }
 
-        return Optional.of(Queues.DEAD_LETTER_PREFIX + deadLetterQueue);
+        return Optional.of(Queues.Constants.DEAD_LETTER_PREFIX + deadLetterQueue);
     }
 
     /**
@@ -89,7 +89,7 @@ public final class AmqpContext {
     }
 
     private boolean isDefaultDeadLetterQueueName(final String deadLetterQueueName) {
-        return deadLetterQueueName.equals(Queues.DEAD_LETTER);
+        return deadLetterQueueName.equals(Queues.DEAD_LETTER.getValue());
     }
 
     public Optional<String> getDeadLetterExchangeName() {
@@ -97,7 +97,7 @@ public final class AmqpContext {
     }
 
     public String getDeadLetterRoutingKey(final String queueName) {
-        return Queues.DEAD_LETTER_PREFIX + queueName;
+        return Queues.Constants.DEAD_LETTER_PREFIX + queueName;
     }
 
     public String getName() {

@@ -40,6 +40,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
     private static final String ERROR_QUEUE_BAD_REQUEST = "error-queue-bad-request";
     private static final String ERROR_QUEUE_SERVER_ERROR = "error-queue-server-error";
+    private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
 
     @Inject
     AmqpProducer producer;
@@ -58,8 +59,8 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         channel = connection.createChannel();
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
-        channel.queueBind(errorMessageQueue, Exchanges.ERROR, ERROR_QUEUE_BAD_REQUEST + ".error");
-        channel.queueBind(errorMessageQueue, Exchanges.ERROR, ERROR_QUEUE_SERVER_ERROR + ".error");
+        channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, ERROR_QUEUE_BAD_REQUEST + ".error");
+        channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, ERROR_QUEUE_SERVER_ERROR + ".error");
     }
 
     @DisplayName("Send bad request error message on corrupted message")
