@@ -1,24 +1,26 @@
 package id.global.common.headers.amqp;
 
+@SuppressWarnings("unused")
 public class MessagingHeaders {
     public static class Message {
-        public static final String ORIGIN_SERVICE_ID = "originServiceId";
-        public static final String CURRENT_SERVICE_ID = "currentServiceId";
-        public static final String INSTANCE_ID = "instanceId";
-        public static final String PROXY_IP_ADDRESS = "proxyIpAddress";
-        public static final String USER_AGENT = "userAgent";
-        public static final String IP_ADDRESS = "ipAddress";
-        public static final String DEVICE = "device";
-        public static final String CLIENT_TRACE_ID = "clientTraceId";
-        public static final String EVENT_TYPE = "eventType";
-        public static final String SESSION_ID = "sessionId";
-        public static final String USER_ID = "userId";
-        public static final String ROUTER = "router";
-        public static final String JWT = "jwt";
-        public static final String ANONYMOUS_ID = "anonId";
-        public static final String REQUEST_VIA = "X-Request-Via";
-        public static final String REQUEST_REFERER = "X-Request-Referer";
-        public static final String REQUEST_URI = "X-Request-URI";
+        public static final String ORIGIN_SERVICE_ID = "x-origin-service-id";
+        public static final String CURRENT_SERVICE_ID = "x-current-service-id";
+        public static final String INSTANCE_ID = "x-instance-id";
+        public static final String PROXY_IP_ADDRESS = "x-proxy-ip-address";
+        public static final String USER_AGENT = "x-user-agent";
+        public static final String IP_ADDRESS = "x-ip-address";
+        public static final String DEVICE = "x-device";
+        public static final String CLIENT_TRACE_ID = "x-client-trace-id";
+        public static final String EVENT_TYPE = "x-event-type";
+        public static final String SESSION_ID = "x-session-id";
+        public static final String USER_ID = "x-user-id";
+        public static final String ROUTER = "x-router";
+        public static final String JWT = "x-jwt";
+        public static final String ANONYMOUS_ID = "x-anon-id";
+        public static final String REQUEST_VIA = "x-request-via";
+        public static final String REQUEST_REFERER = "x-request-referer";
+        public static final String REQUEST_URI = "x-request-uri";
+        public static final String SERVER_TIMESTAMP = "x-server-timestamp";
     }
 
     public static class RequeueMessage {
