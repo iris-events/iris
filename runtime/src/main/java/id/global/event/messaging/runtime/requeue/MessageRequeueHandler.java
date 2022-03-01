@@ -1,5 +1,6 @@
 package id.global.event.messaging.runtime.requeue;
 
+import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
 import static id.global.common.headers.amqp.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
 import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_ERROR_CODE;
@@ -9,6 +10,7 @@ import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_OR
 import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -64,6 +66,7 @@ public class MessageRequeueHandler {
         newHeaders.put(X_MAX_RETRIES, configuration.getRetryMaxCount());
         newHeaders.put(X_ERROR_CODE, errorCode);
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
+        newHeaders.put(SERVER_TIMESTAMP, new Date().getTime());
 
         final var deadLetterExchangeName = amqpContext.getDeadLetterExchangeName();
         if (deadLetterExchangeName.isPresent()) {

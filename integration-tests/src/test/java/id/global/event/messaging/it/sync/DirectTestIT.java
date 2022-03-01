@@ -2,6 +2,7 @@ package id.global.event.messaging.it.sync;
 
 import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.headers.amqp.MessagingHeaders;
 import id.global.event.messaging.it.IsolatedEventContextTest;
 import id.global.event.messaging.runtime.api.error.ServerError;
 import id.global.event.messaging.runtime.context.EventContext;
@@ -86,6 +89,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
         PrioritizedEvent priorityEvent = service.getHandledPriorityEvent().get(5, TimeUnit.SECONDS);
         Event event = service.getHandledEvent().get(5, TimeUnit.SECONDS);
+        long eventTimestamp = service.getHandledEventTimestamp().get(5, TimeUnit.SECONDS);
         BlankExchangeEvent blankExchangeEvent = service.getHandledBlankExchangeEvent().get(5, TimeUnit.SECONDS);
         MinimumEvent minimumEvent = service.getHandledMinimumEvent().get(5, TimeUnit.SECONDS);
 
@@ -97,6 +101,8 @@ public class DirectTestIT extends IsolatedEventContextTest {
         assertThat(event.age(), is(EVENT_PAYLOAD_AGE));
         assertThat(blankExchangeEvent.name(), is(EVENT_PAYLOAD_NAME_BLANK));
         assertThat(minimumEvent.id, is(MINIMUM_EVENT_ID));
+        assertThat(eventTimestamp, is(notNullValue()));
+        assertThat(eventTimestamp < (new Date().getTime()), is(true));
     }
 
     @Test
@@ -121,13 +127,14 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
     @ApplicationScoped
     public static class TestHandlerService {
+        @Inject
         EventContext eventContext;
 
         private final CompletableFuture<Event> handledEvent = new CompletableFuture<>();
+        private final CompletableFuture<Long> handledEventTimestamp = new CompletableFuture<>();
         private final CompletableFuture<PrioritizedEvent> handledPriorityEvent = new CompletableFuture<>();
         private final CompletableFuture<BlankExchangeEvent> handledBlankExchangeEvent = new CompletableFuture<>();
         private final CompletableFuture<MinimumEvent> handledMinimumEvent = new CompletableFuture<>();
-        private final CompletableFuture<Integer> finalRetryCount = new CompletableFuture<>();
 
         public static final AtomicInteger count = new AtomicInteger(0);
 
@@ -139,6 +146,8 @@ public class DirectTestIT extends IsolatedEventContextTest {
         @MessageHandler(bindingKeys = EVENT_QUEUE)
         public void handle(Event event) {
             count.incrementAndGet();
+            handledEventTimestamp.complete(
+                    (Long) eventContext.getAmqpBasicProperties().getHeaders().get(MessagingHeaders.Message.SERVER_TIMESTAMP));
             handledEvent.complete(event);
         }
 
@@ -167,15 +176,15 @@ public class DirectTestIT extends IsolatedEventContextTest {
         @MessageHandler
         public void handleFail(FailEvent failEvent) {
             count.incrementAndGet();
-            Integer retryCount = eventContext.getRetryCount();
-            if (retryCount == 3) {
-                finalRetryCount.complete(retryCount);
-            }
             throw new RuntimeException();
         }
 
         public CompletableFuture<Event> getHandledEvent() {
             return handledEvent;
+        }
+
+        public CompletableFuture<Long> getHandledEventTimestamp() {
+            return handledEventTimestamp;
         }
 
         public CompletableFuture<PrioritizedEvent> getHandledPriorityEvent() {
@@ -209,8 +218,5 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
     @Message(name = "fail-event", exchangeType = DIRECT, deadLetter = "test-dead-letter")
     public record FailEvent(String id, String data) {
-    }
-
-    public record Dead(String id, String data) {
     }
 }
