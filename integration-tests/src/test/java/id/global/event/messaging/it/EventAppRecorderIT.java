@@ -5,6 +5,7 @@ import static id.global.common.headers.amqp.MessagingHeaders.Message.CURRENT_SER
 import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.INSTANCE_ID;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -55,7 +56,8 @@ public class EventAppRecorderIT extends IsolatedEventContextTest {
                         ORIGIN_SERVICE_ID,
                         CURRENT_SERVICE_ID,
                         INSTANCE_ID,
-                        EVENT_TYPE));
+                        EVENT_TYPE,
+                        SERVER_TIMESTAMP));
         assertThat(headers.get(ORIGIN_SERVICE_ID).toString(), is(APP_ID));
         assertThat(headers.get(CURRENT_SERVICE_ID).toString(), is(APP_ID));
         assertThat(headers.get(EVENT_TYPE).toString(), is(EXCHANGE));

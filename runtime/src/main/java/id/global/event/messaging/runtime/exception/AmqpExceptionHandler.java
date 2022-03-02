@@ -1,9 +1,11 @@
 package id.global.event.messaging.runtime.exception;
 
 import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Date;
 import java.util.HashMap;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -136,6 +138,7 @@ public class AmqpExceptionHandler {
         final var headers = new HashMap<>(eventContext.getHeaders());
         headers.remove(MessagingHeaders.Message.JWT);
         headers.put(EVENT_TYPE, Exchanges.ERROR.getValue());
+        headers.put(SERVER_TIMESTAMP, new Date().getTime());
         final var basicProperties = consumedMessage.getProperties().builder()
                 .headers(headers)
                 .build();

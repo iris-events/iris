@@ -6,10 +6,13 @@ import static id.global.common.headers.amqp.MessagingHeaders.Message.INSTANCE_ID
 import static id.global.common.headers.amqp.MessagingHeaders.Message.JWT;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.ROUTER;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.SESSION_ID;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
+import static id.global.common.iris.Exchanges.*;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -125,15 +128,12 @@ public class AmqpProducer {
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
         final var exchange = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
-        final var amqpBasicProperties = getOrCreateAmqpBasicProperties(exchange, scope, userId);
 
         switch (scope) {
-            case INTERNAL -> publish(message, exchange, routingKey, amqpBasicProperties, exchangeType);
-            case USER -> publish(message, "user", "user", amqpBasicProperties, ExchangeType.TOPIC);
-            case SESSION -> publish(message, "session", "session", amqpBasicProperties,
-                    ExchangeType.TOPIC);
-            case BROADCAST -> publish(message, "broadcast", "broadcast", amqpBasicProperties,
-                    ExchangeType.TOPIC);
+            case INTERNAL -> publish(message, exchange, routingKey, scope, userId, exchangeType);
+            case USER -> publish(message, USER.getValue(), USER.getValue(), scope, userId, ExchangeType.TOPIC);
+            case SESSION -> publish(message, SESSION.getValue(), SESSION.getValue(), scope, userId, ExchangeType.TOPIC);
+            case BROADCAST -> publish(message, BROADCAST.getValue(), BROADCAST.getValue(), scope, userId, ExchangeType.TOPIC);
             default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
         }
     }
@@ -166,25 +166,25 @@ public class AmqpProducer {
         this.transactionCallback = callback;
     }
 
-    private void publish(@NotNull Object message, @NotNull String exchange, String routingKey, AMQP.BasicProperties properties,
+    private void publish(@NotNull Object message, @NotNull String exchange, String routingKey, Scope scope, String userId,
             ExchangeType exchangeType) throws AmqpSendException, AmqpTransactionException {
-
         SendMessageValidator.validate(exchange, routingKey, exchangeType);
         final var txOptional = getOptionalTransaction();
 
         if (txOptional.isPresent()) {
             final var tx = txOptional.get();
-            enqueueDelayedMessage(message, exchange, routingKey, properties, tx);
+            enqueueDelayedMessage(message, exchange, routingKey, scope, userId, tx);
             registerDefaultTransactionCallback(tx);
         } else {
-            executePublish(message, exchange, routingKey, properties);
+            executePublish(message, exchange, routingKey, scope, userId);
         }
     }
 
-    private void enqueueDelayedMessage(Object message, String exchange, String routingKey, AMQP.BasicProperties properties,
+    private void enqueueDelayedMessage(Object message, String exchange, String routingKey, Scope scope, String userId,
             Transaction tx) {
+        AMQP.BasicProperties properties = getOrCreateAmqpBasicProperties(exchange, scope, userId);
         transactionDelayedMessages.computeIfAbsent(tx, k -> new LinkedList<>())
-                .add(new Message(message, exchange, routingKey, properties));
+                .add(new Message(message, exchange, routingKey, scope, userId, properties));
     }
 
     private Optional<Transaction> getOptionalTransaction() throws AmqpTransactionException {
@@ -203,26 +203,28 @@ public class AmqpProducer {
         }
     }
 
-    private void executePublish(List<Message> delayedMessageList) throws IOException, AmqpSendException {
-        LinkedList<Message> messageList = (LinkedList<Message>) delayedMessageList;
+    private void executeTxPublish(Transaction transaction) throws IOException, AmqpSendException {
+        LinkedList<Message> messageList = (LinkedList<Message>) transactionDelayedMessages.get(transaction);
         Message message = messageList.poll();
 
         while (message != null) {
-            executePublish(message.message(), message.exchange(), message.routingKey(),
-                    message.properties());
+            eventContext.setAmqpBasicProperties(message.properties());
+            executePublish(message.message(), message.exchange(), message.routingKey(), message.scope(), message.userId());
             message = messageList.poll();
         }
     }
 
-    private void executePublish(Object message, String exchange, String routingKey, AMQP.BasicProperties properties)
+    private void executePublish(Object message, String exchange, String routingKey, Scope scope, String userId)
             throws AmqpSendException {
 
         try {
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
             synchronized (this.lock) {
-                String channelKey = ChannelKey.create(exchange, routingKey);
-                Channel channel = channelService.getOrCreateChannelById(channelKey);
-                log.info("publishing event to exchange: {}, routing key: {}, props: {}{", exchange, routingKey, properties);
+                final var properties = getOrCreateAmqpBasicProperties(exchange, scope, userId);
+                final var channelKey = ChannelKey.create(exchange, routingKey);
+                final var channel = channelService.getOrCreateChannelById(channelKey);
+                log.info("publishing event to exchange: {}, routing key: {}, props: {}"
+                        + "", exchange, routingKey, properties);
                 channel.basicPublish(exchange, routingKey, true, properties, bytes);
 
                 if (shouldWaitForConfirmations()) {
@@ -263,6 +265,7 @@ public class AmqpProducer {
         headers.put(CURRENT_SERVICE_ID, serviceId);
         headers.put(INSTANCE_ID, hostName);
         headers.put(EVENT_TYPE, exchange);
+        headers.put(SERVER_TIMESTAMP, new Date().getTime());
         if (messageScope != Scope.INTERNAL) {
             // never propagate JWT when "leaving" backend
             headers.remove(JWT);
@@ -316,7 +319,7 @@ public class AmqpProducer {
                 if (isCallbackPresent) {
                     transactionCallback.beforeTxPublish(transactionDelayedMessages.get(tx));
                 }
-                executePublish(transactionDelayedMessages.get(tx));
+                executeTxPublish(tx);
 
                 if (isCallbackPresent) {
                     transactionCallback.afterTxPublish();
