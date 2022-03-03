@@ -2,23 +2,23 @@ package id.global.event.messaging.runtime.api.error;
 
 public enum ClientError implements MessagingError {
 
-    BAD_REQUEST("ERR_BAD_REQUEST"),
-    NOT_FOUND("ERR_NOT_FOUND");
+    ERR_BAD_REQUEST(ErrorType.BAD_REQUEST),
+    ERR_NOT_FOUND(ErrorType.NOT_FOUND);
 
-    private final String clientCode;
+    private final ErrorType errorType;
 
-    ClientError(final String clientCode) {
-        this.clientCode = clientCode;
+    ClientError(final ErrorType errorType) {
+        this.errorType = errorType;
     }
 
     @Override
-    public String getStatus() {
-        return this.name();
+    public ErrorType getType() {
+        return errorType;
     }
 
     @Override
     public String getClientCode() {
-        return clientCode;
+        return this.name();
     }
 
 }

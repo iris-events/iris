@@ -1,26 +1,27 @@
 package id.global.event.messaging.runtime.api.exception;
 
+import id.global.event.messaging.runtime.api.error.ErrorType;
 import id.global.event.messaging.runtime.api.error.MessagingError;
 
 public abstract class MessagingException extends RuntimeException {
 
     private MessagingError messagingError;
 
-    private final String status;
+    private final ErrorType errorType;
 
     private final String code;
 
     protected MessagingException(final MessagingError messagingError, final String message) {
         super(message);
         this.messagingError = messagingError;
-        this.status = messagingError.getStatus();
+        this.errorType = messagingError.getType();
         this.code = messagingError.getClientCode();
     }
 
     protected MessagingException(final MessagingError messagingError, final String message, Throwable cause) {
         super(message, cause);
         this.messagingError = messagingError;
-        this.status = messagingError.getStatus();
+        this.errorType = messagingError.getType();
         this.code = messagingError.getClientCode();
     }
 
@@ -28,8 +29,8 @@ public abstract class MessagingException extends RuntimeException {
         return messagingError;
     }
 
-    public String getStatus() {
-        return status;
+    public ErrorType getErrorType() {
+        return errorType;
     }
 
     public String getCode() {
