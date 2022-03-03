@@ -2,7 +2,7 @@ package id.global.event.messaging.runtime.api.error;
 
 public enum ServerError implements MessagingError {
 
-    ERR_SERVER_ERROR(ErrorType.INTERNAL_SERVER_ERROR);
+    SERVER_ERROR(ErrorType.INTERNAL_SERVER_ERROR);
 
     private final ErrorType errorType;
 

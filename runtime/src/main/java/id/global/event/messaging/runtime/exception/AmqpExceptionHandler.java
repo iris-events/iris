@@ -107,7 +107,7 @@ public class AmqpExceptionHandler {
             final Throwable throwable)
             throws IOException {
 
-        MessagingError messageError = ServerError.ERR_SERVER_ERROR;
+        MessagingError messageError = ServerError.SERVER_ERROR;
         boolean shouldNotifyFrontend = false;
         if (throwable instanceof ServerException serverException) {
             messageError = serverException.getMessagingError();
@@ -155,13 +155,13 @@ public class AmqpExceptionHandler {
         // TODO: change with switch once available as non-preview
         SecurityError error;
         if (securityException instanceof AuthenticationFailedException) {
-            error = SecurityError.ERR_AUTHORIZATION_FAILED;
+            error = SecurityError.AUTHORIZATION_FAILED;
         } else if (securityException instanceof ForbiddenException) {
-            error = SecurityError.ERR_FORBIDDEN;
+            error = SecurityError.FORBIDDEN;
         } else if (securityException instanceof UnauthorizedException) {
-            error = SecurityError.ERR_UNAUTHORIZED;
+            error = SecurityError.UNAUTHORIZED;
         } else {
-            error = SecurityError.ERR_AUTHORIZATION_FAILED;
+            error = SecurityError.AUTHORIZATION_FAILED;
         }
         return error;
     }

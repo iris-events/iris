@@ -72,7 +72,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(ClientError.ERR_BAD_REQUEST.getClientCode()));
+        assertThat(errorMessage.code(), is(ClientError.BAD_REQUEST.getClientCode()));
         assertThat(errorMessage.message(), is("Unable to process message. Message corrupted."));
     }
 
@@ -92,7 +92,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         final var notifyFrontend = notifyFrontendCaptor.getValue();
 
         assertThat(errorCode, is(notNullValue()));
-        assertThat(errorCode, is(ServerError.ERR_SERVER_ERROR.getClientCode()));
+        assertThat(errorCode, is(ServerError.SERVER_ERROR.getClientCode()));
         assertThat(notifyFrontend, CoreMatchers.is(true));
     }
 
@@ -106,12 +106,12 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         @MessageHandler
         public void handle(BadRequestMessage message) {
-            throw new BadMessageException(ClientError.ERR_BAD_REQUEST, "Unable to process message. Message corrupted.");
+            throw new BadMessageException(ClientError.BAD_REQUEST, "Unable to process message. Message corrupted.");
         }
 
         @MessageHandler
         public void handle(ServerErrorMessage message) {
-            throw new ServerException(ServerError.ERR_SERVER_ERROR, "Internal service error.", true);
+            throw new ServerException(ServerError.SERVER_ERROR, "Internal service error.", true);
         }
     }
 

@@ -121,7 +121,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
         final var errorCode = errorCodeCaptor.getValue();
         final var notifyFrontend = notifyFrontendCaptor.getValue();
 
-        assertThat(errorCode, is(ServerError.ERR_SERVER_ERROR.getClientCode()));
+        assertThat(errorCode, is(ServerError.SERVER_ERROR.getClientCode()));
         assertThat(notifyFrontend, is(false));
     }
 

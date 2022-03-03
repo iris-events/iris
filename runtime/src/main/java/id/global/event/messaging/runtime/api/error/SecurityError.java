@@ -2,9 +2,9 @@ package id.global.event.messaging.runtime.api.error;
 
 public enum SecurityError implements MessagingError {
 
-    ERR_FORBIDDEN(ErrorType.FORBIDDEN),
-    ERR_UNAUTHORIZED(ErrorType.UNAUTHORIZED),
-    ERR_AUTHORIZATION_FAILED(ErrorType.AUTHORIZATION_FAILED);
+    FORBIDDEN(ErrorType.FORBIDDEN),
+    UNAUTHORIZED(ErrorType.UNAUTHORIZED),
+    AUTHORIZATION_FAILED(ErrorType.AUTHORIZATION_FAILED);
 
     private final ErrorType errorType;
 

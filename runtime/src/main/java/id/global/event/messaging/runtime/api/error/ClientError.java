@@ -2,8 +2,8 @@ package id.global.event.messaging.runtime.api.error;
 
 public enum ClientError implements MessagingError {
 
-    ERR_BAD_REQUEST(ErrorType.BAD_REQUEST),
-    ERR_NOT_FOUND(ErrorType.NOT_FOUND);
+    BAD_REQUEST(ErrorType.BAD_REQUEST),
+    NOT_FOUND(ErrorType.NOT_FOUND);
 
     private final ErrorType errorType;
 
