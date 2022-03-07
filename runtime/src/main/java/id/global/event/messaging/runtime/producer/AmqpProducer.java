@@ -12,7 +12,6 @@ import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
 import static id.global.common.iris.Exchanges.*;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +50,7 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
+import id.global.event.messaging.runtime.TimestampProvider;
 import id.global.event.messaging.runtime.channel.ChannelKey;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
@@ -75,6 +75,7 @@ public class AmqpProducer {
     private final CorrelationIdProvider correlationIdProvider;
     private final InstanceInfoProvider instanceInfoProvider;
     private final EventAppInfoProvider eventAppInfoProvider;
+    private final TimestampProvider timestampProvider;
 
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
@@ -88,7 +89,7 @@ public class AmqpProducer {
             EventContext eventContext,
             AmqpConfiguration configuration, TransactionManager transactionManager,
             CorrelationIdProvider correlationIdProvider, InstanceInfoProvider instanceInfoProvider,
-            EventAppInfoProvider eventAppInfoProvider) {
+            EventAppInfoProvider eventAppInfoProvider, TimestampProvider timestampProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -97,6 +98,7 @@ public class AmqpProducer {
         this.correlationIdProvider = correlationIdProvider;
         this.instanceInfoProvider = instanceInfoProvider;
         this.eventAppInfoProvider = eventAppInfoProvider;
+        this.timestampProvider = timestampProvider;
     }
 
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
@@ -265,7 +267,7 @@ public class AmqpProducer {
         headers.put(CURRENT_SERVICE_ID, serviceId);
         headers.put(INSTANCE_ID, hostName);
         headers.put(EVENT_TYPE, exchange);
-        headers.put(SERVER_TIMESTAMP, new Date().getTime());
+        headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
         if (messageScope != Scope.INTERNAL) {
             // never propagate JWT when "leaving" backend
             headers.remove(JWT);

@@ -13,6 +13,7 @@ import id.global.event.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.event.messaging.runtime.EventAppInfoProvider;
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.QueueNameProvider;
+import id.global.event.messaging.runtime.TimestampProvider;
 import id.global.event.messaging.runtime.auth.GidJwtValidator;
 import id.global.event.messaging.runtime.channel.ConsumerChannelService;
 import id.global.event.messaging.runtime.channel.ProducerChannelService;
@@ -91,7 +92,8 @@ class EventMessagingProcessor {
                                 FrontendAmqpConsumer.class,
                                 AmqpExceptionHandler.class,
                                 AmqpInfrastructureDeclarator.class,
-                                QueueNameProvider.class)
+                                QueueNameProvider.class,
+                                TimestampProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());

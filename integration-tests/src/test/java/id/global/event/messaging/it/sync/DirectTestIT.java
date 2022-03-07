@@ -10,9 +10,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import java.util.Date;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -23,11 +24,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.headers.amqp.MessagingHeaders;
 import id.global.event.messaging.it.IsolatedEventContextTest;
+import id.global.event.messaging.runtime.TimestampProvider;
 import id.global.event.messaging.runtime.api.error.ServerError;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
@@ -54,6 +57,9 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
     @Inject
     TestHandlerService service;
+
+    @InjectMock
+    TimestampProvider timestampProvider;
 
     @InjectMock
     MessageRequeueHandler requeueHandler;
@@ -89,7 +95,6 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
         PrioritizedEvent priorityEvent = service.getHandledPriorityEvent().get(5, TimeUnit.SECONDS);
         Event event = service.getHandledEvent().get(5, TimeUnit.SECONDS);
-        long eventTimestamp = service.getHandledEventTimestamp().get(5, TimeUnit.SECONDS);
         BlankExchangeEvent blankExchangeEvent = service.getHandledBlankExchangeEvent().get(5, TimeUnit.SECONDS);
         MinimumEvent minimumEvent = service.getHandledMinimumEvent().get(5, TimeUnit.SECONDS);
 
@@ -101,8 +106,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
         assertThat(event.age(), is(EVENT_PAYLOAD_AGE));
         assertThat(blankExchangeEvent.name(), is(EVENT_PAYLOAD_NAME_BLANK));
         assertThat(minimumEvent.id, is(MINIMUM_EVENT_ID));
-        assertThat(eventTimestamp, is(notNullValue()));
-        assertThat(eventTimestamp < (new Date().getTime()), is(true));
+
     }
 
     @Test
@@ -123,6 +127,19 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
         assertThat(errorCode, is(ServerError.INTERNAL_SERVER_ERROR.getClientCode()));
         assertThat(notifyFrontend, is(false));
+    }
+
+    @Test
+    @DisplayName("Message timestamp header should contain timestamp provided")
+    void testMessageTimestamo() throws ExecutionException, InterruptedException, TimeoutException {
+        long expectedTimestamp = 12345L;
+        Mockito.when(timestampProvider.getCurrentTimestamp()).thenReturn(expectedTimestamp);
+
+        producer.send(new Event(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE));
+        long eventTimestamp = service.getHandledEventTimestamp().get(5, TimeUnit.SECONDS);
+
+        assertThat(eventTimestamp, is(notNullValue()));
+        assertThat(eventTimestamp, is(expectedTimestamp));
     }
 
     @ApplicationScoped
