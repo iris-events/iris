@@ -28,6 +28,7 @@ import id.global.event.messaging.runtime.context.EventAppContext;
 import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.context.MethodHandleContext;
 import id.global.event.messaging.runtime.exception.AmqpExceptionHandler;
+import id.global.event.messaging.runtime.health.IrisHealthCheck;
 import id.global.event.messaging.runtime.infrastructure.AmqpInfrastructureDeclarator;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.producer.CorrelationIdProvider;
@@ -40,6 +41,8 @@ import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -48,6 +51,7 @@ import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
 
 class EventMessagingProcessor {
 
@@ -93,6 +97,7 @@ class EventMessagingProcessor {
                                 AmqpExceptionHandler.class,
                                 AmqpInfrastructureDeclarator.class,
                                 QueueNameProvider.class,
+                                IrisHealthCheck.class,
                                 TimestampProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
@@ -186,5 +191,15 @@ class EventMessagingProcessor {
     @BuildStep
     void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("id.global.common", "globalid-common"));
+    }
+
+    @SuppressWarnings("unused")
+    @BuildStep
+    HealthBuildItem addHealthCheck(Capabilities capabilities, AmqpBuildConfiguration configuration) {
+        if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
+            return new HealthBuildItem("id.global.event.messaging.runtime.health.IrisHealthCheck", configuration.healthCheckEnabled);
+        } else {
+            return null;
+        }
     }
 }
