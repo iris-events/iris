@@ -92,7 +92,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         final var notifyFrontend = notifyFrontendCaptor.getValue();
 
         assertThat(errorCode, is(notNullValue()));
-        assertThat(errorCode, is(ServerError.INTERNAL_SERVER_ERROR.getClientCode()));
+        assertThat(errorCode, is(ServerError.SERVER_ERROR.getClientCode()));
         assertThat(notifyFrontend, CoreMatchers.is(true));
     }
 
@@ -111,7 +111,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         @MessageHandler
         public void handle(ServerErrorMessage message) {
-            throw new ServerException(ServerError.INTERNAL_SERVER_ERROR, "Internal service error.", true);
+            throw new ServerException(ServerError.SERVER_ERROR, "Internal service error.", true);
         }
     }
 

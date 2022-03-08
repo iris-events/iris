@@ -2,22 +2,21 @@ package id.global.event.messaging.runtime.api.error;
 
 public enum ServerError implements MessagingError {
 
-    INTERNAL_SERVER_ERROR("ERR_SERVER_ERROR");
+    SERVER_ERROR(ErrorType.INTERNAL_SERVER_ERROR);
 
-    private final String clientCode;
+    private final ErrorType errorType;
 
-    ServerError(final String clientCode) {
-        this.clientCode = clientCode;
+    ServerError(final ErrorType errorType) {
+        this.errorType = errorType;
     }
 
     @Override
-    public String getStatus() {
-        return this.name();
+    public ErrorType getType() {
+        return errorType;
     }
 
     @Override
     public String getClientCode() {
-        return clientCode;
+        return this.name();
     }
-
 }

@@ -2,24 +2,24 @@ package id.global.event.messaging.runtime.api.error;
 
 public enum SecurityError implements MessagingError {
 
-    FORBIDDEN("ERR_FORBIDDEN"),
-    UNAUTHORIZED("ERR_UNAUTHORIZED"),
-    AUTHORIZATION_FAILED("ERR_AUTHORIZATION_FAILED");
+    FORBIDDEN(ErrorType.FORBIDDEN),
+    UNAUTHORIZED(ErrorType.UNAUTHORIZED),
+    AUTHORIZATION_FAILED(ErrorType.AUTHORIZATION_FAILED);
 
-    private final String clientCode;
+    private final ErrorType errorType;
 
-    SecurityError(final String clientCode) {
-        this.clientCode = clientCode;
+    SecurityError(final ErrorType errorType) {
+        this.errorType = errorType;
     }
 
     @Override
-    public String getStatus() {
-        return this.name();
+    public ErrorType getType() {
+        return errorType;
     }
 
     @Override
     public String getClientCode() {
-        return clientCode;
+        return this.name();
     }
 
 }
