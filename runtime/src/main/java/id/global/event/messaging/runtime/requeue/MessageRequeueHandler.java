@@ -10,7 +10,6 @@ import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_OR
 import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,6 +25,7 @@ import com.rabbitmq.client.Delivery;
 import id.global.common.iris.Exchanges;
 import id.global.common.iris.Queues;
 import id.global.event.messaging.runtime.QueueNameProvider;
+import id.global.event.messaging.runtime.TimestampProvider;
 import id.global.event.messaging.runtime.channel.ChannelService;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.event.messaging.runtime.context.AmqpContext;
@@ -36,13 +36,16 @@ public class MessageRequeueHandler {
     private final Channel channel;
     private final AmqpConfiguration configuration;
     private final QueueNameProvider queueNameProvider;
+    private final TimestampProvider timestampProvider;
 
     @Inject
     public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
-            AmqpConfiguration configuration, QueueNameProvider queueNameProvider) throws IOException {
+            AmqpConfiguration configuration, QueueNameProvider queueNameProvider,
+            TimestampProvider timestampProvider) throws IOException {
 
         this.configuration = configuration;
         this.queueNameProvider = queueNameProvider;
+        this.timestampProvider = timestampProvider;
         String channelId = UUID.randomUUID().toString();
         this.channel = channelService.getOrCreateChannelById(channelId);
     }
@@ -66,7 +69,7 @@ public class MessageRequeueHandler {
         newHeaders.put(X_MAX_RETRIES, configuration.getRetryMaxCount());
         newHeaders.put(X_ERROR_CODE, errorCode);
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
-        newHeaders.put(SERVER_TIMESTAMP, new Date().getTime());
+        newHeaders.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
 
         final var deadLetterExchangeName = amqpContext.getDeadLetterExchangeName();
         if (deadLetterExchangeName.isPresent()) {

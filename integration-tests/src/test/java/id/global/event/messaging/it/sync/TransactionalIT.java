@@ -5,14 +5,10 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -32,15 +28,12 @@ import org.junit.jupiter.api.TestInstance;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.headers.amqp.MessagingHeaders;
 import id.global.event.messaging.it.IsolatedEventContextTest;
-import id.global.event.messaging.runtime.context.EventContext;
 import id.global.event.messaging.runtime.exception.AmqpSendException;
 import id.global.event.messaging.runtime.exception.AmqpTransactionException;
 import id.global.event.messaging.runtime.producer.AmqpProducer;
 import id.global.event.messaging.runtime.tx.TransactionCallback;
 import io.quarkus.test.junit.QuarkusTest;
-import io.vavr.collection.Array;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -63,12 +56,9 @@ public class TransactionalIT extends IsolatedEventContextTest {
 
         service.getFutures().forEach(future -> {
             try {
-                TestEventWrapper testEventWrapper = future.get(1000, TimeUnit.MILLISECONDS);
-                TestEvent event = testEventWrapper.event;
-                long timestamp = testEventWrapper.timestamp;
+                TestEvent event = future.get(1000, TimeUnit.MILLISECONDS);
                 assertThat(event, is(notNullValue()));
                 assertThat(event, is(instanceOf(TestEvent.class)));
-                assertThat(timestamp, is(greaterThan(0L)));
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 fail(e);
             }
@@ -87,42 +77,21 @@ public class TransactionalIT extends IsolatedEventContextTest {
     @Test
     @DisplayName("Non transactional sends should not implicitly create a transaction")
     void testNonTransactional() throws Exception {
-        long sendTimestamp0 = new Date().getTime();
         service.send(0);
-        TestEventWrapper testEventWrapper0 = service.getFutures().get(0).get(1000, TimeUnit.MILLISECONDS);
-        TestEvent testEvent0 = testEventWrapper0.event;
-        long timestamp0 = testEventWrapper0.timestamp;
+        TestEvent testEvent0 = service.getFutures().get(0).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent0, 0);
-        assertThat(timestamp0, is(greaterThanOrEqualTo(sendTimestamp0)));
-        assertThat(timestamp0, is(lessThan(new Date().getTime())));
 
-        long sendTimestamp1 = new Date().getTime();
         service.send(1);
-        TestEventWrapper testEventWrapper1 = service.getFutures().get(1).get(1000, TimeUnit.MILLISECONDS);
-        TestEvent testEvent1 = testEventWrapper1.event;
-        long timestamp1 = testEventWrapper1.timestamp;
+        TestEvent testEvent1 = service.getFutures().get(1).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent1, 1);
-        assertThat(timestamp1, is(greaterThanOrEqualTo(sendTimestamp1)));
-        assertThat(timestamp1, is(lessThan(new Date().getTime())));
 
         service.send(2);
-        TestEventWrapper testEventWrapper2 = service.getFutures().get(2).get(1000, TimeUnit.MILLISECONDS);
-        TestEvent testEvent2 = testEventWrapper2.event;
-        long timestamp2 = testEventWrapper2.timestamp;
+        TestEvent testEvent2 = service.getFutures().get(2).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent2, 2);
-        assertThat(timestamp2, is(greaterThan(0L)));
 
         service.send(3);
-        TestEventWrapper testEventWrapper3 = service.getFutures().get(3).get(1000, TimeUnit.MILLISECONDS);
-        TestEvent testEvent3 = testEventWrapper3.event;
-        long timestamp3 = testEventWrapper3.timestamp;
+        TestEvent testEvent3 = service.getFutures().get(3).get(1000, TimeUnit.MILLISECONDS);
         assertEventNotNullWithSeq(testEvent3, 3);
-        assertThat(timestamp3, is(greaterThan(0L)));
-
-        assertThat(Array.of(timestamp0, timestamp1, timestamp2).contains(timestamp3), is(false));
-        assertThat(Array.of(timestamp0, timestamp1, timestamp3).contains(timestamp2), is(false));
-        assertThat(Array.of(timestamp0, timestamp2, timestamp3).contains(timestamp1), is(false));
-        assertThat(Array.of(timestamp1, timestamp2, timestamp3).contains(timestamp0), is(false));
     }
 
     @Test
@@ -202,13 +171,11 @@ public class TransactionalIT extends IsolatedEventContextTest {
     @ApplicationScoped
     public static class TransactionalService {
         private final static int EXPECTED_MESSAGES = 4;
-        @Inject
-        EventContext eventContext;
 
         @Inject
         AmqpProducer producer;
 
-        private List<CompletableFuture<TestEventWrapper>> futures = new ArrayList<>();
+        private List<CompletableFuture<TestEvent>> futures = new ArrayList<>();
 
         private CompletableFuture<Boolean> beforeTxPublishCallback = new CompletableFuture<>();
 
@@ -230,12 +197,10 @@ public class TransactionalIT extends IsolatedEventContextTest {
         @SuppressWarnings("unused")
         @MessageHandler
         public void handle(TestEvent event) {
-            long timestamp = (long) eventContext.getAmqpBasicProperties().getHeaders()
-                    .get(MessagingHeaders.Message.SERVER_TIMESTAMP);
-            futures.get(event.seq).complete(new TestEventWrapper(event, timestamp));
+            futures.get(event.seq).complete(event);
         }
 
-        public List<CompletableFuture<TestEventWrapper>> getFutures() {
+        public List<CompletableFuture<TestEvent>> getFutures() {
             return futures;
         }
 
@@ -289,9 +254,6 @@ public class TransactionalIT extends IsolatedEventContextTest {
 
     @Message(routingKey = EVENT_QUEUE, name = EXCHANGE, exchangeType = DIRECT)
     public record TestEvent(int seq) {
-    }
-
-    public record TestEventWrapper(TestEvent event, long timestamp) {
     }
 
     private class TestCustomTransactionCallback implements TransactionCallback {

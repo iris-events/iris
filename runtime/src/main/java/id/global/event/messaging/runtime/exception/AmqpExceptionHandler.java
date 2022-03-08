@@ -5,7 +5,6 @@ import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIME
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Date;
 import java.util.HashMap;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -20,6 +19,7 @@ import com.rabbitmq.client.Delivery;
 
 import id.global.common.headers.amqp.MessagingHeaders;
 import id.global.common.iris.Exchanges;
+import id.global.event.messaging.runtime.TimestampProvider;
 import id.global.event.messaging.runtime.api.error.MessagingError;
 import id.global.event.messaging.runtime.api.error.SecurityError;
 import id.global.event.messaging.runtime.api.error.ServerError;
@@ -44,16 +44,19 @@ public class AmqpExceptionHandler {
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
     private final MessageRequeueHandler retryEnqueuer;
+    private final TimestampProvider timestampProvider;
 
     @Inject
     public AmqpExceptionHandler(
             final ObjectMapper objectMapper,
             final EventContext eventContext,
-            final MessageRequeueHandler retryEnqueuer) {
+            final MessageRequeueHandler retryEnqueuer,
+            final TimestampProvider timestampProvider) {
 
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.retryEnqueuer = retryEnqueuer;
+        this.timestampProvider = timestampProvider;
     }
 
     public void handleException(final AmqpContext amqpContext, final Delivery message, final Channel channel,
@@ -138,7 +141,7 @@ public class AmqpExceptionHandler {
         final var headers = new HashMap<>(eventContext.getHeaders());
         headers.remove(MessagingHeaders.Message.JWT);
         headers.put(EVENT_TYPE, Exchanges.ERROR.getValue());
-        headers.put(SERVER_TIMESTAMP, new Date().getTime());
+        headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
         final var basicProperties = consumedMessage.getProperties().builder()
                 .headers(headers)
                 .build();
