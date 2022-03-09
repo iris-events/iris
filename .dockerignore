@@ -1,0 +1,15 @@
+# dependencies
+/node_modules
+
+# IDE
+/.idea
+/.vscode
+
+# tests
+/test
+/coverage
+/.nyc_output
+/.nyrc_*
+/chart
+/docker-compose.*
+/deploy

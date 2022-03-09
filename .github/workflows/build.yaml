@@ -1,0 +1,25 @@
+name: Build & test
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - feat-*
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup java
+        uses: globalid/github-actions/java-setup@main
+        with:
+          nexus-username: ${{ secrets.NEXUS_USERNAME }}
+          nexus-password: ${{ secrets.NEXUS_PASSWORD }}
+
+      - name: Build and deploy
+        run: mvn -B --no-transfer-progress deploy
+

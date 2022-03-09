@@ -1,0 +1,18 @@
+name: Create release
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: 'Release version'
+        required: false
+        default: ''
+jobs:
+  release:
+    name: Release
+    uses: globalid/.github/.github/workflows/maven-release.yml@master
+    with:
+      releaseVersion: ${{ github.event.inputs.releaseVersion }}
+    secrets:
+      GHA_BOT_TOKEN: ${{ secrets.GHA_BOT_TOKEN }}
+      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}

@@ -36,3 +36,7 @@ pom.xml.versionsBackup
 release.properties
 
 .cache
+swagger.json
+swagger.yaml
+exposed_src
+target
