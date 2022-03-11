@@ -4,7 +4,7 @@
     <parent>
         <groupId>id.global.events</groupId>
         <artifactId>quarkus-extension-parent</artifactId>
-        <version>1.2.8</version>
+        <version>1.2.9-SNAPSHOT</version>
     </parent>
     <artifactId>event-messaging</artifactId>
     <name>Event Messaging - Runtime</name>
