@@ -1,0 +1,31 @@
+name: Build & test
+"on":
+  push:
+    branches:
+      - '*'
+    tags:
+      - v*
+  workflow_dispatch: null
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      rabbitmq:
+        image: rabbitmq:3.8-alpine
+        ports:
+          - 5672:5672
+        env:
+          RABBITMQ_DEFAULT_USER: user
+          RABBITMQ_DEFAULT_PASS: user
+    env:
+      RABBIT_HOST: localhost
+      RABBIT_PASSWORD: user
+      RABBIT_USERNAME: user
+    steps:
+      - name: setup java
+        uses: globalid/github-actions/java-setup@main
+        with:
+          nexus-username: "${{ secrets.NEXUS_USERNAME }}"
+          nexus-password: "${{ secrets.NEXUS_PASSWORD }}"
+      - shell: sh
+        run: "mvn  verify -Dci=${{ github.run_id }} -ntp"

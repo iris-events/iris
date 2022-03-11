@@ -5,7 +5,7 @@
     <groupId>id.global</groupId>
     <artifactId>masterpom</artifactId>
     <version>11</version>
-    <relativePath />
+    <relativePath/>
   </parent>
   <groupId>id.global.events</groupId>
   <artifactId>quarkus-extension-parent</artifactId>
@@ -22,9 +22,9 @@
 
   </properties>
   <scm>
-    <connection>scm:git:git@gitlab.com:globalid/experiments/quarkus-eda.git</connection>
-    <developerConnection>scm:git:git@gitlab.com:globalid/experiments/quarkus-eda.git</developerConnection>
-    <url>https://gitlab.com/globalid/experiments/quarkus-eda</url>
+    <connection>scm:git:git@github.com:globalid/iris-quarkus.git</connection>
+    <developerConnection>scm:git:git@github.com:globalid/iris-quarkus.git</developerConnection>
+    <url>https://github.com/globalid/iris-quarkus</url>
     <tag>HEAD</tag>
   </scm>
   <modules>

@@ -34,3 +34,7 @@ pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 release.properties
+swagger.json
+swagger.yaml
+exposed_src
+target

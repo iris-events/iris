@@ -1,0 +1,14 @@
+name: Dependency update
+
+on:
+  schedule:
+    # every day 7:15 UTC
+    - cron: '15 7 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Update deps
+    uses: globalid/.github/.github/workflows/maven-dependency-update.yaml@master
+    secrets:
+      GHA_BOT_TOKEN: ${{ secrets.GHA_BOT_TOKEN }}
