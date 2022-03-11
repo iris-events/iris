@@ -197,7 +197,8 @@ class EventMessagingProcessor {
     @BuildStep
     HealthBuildItem addHealthCheck(Capabilities capabilities, AmqpBuildConfiguration configuration) {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
-            return new HealthBuildItem("id.global.event.messaging.runtime.health.IrisHealthCheck", configuration.healthCheckEnabled);
+            return new HealthBuildItem("id.global.event.messaging.runtime.health.IrisHealthCheck",
+                    configuration.healthCheckEnabled);
         } else {
             return null;
         }

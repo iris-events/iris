@@ -11,6 +11,7 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Envelope;
 
 @ApplicationScoped
 public class EventContext {
@@ -21,12 +22,13 @@ public class EventContext {
         this.eventContextThreadLocal.set(new EventContextHolder());
     }
 
-    public void setAmqpBasicProperties(AMQP.BasicProperties properties) {
+    public void setMessageContext(AMQP.BasicProperties properties, Envelope envelope) {
         EventContextHolder eventContextHolder = this.eventContextThreadLocal.get();
         if (eventContextHolder == null) {
             eventContextHolder = new EventContextHolder();
         }
         eventContextHolder.setAmqpBasicProperties(properties);
+        eventContextHolder.setEnvelope(envelope);
         this.eventContextThreadLocal.set(eventContextHolder);
     }
 
@@ -36,6 +38,22 @@ public class EventContext {
             return null;
         }
         return eventContextHolder.getAmqpBasicProperties();
+    }
+
+    public Envelope getEnvelope() {
+        EventContextHolder eventContextHolder = this.eventContextThreadLocal.get();
+        if (eventContextHolder == null) {
+            return null;
+        }
+        return eventContextHolder.getEnvelope();
+    }
+
+    public String getExchange() {
+        return Optional.ofNullable(getEnvelope()).map(Envelope::getExchange).orElse(null);
+    }
+
+    public String getRoutingKey() {
+        return Optional.ofNullable(getEnvelope()).map(Envelope::getRoutingKey).orElse(null);
     }
 
     public Map<String, Object> getHeaders() {
