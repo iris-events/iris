@@ -5,6 +5,7 @@ import javax.inject.Inject;
 
 import id.global.event.messaging.runtime.InstanceInfoProvider;
 import id.global.event.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.event.messaging.runtime.health.IrisHealthCheck;
 
 @ApplicationScoped
 public class ConsumerConnectionProvider extends AbstractConnectionProvider {
@@ -12,8 +13,8 @@ public class ConsumerConnectionProvider extends AbstractConnectionProvider {
 
     @Inject
     public ConsumerConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, AmqpConfiguration configuration) {
-        super(connectionFactoryProvider, instanceInfoProvider, configuration);
+            InstanceInfoProvider instanceInfoProvider, AmqpConfiguration configuration, IrisHealthCheck healthCheck) {
+        super(connectionFactoryProvider, instanceInfoProvider, configuration, healthCheck);
     }
 
     @Override

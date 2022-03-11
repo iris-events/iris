@@ -12,14 +12,25 @@ public final class AmqpBuildConfiguration {
     @ConfigItem(defaultValue = "true")
     public boolean enabled;
 
+    /**
+     * Enable or disable extension health check
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean healthCheckEnabled;
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    public void setHealthCheckEnabled(boolean healthCheckEnabled) {
+        this.healthCheckEnabled = healthCheckEnabled;
+    }
+
     @Override
     public String toString() {
-        return "AmqpConfiguration{" +
+        return "AmqpBuildConfiguration{" +
                 "enabled=" + enabled +
+                ", healthEnabled=" + healthCheckEnabled +
                 '}';
     }
 }

@@ -30,6 +30,10 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-jwt-deployment</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-health-deployment</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.hamcrest</groupId>
