@@ -69,7 +69,8 @@ public class DeliverCallbackProvider {
             try {
                 Arc.container().requestContext().activate();
                 final var properties = message.getProperties();
-                this.eventContext.setAmqpBasicProperties(properties);
+                final var envelope = message.getEnvelope();
+                this.eventContext.setMessageContext(properties, envelope);
 
                 authorizeMessage();
                 final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);

@@ -186,7 +186,7 @@ public class AmqpProducer {
             Transaction tx) {
         AMQP.BasicProperties properties = getOrCreateAmqpBasicProperties(exchange, scope, userId);
         transactionDelayedMessages.computeIfAbsent(tx, k -> new LinkedList<>())
-                .add(new Message(message, exchange, routingKey, scope, userId, properties));
+                .add(new Message(message, exchange, routingKey, scope, userId, properties, eventContext.getEnvelope()));
     }
 
     private Optional<Transaction> getOptionalTransaction() throws AmqpTransactionException {
@@ -210,7 +210,7 @@ public class AmqpProducer {
         Message message = messageList.poll();
 
         while (message != null) {
-            eventContext.setAmqpBasicProperties(message.properties());
+            eventContext.setMessageContext(message.properties(), message.envelope());
             executePublish(message.message(), message.exchange(), message.routingKey(), message.scope(), message.userId());
             message = messageList.poll();
         }
