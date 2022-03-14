@@ -15,12 +15,12 @@ jobs:
         ports:
           - 5672:5672
         env:
-          RABBITMQ_DEFAULT_USER: user
-          RABBITMQ_DEFAULT_PASS: user
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
     env:
       RABBIT_HOST: localhost
-      RABBIT_PASSWORD: user
-      RABBIT_USERNAME: user
+      RABBIT_PASSWORD: guest
+      RABBIT_USERNAME: guest
     steps:
       - name: setup java
         uses: globalid/github-actions/java-setup@main

@@ -9,9 +9,13 @@ import static id.global.common.headers.amqp.MessagingHeaders.Message.ROUTER;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.SESSION_ID;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
-import static id.global.common.iris.Exchanges.*;
+import static id.global.common.iris.Exchanges.BROADCAST;
+import static id.global.common.iris.Exchanges.SESSION;
+import static id.global.common.iris.Exchanges.SUBSCRIPTION;
+import static id.global.common.iris.Exchanges.USER;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +55,7 @@ import id.global.iris.amqp.parsers.RoutingKeyParser;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
+import id.global.iris.messaging.runtime.api.message.ResourceUpdate;
 import id.global.iris.messaging.runtime.channel.ChannelKey;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
@@ -66,6 +71,7 @@ public class AmqpProducer {
 
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
+    public static final EnumSet<Scope> CLIENT_MESSAGE_SCOPES = EnumSet.of(Scope.USER, Scope.SESSION, Scope.BROADCAST);
 
     private final ChannelService channelService;
     private final ObjectMapper objectMapper;
@@ -101,43 +107,99 @@ public class AmqpProducer {
         this.timestampProvider = timestampProvider;
     }
 
+    /**
+     * Send message using Iris infrastructure.
+     *
+     * @param message message
+     * @throws AmqpSendException        when sending fails
+     * @throws AmqpTransactionException when sending fails within transactional context
+     */
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
         doSend(message, null);
     }
 
     /**
-     * Send message and override userId header of the message.
+     * Send message using Iris infrastructure and override userId header of the message.
      * All following events caused by this event will have that user id set and any USER scoped messages will be sent to that
      * user.
      *
      * @param message message
-     * @param userId user id
+     * @param userId  user id
+     * @throws AmqpSendException        when sending fails
+     * @throws AmqpTransactionException when sending fails within transactional context
      */
     public void send(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
         doSend(message, userId);
     }
 
-    private void doSend(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
-        if (message == null) {
-            throw new AmqpSendException("Null message can not be published!");
+    /**
+     * Send message to Iris subscription service.
+     *
+     * @param message      message
+     * @param resourceType resource type
+     * @param resourceId   resource id
+     * @throws AmqpSendException        when sending fails
+     * @throws AmqpTransactionException when sending fails within transactional context
+     */
+    public void sendToSubscription(final Object message, final String resourceType, final String resourceId)
+            throws AmqpSendException, AmqpTransactionException {
+
+        final var messageAnnotation = getMessageAnnotation(message);
+        final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
+        if (!CLIENT_MESSAGE_SCOPES.contains(scope)) {
+            throw new AmqpSendException("Message scope " + scope + " not supported for subscription event!");
         }
 
-        final id.global.common.annotations.amqp.Message messageAnnotation = Optional
-                .ofNullable(message.getClass().getAnnotation(id.global.common.annotations.amqp.Message.class))
-                .orElseThrow(() -> new AmqpSendException("Message annotation is required."));
+        if (resourceType == null || resourceType.isBlank()) {
+            throw new AmqpSendException("Resource type is required for subscription event!");
+        }
+
+        final var eventNameAsRoutingKey = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+        final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, scope, message);
+        publish(resourceUpdate, new RoutingDetails(SUBSCRIPTION.getValue(), ExchangeType.TOPIC, eventNameAsRoutingKey, scope, null));
+    }
+
+    private void doSend(final Object message, final String userId) throws AmqpSendException {
+        final var messageAnnotation = getMessageAnnotation(message);
 
         final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
+
+        switch (scope) {
+            case INTERNAL -> publish(message, getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId));
+            case USER, SESSION, BROADCAST -> publish(message, getRoutingDetailsForClientScope(scope, userId));
+            default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
+        }
+    }
+
+    private RoutingDetails getRoutingDetailsFromAnnotation(final id.global.common.annotations.amqp.Message messageAnnotation,
+            final Scope scope, final String userId) {
+
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
         final var exchange = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
 
-        switch (scope) {
-            case INTERNAL -> publish(message, exchange, routingKey, scope, userId, exchangeType);
-            case USER -> publish(message, USER.getValue(), USER.getValue(), scope, userId, ExchangeType.TOPIC);
-            case SESSION -> publish(message, SESSION.getValue(), SESSION.getValue(), scope, userId, ExchangeType.TOPIC);
-            case BROADCAST -> publish(message, BROADCAST.getValue(), BROADCAST.getValue(), scope, userId, ExchangeType.TOPIC);
+        return new RoutingDetails(exchange, exchangeType, routingKey, scope, userId);
+    }
+
+    private RoutingDetails getRoutingDetailsForClientScope(final Scope scope, final String userId) {
+        final var exchange = switch (scope) {
+            case USER -> USER.getValue();
+            case SESSION -> SESSION.getValue();
+            case BROADCAST -> BROADCAST.getValue();
             default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
+        };
+
+        return new RoutingDetails(exchange, ExchangeType.TOPIC, exchange, scope, userId);
+    }
+
+    private id.global.common.annotations.amqp.Message getMessageAnnotation(final Object message) {
+        if (message == null) {
+            throw new AmqpSendException("Null message can not be published!");
         }
+
+        return Optional
+                .ofNullable(message.getClass().getAnnotation(id.global.common.annotations.amqp.Message.class))
+                .orElseThrow(() -> new AmqpSendException("Message annotation is required."));
     }
 
     public void addReturnListener(@NotNull String channelKey, @NotNull ReturnListener returnListener) throws IOException {
@@ -168,25 +230,25 @@ public class AmqpProducer {
         this.transactionCallback = callback;
     }
 
-    private void publish(@NotNull Object message, @NotNull String exchange, String routingKey, Scope scope, String userId,
-            ExchangeType exchangeType) throws AmqpSendException, AmqpTransactionException {
-        SendMessageValidator.validate(exchange, routingKey, exchangeType);
+    private void publish(@NotNull Object message, RoutingDetails routingDetails)
+            throws AmqpSendException {
+
+        SendMessageValidator.validate(routingDetails);
         final var txOptional = getOptionalTransaction();
 
         if (txOptional.isPresent()) {
             final var tx = txOptional.get();
-            enqueueDelayedMessage(message, exchange, routingKey, scope, userId, tx);
+            enqueueDelayedMessage(message, routingDetails, tx);
             registerDefaultTransactionCallback(tx);
         } else {
-            executePublish(message, exchange, routingKey, scope, userId);
+            executePublish(message, routingDetails);
         }
     }
 
-    private void enqueueDelayedMessage(Object message, String exchange, String routingKey, Scope scope, String userId,
-            Transaction tx) {
-        AMQP.BasicProperties properties = getOrCreateAmqpBasicProperties(exchange, scope, userId);
+    private void enqueueDelayedMessage(Object message, RoutingDetails routingDetails, Transaction tx) {
+        final var properties = getOrCreateAmqpBasicProperties(routingDetails);
         transactionDelayedMessages.computeIfAbsent(tx, k -> new LinkedList<>())
-                .add(new Message(message, exchange, routingKey, scope, userId, properties, eventContext.getEnvelope()));
+                .add(new Message(message, routingDetails, properties, eventContext.getEnvelope()));
     }
 
     private Optional<Transaction> getOptionalTransaction() throws AmqpTransactionException {
@@ -211,18 +273,19 @@ public class AmqpProducer {
 
         while (message != null) {
             eventContext.setMessageContext(message.properties(), message.envelope());
-            executePublish(message.message(), message.exchange(), message.routingKey(), message.scope(), message.userId());
+            executePublish(message.message(), message.routingDetails());
             message = messageList.poll();
         }
     }
 
-    private void executePublish(Object message, String exchange, String routingKey, Scope scope, String userId)
-            throws AmqpSendException {
+    private void executePublish(Object message, RoutingDetails routingDetails) throws AmqpSendException {
+        final var exchange = routingDetails.exchange();
+        final var routingKey = routingDetails.routingKey();
 
         try {
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
             synchronized (this.lock) {
-                final var properties = getOrCreateAmqpBasicProperties(exchange, scope, userId);
+                final var properties = getOrCreateAmqpBasicProperties(routingDetails);
                 final var channelKey = ChannelKey.create(exchange, routingKey);
                 final var channel = channelService.getOrCreateChannelById(channelKey);
                 log.info("publishing event to exchange: {}, routing key: {}, props: {}"
@@ -249,14 +312,17 @@ public class AmqpProducer {
         }
     }
 
-    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(String exchange,
-            final Scope messageScope, final String userId) {
+    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(final RoutingDetails routingDetails) {
+        final var exchange = routingDetails.exchange();
+        final var scope = routingDetails.scope();
+        final var userId = routingDetails.userId();
+
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildAmqpBasicPropertiesWithCustomHeaders(basicProperties, serviceId, exchange, messageScope, userId);
+        return buildAmqpBasicPropertiesWithCustomHeaders(basicProperties, serviceId, exchange, scope, userId);
     }
 
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithCustomHeaders(final AMQP.BasicProperties basicProperties,

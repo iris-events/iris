@@ -17,7 +17,7 @@
     <iris.asyncapi.version>1.1.6</iris.asyncapi.version>
     <hamcrest.version>2.2</hamcrest.version>
     <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
-    <globalid-common.version>1.1.6</globalid-common.version>
+    <globalid-common.version>1.1.8</globalid-common.version>
     <version.quarkiverse.rabbitmqclient>0.4.2.Final</version.quarkiverse.rabbitmqclient>
 
   </properties>

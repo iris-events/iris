@@ -7,7 +7,11 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 
 class SendMessageValidator {
-    static void validate(String exchange, String routingKey, ExchangeType exchangeType) throws AmqpSendException {
+    static void validate(final RoutingDetails routingDetails) throws AmqpSendException {
+        final var exchange = routingDetails.exchange();
+        final var exchangeType = routingDetails.exchangeType();
+        final var routingKey = routingDetails.routingKey();
+
         validateExchangePresent(exchange);
         validateRoutingKey(routingKey, exchangeType);
     }
