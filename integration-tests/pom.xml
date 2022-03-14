@@ -2,15 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>id.global.events</groupId>
-    <artifactId>quarkus-extension-parent</artifactId>
+    <groupId>id.global.iris</groupId>
+    <artifactId>iris-extension-parent</artifactId>
     <version>1.2.9-SNAPSHOT</version>
   </parent>
   <artifactId>event-messaging-integration-tests</artifactId>
   <name>Event Messaging - Integration Tests</name>
   <dependencies>
     <dependency>
-      <groupId>id.global.events</groupId>
+      <groupId>id.global.iris</groupId>
       <artifactId>event-messaging</artifactId>
       <version>${project.version}</version>
     </dependency>
