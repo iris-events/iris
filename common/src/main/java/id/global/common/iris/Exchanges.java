@@ -8,7 +8,8 @@ public enum Exchanges {
     RETRY("retry"),
     BROADCAST("broadcast"),
     SESSION("session"),
-    USER("user");
+    USER("user"),
+    SUBSCRIPTION("subscription");
 
     private final String value;
 

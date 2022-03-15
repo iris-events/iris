@@ -3,6 +3,7 @@ package id.global.common.iris;
 @SuppressWarnings("unused")
 public enum Queues {
     FRONTEND_SUFFIX("frontend"),
+    SUBSCRIPTION("subscription"),
     DEAD_LETTER(Constants.DEAD_LETTER),
     ERROR("error"),
     RETRY("retry"),
