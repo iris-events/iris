@@ -44,9 +44,9 @@ import io.quarkus.test.junit.mockito.InjectMock;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AmqpProducerTest {
 
-    public static final long CURRENT_TIMESTAMP = Instant.now().toEpochMilli();
-    public static final String AMQP_PRODUCER_TEST_EVENT = "AMQP-PRODUCER-TEST-EVENT";
-    public static final String INSTANCE_NAME = "AmqpProducerTestInstance";
+    private static final long CURRENT_TIMESTAMP = Instant.now().toEpochMilli();
+    private static final String AMQP_PRODUCER_TEST_EVENT = "AMQP-PRODUCER-TEST-EVENT";
+    private static final String INSTANCE_NAME = "AmqpProducerTestInstance";
     private static final AMQP.BasicProperties.Builder DEFAULT_BASIC_PROPERTIES_BUILDER = getBasicPropertiesBuilder();
     private static final AMQP.BasicProperties DEFAULT_BASIC_PROPERTIES = mockBasicProperties();
 
