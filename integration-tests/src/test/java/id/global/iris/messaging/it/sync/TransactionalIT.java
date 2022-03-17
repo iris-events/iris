@@ -51,7 +51,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
 
     @Test
     @DisplayName("id.global.event.messaging.runtime.producer.Message send")
-    void testThroughServiceTransactionSuccessful() throws Exception {
+    void testThroughServiceTransactionSuccessful() {
         service.sendTransactional(false);
 
         service.getFutures().forEach(future -> {
@@ -150,7 +150,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
         });
         try {
             service.sendTransactionalCustomCallback(false);
-        } catch (AmqpTransactionException | AmqpSendException e) {
+        } catch (AmqpSendException e) {
             fail();
         } catch (RuntimeException runtimeException) {
             List<Throwable> causes = new ArrayList<>();
@@ -208,12 +208,12 @@ public class TransactionalIT extends IsolatedEventContextTest {
             return futures.stream().filter(CompletableFuture::isDone).collect(Collectors.toSet()).size();
         }
 
-        public void send(int i) throws AmqpSendException, AmqpTransactionException {
+        public void send(int i) throws AmqpSendException {
             producer.send(new TestEvent(i));
         }
 
         @Transactional
-        public void sendTransactional(boolean throwException) throws AmqpSendException, AmqpTransactionException {
+        public void sendTransactional(boolean throwException) throws AmqpSendException {
             for (int i = 0; i < EXPECTED_MESSAGES; i++) {
                 producer.send(new TestEvent(i));
             }
@@ -224,7 +224,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
         }
 
         @Transactional
-        public void sendTransactionalCustomCallback(boolean throwException) throws AmqpTransactionException, AmqpSendException {
+        public void sendTransactionalCustomCallback(boolean throwException) throws AmqpSendException {
             for (int i = 0; i < EXPECTED_MESSAGES; i++) {
                 producer.send(new TestEvent(i));
             }
