@@ -25,6 +25,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.BuiltinExchangeType;
 
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
@@ -55,6 +56,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
     void setUp() throws IOException {
         final var connection = rabbitMQClient.connect("JwtAuthIT publisher");
         channel = connection.createChannel(ThreadLocalRandom.current().nextInt(0, 1000));
+        channel.exchangeDeclare(ERROR_EXCHANGE, BuiltinExchangeType.TOPIC, true);
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
         channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, JWT_AUTH_MESSAGE + ".error");

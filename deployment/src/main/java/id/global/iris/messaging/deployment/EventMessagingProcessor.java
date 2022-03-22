@@ -29,7 +29,6 @@ import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.context.MethodHandleContext;
 import id.global.iris.messaging.runtime.exception.AmqpExceptionHandler;
 import id.global.iris.messaging.runtime.health.IrisHealthCheck;
-import id.global.iris.messaging.runtime.infrastructure.AmqpInfrastructureDeclarator;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
 import id.global.iris.messaging.runtime.recorder.ConsumerInitRecorder;
@@ -95,7 +94,6 @@ class EventMessagingProcessor {
                                 GidJwtValidator.class,
                                 FrontendAmqpConsumer.class,
                                 AmqpExceptionHandler.class,
-                                AmqpInfrastructureDeclarator.class,
                                 QueueNameProvider.class,
                                 IrisHealthCheck.class,
                                 TimestampProvider.class)
