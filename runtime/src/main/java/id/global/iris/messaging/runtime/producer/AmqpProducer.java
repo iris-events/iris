@@ -154,9 +154,11 @@ public class AmqpProducer {
             throw new AmqpSendException("Resource type is required for subscription event!");
         }
 
-        final var eventNameAsRoutingKey = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+        final var routingKey = String.format("%s.%s", eventName, SUBSCRIPTION.getValue());
         final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, scope, message);
-        publish(resourceUpdate, new RoutingDetails(SUBSCRIPTION.getValue(), ExchangeType.TOPIC, eventNameAsRoutingKey, scope, null));
+        publish(resourceUpdate,
+                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, scope, null));
     }
 
     private void doSend(final Object message, final String userId) throws AmqpSendException {
@@ -166,7 +168,8 @@ public class AmqpProducer {
 
         switch (scope) {
             case INTERNAL -> publish(message, getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId));
-            case USER, SESSION, BROADCAST -> publish(message, getRoutingDetailsForClientScope(scope, userId));
+            case USER, SESSION, BROADCAST -> publish(message,
+                    getRoutingDetailsForClientScope(messageAnnotation, scope, userId));
             default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
         }
     }
@@ -175,13 +178,15 @@ public class AmqpProducer {
             final Scope scope, final String userId) {
 
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
-        final var exchange = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
 
-        return new RoutingDetails(exchange, exchangeType, routingKey, scope, userId);
+        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId);
     }
 
-    private RoutingDetails getRoutingDetailsForClientScope(final Scope scope, final String userId) {
+    private RoutingDetails getRoutingDetailsForClientScope(final id.global.common.annotations.amqp.Message messageAnnotation,
+            final Scope scope, final String userId) {
+
         final var exchange = switch (scope) {
             case USER -> USER.getValue();
             case SESSION -> SESSION.getValue();
@@ -189,7 +194,10 @@ public class AmqpProducer {
             default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
         };
 
-        return new RoutingDetails(exchange, ExchangeType.TOPIC, exchange, scope, userId);
+        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+        final var routingKey = String.format("%s.%s", eventName, exchange);
+
+        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId);
     }
 
     private id.global.common.annotations.amqp.Message getMessageAnnotation(final Object message) {
@@ -313,28 +321,28 @@ public class AmqpProducer {
     }
 
     private AMQP.BasicProperties getOrCreateAmqpBasicProperties(final RoutingDetails routingDetails) {
-        final var exchange = routingDetails.exchange();
-        final var scope = routingDetails.scope();
-        final var userId = routingDetails.userId();
-
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
         final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
                 .orElse(createAmqpBasicProperties(serviceId));
 
-        return buildAmqpBasicPropertiesWithCustomHeaders(basicProperties, serviceId, exchange, scope, userId);
+        return buildAmqpBasicPropertiesWithCustomHeaders(basicProperties, serviceId, routingDetails);
     }
 
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithCustomHeaders(final AMQP.BasicProperties basicProperties,
-            final String serviceId, String exchange, final Scope messageScope, final String userId) {
+            final String serviceId, final RoutingDetails routingDetails) {
+
+        final var eventName = routingDetails.eventName();
+        final var scope = routingDetails.scope();
+        final var userId = routingDetails.userId();
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(CURRENT_SERVICE_ID, serviceId);
         headers.put(INSTANCE_ID, hostName);
-        headers.put(EVENT_TYPE, exchange);
+        headers.put(EVENT_TYPE, eventName);
         headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
-        if (messageScope != Scope.INTERNAL) {
+        if (scope != Scope.INTERNAL) {
             // never propagate JWT when "leaving" backend
             headers.remove(JWT);
         }
