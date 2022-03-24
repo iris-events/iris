@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 
+import com.rabbitmq.client.BuiltinExchangeType;
+
 import id.global.common.annotations.amqp.Message;
 import id.global.common.annotations.amqp.MessageHandler;
 import id.global.common.iris.Exchanges;
@@ -57,6 +59,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     void setUp() throws IOException {
         final var connection = rabbitMQClient.connect("ErrorQueueIT publisher");
         channel = connection.createChannel();
+        channel.exchangeDeclare(ERROR_EXCHANGE, BuiltinExchangeType.TOPIC, true);
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
         channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, ERROR_QUEUE_BAD_REQUEST + ".error");

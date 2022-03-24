@@ -9,18 +9,6 @@ name: Build & test
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      rabbitmq:
-        image: rabbitmq:3.8-alpine
-        ports:
-          - 5672:5672
-        env:
-          RABBITMQ_DEFAULT_USER: guest
-          RABBITMQ_DEFAULT_PASS: guest
-    env:
-      RABBIT_HOST: localhost
-      RABBIT_PASSWORD: guest
-      RABBIT_USERNAME: guest
     steps:
       - name: setup java
         uses: globalid/github-actions/java-setup@main

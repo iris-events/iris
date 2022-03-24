@@ -1,6 +1,5 @@
 package id.global.iris.messaging.runtime.consumer;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +23,6 @@ import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.context.MethodHandleContext;
 import id.global.iris.messaging.runtime.exception.AmqpConnectionException;
 import id.global.iris.messaging.runtime.exception.AmqpExceptionHandler;
-import id.global.iris.messaging.runtime.infrastructure.AmqpInfrastructureDeclarator;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 
 @ApplicationScoped
@@ -40,7 +38,6 @@ public class AmqpConsumerContainer {
     private final GidJwtValidator jwtValidator;
     private final FrontendAmqpConsumer frontendAmqpConsumer;
     private final AmqpExceptionHandler errorHandler;
-    private final AmqpInfrastructureDeclarator infrastructureDeclarator;
 
     @Inject
     public AmqpConsumerContainer(
@@ -50,14 +47,12 @@ public class AmqpConsumerContainer {
             final AmqpProducer producer,
             final QueueNameProvider queueNameProvider, final GidJwtValidator jwtValidator,
             final FrontendAmqpConsumer frontendAmqpConsumer,
-            final AmqpExceptionHandler errorHandler,
-            final AmqpInfrastructureDeclarator infrastructureDeclarator) {
+            final AmqpExceptionHandler errorHandler) {
 
         this.consumerChannelService = consumerChannelService;
         this.queueNameProvider = queueNameProvider;
         this.jwtValidator = jwtValidator;
         this.errorHandler = errorHandler;
-        this.infrastructureDeclarator = infrastructureDeclarator;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -66,13 +61,6 @@ public class AmqpConsumerContainer {
     }
 
     public void initConsumers() {
-        try {
-            infrastructureDeclarator.declareBackboneInfrastructure();
-        } catch (IOException e) {
-            final var msg = "Could not initialize default infrastructure";
-            log.error(msg, e);
-            throw new AmqpConnectionException(msg, e);
-        }
         consumerMap.forEach((queueName, consumer) -> {
             try {
                 consumer.initChannel();

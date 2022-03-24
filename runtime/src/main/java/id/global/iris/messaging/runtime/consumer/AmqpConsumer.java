@@ -27,8 +27,6 @@ import id.global.iris.messaging.runtime.context.AmqpContext;
 public class AmqpConsumer {
     private static final Logger log = LoggerFactory.getLogger(AmqpConsumer.class);
 
-    private static final int DEFAULT_MESSAGE_TTL = 15000;
-
     private final AmqpContext context;
     private final ChannelService channelService;
     private final DeliverCallbackProvider deliverCallbackProvider;
