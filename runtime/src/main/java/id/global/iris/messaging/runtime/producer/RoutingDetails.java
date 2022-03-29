@@ -4,9 +4,9 @@ import id.global.common.annotations.amqp.ExchangeType;
 import id.global.common.annotations.amqp.Scope;
 
 public record RoutingDetails(String eventName,
-                             String exchange,
-                             ExchangeType exchangeType,
-                             String routingKey,
-                             Scope scope,
-                             String userId) {
+        String exchange,
+        ExchangeType exchangeType,
+        String routingKey,
+        Scope scope,
+        String userId) {
 }

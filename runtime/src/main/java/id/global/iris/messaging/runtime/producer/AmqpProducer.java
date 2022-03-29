@@ -111,7 +111,7 @@ public class AmqpProducer {
      * Send message using Iris infrastructure.
      *
      * @param message message
-     * @throws AmqpSendException        when sending fails
+     * @throws AmqpSendException when sending fails
      * @throws AmqpTransactionException when sending fails within transactional context
      */
     public void send(final Object message) throws AmqpSendException, AmqpTransactionException {
@@ -119,13 +119,16 @@ public class AmqpProducer {
     }
 
     /**
-     * Send message using Iris infrastructure and override userId header of the message.
-     * All following events caused by this event will have that user id set and any USER scoped messages will be sent to that
+     * Send message using Iris infrastructure and override userId header of the message
+     * All following events caused by this event will have that user id set and any client scoped messages will be sent to that
      * user.
+     * <p>
+     * Used to address specific user without FRONTED event being sent fom the client.
+     * Scope of current event will be changed to USER if event is of client scope (SESSION, USER, BROADCAST).
      *
      * @param message message
-     * @param userId  user id
-     * @throws AmqpSendException        when sending fails
+     * @param userId user id
+     * @throws AmqpSendException when sending fails
      * @throws AmqpTransactionException when sending fails within transactional context
      */
     public void send(final Object message, final String userId) throws AmqpSendException, AmqpTransactionException {
@@ -135,10 +138,10 @@ public class AmqpProducer {
     /**
      * Send message to Iris subscription service.
      *
-     * @param message      message
+     * @param message message
      * @param resourceType resource type
-     * @param resourceId   resource id
-     * @throws AmqpSendException        when sending fails
+     * @param resourceId resource id
+     * @throws AmqpSendException when sending fails
      * @throws AmqpTransactionException when sending fails within transactional context
      */
     public void sendToSubscription(final Object message, final String resourceType, final String resourceId)
@@ -187,12 +190,14 @@ public class AmqpProducer {
     private RoutingDetails getRoutingDetailsForClientScope(final id.global.common.annotations.amqp.Message messageAnnotation,
             final Scope scope, final String userId) {
 
-        final var exchange = switch (scope) {
-            case USER -> USER.getValue();
-            case SESSION -> SESSION.getValue();
-            case BROADCAST -> BROADCAST.getValue();
-            default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
-        };
+        final var exchange = Optional.ofNullable(userId)
+                .map(u -> USER.getValue())
+                .orElseGet(() -> switch (scope) {
+                case USER -> USER.getValue();
+                case SESSION -> SESSION.getValue();
+                case BROADCAST -> BROADCAST.getValue();
+                default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
+                });
 
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = String.format("%s.%s", eventName, exchange);

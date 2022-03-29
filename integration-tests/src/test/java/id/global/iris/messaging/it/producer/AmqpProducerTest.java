@@ -3,7 +3,9 @@ package id.global.iris.messaging.it.producer;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.CURRENT_SERVICE_ID;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.INSTANCE_ID;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
 import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
 import static id.global.iris.messaging.runtime.producer.AmqpProducer.SERVICE_ID_UNAVAILABLE_FALLBACK;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -11,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -92,7 +95,7 @@ public class AmqpProducerTest {
         producer.send(event);
 
         final byte[] bytes = objectMapper.writeValueAsBytes(event);
-        final var basicProperties = getBasicPropertiesBuilder(eventName).build();
+        final var basicProperties = getBasicPropertiesBuilder(eventName, null).build();
         Mockito.verify(channel)
                 .basicPublish(expectedExchange,
                         expectedRoutingKey,
@@ -108,8 +111,7 @@ public class AmqpProducerTest {
                         AMQP_PRODUCER_TEST_SESSION_EVENT + "." + Exchanges.SESSION.getValue()),
                 Arguments.of(getUserEvent(), AMQP_PRODUCER_TEST_USER_EVENT, Exchanges.USER.getValue(),
                         AMQP_PRODUCER_TEST_USER_EVENT + "." + Exchanges.USER.getValue()),
-                Arguments.of(getInternalEvent(), AMQP_PRODUCER_TEST_INTERNAL_EVENT, AMQP_PRODUCER_TEST_INTERNAL_EVENT, "")
-        );
+                Arguments.of(getInternalEvent(), AMQP_PRODUCER_TEST_INTERNAL_EVENT, AMQP_PRODUCER_TEST_INTERNAL_EVENT, ""));
     }
 
     @Test
@@ -119,7 +121,7 @@ public class AmqpProducerTest {
         final var resourceType = "amqpProducerTestEventResource";
         final var resourceId = UUID.randomUUID().toString();
         final var event = new SessionEvent(resourceId);
-        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT).build();
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, null).build();
 
         producer.sendToSubscription(event, resourceType, resourceId);
 
@@ -127,24 +129,50 @@ public class AmqpProducerTest {
         final byte[] bytes = objectMapper.writeValueAsBytes(resourceUpdate);
         Mockito.verify(channel)
                 .basicPublish(Exchanges.SUBSCRIPTION.getValue(),
-                        AMQP_PRODUCER_TEST_SESSION_EVENT + "." + Queues.SUBSCRIPTION.getValue(), true,
+                        AMQP_PRODUCER_TEST_SESSION_EVENT + "." + Queues.SUBSCRIPTION.getValue(),
+                        true,
+                        basicProperties,
+                        bytes);
+    }
+
+    @Test
+    void sendToUser() throws Exception {
+        mockBasicProperties(AMQP_PRODUCER_TEST_SESSION_EVENT);
+        final var event = getSessionEvent();
+        final var userId = UUID.randomUUID().toString();
+
+        producer.send(event, userId);
+
+        final byte[] bytes = objectMapper.writeValueAsBytes(event);
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, userId).build();
+        Mockito.verify(channel)
+                .basicPublish(Exchanges.USER.getValue(),
+                        AMQP_PRODUCER_TEST_SESSION_EVENT + "." + Exchanges.USER.getValue(),
+                        true,
                         basicProperties,
                         bytes);
     }
 
     private void mockBasicProperties(final String eventName) {
         final var basicPropertiesMock = mock(AMQP.BasicProperties.class);
-        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName);
+        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName, null);
         when(basicPropertiesMock.builder()).thenReturn(basicPropertiesBuilder);
         when(eventContext.getAmqpBasicProperties()).thenReturn(basicPropertiesMock);
     }
 
-    private static AMQP.BasicProperties.Builder getBasicPropertiesBuilder(final String eventName) {
+    private AMQP.BasicProperties.Builder getBasicPropertiesBuilder(final String eventName, final String userId) {
+        final Map<String, Object> headers = new HashMap<>();
+        headers.put(CURRENT_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK);
+        headers.put(INSTANCE_ID, INSTANCE_NAME);
+        headers.put(EVENT_TYPE, eventName);
+        headers.put(SERVER_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        if (userId != null) {
+            headers.put(ORIGIN_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK);
+            headers.put(USER_ID, userId);
+        }
         return new AMQP.BasicProperties().builder()
-                .headers(Map.of(CURRENT_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK,
-                        INSTANCE_ID, INSTANCE_NAME,
-                        EVENT_TYPE, eventName,
-                        SERVER_TIMESTAMP, CURRENT_TIMESTAMP));
+                .headers(headers);
     }
 
     private static SessionEvent getSessionEvent() {
