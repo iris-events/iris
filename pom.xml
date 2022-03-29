@@ -13,12 +13,13 @@
   <packaging>pom</packaging>
   <name>Event Messaging - Parent</name>
   <properties>
-    <rabbit.amqp-client.version>5.14.0</rabbit.amqp-client.version>
+    <version.rabbit.amqp-client>5.14.0</version.rabbit.amqp-client>
+    <version.hamcrest>2.2</version.hamcrest>
+    <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
+    <version.globalid-common>1.1.8</version.globalid-common>
+    <version.quarkiverse.rabbitmqclient>0.5.0.Final</version.quarkiverse.rabbitmqclient>
+    <!-- plugin dependencies -->
     <iris.asyncapi.version>1.1.6</iris.asyncapi.version>
-    <hamcrest.version>2.2</hamcrest.version>
-    <resilience4j-retry.version>1.7.1</resilience4j-retry.version>
-    <globalid-common.version>1.1.8</globalid-common.version>
-    <version.quarkiverse.rabbitmqclient>0.4.2.Final</version.quarkiverse.rabbitmqclient>
 
   </properties>
   <scm>
@@ -37,12 +38,12 @@
       <dependency>
         <groupId>id.global.common</groupId>
         <artifactId>globalid-common</artifactId>
-        <version>${globalid-common.version}</version>
+        <version>${version.globalid-common}</version>
       </dependency>
       <dependency>
         <groupId>com.rabbitmq</groupId>
         <artifactId>amqp-client</artifactId>
-        <version>${rabbit.amqp-client.version}</version>
+        <version>${version.rabbit.amqp-client}</version>
       </dependency>
       <dependency>
         <groupId>id.global.iris</groupId>
@@ -52,7 +53,7 @@
       <dependency>
         <groupId>io.github.resilience4j</groupId>
         <artifactId>resilience4j-retry</artifactId>
-        <version>${resilience4j-retry.version}</version>
+        <version>${version.resilience4j-retry}</version>
       </dependency>
       <dependency>
         <groupId>io.quarkus</groupId>
@@ -72,7 +73,7 @@
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest</artifactId>
-        <version>${hamcrest.version}</version>
+        <version>${version.hamcrest}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
