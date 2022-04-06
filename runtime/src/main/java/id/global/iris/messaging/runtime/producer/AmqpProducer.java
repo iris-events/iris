@@ -146,12 +146,7 @@ public class AmqpProducer {
      */
     public void sendToSubscription(final Object message, final String resourceType, final String resourceId)
             throws AmqpSendException, AmqpTransactionException {
-
         final var messageAnnotation = getMessageAnnotation(message);
-        final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
-        if (!CLIENT_MESSAGE_SCOPES.contains(scope)) {
-            throw new AmqpSendException("Message scope " + scope + " not supported for subscription event!");
-        }
 
         if (resourceType == null || resourceType.isBlank()) {
             throw new AmqpSendException("Resource type is required for subscription event!");
@@ -159,9 +154,9 @@ public class AmqpProducer {
 
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = String.format("%s.%s", eventName, SUBSCRIPTION.getValue());
-        final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, scope, message);
+        final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, message);
         publish(resourceUpdate,
-                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, scope, null));
+                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null));
     }
 
     private void doSend(final Object message, final String userId) throws AmqpSendException {

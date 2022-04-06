@@ -125,7 +125,7 @@ public class AmqpProducerTest {
 
         producer.sendToSubscription(event, resourceType, resourceId);
 
-        final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, Scope.SESSION, event);
+        final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, event);
         final byte[] bytes = objectMapper.writeValueAsBytes(resourceUpdate);
         Mockito.verify(channel)
                 .basicPublish(Exchanges.SUBSCRIPTION.getValue(),
