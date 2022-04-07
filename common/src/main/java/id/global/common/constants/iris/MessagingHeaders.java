@@ -1,4 +1,4 @@
-package id.global.common.headers.amqp;
+package id.global.common.constants.iris;
 
 @SuppressWarnings("unused")
 public class MessagingHeaders {

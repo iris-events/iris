@@ -1,4 +1,4 @@
-package id.global.common.annotations.amqp;
+package id.global.common.annotations.iris;
 
 public enum Scope {
     /**

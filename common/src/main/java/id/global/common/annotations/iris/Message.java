@@ -1,4 +1,4 @@
-package id.global.common.annotations.amqp;
+package id.global.common.annotations.iris;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.Queues;
+import id.global.common.constants.iris.Queues;
 
 /**
  * Amqp producible event. Events annotated with this annotation should be used as a parameter in an Amqp producer send method.

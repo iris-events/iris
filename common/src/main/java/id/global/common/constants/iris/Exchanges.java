@@ -1,4 +1,4 @@
-package id.global.common.iris;
+package id.global.common.constants.iris;
 
 @SuppressWarnings("unused")
 public enum Exchanges {
