@@ -13,6 +13,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
 import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.iris.Queues;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.asyncapi.runtime.scanner.validator.ReservedAmqpNamesProvider;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
@@ -69,12 +70,14 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
     private boolean paramMatchesKebabCase(final String param, final AnnotationInstance annotationInstance) {
         Pattern pattern = Pattern.compile(KEBAB_CASE_PATTERN);
         AnnotationValue value = annotationInstance.value(param);
+
         if (value.kind().equals(AnnotationValue.Kind.ARRAY)) {
-            return Arrays.stream(value.asStringArray()).allMatch(val -> pattern.matcher(val).matches());
+            return Arrays.stream(value.asStringArray()).map(val -> val.replaceFirst(Queues.Constants.DEAD_LETTER_PREFIX, ""))
+                    .allMatch(val -> pattern.matcher(val).matches());
         }
 
         return pattern
-                .matcher(value.asString())
+                .matcher(value.asString().replaceFirst(Queues.Constants.DEAD_LETTER_PREFIX, ""))
                 .matches();
     }
 
