@@ -189,6 +189,7 @@ class EventMessagingProcessor {
     @BuildStep
     void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("id.global.common", "globalid-common"));
+        indexDependency.produce(new IndexDependencyBuildItem("id.global.iris", "event-messaging"));
     }
 
     @SuppressWarnings("unused")
