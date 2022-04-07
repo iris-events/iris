@@ -1,6 +1,6 @@
 package id.global.iris.messaging.runtime.api.exception;
 
-import id.global.iris.messaging.runtime.api.error.MessagingError;
+import id.global.common.error.iris.MessagingError;
 
 /**
  * Amqp security exception.

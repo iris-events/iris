@@ -5,7 +5,7 @@ import java.util.Set;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.annotations.amqp.ExchangeType;
+import id.global.common.annotations.iris.ExchangeType;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 
 abstract class AbstractAnnotationInstanceValidator {

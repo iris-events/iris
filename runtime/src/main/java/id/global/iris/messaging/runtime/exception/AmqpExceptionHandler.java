@@ -1,7 +1,7 @@
 package id.global.iris.messaging.runtime.exception;
 
-import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static id.global.common.constants.iris.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.common.constants.iris.MessagingHeaders.Message.SERVER_TIMESTAMP;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -17,12 +17,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-import id.global.common.headers.amqp.MessagingHeaders;
-import id.global.common.iris.Exchanges;
+import id.global.common.constants.iris.Exchanges;
+import id.global.common.constants.iris.MessagingHeaders;
+import id.global.common.error.iris.MessagingError;
+import id.global.common.error.iris.SecurityError;
+import id.global.common.error.iris.ServerError;
 import id.global.iris.messaging.runtime.TimestampProvider;
-import id.global.iris.messaging.runtime.api.error.MessagingError;
-import id.global.iris.messaging.runtime.api.error.SecurityError;
-import id.global.iris.messaging.runtime.api.error.ServerError;
 import id.global.iris.messaging.runtime.api.exception.BadMessageException;
 import id.global.iris.messaging.runtime.api.exception.MessagingException;
 import id.global.iris.messaging.runtime.api.exception.SecurityException;

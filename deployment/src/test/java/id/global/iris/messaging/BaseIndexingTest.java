@@ -7,10 +7,10 @@ import java.io.UncheckedIOException;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 
-import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.Message;
-import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.annotations.amqp.Scope;
+import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.annotations.iris.Message;
+import id.global.common.annotations.iris.MessageHandler;
+import id.global.common.annotations.iris.Scope;
 
 public class BaseIndexingTest {
     protected Index indexOf(Class<?>... classes) {

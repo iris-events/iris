@@ -1,7 +1,7 @@
 package id.global.iris.messaging.deployment.validation;
 
-import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
-import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
+import static id.global.common.annotations.iris.ExchangeType.DIRECT;
+import static id.global.common.annotations.iris.ExchangeType.TOPIC;
 import static id.global.iris.messaging.deployment.constants.AnnotationInstanceParams.DEAD_LETTER_PARAM;
 import static id.global.iris.messaging.deployment.constants.AnnotationInstanceParams.NAME_PARAM;
 import static id.global.iris.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY_PARAM;
@@ -24,9 +24,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.Message;
-import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.annotations.iris.Message;
+import id.global.common.annotations.iris.MessageHandler;
 import id.global.common.auth.jwt.Role;
 import id.global.iris.messaging.BaseIndexingTest;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
