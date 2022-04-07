@@ -273,7 +273,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     }
 
-    @Message(name = "kebab-case-queue", routingKey = "kebab-case-queue", exchangeType = DIRECT, deadLetter = "valid-dead-letter")
+    @Message(name = "kebab-case-queue", routingKey = "kebab-case-queue", exchangeType = DIRECT, deadLetter = "dead.valid-dead-letter")
     public record ValidDirectEvent() {
     }
 
