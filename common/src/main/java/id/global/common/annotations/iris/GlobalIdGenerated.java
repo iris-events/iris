@@ -1,4 +1,4 @@
-package id.global.common.annotations.amqp;
+package id.global.common.annotations.iris;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
