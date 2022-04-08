@@ -1,18 +1,18 @@
 package id.global.iris.messaging.runtime.producer;
 
-import static id.global.common.headers.amqp.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.INSTANCE_ID;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.JWT;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.ROUTER;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.SESSION_ID;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
-import static id.global.common.iris.Exchanges.BROADCAST;
-import static id.global.common.iris.Exchanges.SESSION;
-import static id.global.common.iris.Exchanges.SUBSCRIPTION;
-import static id.global.common.iris.Exchanges.USER;
+import static id.global.common.constants.iris.Exchanges.BROADCAST;
+import static id.global.common.constants.iris.Exchanges.SESSION;
+import static id.global.common.constants.iris.Exchanges.SUBSCRIPTION;
+import static id.global.common.constants.iris.Exchanges.USER;
+import static id.global.common.constants.iris.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static id.global.common.constants.iris.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.common.constants.iris.MessagingHeaders.Message.INSTANCE_ID;
+import static id.global.common.constants.iris.MessagingHeaders.Message.JWT;
+import static id.global.common.constants.iris.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static id.global.common.constants.iris.MessagingHeaders.Message.ROUTER;
+import static id.global.common.constants.iris.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static id.global.common.constants.iris.MessagingHeaders.Message.SESSION_ID;
+import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -46,8 +46,8 @@ import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 
-import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.Scope;
+import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.annotations.iris.Scope;
 import id.global.iris.amqp.parsers.ExchangeParser;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.amqp.parsers.MessageScopeParser;
@@ -172,7 +172,7 @@ public class AmqpProducer {
         }
     }
 
-    private RoutingDetails getRoutingDetailsFromAnnotation(final id.global.common.annotations.amqp.Message messageAnnotation,
+    private RoutingDetails getRoutingDetailsFromAnnotation(final id.global.common.annotations.iris.Message messageAnnotation,
             final Scope scope, final String userId) {
 
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
@@ -182,7 +182,7 @@ public class AmqpProducer {
         return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId);
     }
 
-    private RoutingDetails getRoutingDetailsForClientScope(final id.global.common.annotations.amqp.Message messageAnnotation,
+    private RoutingDetails getRoutingDetailsForClientScope(final id.global.common.annotations.iris.Message messageAnnotation,
             final Scope scope, final String userId) {
 
         final var exchange = Optional.ofNullable(userId)
@@ -200,13 +200,13 @@ public class AmqpProducer {
         return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId);
     }
 
-    private id.global.common.annotations.amqp.Message getMessageAnnotation(final Object message) {
+    private id.global.common.annotations.iris.Message getMessageAnnotation(final Object message) {
         if (message == null) {
             throw new AmqpSendException("Null message can not be published!");
         }
 
         return Optional
-                .ofNullable(message.getClass().getAnnotation(id.global.common.annotations.amqp.Message.class))
+                .ofNullable(message.getClass().getAnnotation(id.global.common.annotations.iris.Message.class))
                 .orElseThrow(() -> new AmqpSendException("Message annotation is required."));
     }
 
@@ -367,7 +367,7 @@ public class AmqpProducer {
                 .build();
     }
 
-    private String getRoutingKey(id.global.common.annotations.amqp.Message messageAnnotation,
+    private String getRoutingKey(id.global.common.annotations.iris.Message messageAnnotation,
             final ExchangeType exchangeType) {
         if (exchangeType == ExchangeType.FANOUT) {
             return "";

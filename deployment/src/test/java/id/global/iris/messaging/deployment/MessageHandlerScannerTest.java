@@ -1,7 +1,7 @@
 package id.global.iris.messaging.deployment;
 
-import static id.global.common.annotations.amqp.ExchangeType.FANOUT;
-import static id.global.common.annotations.amqp.ExchangeType.TOPIC;
+import static id.global.common.annotations.iris.ExchangeType.FANOUT;
+import static id.global.common.annotations.iris.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -16,8 +16,8 @@ import org.jboss.jandex.Type;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import id.global.common.annotations.amqp.Message;
-import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.iris.Message;
+import id.global.common.annotations.iris.MessageHandler;
 import id.global.iris.messaging.BaseIndexingTest;
 import id.global.iris.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.iris.messaging.test.Event;

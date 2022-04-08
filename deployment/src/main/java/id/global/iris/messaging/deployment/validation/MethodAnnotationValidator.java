@@ -10,8 +10,8 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.Message;
+import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.annotations.iris.Message;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;

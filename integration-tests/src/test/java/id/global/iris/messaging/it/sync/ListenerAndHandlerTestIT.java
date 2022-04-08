@@ -1,6 +1,6 @@
 package id.global.iris.messaging.it.sync;
 
-import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+import static id.global.common.annotations.iris.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -23,8 +23,8 @@ import org.junit.jupiter.api.TestInstance;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ShutdownSignalException;
 
-import id.global.common.annotations.amqp.Message;
-import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.iris.Message;
+import id.global.common.annotations.iris.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.channel.ChannelKey;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;

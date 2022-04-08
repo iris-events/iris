@@ -1,6 +1,6 @@
 package id.global.iris.messaging.it.sync;
 
-import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+import static id.global.common.annotations.iris.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,12 +26,12 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import id.global.common.annotations.amqp.Message;
-import id.global.common.annotations.amqp.MessageHandler;
-import id.global.common.headers.amqp.MessagingHeaders;
+import id.global.common.annotations.iris.Message;
+import id.global.common.annotations.iris.MessageHandler;
+import id.global.common.constants.iris.MessagingHeaders;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.TimestampProvider;
-import id.global.iris.messaging.runtime.api.error.ServerError;
+import id.global.common.error.iris.ServerError;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;

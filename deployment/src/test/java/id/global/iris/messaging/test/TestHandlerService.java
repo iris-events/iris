@@ -2,7 +2,7 @@ package id.global.iris.messaging.test;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.iris.MessageHandler;
 
 @ApplicationScoped
 public class TestHandlerService {

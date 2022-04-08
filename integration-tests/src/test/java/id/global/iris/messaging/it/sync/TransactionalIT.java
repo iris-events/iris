@@ -1,6 +1,6 @@
 package id.global.iris.messaging.it.sync;
 
-import static id.global.common.annotations.amqp.ExchangeType.DIRECT;
+import static id.global.common.annotations.iris.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -26,8 +26,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import id.global.common.annotations.amqp.Message;
-import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.iris.Message;
+import id.global.common.annotations.iris.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 import id.global.iris.messaging.runtime.exception.AmqpTransactionException;

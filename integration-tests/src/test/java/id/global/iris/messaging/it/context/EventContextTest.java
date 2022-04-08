@@ -16,8 +16,8 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.Envelope;
 
-import id.global.common.annotations.amqp.Message;
-import id.global.common.annotations.amqp.MessageHandler;
+import id.global.common.annotations.iris.Message;
+import id.global.common.annotations.iris.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;

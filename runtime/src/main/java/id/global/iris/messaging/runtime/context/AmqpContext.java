@@ -6,10 +6,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.Scope;
+import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.annotations.iris.Scope;
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.Queues;
+import id.global.common.constants.iris.Queues;
 
 public final class AmqpContext {
 

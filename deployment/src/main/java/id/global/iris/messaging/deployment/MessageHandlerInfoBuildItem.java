@@ -7,8 +7,8 @@ import java.util.StringJoiner;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.annotations.amqp.ExchangeType;
-import id.global.common.annotations.amqp.Scope;
+import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.annotations.iris.Scope;
 import id.global.common.auth.jwt.Role;
 import io.quarkus.builder.item.MultiBuildItem;
 

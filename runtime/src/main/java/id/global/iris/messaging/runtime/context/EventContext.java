@@ -1,8 +1,8 @@
 package id.global.iris.messaging.runtime.context;
 
-import static id.global.common.headers.amqp.MessagingHeaders.Message.SESSION_ID;
-import static id.global.common.headers.amqp.MessagingHeaders.Message.USER_ID;
-import static id.global.common.headers.amqp.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
+import static id.global.common.constants.iris.MessagingHeaders.Message.SESSION_ID;
+import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
+import static id.global.common.constants.iris.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
 
 import java.util.Collections;
 import java.util.Map;

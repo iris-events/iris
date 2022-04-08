@@ -1,6 +1,6 @@
 package id.global.iris.messaging.runtime.auth;
 
-import static id.global.common.headers.amqp.MessagingHeaders.Message.JWT;
+import static id.global.common.constants.iris.MessagingHeaders.Message.JWT;
 
 import java.util.Optional;
 import java.util.Set;
