@@ -64,11 +64,10 @@ public class AmqpExceptionHandler {
         try {
             if (throwable instanceof AmqpTransactionException) {
                 log.error("Exception completing send transaction when sending/forwarding event.", throwable);
-                throw new AmqpTransactionException("Exception completing send transaction when sending/forwarding event.",
-                        throwable);
+                throw (AmqpTransactionException) throwable;
             } else if (throwable instanceof AmqpSendException) {
                 log.error("Exception sending/forwarding event.", throwable);
-                throw new AmqpSendException("Exception sending/forwarding event.", throwable);
+                throw (AmqpSendException) throwable;
             } else if (throwable instanceof SecurityException) {
                 handleSecurityException(message, channel, (SecurityException) throwable);
             } else if (throwable instanceof BadMessageException) {
