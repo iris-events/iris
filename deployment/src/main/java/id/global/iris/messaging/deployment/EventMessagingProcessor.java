@@ -104,9 +104,9 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void scanForMessageHandlers(CombinedIndexBuildItem index,
+    void scanForMessageHandlers(CombinedIndexBuildItem index, ApplicationInfoBuildItem appInfo,
             BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
-        MessageHandlerScanner scanner = new MessageHandlerScanner(index.getIndex());
+        MessageHandlerScanner scanner = new MessageHandlerScanner(index.getIndex(), appInfo.getName());
         List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems = scanner.scanMessageHandlerAnnotations();
         messageHandlerInfoBuildItems.forEach(messageHandlerProducer::produce);
     }

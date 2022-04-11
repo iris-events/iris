@@ -20,9 +20,11 @@ import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 
 class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
+    private final String serviceName;
 
-    public ClassAnnotationValidator() {
+    public ClassAnnotationValidator(String serviceName) {
         super();
+        this.serviceName = serviceName;
     }
 
     @Override
@@ -39,7 +41,7 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
                 .filter(param -> illigalNames.contains(annotationInstance.valueWithDefault(index, param).asString()))
                 .toList();
 
-        if (paramsWithIllegalNames.isEmpty()) {
+        if (paramsWithIllegalNames.isEmpty() || RESERVED_NAME_EXCLUSIONS.contains(serviceName)) {
             return;
         }
 

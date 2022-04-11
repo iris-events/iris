@@ -162,7 +162,7 @@ public class MessageHandlerScannerTest extends BaseIndexingTest {
 
     private List<MessageHandlerInfoBuildItem> scanService(Class<?>... classes) {
         IndexView index = indexOf(classes);
-        MessageHandlerScanner scanner = new MessageHandlerScanner(index);
+        MessageHandlerScanner scanner = new MessageHandlerScanner(index, "MessageHandlerService");
         return scanner.scanMessageHandlerAnnotations();
     }
 

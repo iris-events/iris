@@ -35,9 +35,11 @@ public class MessageHandlerScanner {
     private static final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getCanonicalName());
     private static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getCanonicalName());
     private final IndexView index;
+    private final String serviceName;
 
-    public MessageHandlerScanner(IndexView index) {
+    public MessageHandlerScanner(IndexView index, String serviceName) {
         this.index = index;
+        this.serviceName = serviceName;
     }
 
     public List<MessageHandlerInfoBuildItem> scanMessageHandlerAnnotations() {
@@ -103,7 +105,7 @@ public class MessageHandlerScanner {
     }
 
     private AnnotationInstanceValidator getAnnotationValidator() {
-        return new AnnotationInstanceValidator(index);
+        return new AnnotationInstanceValidator(index, serviceName);
     }
 
     public static AnnotationInstance getMessageAnnotation(final MethodInfo methodInfo, final IndexView index) {
