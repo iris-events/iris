@@ -38,6 +38,7 @@ public class AmqpConsumerContainer {
     private final GidJwtValidator jwtValidator;
     private final FrontendAmqpConsumer frontendAmqpConsumer;
     private final AmqpExceptionHandler errorHandler;
+    private final QueueDeclarator queueDeclarator;
 
     @Inject
     public AmqpConsumerContainer(
@@ -47,12 +48,14 @@ public class AmqpConsumerContainer {
             final AmqpProducer producer,
             final QueueNameProvider queueNameProvider, final GidJwtValidator jwtValidator,
             final FrontendAmqpConsumer frontendAmqpConsumer,
-            final AmqpExceptionHandler errorHandler) {
+            final AmqpExceptionHandler errorHandler,
+            final QueueDeclarator queueDeclarator) {
 
         this.consumerChannelService = consumerChannelService;
         this.queueNameProvider = queueNameProvider;
         this.jwtValidator = jwtValidator;
         this.errorHandler = errorHandler;
+        this.queueDeclarator = queueDeclarator;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -90,7 +93,8 @@ public class AmqpConsumerContainer {
                 amqpContext,
                 consumerChannelService,
                 deliverCallbackProvider,
-                queueNameProvider));
+                queueNameProvider,
+                queueDeclarator));
     }
 
     public void addFrontendCallback(MethodHandle methodHandle, MethodHandleContext methodHandleContext,

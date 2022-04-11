@@ -33,6 +33,7 @@ public class FrontendAmqpConsumer {
 
     private final ChannelService channelService;
     private final InstanceInfoProvider instanceInfoProvider;
+    private final QueueDeclarator queueDeclarator;
     private final ConcurrentHashMap<String, DeliverCallbackProvider> deliverCallbackProviderMap;
     private final ConcurrentHashMap<String, DeliverCallback> deliverCallbackMap;
 
@@ -41,9 +42,11 @@ public class FrontendAmqpConsumer {
     @Inject
     public FrontendAmqpConsumer(
             @Named("consumerChannelService") final ChannelService channelService,
-            final InstanceInfoProvider instanceInfoProvider) {
+            final InstanceInfoProvider instanceInfoProvider,
+            final QueueDeclarator queueDeclarator) {
         this.channelService = channelService;
         this.instanceInfoProvider = instanceInfoProvider;
+        this.queueDeclarator = queueDeclarator;
         this.deliverCallbackMap = new ConcurrentHashMap<>();
         this.deliverCallbackProviderMap = new ConcurrentHashMap<>();
         this.channelId = UUID.randomUUID().toString();
@@ -57,9 +60,10 @@ public class FrontendAmqpConsumer {
         try {
             Channel channel = this.channelService.getOrCreateChannelById(this.channelId);
             String frontendQueue = getFrontendQueue();
-            final var queueDeclarationArgs = new HashMap<String, Object>();
-            queueDeclarationArgs.put(X_MESSAGE_TTL, DEFAULT_MESSAGE_TTL);
-            channel.queueDeclare(frontendQueue, true, false, false, queueDeclarationArgs);
+            final var args = new HashMap<String, Object>();
+            args.put(X_MESSAGE_TTL, DEFAULT_MESSAGE_TTL);
+            final var details = new QueueDeclarator.QueueDeclarationDetails(frontendQueue, true, false, false, args);
+            queueDeclarator.declareQueueWithRecreateOnConflict(channel, details);
 
             setupDeliverCallbacks(channel);
 

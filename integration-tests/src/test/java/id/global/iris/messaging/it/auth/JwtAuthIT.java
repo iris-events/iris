@@ -30,10 +30,10 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import id.global.common.annotations.iris.Message;
 import id.global.common.annotations.iris.MessageHandler;
 import id.global.common.auth.jwt.Role;
-import id.global.common.constants.iris.MessagingHeaders;
 import id.global.common.constants.iris.Exchanges;
-import id.global.iris.messaging.it.AbstractIntegrationTest;
+import id.global.common.constants.iris.MessagingHeaders;
 import id.global.common.error.iris.SecurityError;
+import id.global.iris.messaging.it.AbstractIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
