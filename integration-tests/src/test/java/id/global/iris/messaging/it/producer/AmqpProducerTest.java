@@ -36,6 +36,7 @@ import com.rabbitmq.client.Channel;
 import id.global.common.annotations.iris.Message;
 import id.global.common.annotations.iris.Scope;
 import id.global.common.constants.iris.Exchanges;
+import id.global.common.constants.iris.Queues;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
@@ -120,15 +121,15 @@ public class AmqpProducerTest {
         final var resourceType = "amqpProducerTestEventResource";
         final var resourceId = UUID.randomUUID().toString();
         final var event = new SessionEvent(resourceId);
-        final var basicProperties = getBasicPropertiesBuilder(resourceType, null).build();
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, null).build();
 
         producer.sendToSubscription(event, resourceType, resourceId);
 
         final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, event);
         final byte[] bytes = objectMapper.writeValueAsBytes(resourceUpdate);
         Mockito.verify(channel)
-                .basicPublish("resource-update",
-                        resourceType + ".resource-update",
+                .basicPublish(Exchanges.SUBSCRIPTION.getValue(),
+                        AMQP_PRODUCER_TEST_SESSION_EVENT + "." + Queues.SUBSCRIPTION.getValue(),
                         true,
                         basicProperties,
                         bytes);
