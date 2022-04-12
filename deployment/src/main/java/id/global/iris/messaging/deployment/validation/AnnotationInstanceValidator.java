@@ -13,9 +13,9 @@ public class AnnotationInstanceValidator {
     private final Map<AnnotationTarget.Kind, AbstractAnnotationInstanceValidator> validatorsForKind = new HashMap<>();
     private final IndexView index;
 
-    public AnnotationInstanceValidator(final IndexView index) {
+    public AnnotationInstanceValidator(final IndexView index, String serviceName) {
         this.index = index;
-        final var classAnnotationValidator = new ClassAnnotationValidator();
+        final var classAnnotationValidator = new ClassAnnotationValidator(serviceName);
         final var methodAnnotationValidator = new MethodAnnotationValidator(index, classAnnotationValidator);
         validatorsForKind.put(AnnotationTarget.Kind.METHOD, methodAnnotationValidator);
         validatorsForKind.put(AnnotationTarget.Kind.CLASS, classAnnotationValidator);

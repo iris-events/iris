@@ -198,7 +198,7 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     private AnnotationInstanceValidator getValidatorService(Class<?>... annotatedClasses) {
         final var index = indexOf(annotatedClasses);
-        return new AnnotationInstanceValidator(index);
+        return new AnnotationInstanceValidator(index, "TestService");
     }
 
     private AnnotationInstance getAnnotationInstance(Class<?> annotationClass, Class<?>... annotatedClasses) {
