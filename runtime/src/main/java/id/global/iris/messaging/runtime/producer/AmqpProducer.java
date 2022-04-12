@@ -15,7 +15,6 @@ import static id.global.common.constants.iris.MessagingHeaders.Message.SESSION_I
 import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +54,7 @@ import id.global.iris.amqp.parsers.RoutingKeyParser;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
-import id.global.iris.messaging.runtime.api.message.ResourceUpdate;
+import id.global.iris.messaging.runtime.api.message.ResourceMessage;
 import id.global.iris.messaging.runtime.channel.ChannelKey;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
@@ -71,7 +70,7 @@ public class AmqpProducer {
 
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
-    public static final EnumSet<Scope> CLIENT_MESSAGE_SCOPES = EnumSet.of(Scope.USER, Scope.SESSION, Scope.BROADCAST);
+    private static final String RESOURCE = "resource";
 
     private final ChannelService channelService;
     private final ObjectMapper objectMapper;
@@ -153,8 +152,8 @@ public class AmqpProducer {
         }
 
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
-        final var routingKey = String.format("%s.%s", eventName, SUBSCRIPTION.getValue());
-        final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, message);
+        final var routingKey = String.format("%s.%s", eventName, RESOURCE);
+        final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
         publish(resourceUpdate,
                 new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null));
     }
