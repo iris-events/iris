@@ -4,18 +4,8 @@ import static id.global.common.constants.iris.Exchanges.BROADCAST;
 import static id.global.common.constants.iris.Exchanges.SESSION;
 import static id.global.common.constants.iris.Exchanges.SUBSCRIPTION;
 import static id.global.common.constants.iris.Exchanges.USER;
-import static id.global.common.constants.iris.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.common.constants.iris.MessagingHeaders.Message.INSTANCE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.JWT;
-import static id.global.common.constants.iris.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.ROUTER;
-import static id.global.common.constants.iris.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static id.global.common.constants.iris.MessagingHeaders.Message.SESSION_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
@@ -51,14 +40,11 @@ import id.global.iris.amqp.parsers.ExchangeParser;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.amqp.parsers.MessageScopeParser;
 import id.global.iris.amqp.parsers.RoutingKeyParser;
-import id.global.iris.messaging.runtime.EventAppInfoProvider;
-import id.global.iris.messaging.runtime.InstanceInfoProvider;
-import id.global.iris.messaging.runtime.TimestampProvider;
+import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
 import id.global.iris.messaging.runtime.api.message.ResourceMessage;
 import id.global.iris.messaging.runtime.channel.ChannelKey;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.iris.messaging.runtime.context.EventAppContext;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 import id.global.iris.messaging.runtime.exception.AmqpTransactionException;
@@ -77,10 +63,7 @@ public class AmqpProducer {
     private final EventContext eventContext;
     private final AmqpConfiguration configuration;
     private final TransactionManager transactionManager;
-    private final CorrelationIdProvider correlationIdProvider;
-    private final InstanceInfoProvider instanceInfoProvider;
-    private final EventAppInfoProvider eventAppInfoProvider;
-    private final TimestampProvider timestampProvider;
+    private final AmqpBasicPropertiesProvider amqpBasicPropertiesProvider;
 
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
@@ -93,17 +76,13 @@ public class AmqpProducer {
     public AmqpProducer(@Named("producerChannelService") ChannelService channelService, ObjectMapper objectMapper,
             EventContext eventContext,
             AmqpConfiguration configuration, TransactionManager transactionManager,
-            CorrelationIdProvider correlationIdProvider, InstanceInfoProvider instanceInfoProvider,
-            EventAppInfoProvider eventAppInfoProvider, TimestampProvider timestampProvider) {
+            AmqpBasicPropertiesProvider amqpBasicPropertiesProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.configuration = configuration;
         this.transactionManager = transactionManager;
-        this.correlationIdProvider = correlationIdProvider;
-        this.instanceInfoProvider = instanceInfoProvider;
-        this.eventAppInfoProvider = eventAppInfoProvider;
-        this.timestampProvider = timestampProvider;
+        this.amqpBasicPropertiesProvider = amqpBasicPropertiesProvider;
     }
 
     /**
@@ -155,7 +134,7 @@ public class AmqpProducer {
         final var routingKey = String.format("%s.%s", eventName, RESOURCE);
         final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
         publish(resourceUpdate,
-                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null));
+                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null, null));
     }
 
     private void doSend(final Object message, final String userId) throws AmqpSendException {
@@ -178,7 +157,7 @@ public class AmqpProducer {
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
 
-        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId);
+        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null);
     }
 
     private RoutingDetails getRoutingDetailsForClientScope(final id.global.common.annotations.iris.Message messageAnnotation,
@@ -196,7 +175,7 @@ public class AmqpProducer {
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = String.format("%s.%s", eventName, exchange);
 
-        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId);
+        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null);
     }
 
     private id.global.common.annotations.iris.Message getMessageAnnotation(final Object message) {
@@ -253,7 +232,7 @@ public class AmqpProducer {
     }
 
     private void enqueueDelayedMessage(Object message, RoutingDetails routingDetails, Transaction tx) {
-        final var properties = getOrCreateAmqpBasicProperties(routingDetails);
+        final var properties = amqpBasicPropertiesProvider.getOrCreateAmqpBasicProperties(routingDetails);
         transactionDelayedMessages.computeIfAbsent(tx, k -> new LinkedList<>())
                 .add(new Message(message, routingDetails, properties, eventContext.getEnvelope()));
     }
@@ -292,7 +271,7 @@ public class AmqpProducer {
         try {
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
             synchronized (this.lock) {
-                final var properties = getOrCreateAmqpBasicProperties(routingDetails);
+                final var properties = amqpBasicPropertiesProvider.getOrCreateAmqpBasicProperties(routingDetails);
                 final var channelKey = ChannelKey.create(exchange, routingKey);
                 final var channel = channelService.getOrCreateChannelById(channelKey);
                 log.info("publishing event to exchange: {}, routing key: {}, props: {}"
@@ -317,53 +296,6 @@ public class AmqpProducer {
         } finally {
             count.set(0);
         }
-    }
-
-    private AMQP.BasicProperties getOrCreateAmqpBasicProperties(final RoutingDetails routingDetails) {
-        final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
-        final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
-        final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
-                .orElse(createAmqpBasicProperties(serviceId));
-
-        return buildAmqpBasicPropertiesWithCustomHeaders(basicProperties, serviceId, routingDetails);
-    }
-
-    private AMQP.BasicProperties buildAmqpBasicPropertiesWithCustomHeaders(final AMQP.BasicProperties basicProperties,
-            final String serviceId, final RoutingDetails routingDetails) {
-
-        final var eventName = routingDetails.eventName();
-        final var scope = routingDetails.scope();
-        final var userId = routingDetails.userId();
-
-        final var hostName = instanceInfoProvider.getInstanceName();
-        final var headers = new HashMap<>(basicProperties.getHeaders());
-        headers.put(CURRENT_SERVICE_ID, serviceId);
-        headers.put(INSTANCE_ID, hostName);
-        headers.put(EVENT_TYPE, eventName);
-        headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
-        if (scope != Scope.INTERNAL) {
-            // never propagate JWT when "leaving" backend
-            headers.remove(JWT);
-        }
-
-        final var builder = basicProperties.builder();
-        if (userId != null) {
-            // when overriding user header, make sure, to clean possible existing event context properties
-            builder.correlationId(correlationIdProvider.getCorrelationId());
-            headers.put(ORIGIN_SERVICE_ID, serviceId);
-            headers.remove(ROUTER);
-            headers.remove(SESSION_ID);
-            headers.put(USER_ID, userId);
-        }
-
-        return builder.headers(headers).build();
-    }
-
-    private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
-        return new AMQP.BasicProperties().builder()
-                .correlationId(correlationIdProvider.getCorrelationId())
-                .headers(Map.of(ORIGIN_SERVICE_ID, serviceId))
-                .build();
     }
 
     private String getRoutingKey(id.global.common.annotations.iris.Message messageAnnotation,

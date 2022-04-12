@@ -20,14 +20,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.common.annotations.iris.Message;
-import id.global.iris.messaging.runtime.EventAppInfoProvider;
-import id.global.iris.messaging.runtime.InstanceInfoProvider;
-import id.global.iris.messaging.runtime.TimestampProvider;
+import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
-import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -51,16 +48,7 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
     TransactionManager transactionManager;
 
     @Inject
-    CorrelationIdProvider correlationIdProvider;
-
-    @Inject
-    InstanceInfoProvider instanceInfoProvider;
-
-    @Inject
-    EventAppInfoProvider eventAppInfoProvider;
-
-    @Inject
-    TimestampProvider timestampProvider;
+    AmqpBasicPropertiesProvider amqpBasicPropertiesProvider;
 
     @Test
     @DisplayName("Exception while serializing events should fail publishing.")
@@ -73,7 +61,7 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
                 });
 
         AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration,
-                transactionManager, correlationIdProvider, instanceInfoProvider, eventAppInfoProvider, timestampProvider);
+                transactionManager, amqpBasicPropertiesProvider);
 
         Assertions.assertThrows(AmqpSendException.class, () -> {
             producer.send(new TopicEventTmp("topic", 1L));
