@@ -13,7 +13,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
@@ -31,6 +30,7 @@ public class AmqpConsumer {
     private final ChannelService channelService;
     private final DeliverCallbackProvider deliverCallbackProvider;
     private final QueueNameProvider queueNameProvider;
+    private final QueueDeclarator queueDeclarator;
 
     private DeliverCallback callback;
     private String channelId;
@@ -39,12 +39,14 @@ public class AmqpConsumer {
             final AmqpContext context,
             final ChannelService channelService,
             final DeliverCallbackProvider deliverCallbackProvider,
-            final QueueNameProvider queueNameProvider) {
+            final QueueNameProvider queueNameProvider,
+            final QueueDeclarator queueDeclarator) {
 
         this.context = context;
         this.channelService = channelService;
         this.deliverCallbackProvider = deliverCallbackProvider;
         this.queueNameProvider = queueNameProvider;
+        this.queueDeclarator = queueDeclarator;
         this.channelId = UUID.randomUUID().toString();
     }
 
@@ -133,26 +135,16 @@ public class AmqpConsumer {
             final Map<String, Object> args) throws IOException {
 
         final boolean durable = getDurable();
-        final boolean autoDelete = context.isAutoDelete() && !consumerOnEveryInstance;
-        try {
-            AMQP.Queue.DeclareOk declareOk = channel.queueDeclare(queueName, durable, false, autoDelete, args);
-            log.info("queue: {}, consumers: {}, message count: {}", declareOk.getQueue(), declareOk.getConsumerCount(),
-                    declareOk.getMessageCount());
-        } catch (IOException e) {
-            long msgCount = channel.messageCount(queueName);
-            if (msgCount <= 0) {
-                channel.queueDelete(queueName, false, true);
-                channel.queueDeclare(queueName, durable, false, autoDelete, args);
-            } else {
-                log.error("The new settings of queue was not set, because was not empty! queue={}", queueName, e);
-            }
-        }
+        final boolean autoDelete = consumerOnEveryInstance || context.isAutoDelete();
+        final var details = new QueueDeclarator.QueueDeclarationDetails(queueName, durable, false, autoDelete, args);
+        queueDeclarator.declareQueueWithRecreateOnConflict(channel, details);
     }
 
     private void declareAndBindDeadLetterQueue(final Channel channel, final String deadLetterQueue) throws IOException {
         if (context.isCustomDeadLetterQueue()) {
             channel.exchangeDeclare(deadLetterQueue, BuiltinExchangeType.TOPIC, true);
-            channel.queueDeclare(deadLetterQueue, true, false, false, null);
+            final var details = new QueueDeclarator.QueueDeclarationDetails(deadLetterQueue, true, false, false, null);
+            queueDeclarator.declareQueueWithRecreateOnConflict(channel, details);
             channel.queueBind(deadLetterQueue, deadLetterQueue, "#");
         }
     }
