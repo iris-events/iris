@@ -2,7 +2,6 @@ package id.global.iris.messaging.runtime.producer;
 
 import static id.global.common.constants.iris.Exchanges.BROADCAST;
 import static id.global.common.constants.iris.Exchanges.SESSION;
-import static id.global.common.constants.iris.Exchanges.SUBSCRIPTION;
 import static id.global.common.constants.iris.Exchanges.USER;
 import static id.global.common.constants.iris.MessagingHeaders.Message.CURRENT_SERVICE_ID;
 import static id.global.common.constants.iris.MessagingHeaders.Message.EVENT_TYPE;
@@ -146,17 +145,16 @@ public class AmqpProducer {
      */
     public void sendToSubscription(final Object message, final String resourceType, final String resourceId)
             throws AmqpSendException, AmqpTransactionException {
-        final var messageAnnotation = getMessageAnnotation(message);
-
         if (resourceType == null || resourceType.isBlank()) {
             throw new AmqpSendException("Resource type is required for subscription event!");
         }
 
-        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
-        final var routingKey = String.format("%s.%s", eventName, SUBSCRIPTION.getValue());
         final var resourceUpdate = new ResourceUpdate(resourceType, resourceId, message);
+        final var exchange = getMessageAnnotation(resourceUpdate).name();
+        final var routingKey = String.format("%s.%s", resourceType, exchange);
+
         publish(resourceUpdate,
-                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null));
+                new RoutingDetails(resourceType, exchange, ExchangeType.TOPIC, routingKey, null, null));
     }
 
     private void doSend(final Object message, final String userId) throws AmqpSendException {
