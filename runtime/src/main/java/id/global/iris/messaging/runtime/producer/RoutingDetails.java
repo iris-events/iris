@@ -8,5 +8,6 @@ public record RoutingDetails(String eventName,
         ExchangeType exchangeType,
         String routingKey,
         Scope scope,
-        String userId) {
+        String userId,
+        String sessionId) {
 }

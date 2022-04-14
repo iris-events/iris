@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import id.global.common.annotations.iris.Scope;
 import id.global.iris.messaging.deployment.scanner.MessageHandlerScanner;
+import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.QueueNameProvider;
@@ -96,7 +97,8 @@ class EventMessagingProcessor {
                                 AmqpExceptionHandler.class,
                                 QueueNameProvider.class,
                                 IrisHealthCheck.class,
-                                TimestampProvider.class)
+                                TimestampProvider.class,
+                                AmqpBasicPropertiesProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
