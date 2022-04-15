@@ -134,7 +134,7 @@ public class AmqpProducer {
         final var routingKey = String.format("%s.%s", eventName, RESOURCE);
         final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
         publish(resourceUpdate,
-                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null, null));
+                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null, null, null));
     }
 
     private void doSend(final Object message, final String userId) throws AmqpSendException {
@@ -157,7 +157,7 @@ public class AmqpProducer {
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
 
-        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null);
+        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null);
     }
 
     private RoutingDetails getRoutingDetailsForClientScope(final id.global.common.annotations.iris.Message messageAnnotation,
@@ -175,7 +175,7 @@ public class AmqpProducer {
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = String.format("%s.%s", eventName, exchange);
 
-        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null);
+        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null);
     }
 
     private id.global.common.annotations.iris.Message getMessageAnnotation(final Object message) {
