@@ -9,5 +9,6 @@ public record RoutingDetails(String eventName,
         String routingKey,
         Scope scope,
         String userId,
-        String sessionId) {
+        String sessionId,
+        String subscriptionId) {
 }

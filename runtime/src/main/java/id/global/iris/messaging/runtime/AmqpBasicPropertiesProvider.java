@@ -8,6 +8,7 @@ import static id.global.common.constants.iris.MessagingHeaders.Message.ORIGIN_SE
 import static id.global.common.constants.iris.MessagingHeaders.Message.ROUTER;
 import static id.global.common.constants.iris.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static id.global.common.constants.iris.MessagingHeaders.Message.SESSION_ID;
+import static id.global.common.constants.iris.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
 
 import java.util.HashMap;
@@ -45,15 +46,15 @@ public class AmqpBasicPropertiesProvider {
     TimestampProvider timestampProvider;
 
     /**
-     * Gets AmqpBasicProperties from eventContext or creates new, if eventContex returns null. Basic properties headers are modified
-     * according to provided routingDetails.
+     * Gets AmqpBasicProperties from eventContext or creates new, if eventContex returns null. Basic properties headers are
+     * modified according to provided routingDetails.
      *
      * If provided RoutingDetails.Scope is INTERNAL, existing JWT token will be removed from the headers.
      * RoutingDetails.UserId and RoutingDetails.SessionId are mutually exclusive
      *
      * @param routingDetails routingDetails that dictate header generation in properties
      * @return AmqpBasicProperties
-     * */
+     */
     public AMQP.BasicProperties getOrCreateAmqpBasicProperties(final RoutingDetails routingDetails) {
         final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
         final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
@@ -87,6 +88,11 @@ public class AmqpBasicPropertiesProvider {
         if (scope != Scope.INTERNAL) {
             // never propagate JWT when "leaving" backend
             headers.remove(JWT);
+        }
+
+        final var subscriptionId = routingDetails.subscriptionId();
+        if (subscriptionId != null) {
+            headers.put(SUBSCRIPTION_ID, subscriptionId);
         }
 
         final var builder = basicProperties.builder();
