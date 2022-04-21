@@ -5,6 +5,7 @@ import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
 import static id.global.common.constants.iris.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -89,4 +90,21 @@ public class EventContext {
                 .map(headers -> headers.get(header))
                 .map(Object::toString);
     }
+
+    private void setHeader(final String key, final Object value) {
+        final var optionalBasicProperties = Optional.ofNullable(this.eventContextThreadLocal.get())
+                .map(EventContextHolder::getAmqpBasicProperties);
+        if (optionalBasicProperties.isEmpty()) {
+            throw new IllegalStateException();
+        }
+
+        final var basicProperties = optionalBasicProperties.get();
+        final var builder = basicProperties.builder();
+        final var headers = new HashMap<>(basicProperties.getHeaders());
+        headers.put(key, value);
+
+        final var modifiedBasicProperties = builder.headers(headers).build();
+        this.eventContextThreadLocal.get().setAmqpBasicProperties(modifiedBasicProperties);
+    }
+
 }
