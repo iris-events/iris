@@ -91,14 +91,11 @@ public class EventContext {
                 .map(Object::toString);
     }
 
-    private void setHeader(final String key, final Object value) {
-        final var optionalBasicProperties = Optional.ofNullable(this.eventContextThreadLocal.get())
-                .map(EventContextHolder::getAmqpBasicProperties);
-        if (optionalBasicProperties.isEmpty()) {
-            throw new IllegalStateException();
-        }
+    public void setHeader(final String key, final Object value) {
+        final var basicProperties = Optional.ofNullable(this.eventContextThreadLocal.get())
+                .map(EventContextHolder::getAmqpBasicProperties)
+                .orElseThrow(() -> new IllegalStateException("AMQP.BasicProperties not set for the message context."));
 
-        final var basicProperties = optionalBasicProperties.get();
         final var builder = basicProperties.builder();
         final var headers = new HashMap<>(basicProperties.getHeaders());
         headers.put(key, value);
