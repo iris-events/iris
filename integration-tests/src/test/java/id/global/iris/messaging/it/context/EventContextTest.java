@@ -1,5 +1,7 @@
 package id.global.iris.messaging.it.context;
 
+import static id.global.common.constants.iris.MessagingHeaders.Message.SUBSCRIPTION_ID;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 
@@ -10,10 +12,10 @@ import java.util.concurrent.TimeUnit;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.hamcrest.core.Is;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
 
 import id.global.common.annotations.iris.Message;
@@ -28,6 +30,8 @@ import io.quarkus.test.junit.QuarkusTest;
 class EventContextTest extends IsolatedEventContextTest {
 
     public static final String EVENT_NAME = "event-context-test-event";
+    public static final String CUSTOM_HEADER_EVENT_NAME = "event-context-custom-header-test-event";
+    public static final String SUBSCRIPTION_ID_HEADER_VALUE = UUID.randomUUID().toString();
 
     @Inject
     AmqpProducer producer;
@@ -43,7 +47,18 @@ class EventContextTest extends IsolatedEventContextTest {
 
         final var envelope = service.getHandledEventEnvelope().get(5, TimeUnit.SECONDS);
         assertThat(envelope, notNullValue());
-        assertThat(envelope.getExchange(), Is.is(EVENT_NAME));
+        assertThat(envelope.getExchange(), is(EVENT_NAME));
+    }
+
+    @Test
+    void setHeader() throws Exception {
+        final var event = new CustomHeaderEvent(UUID.randomUUID().toString());
+
+        producer.send(event);
+
+        final var basicProperties = service.getBasicPropertiesCompletableFuture().get(5, TimeUnit.SECONDS);
+        assertThat(basicProperties, notNullValue());
+        assertThat(basicProperties.getHeaders().get(SUBSCRIPTION_ID).toString(), is(SUBSCRIPTION_ID_HEADER_VALUE));
     }
 
     @ApplicationScoped
@@ -52,6 +67,7 @@ class EventContextTest extends IsolatedEventContextTest {
         EventContext eventContext;
 
         private final CompletableFuture<Envelope> handledEventEnvelope = new CompletableFuture<>();
+        private final CompletableFuture<AMQP.BasicProperties> basicPropertiesCompletableFuture = new CompletableFuture<>();
 
         @SuppressWarnings("unused")
         @MessageHandler()
@@ -59,12 +75,27 @@ class EventContextTest extends IsolatedEventContextTest {
             handledEventEnvelope.complete(eventContext.getEnvelope());
         }
 
+        @SuppressWarnings("unused")
+        @MessageHandler()
+        public void handle(CustomHeaderEvent customHeaderEvent) {
+            eventContext.setSubscriptionId(SUBSCRIPTION_ID_HEADER_VALUE);
+            basicPropertiesCompletableFuture.complete(eventContext.getAmqpBasicProperties());
+        }
+
         public CompletableFuture<Envelope> getHandledEventEnvelope() {
             return handledEventEnvelope;
+        }
+
+        public CompletableFuture<AMQP.BasicProperties> getBasicPropertiesCompletableFuture() {
+            return basicPropertiesCompletableFuture;
         }
     }
 
     @Message(name = EVENT_NAME)
     public record Event(String name) {
+    }
+
+    @Message(name = CUSTOM_HEADER_EVENT_NAME)
+    public record CustomHeaderEvent(String name) {
     }
 }
