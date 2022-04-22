@@ -1,5 +1,6 @@
 package id.global.iris.messaging.it.context;
 
+import static id.global.common.constants.iris.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -30,8 +31,7 @@ class EventContextTest extends IsolatedEventContextTest {
 
     public static final String EVENT_NAME = "event-context-test-event";
     public static final String CUSTOM_HEADER_EVENT_NAME = "event-context-custom-header-test-event";
-    public static final String CUSTOM_HEADER_NAME = "x-custom-header";
-    public static final String CUSTOM_HEADER_VALUE = "custom-header-value";
+    public static final String SUBSCRIPTION_ID_HEADER_VALUE = UUID.randomUUID().toString();
 
     @Inject
     AmqpProducer producer;
@@ -58,7 +58,7 @@ class EventContextTest extends IsolatedEventContextTest {
 
         final var basicProperties = service.getBasicPropertiesCompletableFuture().get(5, TimeUnit.SECONDS);
         assertThat(basicProperties, notNullValue());
-        assertThat(basicProperties.getHeaders().get(CUSTOM_HEADER_NAME).toString(), is(CUSTOM_HEADER_VALUE));
+        assertThat(basicProperties.getHeaders().get(SUBSCRIPTION_ID).toString(), is(SUBSCRIPTION_ID_HEADER_VALUE));
     }
 
     @ApplicationScoped
@@ -78,7 +78,7 @@ class EventContextTest extends IsolatedEventContextTest {
         @SuppressWarnings("unused")
         @MessageHandler()
         public void handle(CustomHeaderEvent customHeaderEvent) {
-            eventContext.setHeader(CUSTOM_HEADER_NAME, CUSTOM_HEADER_VALUE);
+            eventContext.setSubscriptionId(SUBSCRIPTION_ID_HEADER_VALUE);
             basicPropertiesCompletableFuture.complete(eventContext.getAmqpBasicProperties());
         }
 

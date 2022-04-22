@@ -1,6 +1,7 @@
 package id.global.iris.messaging.runtime.context;
 
 import static id.global.common.constants.iris.MessagingHeaders.Message.SESSION_ID;
+import static id.global.common.constants.iris.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
 import static id.global.common.constants.iris.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
 
@@ -91,7 +92,11 @@ public class EventContext {
                 .map(Object::toString);
     }
 
-    public void setHeader(final String key, final Object value) {
+    public void setSubscriptionId(final String subscriptionId) {
+        setHeader(SUBSCRIPTION_ID, subscriptionId);
+    }
+
+    private void setHeader(final String key, final Object value) {
         final var basicProperties = Optional.ofNullable(this.eventContextThreadLocal.get())
                 .map(EventContextHolder::getAmqpBasicProperties)
                 .orElseThrow(() -> new IllegalStateException("AMQP.BasicProperties not set for the message context."));
