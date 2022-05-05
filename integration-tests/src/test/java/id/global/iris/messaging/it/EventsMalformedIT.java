@@ -1,8 +1,8 @@
 package id.global.iris.messaging.it;
 
-import static id.global.common.annotations.iris.ExchangeType.DIRECT;
-import static id.global.common.annotations.iris.ExchangeType.FANOUT;
-import static id.global.common.annotations.iris.ExchangeType.TOPIC;
+import static id.global.common.iris.annotations.ExchangeType.DIRECT;
+import static id.global.common.iris.annotations.ExchangeType.FANOUT;
+import static id.global.common.iris.annotations.ExchangeType.TOPIC;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -19,7 +19,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.common.annotations.iris.Message;
+import id.global.common.iris.annotations.Message;
 import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;

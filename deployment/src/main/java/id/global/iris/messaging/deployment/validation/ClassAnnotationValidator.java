@@ -12,8 +12,8 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.annotations.iris.ExchangeType;
-import id.global.common.constants.iris.Queues;
+import id.global.common.iris.annotations.ExchangeType;
+import id.global.common.iris.constants.Queues;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.asyncapi.runtime.scanner.validator.ReservedAmqpNamesProvider;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;

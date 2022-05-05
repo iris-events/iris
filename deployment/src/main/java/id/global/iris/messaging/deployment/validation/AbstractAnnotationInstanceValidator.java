@@ -6,7 +6,7 @@ import java.util.Set;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.iris.annotations.ExchangeType;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 
 abstract class AbstractAnnotationInstanceValidator {

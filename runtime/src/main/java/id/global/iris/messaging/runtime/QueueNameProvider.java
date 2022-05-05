@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import javax.inject.Inject;
 
-import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.iris.annotations.ExchangeType;
 import id.global.iris.messaging.runtime.context.AmqpContext;
 
 public class QueueNameProvider {

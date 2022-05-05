@@ -1,8 +1,8 @@
 package id.global.iris.messaging.runtime.consumer;
 
-import static id.global.common.constants.iris.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
-import static id.global.common.constants.iris.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
-import static id.global.common.constants.iris.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
+import static id.global.common.iris.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
+import static id.global.common.iris.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
+import static id.global.common.iris.constants.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.ShutdownSignalException;
 
-import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.iris.annotations.ExchangeType;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.context.AmqpContext;
