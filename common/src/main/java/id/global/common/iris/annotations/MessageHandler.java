@@ -1,4 +1,4 @@
-package id.global.common.annotations.iris;
+package id.global.common.iris.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -57,14 +57,14 @@ public @interface MessageHandler {
      * Defines consumer per service instance, in case there are multiple replicas / pods of same service running
      * setting this flag to true, would create dedicated queue for each service instance.
      * If this is set to true, {@link #autoDelete()} is enforced to prevent leftover queues.
-     * 
+     *
      * @return true if queue per service instance must be created
      */
     boolean perInstance() default false;
 
     /**
      * Defines how many messages are fetched at once
-     * 
+     *
      * @return number of messages to fetch
      */
     int prefetchCount() default 1;
