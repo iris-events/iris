@@ -24,30 +24,36 @@ public class EventContext {
         this.eventContextThreadLocal.set(new EventContextHolder());
     }
 
-    public void setMessageContext(AMQP.BasicProperties properties, Envelope envelope) {
-        EventContextHolder eventContextHolder = this.eventContextThreadLocal.get();
-        if (eventContextHolder == null) {
-            eventContextHolder = new EventContextHolder();
-        }
+    private Optional<EventContextHolder> findEventContextHolder() {
+        return Optional.ofNullable(eventContextThreadLocal.get());
+    }
+
+    private EventContextHolder getOrCreateEventContextHolder() {
+        return findEventContextHolder().orElseGet(EventContextHolder::new);
+    }
+
+    public void setBasicProperties(AMQP.BasicProperties properties) {
+        final var eventContextHolder = getOrCreateEventContextHolder();
         eventContextHolder.setAmqpBasicProperties(properties);
+        this.eventContextThreadLocal.set(eventContextHolder);
+    }
+
+    public void setEnvelope(Envelope envelope) {
+        final var eventContextHolder = getOrCreateEventContextHolder();
         eventContextHolder.setEnvelope(envelope);
         this.eventContextThreadLocal.set(eventContextHolder);
     }
 
     public AMQP.BasicProperties getAmqpBasicProperties() {
-        EventContextHolder eventContextHolder = this.eventContextThreadLocal.get();
-        if (eventContextHolder == null) {
-            return null;
-        }
-        return eventContextHolder.getAmqpBasicProperties();
+        return findEventContextHolder()
+                .map(EventContextHolder::getAmqpBasicProperties)
+                .orElse(null);
     }
 
     public Envelope getEnvelope() {
-        EventContextHolder eventContextHolder = this.eventContextThreadLocal.get();
-        if (eventContextHolder == null) {
-            return null;
-        }
-        return eventContextHolder.getEnvelope();
+        return findEventContextHolder()
+                .map(EventContextHolder::getEnvelope)
+                .orElse(null);
     }
 
     public String getExchange() {
@@ -59,14 +65,14 @@ public class EventContext {
     }
 
     public Map<String, Object> getHeaders() {
-        return Optional.ofNullable(this.eventContextThreadLocal.get())
+        return findEventContextHolder()
                 .map(EventContextHolder::getAmqpBasicProperties)
                 .map(AMQP.BasicProperties::getHeaders)
                 .orElse(Collections.emptyMap());
     }
 
     public Optional<String> getCorrelationId() {
-        return Optional.ofNullable(this.eventContextThreadLocal.get())
+        return findEventContextHolder()
                 .map(EventContextHolder::getAmqpBasicProperties)
                 .map(AMQP.BasicProperties::getCorrelationId);
     }
@@ -84,7 +90,7 @@ public class EventContext {
     }
 
     private Optional<String> getHeaderValue(final String header) {
-        return Optional.ofNullable(this.eventContextThreadLocal.get())
+        return findEventContextHolder()
                 .map(EventContextHolder::getAmqpBasicProperties)
                 .map(AMQP.BasicProperties::getHeaders)
                 .filter(headers -> headers.containsKey(header))
@@ -97,7 +103,7 @@ public class EventContext {
     }
 
     private void setHeader(final String key, final Object value) {
-        final var basicProperties = Optional.ofNullable(this.eventContextThreadLocal.get())
+        final var basicProperties = findEventContextHolder()
                 .map(EventContextHolder::getAmqpBasicProperties)
                 .orElseThrow(() -> new IllegalStateException("AMQP.BasicProperties not set for the message context."));
 

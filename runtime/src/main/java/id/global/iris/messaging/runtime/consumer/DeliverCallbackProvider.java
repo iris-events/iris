@@ -68,7 +68,8 @@ public class DeliverCallbackProvider {
                 Arc.container().requestContext().activate();
                 final var properties = message.getProperties();
                 final var envelope = message.getEnvelope();
-                this.eventContext.setMessageContext(properties, envelope);
+                eventContext.setBasicProperties(properties);
+                eventContext.setEnvelope(envelope);
 
                 authorizeMessage();
                 final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
