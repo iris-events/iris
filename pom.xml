@@ -13,7 +13,7 @@
   <packaging>pom</packaging>
   <name>Event Messaging - Parent</name>
   <properties>
-    <version.rabbit.amqp-client>5.14.0</version.rabbit.amqp-client>
+    <version.rabbit.amqp-client>5.14.2</version.rabbit.amqp-client>
     <version.hamcrest>2.2</version.hamcrest>
     <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
     <version.globalid-common>1.1.10</version.globalid-common>
