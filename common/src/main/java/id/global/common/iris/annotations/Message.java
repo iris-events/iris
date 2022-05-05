@@ -10,7 +10,7 @@ import id.global.common.auth.jwt.Role;
 import id.global.common.iris.constants.Queues;
 
 /**
- * Amqp producible event. Events annotated with this annotation should be used as a parameter in an Amqp producer send method.
+ * Iris producible event. Events annotated with this annotation should be used as a parameter in an Iris producer send method.
  */
 @Target({ ElementType.TYPE, ElementType.RECORD_COMPONENT })
 @Retention(RetentionPolicy.RUNTIME)
@@ -59,8 +59,7 @@ public @interface Message {
 
     /**
      * Defines the optional response message type. Applies only to the asyncapi definition. Response class must also be
-     * annotated
-     * with the @see id.global.common.iris.annotations.amqp.Message annotation
+     * annotated with the {@link Message} annotation
      */
     Class<?> response() default Void.class;
 }
