@@ -1,13 +1,12 @@
-package id.global.common.error.iris;
+package id.global.common.iris.error;
 
-public enum ClientError implements MessagingError {
+public enum ServerError implements MessagingError {
 
-    BAD_REQUEST(ErrorType.BAD_REQUEST),
-    NOT_FOUND(ErrorType.NOT_FOUND);
+    SERVER_ERROR(ErrorType.INTERNAL_SERVER_ERROR);
 
     private final ErrorType errorType;
 
-    ClientError(final ErrorType errorType) {
+    ServerError(final ErrorType errorType) {
         this.errorType = errorType;
     }
 
@@ -20,5 +19,4 @@ public enum ClientError implements MessagingError {
     public String getClientCode() {
         return this.name();
     }
-
 }
