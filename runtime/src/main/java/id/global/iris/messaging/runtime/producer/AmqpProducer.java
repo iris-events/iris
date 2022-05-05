@@ -258,7 +258,8 @@ public class AmqpProducer {
         Message message = messageList.poll();
 
         while (message != null) {
-            eventContext.setMessageContext(message.properties(), message.envelope());
+            eventContext.setEnvelope(message.envelope());
+            eventContext.setBasicProperties(message.properties());
             executePublish(message.message(), message.routingDetails());
             message = messageList.poll();
         }
