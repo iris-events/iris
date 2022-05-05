@@ -31,6 +31,8 @@ public class MessagingHeaders {
         public static final String X_MAX_RETRIES = "x-max-retries";
         public static final String X_NOTIFY_CLIENT = "x-notify-client";
         public static final String X_ERROR_CODE = "x-error-code";
+        public static final String X_ERROR_TYPE = "x-error-type";
+        public static final String X_ERROR_MESSAGE = "x-error-message";
     }
 
     public static class QueueDeclaration {
