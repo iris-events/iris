@@ -27,12 +27,12 @@ import org.junit.jupiter.params.provider.EnumSource;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 
-import id.global.common.annotations.iris.Message;
-import id.global.common.annotations.iris.MessageHandler;
 import id.global.common.auth.jwt.Role;
-import id.global.common.constants.iris.Exchanges;
-import id.global.common.constants.iris.MessagingHeaders;
-import id.global.common.error.iris.SecurityError;
+import id.global.common.iris.annotations.Message;
+import id.global.common.iris.annotations.MessageHandler;
+import id.global.common.iris.constants.Exchanges;
+import id.global.common.iris.constants.MessagingHeaders;
+import id.global.common.iris.error.SecurityError;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
 

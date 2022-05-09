@@ -1,15 +1,15 @@
 package id.global.iris.messaging.runtime;
 
-import static id.global.common.constants.iris.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.common.constants.iris.MessagingHeaders.Message.INSTANCE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.JWT;
-import static id.global.common.constants.iris.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.ROUTER;
-import static id.global.common.constants.iris.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static id.global.common.constants.iris.MessagingHeaders.Message.SESSION_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.SUBSCRIPTION_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.common.iris.constants.MessagingHeaders.Message.INSTANCE_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.JWT;
+import static id.global.common.iris.constants.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.ROUTER;
+import static id.global.common.iris.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static id.global.common.iris.constants.MessagingHeaders.Message.SESSION_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.SUBSCRIPTION_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.USER_ID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +20,7 @@ import javax.inject.Inject;
 
 import com.rabbitmq.client.AMQP;
 
-import id.global.common.annotations.iris.Scope;
+import id.global.common.iris.annotations.Scope;
 import id.global.iris.messaging.runtime.context.EventAppContext;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;

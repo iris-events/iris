@@ -16,10 +16,10 @@
     <version.rabbit.amqp-client>5.14.2</version.rabbit.amqp-client>
     <version.hamcrest>2.2</version.hamcrest>
     <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
-    <version.globalid-common>1.1.10</version.globalid-common>
+    <version.globalid-common>1.1.11</version.globalid-common>
     <version.quarkiverse.rabbitmqclient>0.5.0.Final</version.quarkiverse.rabbitmqclient>
     <!-- plugin dependencies -->
-    <iris.asyncapi.version>1.1.10</iris.asyncapi.version>
+    <iris.asyncapi.version>1.1.11</iris.asyncapi.version>
   </properties>
   <scm>
     <connection>scm:git:git@github.com:globalid/iris-quarkus.git</connection>

@@ -1,6 +1,6 @@
 package id.global.iris.messaging.deployment.scanner;
 
-import static id.global.common.annotations.iris.ExchangeType.FANOUT;
+import static id.global.common.iris.annotations.ExchangeType.FANOUT;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,9 +14,9 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.annotations.iris.ExchangeType;
-import id.global.common.annotations.iris.Message;
-import id.global.common.annotations.iris.MessageHandler;
+import id.global.common.iris.annotations.ExchangeType;
+import id.global.common.iris.annotations.Message;
+import id.global.common.iris.annotations.MessageHandler;
 import id.global.iris.amqp.parsers.BindingKeysParser;
 import id.global.iris.amqp.parsers.ConsumerPerInstanceParser;
 import id.global.iris.amqp.parsers.ConsumerPrefetchCountParser;

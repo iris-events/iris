@@ -7,9 +7,9 @@ import java.util.StringJoiner;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.annotations.iris.ExchangeType;
-import id.global.common.annotations.iris.Scope;
 import id.global.common.auth.jwt.Role;
+import id.global.common.iris.annotations.ExchangeType;
+import id.global.common.iris.annotations.Scope;
 import io.quarkus.builder.item.MultiBuildItem;
 
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {

@@ -1,11 +1,11 @@
 package id.global.iris.messaging.it.producer;
 
-import static id.global.common.constants.iris.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.common.constants.iris.MessagingHeaders.Message.INSTANCE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static id.global.common.constants.iris.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static id.global.common.constants.iris.MessagingHeaders.Message.USER_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.common.iris.constants.MessagingHeaders.Message.INSTANCE_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static id.global.common.iris.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static id.global.common.iris.constants.MessagingHeaders.Message.USER_ID;
 import static id.global.iris.messaging.runtime.producer.AmqpProducer.SERVICE_ID_UNAVAILABLE_FALLBACK;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -33,9 +33,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 
-import id.global.common.annotations.iris.Message;
-import id.global.common.annotations.iris.Scope;
-import id.global.common.constants.iris.Exchanges;
+import id.global.common.iris.annotations.Message;
+import id.global.common.iris.annotations.Scope;
+import id.global.common.iris.constants.Exchanges;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;

@@ -8,7 +8,7 @@ import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import id.global.common.annotations.iris.Scope;
+import id.global.common.iris.annotations.Scope;
 import id.global.iris.messaging.deployment.scanner.MessageHandlerScanner;
 import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
@@ -116,8 +116,8 @@ class EventMessagingProcessor {
     @SuppressWarnings("unused")
     @BuildStep
     UnremovableBeanBuildItem unremovable() {
-        // Any bean that has MyService in its set of bean types is considered unremovable
-        return UnremovableBeanBuildItem.beanClassAnnotation("id.global.common.annotations.iris");
+        // Any bean that contains or is annotated with annotation defined within the given package is considered unremovable
+        return UnremovableBeanBuildItem.beanClassAnnotation("id.global.common.iris.annotations");
     }
 
     @SuppressWarnings("unused")

@@ -1,9 +1,9 @@
 package id.global.iris.messaging.runtime.producer;
 
-import static id.global.common.annotations.iris.ExchangeType.DIRECT;
-import static id.global.common.annotations.iris.ExchangeType.TOPIC;
+import static id.global.common.iris.annotations.ExchangeType.DIRECT;
+import static id.global.common.iris.annotations.ExchangeType.TOPIC;
 
-import id.global.common.annotations.iris.ExchangeType;
+import id.global.common.iris.annotations.ExchangeType;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 
 class SendMessageValidator {

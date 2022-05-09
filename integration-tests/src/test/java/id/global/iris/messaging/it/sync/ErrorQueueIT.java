@@ -23,11 +23,11 @@ import org.mockito.ArgumentCaptor;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 
-import id.global.common.annotations.iris.Message;
-import id.global.common.annotations.iris.MessageHandler;
-import id.global.common.constants.iris.Exchanges;
-import id.global.common.error.iris.ClientError;
-import id.global.common.error.iris.ServerError;
+import id.global.common.iris.annotations.Message;
+import id.global.common.iris.annotations.MessageHandler;
+import id.global.common.iris.constants.Exchanges;
+import id.global.common.iris.error.ClientError;
+import id.global.common.iris.error.ServerError;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
 import id.global.iris.messaging.runtime.api.exception.BadMessageException;
 import id.global.iris.messaging.runtime.api.exception.ServerException;
