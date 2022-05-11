@@ -64,12 +64,8 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
 
         final var exchangeType = getExchangeType(annotationInstance, index);
 
-        var patternString = KEBAB_CASE_PATTERN;
-        if (exchangeType.equals(ExchangeType.TOPIC)) {
-            patternString = TOPIC_PATTERN;
-        }
+        final var pattern = getPattern(exchangeType);
 
-        final var pattern = Pattern.compile(patternString);
         final var bindingKeys = Arrays.asList(annotationValue.asStringArray());
         bindingKeys.stream()
                 .filter(bindingKey -> !pattern.matcher(bindingKey).matches())
@@ -85,6 +81,10 @@ class MethodAnnotationValidator extends AbstractAnnotationInstanceValidator {
                                     bindingKey,
                                     declaringClassName));
                 });
+    }
+
+    private Pattern getPattern(final ExchangeType exchangeType) {
+        return exchangeType.equals(ExchangeType.TOPIC) ? TOPIC_PATTERN : KEBAB_CASE_PATTERN;
     }
 
     private void validateMethodReturnType(final AnnotationInstance annotationInstance) {
