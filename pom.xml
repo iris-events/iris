@@ -9,7 +9,7 @@
   </parent>
   <groupId>id.global.iris</groupId>
   <artifactId>iris-extension-parent</artifactId>
-  <version>1.2.21</version>
+  <version>1.2.22-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Event Messaging - Parent</name>
   <properties>
@@ -25,7 +25,7 @@
     <connection>scm:git:git@github.com:globalid/iris-quarkus.git</connection>
     <developerConnection>scm:git:git@github.com:globalid/iris-quarkus.git</developerConnection>
     <url>https://github.com/globalid/iris-quarkus</url>
-    <tag>v1.2.21</tag>
+    <tag>HEAD</tag>
   </scm>
   <modules>
     <module>deployment</module>
