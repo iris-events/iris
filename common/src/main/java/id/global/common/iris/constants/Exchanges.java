@@ -9,7 +9,8 @@ public enum Exchanges {
     BROADCAST("broadcast"),
     SESSION("session"),
     USER("user"),
-    SUBSCRIPTION("subscription");
+    SUBSCRIPTION("subscription"),
+    SNAPSHOT_REQUESTED("snapshot-requested");
 
     private final String value;
 
