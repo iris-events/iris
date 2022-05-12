@@ -233,7 +233,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
     public record MinimumEvent(String id) {
     }
 
-    @Message(name = "fail-event", exchangeType = DIRECT, deadLetter = "test-dead-letter")
+    @Message(name = "fail-event", exchangeType = DIRECT, deadLetter = "dead.test-dead-letter")
     public record FailEvent(String id, String data) {
     }
 }

@@ -3,7 +3,6 @@ package id.global.iris.messaging.deployment.validation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +30,19 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
     public void validate(final AnnotationInstance annotationInstance, final IndexView index) {
         validateReservedQueuesExchanges(annotationInstance, index);
         validateParamsAreKebabCase(annotationInstance, index);
+        validateDeadLetterParam(annotationInstance, index);
+    }
+
+    private void validateDeadLetterParam(AnnotationInstance annotationInstance, IndexView index) {
+        final var deadLetterParamValue = annotationInstance.valueWithDefault(index, AnnotationInstanceParams.DEAD_LETTER_PARAM)
+                .asString();
+
+        if (!deadLetterParamValue.startsWith(Queues.Constants.DEAD_LETTER_PREFIX)) {
+            throw new MessageHandlerValidationException(
+                    String.format("Parameter \"%s\" of annotation %s on class %s must start with the prefix \"%s\".",
+                            AnnotationInstanceParams.DEAD_LETTER_PARAM, annotationInstance.name(),
+                            getTargetClassName(annotationInstance), Queues.Constants.DEAD_LETTER_PREFIX));
+        }
     }
 
     private void validateReservedQueuesExchanges(AnnotationInstance annotationInstance, IndexView index) {
@@ -70,15 +82,14 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
     }
 
     private boolean paramMatchesKebabCase(final String param, final AnnotationInstance annotationInstance) {
-        Pattern pattern = Pattern.compile(KEBAB_CASE_PATTERN);
         AnnotationValue value = annotationInstance.value(param);
 
         if (value.kind().equals(AnnotationValue.Kind.ARRAY)) {
             return Arrays.stream(value.asStringArray()).map(val -> val.replaceFirst(Queues.Constants.DEAD_LETTER_PREFIX, ""))
-                    .allMatch(val -> pattern.matcher(val).matches());
+                    .allMatch(val -> KEBAB_CASE_PATTERN.matcher(val).matches());
         }
 
-        return pattern
+        return KEBAB_CASE_PATTERN
                 .matcher(value.asString().replaceFirst(Queues.Constants.DEAD_LETTER_PREFIX, ""))
                 .matches();
     }

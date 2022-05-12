@@ -28,6 +28,7 @@ import id.global.common.auth.jwt.Role;
 import id.global.common.iris.annotations.ExchangeType;
 import id.global.common.iris.annotations.Message;
 import id.global.common.iris.annotations.MessageHandler;
+import id.global.common.iris.constants.Queues;
 import id.global.iris.messaging.BaseIndexingTest;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 
@@ -194,6 +195,21 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
                     Arguments.of(ErrorNameEvent.class),
                     Arguments.of(ErrorRoutingKeyEvent.class));
         }
+
+        @Test
+        void validateDeadLetterWithoutPrefix() {
+            final var eventClass = WithoutPrefixDeadLetterEvent.class;
+            final var annotationInstance = getAnnotationInstance(CONSUMED_EVENT_ANNOTATION_CLASS, eventClass);
+            final var validator = getValidatorService(eventClass);
+
+            final var exception = assertThrows(MessageHandlerValidationException.class,
+                    () -> validator.validate(annotationInstance));
+
+            assertThat(exception.getMessage(),
+                    containsString("must start with the prefix \"" + Queues.Constants.DEAD_LETTER_PREFIX + "\"."));
+            assertThat(exception.getMessage(), containsString(annotationInstance.name().toString()));
+            assertThat(exception.getMessage(), containsString(eventClass.getName()));
+        }
     }
 
     private AnnotationInstanceValidator getValidatorService(Class<?>... annotatedClasses) {
@@ -291,6 +307,10 @@ class AnnotationInstanceValidatorTest extends BaseIndexingTest {
 
     @Message(name = "kebab-case-queue", deadLetter = "nonKebabCaseDeadLetter")
     public record NonKebabDeadLetterEvent() {
+    }
+
+    @Message(name = "kebab-case-queue", deadLetter = "without-prefix-dead-letter-queue")
+    public record WithoutPrefixDeadLetterEvent() {
     }
 
     @Message(exchangeType = ExchangeType.DIRECT, name = "direct-exchange", routingKey = "direct-queue-forwarded-event")
