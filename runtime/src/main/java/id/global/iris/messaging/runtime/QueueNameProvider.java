@@ -2,19 +2,26 @@ package id.global.iris.messaging.runtime;
 
 import java.util.Objects;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import id.global.common.iris.annotations.ExchangeType;
+import id.global.common.iris.constants.Queues;
 import id.global.iris.messaging.runtime.context.AmqpContext;
 
+@ApplicationScoped
 public class QueueNameProvider {
 
+    final String applicationName;
+    final String instanceName;
+
     @Inject
-    InstanceInfoProvider instanceInfoProvider;
+    public QueueNameProvider(final InstanceInfoProvider instanceInfoProvider) {
+        this.applicationName = instanceInfoProvider.getApplicationName();
+        this.instanceName = instanceInfoProvider.getInstanceName();
+    }
 
     public String getQueueName(final AmqpContext context) {
-        final var applicationName = instanceInfoProvider.getApplicationName();
-        final var instanceName = instanceInfoProvider.getInstanceName();
         final var name = context.getName();
         final var exchangeType = context.getExchangeType();
 
@@ -33,5 +40,9 @@ public class QueueNameProvider {
         }
 
         return stringBuffer.toString();
+    }
+
+    public String getFrontendQueueName() {
+        return String.format("%s.%s", applicationName, Queues.FRONTEND_SUFFIX.getValue());
     }
 }
