@@ -20,8 +20,8 @@ import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 
 import id.global.common.iris.constants.Exchanges;
-import id.global.common.iris.constants.Queues;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
+import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.exception.AmqpConnectionException;
 
@@ -36,19 +36,21 @@ public class FrontendAmqpConsumer {
     private final QueueDeclarator queueDeclarator;
     private final ConcurrentHashMap<String, DeliverCallbackProvider> deliverCallbackProviderMap;
     private final ConcurrentHashMap<String, DeliverCallback> deliverCallbackMap;
-
+    private final String queueName;
     private String channelId;
 
     @Inject
     public FrontendAmqpConsumer(
             @Named("consumerChannelService") final ChannelService channelService,
             final InstanceInfoProvider instanceInfoProvider,
-            final QueueDeclarator queueDeclarator) {
+            final QueueDeclarator queueDeclarator,
+            final QueueNameProvider queueNameProvider) {
         this.channelService = channelService;
         this.instanceInfoProvider = instanceInfoProvider;
         this.queueDeclarator = queueDeclarator;
         this.deliverCallbackMap = new ConcurrentHashMap<>();
         this.deliverCallbackProviderMap = new ConcurrentHashMap<>();
+        this.queueName = queueNameProvider.getFrontendQueueName();
         this.channelId = UUID.randomUUID().toString();
     }
 
@@ -59,7 +61,7 @@ public class FrontendAmqpConsumer {
     public void initChannel() {
         try {
             Channel channel = this.channelService.getOrCreateChannelById(this.channelId);
-            String frontendQueue = getFrontendQueue();
+            String frontendQueue = queueName;
             final var args = new HashMap<String, Object>();
             args.put(X_MESSAGE_TTL, DEFAULT_MESSAGE_TTL);
             final var details = new QueueDeclarator.QueueDeclarationDetails(frontendQueue, true, false, false, args);
@@ -79,7 +81,7 @@ public class FrontendAmqpConsumer {
     private void setupDeliverCallbacks(Channel channel) {
         deliverCallbackProviderMap.forEach((routingKey, callbackProvider) -> {
             try {
-                channel.queueBind(getFrontendQueue(), Exchanges.FRONTEND.getValue(), routingKey);
+                channel.queueBind(queueName, Exchanges.FRONTEND.getValue(), routingKey);
                 deliverCallbackMap.put(routingKey, callbackProvider.createDeliverCallback(channel));
             } catch (IOException e) {
                 String msg = String.format("Could not setup deliver callback for routing key = %s", routingKey);
@@ -112,18 +114,14 @@ public class FrontendAmqpConsumer {
 
     private ConsumerShutdownSignalCallback getShutdownCallback() {
         return (consumerTag, sig) -> {
-            log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, getFrontendQueue(), consumerTag);
+            log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag);
             try {
                 channelService.removeChannel(channelId);
                 channelId = UUID.randomUUID().toString();
                 initChannel();
             } catch (IOException e) {
-                log.error(String.format("Could not re-initialize channel for queue %s", getFrontendQueue()), e);
+                log.error(String.format("Could not re-initialize channel for queue %s", queueName), e);
             }
         };
-    }
-
-    private String getFrontendQueue() {
-        return String.format("%s.%s", this.instanceInfoProvider.getApplicationName(), Queues.FRONTEND_SUFFIX.getValue());
     }
 }
