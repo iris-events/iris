@@ -1,0 +1,407 @@
+{
+  "info": {
+    "title": "GlobalID Client API",
+    "version": "1.0.0"
+  },
+  "asyncapi": "2.0.0",
+  "id": "urn:id:global:client-api",
+  "channels": {
+    "event/merge-event-1": {
+      "publish": {
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "USER"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": [
+                  "AUTHENTICATED",
+                  "admin.reward"
+                ]
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead-letter"
+              }
+            }
+          },
+          "name": "MergeEvent1",
+          "title": "MergeEvent1",
+          "payload": {
+            "$ref": "#/components/schemas/mergedapp1/MergeEvent1"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-1",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-1",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "event/merge-event-1-1": {
+      "publish": {
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "SESSION"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": 10000
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead-letter"
+              }
+            }
+          },
+          "name": "MergeEvent11",
+          "title": "MergeEvent11",
+          "payload": {
+            "$ref": "#/components/schemas/mergedapp1/MergeEvent11"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-1-1",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-1-1",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "event/merge-event-2": {
+      "publish": {
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "USER"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": [
+                  "AUTHENTICATED",
+                  "admin.reward"
+                ]
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead-letter"
+              }
+            }
+          },
+          "name": "MergeEvent2",
+          "title": "MergeEvent2",
+          "payload": {
+            "$ref": "#/components/schemas/mergedapp2/MergeEvent2"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-2",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-2",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "event/merge-event-2-2": {
+      "publish": {
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "SESSION"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": 10000
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead-letter"
+              }
+            }
+          },
+          "name": "MergeEvent22",
+          "title": "MergeEvent22",
+          "payload": {
+            "$ref": "#/components/schemas/mergedapp2/MergeEvent22"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-2-2",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-2-2",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "event/merge-event-3": {
+      "publish": {
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "USER"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": [
+                  "AUTHENTICATED",
+                  "admin.reward"
+                ]
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead-letter"
+              }
+            }
+          },
+          "name": "MergeEvent3",
+          "title": "MergeEvent3",
+          "payload": {
+            "$ref": "#/components/schemas/merged-app-3/MergeEvent3"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-3",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-3",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    },
+    "event/merge-event-3-3": {
+      "publish": {
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "SESSION"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": 10000
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead-letter"
+              }
+            }
+          },
+          "name": "MergeEvent33",
+          "title": "MergeEvent33",
+          "payload": {
+            "$ref": "#/components/schemas/merged-app-3/MergeEvent33"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-3-3",
+            "autoDelete": false,
+            "type": "direct"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "merge-event-3-3",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "mergedapp1": {
+        "MergeEvent1": {
+          "type": "object",
+          "properties": {
+            "prop": {
+              "type": "string"
+            }
+          }
+        },
+        "MergeEvent11": {
+          "type": "object",
+          "properties": {
+            "prop": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "mergedapp2": {
+        "MergeEvent2": {
+          "type": "object",
+          "properties": {
+            "prop": {
+              "type": "string"
+            }
+          }
+        },
+        "MergeEvent22": {
+          "type": "object",
+          "properties": {
+            "prop": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "merged-app-3": {
+        "MergeEvent3": {
+          "type": "object",
+          "properties": {
+            "prop": {
+              "type": "string"
+            }
+          }
+        },
+        "MergeEvent33": {
+          "type": "object",
+          "properties": {
+            "prop": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+:ci: https://github.com/smallrye/smallrye-async-api/actions?query=workflow%3A%22SmallRye+Build%22
+:sonar: https://sonarcloud.io/dashboard?id=smallrye_smallrye-async-api
+
+//image:https://github.com/smallrye/smallrye-async-api/workflows/SmallRye%20Build/badge.svg?branch=master[link={ci}]
+//image:https://sonarcloud.io/api/project_badges/measure?project=smallrye_smallrye-async-api&metric=alert_status["Quality Gate Status", link={sonar}]
+//image:https://img.shields.io/github/license/smallrye/smallrye-async-api.svg["License", link="http://www.apache.org/licenses/LICENSE-2.0"]
+
+= Iris SmallRye AsyncAPI fork
+
+GlobaliD SmallRye AsyncAPI fork is a proof of concept specification and implementation of Microprofile + AsyncAPI integration.
+It provides annotations for enabling GID event driven architecture and a scanner class for processing those annotations into a valid AsyncAPI schema.
+
+== Instructions
+
+Compile and test the project:
+
+[source,bash]
+----
+mvn verify
+----
+
+Compile and package the project:
+
+[source,bash]
+----
+mvn package
+----
+
+Compile and install into local .m2/repository
+
+[source,bash]
+----
+mvn install
+----
+
+=== Project structure
+
+* link:spec/api[] - Specification classes and interfaces.
+* link:spec/tck[] - Specification TCK tests.
+* link:implementation[] - Implementation of the specification.
+* link:tck[] - Test suite to run the spec TCK against the implementation.
+
+=== Annotations
+
+GlobalID Smallrye AsyncAPI fork provides the following annotations:
+
+* MessageHandler - annotates a message handler method for direct type messages
+* FanoutMessageHandler - annotates a message handler method for fanout type messages
+* TopicMessageHandler - annotates a message handler for topic type messages
+* ProducedEvent - annotates an event class defined from the producer side
+
+=== Contributing
+
+Please refer to our Wiki for the https://github.com/smallrye/smallrye-parent/wiki[Contribution Guidelines].
+
+=== Links
+
+* http://github.com/smallrye/smallrye-async-api/[Project Homepage]

@@ -65,7 +65,7 @@ class EventMessagingProcessor {
         }
     }
 
-    private static final String FEATURE = "event-messaging";
+    private static final String FEATURE = "quarkus-iris";
     private static final Logger LOG = LoggerFactory.getLogger(EventMessagingProcessor.class);
 
     @SuppressWarnings("unused")
@@ -191,7 +191,7 @@ class EventMessagingProcessor {
     @BuildStep
     void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("id.global.common", "globalid-common"));
-        indexDependency.produce(new IndexDependencyBuildItem("id.global.iris", "event-messaging"));
+        indexDependency.produce(new IndexDependencyBuildItem("id.global.iris", "quarkus-iris"));
     }
 
     @SuppressWarnings("unused")

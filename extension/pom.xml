@@ -1,86 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>id.global</groupId>
-    <artifactId>masterpom</artifactId>
-    <version>14</version>
-    <relativePath />
-  </parent>
-  <groupId>id.global.iris</groupId>
-  <artifactId>iris-extension-parent</artifactId>
-  <version>1.2.22-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>Event Messaging - Parent</name>
-  <properties>
-    <version.rabbit.amqp-client>5.14.2</version.rabbit.amqp-client>
-    <version.hamcrest>2.2</version.hamcrest>
-    <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
-    <version.globalid-common>1.1.12</version.globalid-common>
-    <version.quarkiverse.rabbitmqclient>0.5.0.Final</version.quarkiverse.rabbitmqclient>
-    <!-- plugin dependencies -->
-    <iris.asyncapi.version>1.1.13</iris.asyncapi.version>
-  </properties>
-  <scm>
-    <connection>scm:git:git@github.com:globalid/iris-quarkus.git</connection>
-    <developerConnection>scm:git:git@github.com:globalid/iris-quarkus.git</developerConnection>
-    <url>https://github.com/globalid/iris-quarkus</url>
-    <tag>HEAD</tag>
-  </scm>
-  <modules>
-    <module>deployment</module>
-    <module>runtime</module>
-    <module>integration-tests</module>
-  </modules>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>id.global.common</groupId>
-        <artifactId>globalid-common</artifactId>
-        <version>${version.globalid-common}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.rabbitmq</groupId>
-        <artifactId>amqp-client</artifactId>
-        <version>${version.rabbit.amqp-client}</version>
-      </dependency>
-      <dependency>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
         <groupId>id.global.iris</groupId>
-        <artifactId>iris-asyncapi</artifactId>
-        <version>${iris.asyncapi.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.github.resilience4j</groupId>
-        <artifactId>resilience4j-retry</artifactId>
-        <version>${version.resilience4j-retry}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-narayana-jta</artifactId>
-        <version>${version.quarkus}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-security</artifactId>
-        <version>${version.quarkus}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-smallrye-jwt</artifactId>
-        <version>${version.quarkus}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest</artifactId>
-        <version>${version.hamcrest}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkiverse.rabbitmqclient</groupId>
-        <artifactId>quarkus-rabbitmq-client</artifactId>
-        <version>${version.quarkiverse.rabbitmqclient}</version>
-        <scope>test</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+        <artifactId>iris-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>iris-extension-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Iris Quarkus - Parent</name>
+
+    <modules>
+        <module>deployment</module>
+        <module>runtime</module>
+        <module>integration-tests</module>
+    </modules>
+    <dependencyManagement></dependencyManagement>
 </project>

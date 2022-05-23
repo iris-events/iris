@@ -1,0 +1,18 @@
+{
+  "type" : "object",
+  "properties" : {
+    "age" : {
+      "type" : "integer"
+    },
+    "name" : {
+      "type" : "string"
+    },
+    "status" : {
+      "type" : "object",
+      "javaType" : "id.global.amqp.test.amqpgeneratortest.payload.Status"
+    },
+    "surname" : {
+      "type" : "string"
+    }
+  }
+}

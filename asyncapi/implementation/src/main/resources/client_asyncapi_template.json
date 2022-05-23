@@ -1,0 +1,14 @@
+{
+  "info": {
+    "title": "GlobalID Client API",
+    "version": "{VERSION}"
+  },
+  "asyncapi": "2.0.0",
+  "id": "urn:id:global:client-api",
+  "channels": {
+  },
+  "components": {
+    "schemas": {
+    }
+  }
+}

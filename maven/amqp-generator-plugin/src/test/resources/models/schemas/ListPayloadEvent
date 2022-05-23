@@ -1,0 +1,16 @@
+{
+  "type" : "object",
+  "properties" : {
+    "userList" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "javaType" : "id.global.amqp.test.amqpgeneratortest.payload.User"
+      }
+    }
+  },
+  "additionalProperties" : {
+    "isGeneratedClass" : false,
+    "generatedClass" : false
+  }
+}

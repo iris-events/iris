@@ -1,8 +1,8 @@
-name: Event Messaging
-#description: Event Messaging ...
+name: Quarkus Iris
+description: Iris is EDA framework
 metadata:
-#  keywords:
-#    - event-messaging
+  keywords:
+    - quarkus-iris
 #  guide: ...
 #  categories:
 #    - "miscellaneous"
