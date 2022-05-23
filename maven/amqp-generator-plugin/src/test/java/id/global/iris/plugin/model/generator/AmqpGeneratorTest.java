@@ -7,7 +7,9 @@ import id.global.iris.plugin.model.generator.utils.FileInteractor;
 import id.global.iris.plugin.model.generator.utils.PathResolver;
 import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
 import junit.framework.Assert;
+import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +93,7 @@ class AmqpGeneratorTest {
                     .forEach(File::delete);
         }
 
-        Log log = new SilentLog();
+        Log log = new SystemStreamLog();
 
         PathResolver pathResolver = new PathResolver();
         ObjectMapper objectMapper = new ObjectMapper();

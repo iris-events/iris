@@ -1,21 +1,21 @@
 package id.global.iris.plugin.model.generator.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
-
+import id.global.iris.plugin.model.generator.AmqpGeneratorMojo;
 import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 
-import id.global.iris.plugin.model.generator.AmqpGeneratorMojo;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 public class FileInteractor {
 
@@ -31,7 +31,7 @@ public class FileInteractor {
 
     public String readFile(final Path path) {
         try {
-            return Files.readString(path);
+            return Files.readString(path, StandardCharsets.UTF_8);
         } catch (IOException e) {
             log.error("Reading from file failed!", e);
             throw new RuntimeException(e);
@@ -39,12 +39,13 @@ public class FileInteractor {
     }
 
     public String readResourceFileContent(final String fileName) {
-        try (InputStream is = AmqpGeneratorMojo.class.getClassLoader().getResourceAsStream(fileName)) {
-            if (is == null) {
-                throw new IllegalArgumentException(String.format("Cannot get input stream for resource file: [%s]", fileName));
-            }
-            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
+        var r = AmqpGeneratorMojo.class.getClassLoader().getResource(fileName);
+        if (r == null) {
+            throw new IllegalArgumentException(String.format("Cannot get input stream for resource file: [%s]", fileName));
+        }
+        try {
+            return Files.readString(Paths.get(r.toURI()), StandardCharsets.UTF_8);
+        } catch (URISyntaxException | IOException e) {
             log.error("Cannot read resource file content!", e);
             throw new RuntimeException(e);
         }
@@ -90,7 +91,7 @@ public class FileInteractor {
 
     public void writeFile(final Path path, final String content) {
         try {
-            Files.writeString(path, content);
+            Files.writeString(path, content, StandardCharsets.UTF_8);
         } catch (Exception e) {
             log.error("Failed to write file", e);
             throw new RuntimeException(e);

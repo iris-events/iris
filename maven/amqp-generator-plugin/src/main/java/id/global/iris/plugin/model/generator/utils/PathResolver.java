@@ -1,17 +1,12 @@
 package id.global.iris.plugin.model.generator.utils;
 
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class PathResolver {
 
-    public Path getRootDirectory() {
-        return Paths.get(StringConstants.EMPTY_STRING);
-    }
-
     public Path getWorkingDirectory() {
-        return getRootDirectory().resolve(StringConstants.MODELS);
+        return Paths.get(StringConstants.MODELS);
     }
 
     public Path getSourceDirectory() {
@@ -28,15 +23,11 @@ public class PathResolver {
 
     public Path resolveAsyncApiFilePath(String asyncApiDirectory, String asyncApiFilename) {
         String[] pathSpliced = asyncApiDirectory.split(StringConstants.COMMA);
-        String path = String.join(FileSystems.getDefault().getSeparator(), pathSpliced);
-        return getRootDirectory().resolve(path).resolve(asyncApiFilename);
+        return Paths.get("", pathSpliced).resolve(asyncApiFilename);
     }
 
     private Path createPath(Path basePath, final String... paths) {
-        for (String path : paths) {
-            basePath = basePath.resolve(path);
-        }
-        return basePath;
+        return Paths.get(basePath.toString(), paths);
     }
 
 }

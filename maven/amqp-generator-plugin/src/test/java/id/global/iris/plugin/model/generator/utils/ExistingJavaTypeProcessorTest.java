@@ -1,13 +1,14 @@
 package id.global.iris.plugin.model.generator.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 class ExistingJavaTypeProcessorTest {
     private static final String ASYNCAPI_FILENAME = "src/test/resources/asyncapi.json";
@@ -15,13 +16,13 @@ class ExistingJavaTypeProcessorTest {
 
     @Test
     void fixExistingType() throws IOException, JSONException {
-        File asyncapi = new File(ASYNCAPI_FILENAME);
-        File expected = new File(EXPECTED_ASYNCAPI);
+        var asyncapi = Paths.get(ASYNCAPI_FILENAME);
+        var expected = Paths.get(EXPECTED_ASYNCAPI);
 
-        String asyncapiContent = Files.readString(asyncapi.toPath());
-        String expectedContent = Files.readString(expected.toPath());
+        String asyncapiContent = Files.readString(asyncapi);
+        String expectedContent = Files.readString(expected);
 
-        final var processor = new ExistingJavaTypeProcessor();
+        final var processor = new ExistingJavaTypeProcessor(new ObjectMapper());
         final var fixedContent = processor.fixExistingType(asyncapiContent);
 
         JSONAssert.assertEquals("Json contents should match", expectedContent, fixedContent, JSONCompareMode.NON_EXTENSIBLE);

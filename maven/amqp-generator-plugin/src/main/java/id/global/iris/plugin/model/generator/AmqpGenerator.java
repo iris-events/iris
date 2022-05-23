@@ -1,21 +1,32 @@
 package id.global.iris.plugin.model.generator;
 
-import static id.global.iris.plugin.model.generator.utils.AmqpStringUtils.getRefToBeReplaced;
-import static id.global.iris.plugin.model.generator.utils.AmqpStringUtils.getReplacementForRef;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.COMMA;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.DOT;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.DOT_REGEX;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.EMPTY_STRING;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.FORWARD_SLASH;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.JAVA_TYPE;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.PAYLOAD;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.POM_TEMPLATE_XML;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.POM_XML;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.PUBLISH;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.REF;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.REF_REGEX;
-import static id.global.iris.plugin.model.generator.utils.StringConstants.SUBSCRIBE;
-import static java.util.stream.Collectors.joining;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
+import com.sun.codemodel.JCodeModel;
+import id.global.iris.plugin.model.generator.annotators.MetadataAnnotator;
+import id.global.iris.plugin.model.generator.configs.EventSchemaGeneratorConfig;
+import id.global.iris.plugin.model.generator.exception.AmqpGeneratorException;
+import id.global.iris.plugin.model.generator.graph.GraphUtils;
+import id.global.iris.plugin.model.generator.models.ArtifactSource;
+import id.global.iris.plugin.model.generator.models.ChannelDetails;
+import id.global.iris.plugin.model.generator.models.JsonSchemaWrapper;
+import id.global.iris.plugin.model.generator.utils.AmqpStringUtils;
+import id.global.iris.plugin.model.generator.utils.ExistingJavaTypeProcessor;
+import id.global.iris.plugin.model.generator.utils.FileInteractor;
+import id.global.iris.plugin.model.generator.utils.JsonUtils;
+import id.global.iris.plugin.model.generator.utils.PathResolver;
+import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
+import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.StringUtils;
+import org.jsonschema2pojo.GenerationConfig;
+import org.jsonschema2pojo.Jackson2Annotator;
+import org.jsonschema2pojo.SchemaGenerator;
+import org.jsonschema2pojo.SchemaMapper;
+import org.jsonschema2pojo.SchemaStore;
+import org.jsonschema2pojo.rules.RuleFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,35 +50,22 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.util.StringUtils;
-import org.jsonschema2pojo.GenerationConfig;
-import org.jsonschema2pojo.Jackson2Annotator;
-import org.jsonschema2pojo.SchemaGenerator;
-import org.jsonschema2pojo.SchemaMapper;
-import org.jsonschema2pojo.SchemaStore;
-import org.jsonschema2pojo.rules.RuleFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
-import com.sun.codemodel.JCodeModel;
-
-import id.global.iris.plugin.model.generator.annotators.MetadataAnnotator;
-import id.global.iris.plugin.model.generator.configs.EventSchemaGeneratorConfig;
-import id.global.iris.plugin.model.generator.exception.AmqpGeneratorException;
-import id.global.iris.plugin.model.generator.graph.GraphUtils;
-import id.global.iris.plugin.model.generator.models.ArtifactSource;
-import id.global.iris.plugin.model.generator.models.ChannelDetails;
-import id.global.iris.plugin.model.generator.models.JsonSchemaWrapper;
-import id.global.iris.plugin.model.generator.utils.AmqpStringUtils;
-import id.global.iris.plugin.model.generator.utils.ExistingJavaTypeProcessor;
-import id.global.iris.plugin.model.generator.utils.FileInteractor;
-import id.global.iris.plugin.model.generator.utils.JsonUtils;
-import id.global.iris.plugin.model.generator.utils.PathResolver;
-import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
+import static id.global.iris.plugin.model.generator.utils.AmqpStringUtils.getRefToBeReplaced;
+import static id.global.iris.plugin.model.generator.utils.AmqpStringUtils.getReplacementForRef;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.COMMA;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.DOT;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.DOT_REGEX;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.EMPTY_STRING;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.FORWARD_SLASH;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.JAVA_TYPE;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.PAYLOAD;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.POM_TEMPLATE_XML;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.POM_XML;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.PUBLISH;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.REF;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.REF_REGEX;
+import static id.global.iris.plugin.model.generator.utils.StringConstants.SUBSCRIBE;
+import static java.util.stream.Collectors.joining;
 
 public class AmqpGenerator {
     private static final String defaultUrl = "https://schema.tools.global.id";
@@ -115,7 +113,7 @@ public class AmqpGenerator {
         this.objectMapper = objectMapper;
 
         this.jsonUtils = new JsonUtils(this.objectMapper, this.log);
-        this.existingJavaTypeProcessor = new ExistingJavaTypeProcessor();
+        this.existingJavaTypeProcessor = new ExistingJavaTypeProcessor(objectMapper);
     }
 
     public void generate(ArtifactSource artifactSource) throws AmqpGeneratorException {
@@ -245,21 +243,23 @@ public class AmqpGenerator {
         try {
             HashMap<String, String> schemaNamesToLocation = new HashMap<>();
 
-            Files.list(schemasPath.resolve(PAYLOAD))
-                    .map(Path::toFile)
-                    .filter(File::isFile)
-                    .forEach(file -> schemaNamesToLocation.put(file.getName(), file.getAbsolutePath()));
+            try (var payload = Files.list(schemasPath.resolve(PAYLOAD))) {
+                payload.map(Path::toFile)
+                        .filter(File::isFile)
+                        .forEach(file -> schemaNamesToLocation.put(file.getName(), file.getAbsolutePath()));
+            }
 
-            Files.list(schemasPath)
-                    .map(Path::toFile)
-                    .forEach(file -> {
-                        if (file.isFile()) {
-                            String fileContent = fileInteractor.readFile(Path.of(file.toURI()));
-                            schemaNamesToLocation.entrySet().stream()
-                                    .filter(entry -> fileContent.contains(entry.getValue()))
-                                    .forEach(entry -> replaceFileContent(file, fileContent, entry));
-                        }
-                    });
+            try (var schemas = Files.list(schemasPath)) {
+                schemas.map(Path::toFile)
+                        .forEach(file -> {
+                            if (file.isFile()) {
+                                String fileContent = fileInteractor.readFile(Path.of(file.toURI()));
+                                schemaNamesToLocation.entrySet().stream()
+                                        .filter(entry -> fileContent.contains(entry.getValue()))
+                                        .forEach(entry -> replaceFileContent(file, fileContent, entry));
+                            }
+                        });
+            }
 
             //rewrite base schemas
             Stream.concat(Files.list(schemasPath), Files.list(schemasPath.resolve(PAYLOAD)))
@@ -433,9 +433,7 @@ public class AmqpGenerator {
     }
 
     private void generateMainEvents(Set<String> mainEvents) {
-        mainEvents.forEach(event -> {
-            generate(event, "");
-        });
+        mainEvents.forEach(event -> generate(event, ""));
     }
 
     private void generateChildClasses(Map<String, List<String>> parentToChildClassesRelation,
@@ -450,13 +448,10 @@ public class AmqpGenerator {
                     List<String> childClasses = Optional.ofNullable(parentToChildClassesRelation.get(entry.getKey()))
                             .orElseGet(Collections::emptyList)
                             .stream()
-                            .distinct()
-                            .collect(Collectors.toList());
+                            .distinct().toList();
 
                     if (!childClasses.isEmpty())
-                        childClasses.forEach(childClass -> {
-                            generate(childClass, PAYLOAD);
-                        });
+                        childClasses.forEach(childClass -> generate(childClass, PAYLOAD));
                 });
     }
 
@@ -474,9 +469,7 @@ public class AmqpGenerator {
         parentToChildCount.stream()
                 .filter(entry -> entry.getValue() == 0)
                 .map(AbstractMap.SimpleEntry::getKey)
-                .forEach(entry -> {
-                    generate(entry, PAYLOAD);
-                });
+                .forEach(entry -> generate(entry, PAYLOAD));
     }
 
     private void generatePom() {

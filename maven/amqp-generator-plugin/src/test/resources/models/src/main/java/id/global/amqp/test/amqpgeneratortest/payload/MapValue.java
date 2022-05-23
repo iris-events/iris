@@ -2,7 +2,7 @@
 package id.global.amqp.test.amqpgeneratortest.payload;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.processing.Generated;
 import javax.validation.Valid;
@@ -28,18 +28,18 @@ public class MapValue implements Serializable
     private String value;
     @JsonIgnore
     @Valid
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
     private final static long serialVersionUID = -6847946449674788863L;
 
     /**
      * No args constructor for use in serialization
-     * 
+     *
      */
     public MapValue() {
     }
 
     /**
-     * 
+     *
      * @param id
      * @param value
      */

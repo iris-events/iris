@@ -6,7 +6,7 @@
         <groupId>id.global</groupId>
         <artifactId>masterpom</artifactId>
         <version>16</version>
-        <relativePath></relativePath>
+        <relativePath/>
     </parent>
     <groupId>id.global.iris</groupId>
     <artifactId>iris-parent</artifactId>
@@ -32,7 +32,7 @@
     <properties>
         <!-- plugin dependencies -->
 
-        <maven.compiler.release>17</maven.compiler.release>
+        <!--<maven.compiler.release>17</maven.compiler.release>-->
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>1.1.20</version.apicurio-data-models>
         <version.apicurio-registry-client>2.2.0.Final</version.apicurio-registry-client>
@@ -41,10 +41,10 @@
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.13</version.httpclient>
         <version.iris.asyncapi>${project.version}</version.iris.asyncapi>
-        <version.jackson-databind>2.13.2.1</version.jackson-databind>
-        <version.jandex>2.4.1.Final</version.jandex>
+        <version.jackson-databind>2.13.3</version.jackson-databind>
+        <version.jandex>2.4.2.Final</version.jandex>
         <version.json-simple>1.1.1</version.json-simple>
-        <version.jsonschema2pojo-core>1.1.1</version.jsonschema2pojo-core>
+        <version.jsonschema2pojo-core>1.1.2</version.jsonschema2pojo-core>
         <version.junit-jupiter>5.8.1</version.junit-jupiter>
         <version.maven>3.8.3</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>

@@ -8,11 +8,11 @@ import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import id.global.amqp.test.amqpgeneratortest.payload.MapValue;
 import id.global.common.iris.annotations.ExchangeType;
 import id.global.common.iris.annotations.GlobalIdGenerated;
 import id.global.common.iris.annotations.Message;
 import id.global.common.iris.annotations.Scope;
-import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp$MapValue;
 
 @GlobalIdGenerated
 @Message(name = "map-payload-event", exchangeType = ExchangeType.FANOUT, routingKey = "map-payload-event", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
@@ -26,8 +26,8 @@ public class MapPayloadEvent implements Serializable
 
     @JsonProperty("userMap")
     @Valid
-    private Map<String, EventHandlersApp$MapValue> userMap;
-    private final static long serialVersionUID = -4625838191436949163L;
+    private Map<String, MapValue> userMap;
+    private final static long serialVersionUID = 8756106189215751014L;
 
     /**
      * No args constructor for use in serialization
@@ -40,18 +40,18 @@ public class MapPayloadEvent implements Serializable
      *
      * @param userMap
      */
-    public MapPayloadEvent(Map<String, EventHandlersApp$MapValue> userMap) {
+    public MapPayloadEvent(Map<String, MapValue> userMap) {
         super();
         this.userMap = userMap;
     }
 
     @JsonProperty("userMap")
-    public Map<String, EventHandlersApp$MapValue> getUserMap() {
+    public Map<String, MapValue> getUserMap() {
         return userMap;
     }
 
     @JsonProperty("userMap")
-    public void setUserMap(Map<String, EventHandlersApp$MapValue> userMap) {
+    public void setUserMap(Map<String, MapValue> userMap) {
         this.userMap = userMap;
     }
 

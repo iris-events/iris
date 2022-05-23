@@ -1,32 +1,59 @@
 package id.global.iris.plugin.model.generator.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.util.regex.Pattern;
 
 public class ExistingJavaTypeProcessor {
-    private static final Pattern EXISTING_JAVA_TYPE_CANDIDATE_PATTERN = Pattern.compile(
-            "^.*javaType\" : \"([^\"]*)(\".\s+},.\s*\")existingJavaType\" : \"([^\"]*)(.*)$", Pattern.DOTALL);
     private static final Pattern CLASS_NAME_IN_JAVA_TYPE = Pattern.compile("^.*\\.(?:([a-zA-Z]*)(?!\\.))$");
     private static final String REPLACEMENT_PATTERN_TEMPLATE = "((?:[.$a-zA-Z]*)%s)";
+    private final ObjectMapper objectMapper;
+
+    public ExistingJavaTypeProcessor(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     public String fixExistingType(final String schemaContent) {
-        final var existingJavaTypeCandidateMatcher = EXISTING_JAVA_TYPE_CANDIDATE_PATTERN.matcher(schemaContent);
-
-        if (!existingJavaTypeCandidateMatcher.matches()) {
+        if (!schemaContent.contains("existingJavaType")) {
             return schemaContent;
         }
 
-        final var javaType = existingJavaTypeCandidateMatcher.group(1);
-        final var classNameMatcher = CLASS_NAME_IN_JAVA_TYPE.matcher(javaType);
-
-        if (!classNameMatcher.matches()) {
+        ObjectNode schema = null;
+        try {
+            schema = (ObjectNode) objectMapper.readTree(schemaContent);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        if (!schema.hasNonNull("properties")) {
             return schemaContent;
         }
+        var props = (ObjectNode) schema.get("properties");
+        String fixedSchema = schemaContent;
+        for (var type : props) {
+            if (!(type.hasNonNull("existingJavaType") && type.hasNonNull("additionalProperties"))) {
+                continue;
+            }
+            var additional = type.get("additionalProperties");
+            if (!additional.hasNonNull("javaType")) {
+                continue;
+            }
+            var existingJavaType = type.get("existingJavaType").asText();
+            var javaType = type.get("additionalProperties").get("javaType").asText();
+            final var classNameMatcher = CLASS_NAME_IN_JAVA_TYPE.matcher(javaType);
 
-        final var existingJavaType = existingJavaTypeCandidateMatcher.group(3);
-        final var className = classNameMatcher.group(1);
-        Pattern replacePattern = getReplacementPattern(className);
-        final var newJavaType = existingJavaType.replaceAll(replacePattern.pattern(), javaType);
-        return schemaContent.replace(existingJavaType, newJavaType);
+            if (!classNameMatcher.matches()) {
+                continue;
+            }
+
+            final var className = classNameMatcher.group(1);
+            Pattern replacePattern = getReplacementPattern(className);
+            final var newJavaType = existingJavaType.replaceAll(replacePattern.pattern(), javaType);
+            fixedSchema = schemaContent.replace(existingJavaType, newJavaType);
+        }
+
+        return fixedSchema;
     }
 
     private Pattern getReplacementPattern(final String className) {
