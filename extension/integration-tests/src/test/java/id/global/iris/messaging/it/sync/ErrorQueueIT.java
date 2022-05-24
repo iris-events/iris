@@ -26,15 +26,13 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.constants.Exchanges;
-import id.global.iris.common.error.ClientError;
 import id.global.iris.common.error.ErrorType;
-import id.global.iris.common.error.ServerError;
+import id.global.iris.common.exception.BadPayloadException;
+import id.global.iris.common.exception.MessagingException;
+import id.global.iris.common.exception.ServerException;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
-import id.global.iris.messaging.runtime.api.exception.BadMessageException;
-import id.global.iris.messaging.runtime.api.exception.ServerException;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.iris.messaging.runtime.requeue.MessagingErrorContext;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
@@ -46,6 +44,8 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     private static final String ERROR_QUEUE_SERVER_ERROR = "error-queue-server-error";
     private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
     private static final String INTERNAL_SERVICE_ERROR = "Internal service error.";
+    private static final String BAD_PAYLOAD_CLIENT_CODE = "BAD_MESSAGE_PAYLOAD";
+    private static final String SERVER_ERROR_CLIENT_CODE = "SERVER_ERROR";
 
     @Inject
     AmqpProducer producer;
@@ -78,7 +78,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(ClientError.BAD_REQUEST.getClientCode()));
+        assertThat(errorMessage.code(), is(BAD_PAYLOAD_CLIENT_CODE));
         assertThat(errorMessage.message(), is("Unable to process message. Message corrupted."));
     }
 
@@ -89,20 +89,20 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         producer.send(message);
 
-        final var messagingErrorContextArgumentCaptor = ArgumentCaptor.forClass(MessagingErrorContext.class);
+        final var messagingExceptionArgumentCaptor = ArgumentCaptor.forClass(MessagingException.class);
         final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
         verify(requeueHandler, timeout(500).times(1))
-                .enqueueWithBackoff(any(), any(), messagingErrorContextArgumentCaptor.capture(),
+                .enqueueWithBackoff(any(), any(), messagingExceptionArgumentCaptor.capture(),
                         notifyFrontendCaptor.capture());
 
-        final var messagingErrorContext = messagingErrorContextArgumentCaptor.getValue();
-        final var errorCode = messagingErrorContext.messagingError().getClientCode();
-        final var type = messagingErrorContext.messagingError().getType();
-        final var exceptionMessage = messagingErrorContext.exceptionMessage();
+        final var messagingException = messagingExceptionArgumentCaptor.getValue();
+        final var errorCode = messagingException.getClientCode();
+        final var type = messagingException.getErrorType();
+        final var exceptionMessage = messagingException.getMessage();
         final var notifyFrontend = notifyFrontendCaptor.getValue();
 
         assertThat(errorCode, is(notNullValue()));
-        assertThat(errorCode, is(ServerError.SERVER_ERROR.getClientCode()));
+        assertThat(errorCode, is(SERVER_ERROR_CLIENT_CODE));
         assertThat(type, is(ErrorType.INTERNAL_SERVER_ERROR));
         assertThat(exceptionMessage, is(INTERNAL_SERVICE_ERROR));
         assertThat(notifyFrontend, CoreMatchers.is(true));
@@ -118,12 +118,12 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         @MessageHandler
         public void handle(BadRequestMessage message) {
-            throw new BadMessageException(ClientError.BAD_REQUEST, "Unable to process message. Message corrupted.");
+            throw new BadPayloadException(BAD_PAYLOAD_CLIENT_CODE, "Unable to process message. Message corrupted.");
         }
 
         @MessageHandler
         public void handle(ServerErrorMessage message) {
-            throw new ServerException(ServerError.SERVER_ERROR, INTERNAL_SERVICE_ERROR, true);
+            throw new ServerException(SERVER_ERROR_CLIENT_CODE, INTERNAL_SERVICE_ERROR, true);
         }
     }
 

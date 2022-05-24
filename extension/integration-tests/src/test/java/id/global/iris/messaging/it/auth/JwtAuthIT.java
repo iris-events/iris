@@ -1,5 +1,7 @@
 package id.global.iris.messaging.it.auth;
 
+import static id.global.iris.messaging.runtime.exception.AmqpExceptionHandler.AUTHENTICATION_FAILED_CLIENT_CODE;
+import static id.global.iris.messaging.runtime.exception.AmqpExceptionHandler.FORBIDDEN_CLIENT_CODE;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -32,7 +34,6 @@ import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.constants.Exchanges;
 import id.global.iris.common.constants.MessagingHeaders;
-import id.global.iris.common.error.SecurityError;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -92,7 +93,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(SecurityError.AUTHORIZATION_FAILED.getClientCode()));
+        assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
         assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 
@@ -125,7 +126,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(SecurityError.FORBIDDEN.getClientCode()));
+        assertThat(errorMessage.code(), is(FORBIDDEN_CLIENT_CODE));
         assertThat(errorMessage.message(), is("Role is not allowed"));
     }
 
@@ -143,7 +144,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(SecurityError.AUTHORIZATION_FAILED.getClientCode()));
+        assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
         assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 
