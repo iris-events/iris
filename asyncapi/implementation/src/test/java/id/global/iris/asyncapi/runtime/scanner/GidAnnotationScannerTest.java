@@ -13,6 +13,8 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import id.global.common.iris.annotations.Message;
 import id.global.common.iris.annotations.MessageHandler;
+import id.global.common.iris.annotations.SnapshotMessageHandler;
+import id.global.common.iris.message.SnapshotRequested;
 import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
@@ -52,7 +54,9 @@ public class GidAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.MapPayloadEvent.class,
                 EventHandlersApp.ListPayloadEvent.class,
                 EventHandlersApp.MapValue.class,
+                SnapshotRequested.class,
                 MessageHandler.class,
+                SnapshotMessageHandler.class,
                 Message.class);
     }
 }

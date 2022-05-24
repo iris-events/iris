@@ -562,6 +562,64 @@
         }
       }
     },
+    "snapshot-requested/inventory": {
+      "publish": {
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "INTERNAL"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": [
+                  "admin.merchant",
+                  "admin.reward"
+                ]
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead.dead-letter"
+              }
+            }
+          },
+          "name": "SnapshotRequested",
+          "title": "SnapshotRequested",
+          "payload": {
+            "$ref": "#/components/schemas/SnapshotRequested"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "snapshot-requested",
+            "autoDelete": false,
+            "type": "topic"
+          },
+          "queue": {
+            "durable": false,
+            "vhost": "/",
+            "name": "inventory",
+            "autoDelete": true,
+            "exclusive": false
+          }
+        }
+      }
+    },
     "produced-event/produced-event": {
       "subscribe": {
         "message": {
@@ -887,6 +945,21 @@
         "additionalProperties": {
           "isGeneratedClass": false,
           "generatedClass": false
+        }
+      },
+      "SnapshotRequested": {
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "isGeneratedClass": true,
+          "generatedClass": true
         }
       },
       "ListPayloadEvent": {
