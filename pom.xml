@@ -35,7 +35,7 @@
         <!--<maven.compiler.release>17</maven.compiler.release>-->
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>1.1.20</version.apicurio-data-models>
-        <version.apicurio-registry-client>2.2.0.Final</version.apicurio-registry-client>
+        <version.apicurio-registry-client>2.2.3.Final</version.apicurio-registry-client>
         <version.commons-logging>1.2</version.commons-logging>
         <version.globalid-common>1.1.13-SNAPSHOT</version.globalid-common>
         <version.hamcrest>2.2</version.hamcrest>
