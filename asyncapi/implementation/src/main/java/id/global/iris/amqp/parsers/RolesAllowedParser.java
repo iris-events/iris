@@ -9,8 +9,8 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 
 public class RolesAllowedParser {
     private static final String ROLES_ALLOWED_PARAM = "rolesAllowed";

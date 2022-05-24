@@ -1,7 +1,7 @@
 package id.global.iris.messaging.deployment.validation;
 
-import static id.global.common.iris.annotations.ExchangeType.DIRECT;
-import static id.global.common.iris.annotations.ExchangeType.TOPIC;
+import static id.global.iris.common.annotations.ExchangeType.DIRECT;
+import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.AbstractAnnotationInstanceValidatorTest;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 

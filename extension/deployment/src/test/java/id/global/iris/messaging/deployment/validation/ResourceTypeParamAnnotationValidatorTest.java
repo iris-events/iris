@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import id.global.common.iris.annotations.SnapshotMessageHandler;
-import id.global.common.iris.message.SnapshotRequested;
+import id.global.iris.common.annotations.SnapshotMessageHandler;
+import id.global.iris.common.message.SnapshotRequested;
 import id.global.iris.messaging.AbstractAnnotationInstanceValidatorTest;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 

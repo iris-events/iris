@@ -8,8 +8,8 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.Scope;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Scope;
 import io.quarkus.builder.item.MultiBuildItem;
 
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {

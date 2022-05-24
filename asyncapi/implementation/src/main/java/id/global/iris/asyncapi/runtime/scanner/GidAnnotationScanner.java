@@ -42,11 +42,6 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
-import id.global.common.iris.annotations.Scope;
-import id.global.common.iris.annotations.SnapshotMessageHandler;
-import id.global.common.iris.constants.HandlerDefaultParameter;
 import id.global.iris.amqp.parsers.BindingKeysParser;
 import id.global.iris.amqp.parsers.DeadLetterQueueParser;
 import id.global.iris.amqp.parsers.ExchangeParser;
@@ -67,6 +62,11 @@ import id.global.iris.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import id.global.iris.asyncapi.runtime.scanner.validator.MessageAnnotationValidator;
 import id.global.iris.asyncapi.runtime.util.ChannelInfoGenerator;
 import id.global.iris.asyncapi.runtime.util.SchemeIdGenerator;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.annotations.SnapshotMessageHandler;
+import id.global.iris.common.constants.HandlerDefaultParameter;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Info;
 

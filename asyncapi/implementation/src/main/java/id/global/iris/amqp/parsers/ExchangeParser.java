@@ -2,7 +2,7 @@ package id.global.iris.amqp.parsers;
 
 import org.jboss.jandex.AnnotationInstance;
 
-import id.global.common.iris.annotations.Message;
+import id.global.iris.common.annotations.Message;
 
 public class ExchangeParser {
 

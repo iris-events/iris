@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
-import id.global.common.iris.annotations.SnapshotMessageHandler;
-import id.global.common.iris.message.SnapshotRequested;
 import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.annotations.SnapshotMessageHandler;
+import id.global.iris.common.message.SnapshotRequested;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 
 public class GidAnnotationScannerTest extends IndexScannerTestBase {

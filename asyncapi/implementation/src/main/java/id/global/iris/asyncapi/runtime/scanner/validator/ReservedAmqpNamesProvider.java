@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import id.global.common.iris.constants.Exchanges;
-import id.global.common.iris.constants.Queues;
+import id.global.iris.common.constants.Exchanges;
+import id.global.iris.common.constants.Queues;
 
 public class ReservedAmqpNamesProvider {
     public static List<String> getReservedNames() {

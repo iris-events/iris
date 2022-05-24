@@ -22,9 +22,9 @@ import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.junit.jupiter.api.Test;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
 import id.global.iris.asyncapi.runtime.exception.AnnotationValidationException;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 
 class MessageAnnotationValidatorTest {
 

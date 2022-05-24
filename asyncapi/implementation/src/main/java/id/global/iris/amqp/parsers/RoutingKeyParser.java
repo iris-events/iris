@@ -4,8 +4,8 @@ import java.util.Objects;
 
 import org.jboss.jandex.AnnotationInstance;
 
-import id.global.common.iris.annotations.Message;
 import id.global.iris.asyncapi.runtime.util.JandexUtil;
+import id.global.iris.common.annotations.Message;
 
 public class RoutingKeyParser {
     private static final String MESSAGE_ROUTING_KEY_PARAM = "routingKey";

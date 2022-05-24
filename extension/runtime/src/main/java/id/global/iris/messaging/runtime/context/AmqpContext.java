@@ -7,9 +7,9 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.Scope;
-import id.global.common.iris.constants.Queues;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.constants.Queues;
 
 public final class AmqpContext {
 

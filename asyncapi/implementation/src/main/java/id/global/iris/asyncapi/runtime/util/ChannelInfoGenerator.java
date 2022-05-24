@@ -5,10 +5,10 @@ import java.util.Set;
 import org.jboss.jandex.Type;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.annotations.ExchangeType;
 import id.global.iris.asyncapi.runtime.io.channel.operation.OperationConstant;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelInfo;
+import id.global.iris.common.annotations.ExchangeType;
 
 public class ChannelInfoGenerator {
 

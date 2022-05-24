@@ -15,8 +15,6 @@ import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.common.iris.annotations.GlobalIdGenerated;
-import id.global.common.iris.annotations.Scope;
 import id.global.iris.asyncapi.api.AsyncApiConfig;
 import id.global.iris.asyncapi.api.Headers;
 import id.global.iris.asyncapi.runtime.io.channel.operation.OperationConstant;
@@ -29,6 +27,8 @@ import id.global.iris.asyncapi.runtime.scanner.model.GidAai20Message;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAaiHeaderItem;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAaiHeaderItems;
 import id.global.iris.asyncapi.runtime.scanner.model.JsonSchemaInfo;
+import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.Scope;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;

@@ -11,9 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import id.global.common.iris.annotations.ExchangeType;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelInfo;
+import id.global.iris.common.annotations.ExchangeType;
 
 public class ChannelInfoGeneratorTest {
 

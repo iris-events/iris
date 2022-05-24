@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 
-import id.global.common.iris.message.ErrorMessage;
+import id.global.iris.common.message.ErrorMessage;
 import io.quarkiverse.rabbitmqclient.RabbitMQClient;
 
 public abstract class AbstractIntegrationTest extends IsolatedEventContextTest {

@@ -1,6 +1,6 @@
 package id.global.iris.asyncapi.runtime.scanner.model;
 
-import id.global.common.iris.annotations.ExchangeType;
+import id.global.iris.common.annotations.ExchangeType;
 
 public class ChannelBindingsInfo {
     private final String exchange;

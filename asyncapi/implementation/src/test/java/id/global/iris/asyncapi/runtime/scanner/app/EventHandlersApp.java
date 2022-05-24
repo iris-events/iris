@@ -1,8 +1,8 @@
 package id.global.iris.asyncapi.runtime.scanner.app;
 
-import static id.global.common.iris.annotations.ExchangeType.DIRECT;
-import static id.global.common.iris.annotations.ExchangeType.FANOUT;
-import static id.global.common.iris.annotations.ExchangeType.TOPIC;
+import static id.global.iris.common.annotations.ExchangeType.DIRECT;
+import static id.global.iris.common.annotations.ExchangeType.FANOUT;
+import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 
 import java.util.List;
 import java.util.Map;
@@ -12,13 +12,13 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.annotations.GlobalIdGenerated;
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
-import id.global.common.iris.annotations.Scope;
-import id.global.common.iris.annotations.SnapshotMessageHandler;
-import id.global.common.iris.message.SnapshotRequested;
 import id.global.iris.asyncapi.runtime.scanner.model.User;
+import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.annotations.SnapshotMessageHandler;
+import id.global.iris.common.message.SnapshotRequested;
 
 public class EventHandlersApp {
     private static final Logger LOG = Logger.getLogger(EventHandlersApp.class);

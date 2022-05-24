@@ -1,6 +1,6 @@
 package id.global.iris.messaging.it.sync;
 
-import static id.global.common.iris.annotations.ExchangeType.DIRECT;
+import static id.global.iris.common.annotations.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,11 +26,11 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
-import id.global.common.iris.constants.MessagingHeaders;
-import id.global.common.iris.error.ErrorType;
-import id.global.common.iris.error.ServerError;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.constants.MessagingHeaders;
+import id.global.iris.common.error.ErrorType;
+import id.global.iris.common.error.ServerError;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.context.EventContext;

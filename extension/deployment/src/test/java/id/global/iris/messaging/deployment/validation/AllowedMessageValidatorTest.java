@@ -10,8 +10,8 @@ import java.util.List;
 import org.jboss.jandex.DotName;
 import org.junit.jupiter.api.Test;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.message.SnapshotRequested;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.message.SnapshotRequested;
 import id.global.iris.messaging.AbstractAnnotationInstanceValidatorTest;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 

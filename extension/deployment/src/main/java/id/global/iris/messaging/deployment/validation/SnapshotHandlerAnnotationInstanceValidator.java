@@ -6,7 +6,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.iris.message.SnapshotRequested;
+import id.global.iris.common.message.SnapshotRequested;
 
 public class SnapshotHandlerAnnotationInstanceValidator implements AnnotationInstanceValidator {
 

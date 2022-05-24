@@ -6,9 +6,9 @@ import java.util.Objects;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.Scope;
 import id.global.iris.amqp.EdaAnnotationRuntimeException;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.Scope;
 
 public class MessageScopeParser {
     private static final String MESSAGE_SCOPE_PARAM = "scope";

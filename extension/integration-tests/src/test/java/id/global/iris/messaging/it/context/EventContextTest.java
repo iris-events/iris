@@ -1,6 +1,6 @@
 package id.global.iris.messaging.it.context;
 
-import static id.global.common.iris.constants.MessagingHeaders.Message.SUBSCRIPTION_ID;
+import static id.global.iris.common.constants.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -18,8 +18,8 @@ import org.junit.jupiter.api.TestInstance;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;

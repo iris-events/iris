@@ -9,7 +9,7 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.iris.annotations.Message;
+import id.global.iris.common.annotations.Message;
 
 public class ScannerUtils {
 

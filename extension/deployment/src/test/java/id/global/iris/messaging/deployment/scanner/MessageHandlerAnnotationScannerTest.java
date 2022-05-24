@@ -1,7 +1,7 @@
 package id.global.iris.messaging.deployment.scanner;
 
-import static id.global.common.iris.annotations.ExchangeType.FANOUT;
-import static id.global.common.iris.annotations.ExchangeType.TOPIC;
+import static id.global.iris.common.annotations.ExchangeType.FANOUT;
+import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -17,8 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.BaseIndexingTest;
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;

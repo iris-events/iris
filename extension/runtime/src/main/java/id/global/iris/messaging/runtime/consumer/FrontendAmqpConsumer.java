@@ -1,6 +1,6 @@
 package id.global.iris.messaging.runtime.consumer;
 
-import static id.global.common.iris.constants.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
+import static id.global.iris.common.constants.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 
-import id.global.common.iris.constants.Exchanges;
+import id.global.iris.common.constants.Exchanges;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;

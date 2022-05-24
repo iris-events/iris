@@ -8,8 +8,8 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 
-import id.global.common.iris.annotations.ExchangeType;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
+import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 import id.global.iris.messaging.deployment.scanner.ScannerUtils;

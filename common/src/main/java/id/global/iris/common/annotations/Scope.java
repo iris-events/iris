@@ -1,4 +1,4 @@
-package id.global.common.iris.annotations;
+package id.global.iris.common.annotations;
 
 public enum Scope {
     /**

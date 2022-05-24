@@ -1,4 +1,4 @@
-package id.global.common.iris.constants;
+package id.global.iris.common.constants;
 
 @SuppressWarnings("unused")
 public enum Queues {

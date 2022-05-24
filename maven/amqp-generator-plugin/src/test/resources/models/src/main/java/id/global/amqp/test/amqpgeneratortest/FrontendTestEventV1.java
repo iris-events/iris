@@ -8,10 +8,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import id.global.amqp.test.amqpgeneratortest.payload.User;
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.GlobalIdGenerated;
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.Scope;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.Scope;
 
 @GlobalIdGenerated
 @Message(name = "frontend-test-event-v1", exchangeType = ExchangeType.DIRECT, routingKey = "fe-test-event-v1", scope = Scope.FRONTEND, deadLetter = "dead.dead-letter", ttl = -1)
@@ -36,13 +36,13 @@ public class FrontendTestEventV1 implements Serializable
 
     /**
      * No args constructor for use in serialization
-     * 
+     *
      */
     public FrontendTestEventV1() {
     }
 
     /**
-     * 
+     *
      * @param id
      * @param user
      * @param status

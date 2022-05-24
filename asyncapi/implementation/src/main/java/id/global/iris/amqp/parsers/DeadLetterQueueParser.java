@@ -6,8 +6,8 @@ import java.util.Objects;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.iris.annotations.Message;
 import id.global.iris.amqp.EdaAnnotationRuntimeException;
+import id.global.iris.common.annotations.Message;
 
 public class DeadLetterQueueParser {
 

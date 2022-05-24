@@ -1,4 +1,4 @@
-package id.global.common.iris.annotations;
+package id.global.iris.common.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.constants.Queues;
+import id.global.iris.common.constants.Queues;
 
 /**
  * Iris producible event. Events annotated with this annotation should be used as a parameter in an Iris producer send method.

@@ -1,11 +1,11 @@
 package id.global.iris.messaging.it;
 
-import static id.global.common.iris.annotations.ExchangeType.DIRECT;
-import static id.global.common.iris.constants.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static id.global.common.iris.constants.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.common.iris.constants.MessagingHeaders.Message.INSTANCE_ID;
-import static id.global.common.iris.constants.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static id.global.common.iris.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static id.global.iris.common.annotations.ExchangeType.DIRECT;
+import static id.global.iris.common.constants.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static id.global.iris.common.constants.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.iris.common.constants.MessagingHeaders.Message.INSTANCE_ID;
+import static id.global.iris.common.constants.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static id.global.iris.common.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -22,8 +22,8 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.AMQP;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import io.quarkus.test.junit.QuarkusTest;

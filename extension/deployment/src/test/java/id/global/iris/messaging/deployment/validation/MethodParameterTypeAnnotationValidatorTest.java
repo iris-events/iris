@@ -1,6 +1,6 @@
 package id.global.iris.messaging.deployment.validation;
 
-import static id.global.common.iris.annotations.ExchangeType.TOPIC;
+import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -12,8 +12,8 @@ import org.jboss.jandex.AnnotationInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.AbstractAnnotationInstanceValidatorTest;
 
 class MethodParameterTypeAnnotationValidatorTest extends AbstractAnnotationInstanceValidatorTest {

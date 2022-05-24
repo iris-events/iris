@@ -7,12 +7,12 @@ import java.io.UncheckedIOException;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
-import id.global.common.iris.annotations.Scope;
-import id.global.common.iris.annotations.SnapshotMessageHandler;
-import id.global.common.iris.message.SnapshotRequested;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.annotations.SnapshotMessageHandler;
+import id.global.iris.common.message.SnapshotRequested;
 
 public class BaseIndexingTest {
     protected Index indexOf(Class<?>... classes) {

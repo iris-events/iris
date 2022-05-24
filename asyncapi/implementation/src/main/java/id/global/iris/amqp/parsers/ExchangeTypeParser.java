@@ -6,9 +6,9 @@ import java.util.Objects;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.Message;
 import id.global.iris.amqp.EdaAnnotationRuntimeException;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Message;
 
 public class ExchangeTypeParser {
     private static final String MESSAGE_EXCHANGE_TYPE_PARAM = "exchangeType";

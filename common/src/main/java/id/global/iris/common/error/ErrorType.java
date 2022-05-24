@@ -1,4 +1,4 @@
-package id.global.common.iris.error;
+package id.global.iris.common.error;
 
 public enum ErrorType {
     // security

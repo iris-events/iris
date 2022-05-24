@@ -1,7 +1,7 @@
 package id.global.iris.messaging.runtime.api.exception;
 
-import id.global.common.iris.error.ErrorType;
-import id.global.common.iris.error.MessagingError;
+import id.global.iris.common.error.ErrorType;
+import id.global.iris.common.error.MessagingError;
 
 public abstract class MessagingException extends RuntimeException {
 

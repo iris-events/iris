@@ -5,9 +5,9 @@ import java.util.Objects;
 
 import org.jboss.jandex.AnnotationInstance;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
 import id.global.iris.asyncapi.runtime.util.JandexUtil;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
 
 public class BindingKeysParser {
     private static final String MESSAGE_HANDLER_BINDING_KEYS_PARAM = "bindingKeys";

@@ -3,7 +3,7 @@ package id.global.iris.amqp.parsers;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.iris.annotations.MessageHandler;
+import id.global.iris.common.annotations.MessageHandler;
 
 @SuppressWarnings("unused")
 public class ConsumerPrefetchCountParser {

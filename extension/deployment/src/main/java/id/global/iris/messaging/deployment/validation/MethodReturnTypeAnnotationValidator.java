@@ -5,7 +5,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
 
-import id.global.common.iris.annotations.Message;
+import id.global.iris.common.annotations.Message;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 
 public class MethodReturnTypeAnnotationValidator implements AnnotationInstanceValidator {

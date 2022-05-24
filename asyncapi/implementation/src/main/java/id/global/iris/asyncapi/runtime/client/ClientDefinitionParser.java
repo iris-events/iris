@@ -15,10 +15,10 @@ import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.common.iris.annotations.Scope;
 import id.global.iris.asyncapi.api.AsyncApiConstants;
 import id.global.iris.asyncapi.runtime.io.channel.operation.OperationConstant;
 import id.global.iris.asyncapi.runtime.scanner.model.ClientDefinitions;
+import id.global.iris.common.annotations.Scope;
 
 public class ClientDefinitionParser {
 

@@ -1,7 +1,7 @@
 package id.global.iris.messaging.deployment.validation;
 
-import static id.global.common.iris.annotations.ExchangeType.DIRECT;
-import static id.global.common.iris.annotations.ExchangeType.TOPIC;
+import static id.global.iris.common.annotations.ExchangeType.DIRECT;
+import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 import static id.global.iris.messaging.deployment.constants.AnnotationInstanceParams.DEAD_LETTER_PARAM;
 import static id.global.iris.messaging.deployment.constants.AnnotationInstanceParams.NAME_PARAM;
 import static id.global.iris.messaging.deployment.constants.AnnotationInstanceParams.ROUTING_KEY_PARAM;
@@ -18,8 +18,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.constants.Queues;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.constants.Queues;
 import id.global.iris.messaging.AbstractAnnotationInstanceValidatorTest;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 

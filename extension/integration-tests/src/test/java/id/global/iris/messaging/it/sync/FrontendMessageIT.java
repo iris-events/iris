@@ -20,11 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
-import id.global.common.iris.annotations.Scope;
-import id.global.common.iris.constants.Exchanges;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.constants.Exchanges;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import io.quarkiverse.rabbitmqclient.RabbitMQClient;
 import io.quarkus.test.junit.QuarkusTest;

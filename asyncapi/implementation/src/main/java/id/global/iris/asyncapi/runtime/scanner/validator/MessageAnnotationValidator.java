@@ -8,10 +8,10 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 
-import id.global.common.iris.annotations.Message;
 import id.global.iris.amqp.parsers.ExchangeParser;
 import id.global.iris.amqp.parsers.RoutingKeyParser;
 import id.global.iris.asyncapi.runtime.exception.AnnotationValidationException;
+import id.global.iris.common.annotations.Message;
 
 public class MessageAnnotationValidator {
     private final List<String> SERVICES_TO_IGNORE_RESERVED = List.of("id.global.iris.iris-subscription",

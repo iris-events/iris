@@ -5,8 +5,8 @@ import java.util.Objects;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.constants.Queues;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.constants.Queues;
 import id.global.iris.messaging.runtime.context.AmqpContext;
 
 @ApplicationScoped

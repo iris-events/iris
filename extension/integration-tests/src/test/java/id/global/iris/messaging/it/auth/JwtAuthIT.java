@@ -28,11 +28,11 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.MessageHandler;
-import id.global.common.iris.constants.Exchanges;
-import id.global.common.iris.constants.MessagingHeaders;
-import id.global.common.iris.error.SecurityError;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.constants.Exchanges;
+import id.global.iris.common.constants.MessagingHeaders;
+import id.global.iris.common.error.SecurityError;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
 

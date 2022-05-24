@@ -14,10 +14,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.GlobalIdGenerated;
-import id.global.common.iris.annotations.Message;
-import id.global.common.iris.annotations.Scope;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.common.annotations.Scope;
 import id.global.iris.asyncapi.api.Headers;
 
 public class MetadataAnnotator extends Jackson2Annotator {

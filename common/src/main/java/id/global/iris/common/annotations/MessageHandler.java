@@ -1,4 +1,4 @@
-package id.global.common.iris.annotations;
+package id.global.iris.common.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

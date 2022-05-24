@@ -1,13 +1,11 @@
 package id.global.iris.messaging.deployment.scanner;
 
-import static id.global.common.iris.annotations.ExchangeType.FANOUT;
+import static id.global.iris.common.annotations.ExchangeType.FANOUT;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.MessageHandler;
 import id.global.iris.amqp.parsers.BindingKeysParser;
 import id.global.iris.amqp.parsers.ConsumerPerInstanceParser;
 import id.global.iris.amqp.parsers.ConsumerPrefetchCountParser;
@@ -18,6 +16,8 @@ import id.global.iris.amqp.parsers.MessageScopeParser;
 import id.global.iris.amqp.parsers.QueueAutoDeleteParser;
 import id.global.iris.amqp.parsers.QueueDurableParser;
 import id.global.iris.amqp.parsers.RolesAllowedParser;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;

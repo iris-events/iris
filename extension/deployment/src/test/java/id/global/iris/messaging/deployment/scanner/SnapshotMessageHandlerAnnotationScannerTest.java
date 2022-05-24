@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import id.global.common.auth.jwt.Role;
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.Scope;
-import id.global.common.iris.annotations.SnapshotMessageHandler;
-import id.global.common.iris.message.SnapshotRequested;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.annotations.SnapshotMessageHandler;
+import id.global.iris.common.message.SnapshotRequested;
 import id.global.iris.messaging.BaseIndexingTest;
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;

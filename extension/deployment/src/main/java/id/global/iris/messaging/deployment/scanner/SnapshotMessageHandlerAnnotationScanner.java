@@ -6,15 +6,15 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.SnapshotMessageHandler;
-import id.global.common.iris.constants.HandlerDefaultParameter;
 import id.global.iris.amqp.parsers.ConsumerPrefetchCountParser;
 import id.global.iris.amqp.parsers.DeadLetterQueueParser;
 import id.global.iris.amqp.parsers.ExchangeParser;
 import id.global.iris.amqp.parsers.ExchangeTtlParser;
 import id.global.iris.amqp.parsers.MessageScopeParser;
 import id.global.iris.amqp.parsers.RolesAllowedParser;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.SnapshotMessageHandler;
+import id.global.iris.common.constants.HandlerDefaultParameter;
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;

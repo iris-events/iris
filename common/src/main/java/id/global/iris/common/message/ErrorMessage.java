@@ -1,7 +1,7 @@
-package id.global.common.iris.message;
+package id.global.iris.common.message;
 
-import id.global.common.iris.error.ErrorType;
-import id.global.common.iris.error.MessagingError;
+import id.global.iris.common.error.ErrorType;
+import id.global.iris.common.error.MessagingError;
 
 public record ErrorMessage(ErrorType errorType, String code, String message) {
     public ErrorMessage(final MessagingError messagingError, final String message) {

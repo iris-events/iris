@@ -8,7 +8,7 @@ import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import id.global.common.iris.annotations.Scope;
+import id.global.iris.common.annotations.Scope;
 import id.global.iris.messaging.deployment.scanner.Scanner;
 import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;

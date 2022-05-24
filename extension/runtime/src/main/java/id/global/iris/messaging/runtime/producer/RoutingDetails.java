@@ -1,7 +1,7 @@
 package id.global.iris.messaging.runtime.producer;
 
-import id.global.common.iris.annotations.ExchangeType;
-import id.global.common.iris.annotations.Scope;
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Scope;
 
 public record RoutingDetails(String eventName,
         String exchange,
