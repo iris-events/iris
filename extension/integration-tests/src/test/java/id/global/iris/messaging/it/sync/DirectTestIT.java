@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import id.global.common.iris.annotations.Message;
 import id.global.common.iris.annotations.MessageHandler;
 import id.global.common.iris.constants.MessagingHeaders;
+import id.global.common.iris.error.ErrorType;
 import id.global.common.iris.error.ServerError;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.TimestampProvider;
@@ -36,6 +37,7 @@ import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
+import id.global.iris.messaging.runtime.requeue.MessagingErrorContext;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
@@ -51,6 +53,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
     private static final String EVENT_QUEUE_PRIORITY = "test-eventqueue-priority";
     private static final String EXCHANGE = "test-exchange";
     private static final String MINIMUM_EVENT_ID = "minimumEvent";
+    private static final String TEST_EXCEPTION_MESSAGE = "test exception message";
 
     @Inject
     AmqpProducer producer;
@@ -117,15 +120,21 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
         producer.send(new FailEvent(id, payload));
 
-        final var errorCodeCaptor = ArgumentCaptor.forClass(String.class);
+        final var messagingErrorContextArgumentCaptor = ArgumentCaptor.forClass(MessagingErrorContext.class);
         final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
         verify(requeueHandler, timeout(500).times(1))
-                .enqueueWithBackoff(any(), any(), errorCodeCaptor.capture(), notifyFrontendCaptor.capture());
+                .enqueueWithBackoff(any(), any(), messagingErrorContextArgumentCaptor.capture(),
+                        notifyFrontendCaptor.capture());
 
-        final var errorCode = errorCodeCaptor.getValue();
+        final var messagingErrorContext = messagingErrorContextArgumentCaptor.getValue();
+        final var errorCode = messagingErrorContext.messagingError().getClientCode();
+        final var type = messagingErrorContext.messagingError().getType();
+        final var errorMessage = messagingErrorContext.exceptionMessage();
         final var notifyFrontend = notifyFrontendCaptor.getValue();
 
         assertThat(errorCode, is(ServerError.SERVER_ERROR.getClientCode()));
+        assertThat(type, is(ErrorType.INTERNAL_SERVER_ERROR));
+        assertThat(errorMessage, is(TEST_EXCEPTION_MESSAGE));
         assertThat(notifyFrontend, is(false));
     }
 
@@ -193,7 +202,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
         @MessageHandler
         public void handleFail(FailEvent failEvent) {
             count.incrementAndGet();
-            throw new RuntimeException();
+            throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
         }
 
         public CompletableFuture<Event> getHandledEvent() {

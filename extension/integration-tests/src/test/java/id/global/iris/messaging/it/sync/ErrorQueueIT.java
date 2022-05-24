@@ -27,12 +27,14 @@ import id.global.common.iris.annotations.Message;
 import id.global.common.iris.annotations.MessageHandler;
 import id.global.common.iris.constants.Exchanges;
 import id.global.common.iris.error.ClientError;
+import id.global.common.iris.error.ErrorType;
 import id.global.common.iris.error.ServerError;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
 import id.global.iris.messaging.runtime.api.exception.BadMessageException;
 import id.global.iris.messaging.runtime.api.exception.ServerException;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
+import id.global.iris.messaging.runtime.requeue.MessagingErrorContext;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
@@ -43,6 +45,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     private static final String ERROR_QUEUE_BAD_REQUEST = "error-queue-bad-request";
     private static final String ERROR_QUEUE_SERVER_ERROR = "error-queue-server-error";
     private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
+    private static final String INTERNAL_SERVICE_ERROR = "Internal service error.";
 
     @Inject
     AmqpProducer producer;
@@ -86,16 +89,22 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         producer.send(message);
 
-        final var errorCodeCaptor = ArgumentCaptor.forClass(String.class);
+        final var messagingErrorContextArgumentCaptor = ArgumentCaptor.forClass(MessagingErrorContext.class);
         final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
         verify(requeueHandler, timeout(500).times(1))
-                .enqueueWithBackoff(any(), any(), errorCodeCaptor.capture(), notifyFrontendCaptor.capture());
+                .enqueueWithBackoff(any(), any(), messagingErrorContextArgumentCaptor.capture(),
+                        notifyFrontendCaptor.capture());
 
-        final var errorCode = errorCodeCaptor.getValue();
+        final var messagingErrorContext = messagingErrorContextArgumentCaptor.getValue();
+        final var errorCode = messagingErrorContext.messagingError().getClientCode();
+        final var type = messagingErrorContext.messagingError().getType();
+        final var exceptionMessage = messagingErrorContext.exceptionMessage();
         final var notifyFrontend = notifyFrontendCaptor.getValue();
 
         assertThat(errorCode, is(notNullValue()));
         assertThat(errorCode, is(ServerError.SERVER_ERROR.getClientCode()));
+        assertThat(type, is(ErrorType.INTERNAL_SERVER_ERROR));
+        assertThat(exceptionMessage, is(INTERNAL_SERVICE_ERROR));
         assertThat(notifyFrontend, CoreMatchers.is(true));
     }
 
@@ -114,7 +123,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         @MessageHandler
         public void handle(ServerErrorMessage message) {
-            throw new ServerException(ServerError.SERVER_ERROR, "Internal service error.", true);
+            throw new ServerException(ServerError.SERVER_ERROR, INTERNAL_SERVICE_ERROR, true);
         }
     }
 
