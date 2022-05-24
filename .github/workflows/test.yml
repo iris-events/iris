@@ -2,7 +2,7 @@ name: Build & test
 "on":
   push:
     branches:
-      - '*'
+      - '**'
     tags:
       - v*
   workflow_dispatch: null
