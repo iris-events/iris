@@ -19,19 +19,16 @@ import com.rabbitmq.client.Delivery;
 
 import id.global.iris.common.constants.Exchanges;
 import id.global.iris.common.constants.MessagingHeaders;
-import id.global.iris.common.error.MessagingError;
-import id.global.iris.common.error.SecurityError;
-import id.global.iris.common.error.ServerError;
+import id.global.iris.common.error.ErrorType;
+import id.global.iris.common.exception.ClientException;
+import id.global.iris.common.exception.MessagingException;
+import id.global.iris.common.exception.SecurityException;
+import id.global.iris.common.exception.ServerException;
 import id.global.iris.common.message.ErrorMessage;
 import id.global.iris.messaging.runtime.TimestampProvider;
-import id.global.iris.messaging.runtime.api.exception.BadMessageException;
-import id.global.iris.messaging.runtime.api.exception.MessagingException;
-import id.global.iris.messaging.runtime.api.exception.SecurityException;
-import id.global.iris.messaging.runtime.api.exception.ServerException;
 import id.global.iris.messaging.runtime.context.AmqpContext;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.iris.messaging.runtime.requeue.MessagingErrorContext;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -41,6 +38,10 @@ public class AmqpExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(AmqpExceptionHandler.class);
     public static final String ERROR_ROUTING_KEY_SUFFIX = ".error";
+    public static final String AUTHENTICATION_FAILED_CLIENT_CODE = ErrorType.AUTHENTICATION_FAILED.name();
+    public static final String FORBIDDEN_CLIENT_CODE = ErrorType.FORBIDDEN.name();
+    public static final String UNAUTHORIZED_CLIENT_CODE = ErrorType.UNAUTHORIZED.name();
+    public static final String SERVER_ERROR_CLIENT_CODE = ErrorType.INTERNAL_SERVER_ERROR.name();
 
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
@@ -71,8 +72,8 @@ public class AmqpExceptionHandler {
                 throw (AmqpSendException) throwable;
             } else if (throwable instanceof SecurityException) {
                 handleSecurityException(message, channel, (SecurityException) throwable);
-            } else if (throwable instanceof BadMessageException) {
-                handleBadMessageException(message, channel, (BadMessageException) throwable);
+            } else if (throwable instanceof ClientException) {
+                handleBadMessageException(message, channel, (ClientException) throwable);
             } else {
                 handleServerException(amqpContext, message, channel, throwable);
             }
@@ -88,18 +89,18 @@ public class AmqpExceptionHandler {
         final var originalRoutingKey = message.getEnvelope().getRoutingKey();
         log.error(String.format(
                 "Authentication failed, message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s'",
-                exception.getCode(), originalExchange, originalRoutingKey), exception);
+                exception.getClientCode(), originalExchange, originalRoutingKey), exception);
 
         acknowledgeMessageAndSendError(message, channel, exception);
     }
 
     private void handleBadMessageException(final Delivery message, final Channel channel,
-            final BadMessageException exception) throws IOException {
+            final ClientException exception) throws IOException {
         final var originalExchange = message.getEnvelope().getExchange();
         final var originalRoutingKey = message.getEnvelope().getRoutingKey();
         log.error(String.format(
                 "Bad message received, message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s'",
-                exception.getCode(), originalExchange, originalRoutingKey), exception);
+                exception.getClientCode(), originalExchange, originalRoutingKey), exception);
 
         acknowledgeMessageAndSendError(message, channel, exception);
     }
@@ -110,17 +111,16 @@ public class AmqpExceptionHandler {
             final Throwable throwable)
             throws IOException {
 
-        MessagingError messageError = ServerError.SERVER_ERROR;
-        boolean shouldNotifyFrontend = false;
+        ServerException exception;
         if (throwable instanceof ServerException serverException) {
-            messageError = serverException.getMessagingError();
-            shouldNotifyFrontend = serverException.shouldNotifyFrontend();
+            exception = serverException;
+        } else {
+            exception = new ServerException(SERVER_ERROR_CLIENT_CODE, throwable.getMessage(), false, throwable.getCause());
         }
 
         log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
         acknowledgeMessage(channel, message);
-        final var messagingErrorContext = new MessagingErrorContext(messageError, throwable.getMessage());
-        retryEnqueuer.enqueueWithBackoff(amqpContext, message, messagingErrorContext, shouldNotifyFrontend);
+        retryEnqueuer.enqueueWithBackoff(amqpContext, message, exception, exception.shouldNotifyFrontend());
     }
 
     private void acknowledgeMessageAndSendError(
@@ -128,7 +128,7 @@ public class AmqpExceptionHandler {
             final Channel channel,
             final MessagingException exception) throws IOException {
 
-        final var errorMessage = new ErrorMessage(exception.getMessagingError(), exception.getMessage());
+        final var errorMessage = new ErrorMessage(exception.getErrorType(), exception.getClientCode(), exception.getMessage());
         sendErrorMessage(errorMessage, message, channel);
 
         acknowledgeMessage(channel, message);
@@ -155,18 +155,23 @@ public class AmqpExceptionHandler {
         }
     }
 
-    public static SecurityError getSecurityMessageError(java.lang.SecurityException securityException) {
+    public static SecurityException getSecurityException(java.lang.SecurityException securityException) {
         // TODO: change with switch once available as non-preview
-        SecurityError error;
+        final var message = securityException.getMessage();
+        final var cause = securityException.getCause();
+
         if (securityException instanceof AuthenticationFailedException) {
-            error = SecurityError.AUTHORIZATION_FAILED;
+            return new id.global.iris.common.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
+                    message,
+                    cause);
         } else if (securityException instanceof ForbiddenException) {
-            error = SecurityError.FORBIDDEN;
+            return new id.global.iris.common.exception.ForbiddenException(FORBIDDEN_CLIENT_CODE, message, cause);
         } else if (securityException instanceof UnauthorizedException) {
-            error = SecurityError.UNAUTHORIZED;
-        } else {
-            error = SecurityError.AUTHORIZATION_FAILED;
+            return new id.global.iris.common.exception.UnauthorizedException(UNAUTHORIZED_CLIENT_CODE, message, cause);
         }
-        return error;
+
+        return new id.global.iris.common.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
+                message,
+                cause);
     }
 }

@@ -4,9 +4,9 @@ public enum ErrorType {
     // security
     FORBIDDEN,
     UNAUTHORIZED,
-    AUTHORIZATION_FAILED,
+    AUTHENTICATION_FAILED,
     // client
-    BAD_REQUEST,
+    BAD_PAYLOAD,
     NOT_FOUND,
     // server
     INTERNAL_SERVER_ERROR

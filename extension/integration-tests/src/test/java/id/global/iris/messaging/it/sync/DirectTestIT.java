@@ -1,6 +1,7 @@
 package id.global.iris.messaging.it.sync;
 
 import static id.global.iris.common.annotations.ExchangeType.DIRECT;
+import static id.global.iris.messaging.runtime.exception.AmqpExceptionHandler.SERVER_ERROR_CLIENT_CODE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,14 +31,13 @@ import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.constants.MessagingHeaders;
 import id.global.iris.common.error.ErrorType;
-import id.global.iris.common.error.ServerError;
+import id.global.iris.common.exception.MessagingException;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.exception.AmqpSendException;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
-import id.global.iris.messaging.runtime.requeue.MessagingErrorContext;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
@@ -120,19 +120,19 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
         producer.send(new FailEvent(id, payload));
 
-        final var messagingErrorContextArgumentCaptor = ArgumentCaptor.forClass(MessagingErrorContext.class);
+        final var messagingExceptionArgumentCaptor = ArgumentCaptor.forClass(MessagingException.class);
         final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
         verify(requeueHandler, timeout(500).times(1))
-                .enqueueWithBackoff(any(), any(), messagingErrorContextArgumentCaptor.capture(),
+                .enqueueWithBackoff(any(), any(), messagingExceptionArgumentCaptor.capture(),
                         notifyFrontendCaptor.capture());
 
-        final var messagingErrorContext = messagingErrorContextArgumentCaptor.getValue();
-        final var errorCode = messagingErrorContext.messagingError().getClientCode();
-        final var type = messagingErrorContext.messagingError().getType();
-        final var errorMessage = messagingErrorContext.exceptionMessage();
+        final var messagingException = messagingExceptionArgumentCaptor.getValue();
+        final var errorCode = messagingException.getClientCode();
+        final var type = messagingException.getErrorType();
+        final var errorMessage = messagingException.getMessage();
         final var notifyFrontend = notifyFrontendCaptor.getValue();
 
-        assertThat(errorCode, is(ServerError.SERVER_ERROR.getClientCode()));
+        assertThat(errorCode, is(SERVER_ERROR_CLIENT_CODE));
         assertThat(type, is(ErrorType.INTERNAL_SERVER_ERROR));
         assertThat(errorMessage, is(TEST_EXCEPTION_MESSAGE));
         assertThat(notifyFrontend, is(false));

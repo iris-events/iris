@@ -1,4 +1,4 @@
-package id.global.iris.messaging.runtime.api.message;
+package id.global.iris.common.message;
 
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Message;

@@ -25,6 +25,7 @@ import com.rabbitmq.client.Delivery;
 
 import id.global.iris.common.constants.Exchanges;
 import id.global.iris.common.constants.Queues;
+import id.global.iris.common.exception.MessagingException;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
@@ -52,26 +53,25 @@ public class MessageRequeueHandler {
     }
 
     public void enqueueWithBackoff(final AmqpContext amqpContext, Delivery message,
-            final MessagingErrorContext messagingErrorContext, final boolean shouldNotifyFrontend)
+            final MessagingException messagingException, final boolean shouldNotifyFrontend)
             throws IOException {
-        final var newMessage = getMessageWithNewHeaders(amqpContext, message, messagingErrorContext, shouldNotifyFrontend);
+        final var newMessage = getMessageWithNewHeaders(amqpContext, message, messagingException, shouldNotifyFrontend);
         channel.basicPublish(Exchanges.RETRY.getValue(), Queues.RETRY.getValue(), newMessage.getProperties(),
                 newMessage.getBody());
     }
 
     private Delivery getMessageWithNewHeaders(final AmqpContext amqpContext,
-            Delivery message, final MessagingErrorContext messagingErrorContext, final boolean shouldNotifyFrontend) {
+            Delivery message, final MessagingException messagingException, final boolean shouldNotifyFrontend) {
         final var properties = message.getProperties();
         final var headers = properties.getHeaders();
-        final var messagingError = messagingErrorContext.messagingError();
         final var newHeaders = new HashMap<String, Object>(headers);
 
         newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
         newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
         newHeaders.put(X_MAX_RETRIES, configuration.getRetryMaxCount());
-        newHeaders.put(X_ERROR_CODE, messagingError.getClientCode());
-        newHeaders.put(X_ERROR_TYPE, messagingError.getType());
-        newHeaders.put(X_ERROR_MESSAGE, messagingErrorContext.exceptionMessage());
+        newHeaders.put(X_ERROR_CODE, messagingException.getClientCode());
+        newHeaders.put(X_ERROR_TYPE, messagingException.getErrorType());
+        newHeaders.put(X_ERROR_MESSAGE, messagingException.getMessage());
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
         newHeaders.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
 

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 
-import id.global.iris.messaging.runtime.api.exception.SecurityException;
 import id.global.iris.messaging.runtime.auth.GidJwtValidator;
 import id.global.iris.messaging.runtime.context.AmqpContext;
 import id.global.iris.messaging.runtime.context.EventContext;
@@ -103,8 +102,7 @@ public class DeliverCallbackProvider {
                     .ifPresent(subject -> MDC.put(GID_UUID, subject));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
-            final var securityMessageError = AmqpExceptionHandler.getSecurityMessageError(securityException);
-            throw new SecurityException(securityMessageError, securityException.getMessage());
+            throw AmqpExceptionHandler.getSecurityException(securityException);
         }
     }
 
