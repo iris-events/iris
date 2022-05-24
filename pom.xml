@@ -14,6 +14,7 @@
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
+        <module>common</module>
         <module>extension</module>
         <module>maven</module>
         <module>asyncapi</module>
@@ -37,7 +38,8 @@
         <version.apicurio-data-models>1.1.20</version.apicurio-data-models>
         <version.apicurio-registry-client>2.2.3.Final</version.apicurio-registry-client>
         <version.commons-logging>1.2</version.commons-logging>
-        <version.globalid-common>1.1.13-SNAPSHOT</version.globalid-common>
+        <version.globalid-common>2.0.0-SNAPSHOT</version.globalid-common>
+        <version.iris-common>${project.version}</version.iris-common>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.13</version.httpclient>
         <version.iris.asyncapi>${project.version}</version.iris.asyncapi>
@@ -72,16 +74,17 @@
                 <artifactId>amqp-client</artifactId>
                 <version>${version.rabbit.amqp-client}</version>
             </dependency>
-            <!--<dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>${version.commons-logging}</version>
-                <scope>compile</scope>
-            </dependency>-->
+
             <dependency>
                 <groupId>id.global.common</groupId>
                 <artifactId>globalid-common</artifactId>
                 <version>${version.globalid-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>id.global.iris</groupId>
+                <artifactId>iris-common</artifactId>
+                <version>${version.iris-common}</version>
             </dependency>
             <dependency>
                 <groupId>id.global.iris</groupId>

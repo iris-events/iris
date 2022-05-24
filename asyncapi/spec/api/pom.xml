@@ -15,8 +15,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>id.global.common</groupId>
-            <artifactId>globalid-common</artifactId>
+            <groupId>id.global.iris</groupId>
+            <artifactId>iris-common</artifactId>
         </dependency>
 
         <!-- Apicurio Data Models -->

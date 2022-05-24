@@ -2,8 +2,8 @@ name: Dependency update
 
 on:
   schedule:
-    # every day 7:15 UTC
-    - cron: '15 7 * * *'
+    # every day 7:10 UTC
+    - cron: '10 7 * * *'
   workflow_dispatch:
 
 jobs:

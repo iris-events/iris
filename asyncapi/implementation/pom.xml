@@ -30,8 +30,8 @@
             <artifactId>apicurio-registry-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>id.global.common</groupId>
-            <artifactId>globalid-common</artifactId>
+            <groupId>id.global.iris</groupId>
+            <artifactId>iris-common</artifactId>
         </dependency>
 
         <!-- Project Dependencies -->
