@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+     <parent>
+        <groupId>id.global</groupId>
+        <artifactId>masterpom</artifactId>
+        <version>12</version>
+        <relativePath />
+    </parent>
+    <groupId>id.global.common</groupId>
+    <artifactId>globalid-common</artifactId>
+    <version>1.1.13-SNAPSHOT</version>
+
+    <scm>
+        <connection>scm:git:git@gitlab.com:globalid/common/java/globalid-common.git</connection>
+        <developerConnection>scm:git:git@gitlab.com:globalid/common/java/globalid-common.git</developerConnection>
+        <url>https://gitlab.com/globalid/common/java/globalid-common</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jboss.jandex</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jandex</artifactId>
+                        <version>2.4.1.Final</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                        <configuration>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
