@@ -31,6 +31,7 @@ import id.global.iris.messaging.runtime.api.exception.ServerException;
 import id.global.iris.messaging.runtime.context.AmqpContext;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
+import id.global.iris.messaging.runtime.requeue.MessagingErrorContext;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -118,7 +119,8 @@ public class AmqpExceptionHandler {
 
         log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
         acknowledgeMessage(channel, message);
-        retryEnqueuer.enqueueWithBackoff(amqpContext, message, messageError.getClientCode(), shouldNotifyFrontend);
+        final var messagingErrorContext = new MessagingErrorContext(messageError, throwable.getMessage());
+        retryEnqueuer.enqueueWithBackoff(amqpContext, message, messagingErrorContext, shouldNotifyFrontend);
     }
 
     private void acknowledgeMessageAndSendError(

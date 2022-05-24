@@ -46,7 +46,8 @@ public class AmqpConsumerContainer {
             final EventContext eventContext,
             @Named("consumerChannelService") final ChannelService consumerChannelService,
             final AmqpProducer producer,
-            final QueueNameProvider queueNameProvider, final GidJwtValidator jwtValidator,
+            final QueueNameProvider queueNameProvider,
+            final GidJwtValidator jwtValidator,
             final FrontendAmqpConsumer frontendAmqpConsumer,
             final AmqpExceptionHandler errorHandler,
             final QueueDeclarator queueDeclarator) {

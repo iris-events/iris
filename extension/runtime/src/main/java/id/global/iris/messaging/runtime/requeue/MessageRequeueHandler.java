@@ -4,6 +4,8 @@ import static id.global.common.iris.constants.MessagingHeaders.Message.SERVER_TI
 import static id.global.common.iris.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
 import static id.global.common.iris.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
 import static id.global.common.iris.constants.MessagingHeaders.RequeueMessage.X_ERROR_CODE;
+import static id.global.common.iris.constants.MessagingHeaders.RequeueMessage.X_ERROR_MESSAGE;
+import static id.global.common.iris.constants.MessagingHeaders.RequeueMessage.X_ERROR_TYPE;
 import static id.global.common.iris.constants.MessagingHeaders.RequeueMessage.X_MAX_RETRIES;
 import static id.global.common.iris.constants.MessagingHeaders.RequeueMessage.X_NOTIFY_CLIENT;
 import static id.global.common.iris.constants.MessagingHeaders.RequeueMessage.X_ORIGINAL_EXCHANGE;
@@ -11,7 +13,6 @@ import static id.global.common.iris.constants.MessagingHeaders.RequeueMessage.X_
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -46,28 +47,31 @@ public class MessageRequeueHandler {
         this.configuration = configuration;
         this.queueNameProvider = queueNameProvider;
         this.timestampProvider = timestampProvider;
-        String channelId = UUID.randomUUID().toString();
+        final var channelId = UUID.randomUUID().toString();
         this.channel = channelService.getOrCreateChannelById(channelId);
     }
 
     public void enqueueWithBackoff(final AmqpContext amqpContext, Delivery message,
-            final String errorCode, final boolean shouldNotifyFrontend)
+            final MessagingErrorContext messagingErrorContext, final boolean shouldNotifyFrontend)
             throws IOException {
-        Delivery newMessage = getMessageWithNewHeaders(amqpContext, message, errorCode, shouldNotifyFrontend);
+        final var newMessage = getMessageWithNewHeaders(amqpContext, message, messagingErrorContext, shouldNotifyFrontend);
         channel.basicPublish(Exchanges.RETRY.getValue(), Queues.RETRY.getValue(), newMessage.getProperties(),
                 newMessage.getBody());
     }
 
     private Delivery getMessageWithNewHeaders(final AmqpContext amqpContext,
-            Delivery message, final String errorCode, final boolean shouldNotifyFrontend) {
-        AMQP.BasicProperties properties = message.getProperties();
-        Map<String, Object> headers = properties.getHeaders();
+            Delivery message, final MessagingErrorContext messagingErrorContext, final boolean shouldNotifyFrontend) {
+        final var properties = message.getProperties();
+        final var headers = properties.getHeaders();
+        final var messagingError = messagingErrorContext.messagingError();
+        final var newHeaders = new HashMap<String, Object>(headers);
 
-        Map<String, Object> newHeaders = new HashMap<>(headers);
         newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
         newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
         newHeaders.put(X_MAX_RETRIES, configuration.getRetryMaxCount());
-        newHeaders.put(X_ERROR_CODE, errorCode);
+        newHeaders.put(X_ERROR_CODE, messagingError.getClientCode());
+        newHeaders.put(X_ERROR_TYPE, messagingError.getType());
+        newHeaders.put(X_ERROR_MESSAGE, messagingErrorContext.exceptionMessage());
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
         newHeaders.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
 
@@ -79,7 +83,7 @@ public class MessageRequeueHandler {
             newHeaders.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
         }
 
-        AMQP.BasicProperties basicProperties = new AMQP.BasicProperties().builder().headers(newHeaders)
+        final var basicProperties = new AMQP.BasicProperties().builder().headers(newHeaders)
                 .appId(properties.getAppId())
                 .correlationId(properties.getCorrelationId())
                 .messageId(properties.getMessageId())
