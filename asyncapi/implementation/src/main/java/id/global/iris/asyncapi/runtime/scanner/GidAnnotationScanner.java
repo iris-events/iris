@@ -18,6 +18,7 @@ package id.global.iris.asyncapi.runtime.scanner;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -44,6 +45,8 @@ import com.github.victools.jsonschema.module.jackson.JacksonOption;
 import id.global.common.iris.annotations.Message;
 import id.global.common.iris.annotations.MessageHandler;
 import id.global.common.iris.annotations.Scope;
+import id.global.common.iris.annotations.SnapshotMessageHandler;
+import id.global.common.iris.constants.HandlerDefaultParameter;
 import id.global.iris.amqp.parsers.BindingKeysParser;
 import id.global.iris.amqp.parsers.DeadLetterQueueParser;
 import id.global.iris.amqp.parsers.ExchangeParser;
@@ -52,6 +55,7 @@ import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.amqp.parsers.MessageScopeParser;
 import id.global.iris.amqp.parsers.QueueAutoDeleteParser;
 import id.global.iris.amqp.parsers.QueueDurableParser;
+import id.global.iris.amqp.parsers.ResourceTypeParser;
 import id.global.iris.amqp.parsers.ResponseParser;
 import id.global.iris.amqp.parsers.RolesAllowedParser;
 import id.global.iris.amqp.parsers.RoutingKeyParser;
@@ -80,7 +84,10 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     private final String projectGroupId;
     private final String projectVersion;
 
-    public static final DotName DOTNAME_MESSAGE = DotName.createSimple(Message.class.getName());
+    public static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getName());
+    public static final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getName());
+    public static final DotName DOT_NAME_SNAPSHOT_MESSAGE_HANDLER = DotName
+            .createSimple(SnapshotMessageHandler.class.getName());
 
     /**
      * Constructor.
@@ -135,12 +142,11 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var validator = new MessageAnnotationValidator();
         validator.validateReservedNames(messageAnnotations, this.projectName, this.projectGroupId);
 
-        // Process @MessageHandler
-        final var messageHandlerAnnotations = getMessageHandlerAnnotations(annotationScannerContext.getIndex())
-                .collect(Collectors.toList());
-        final var consumedMessageAnnotations = processMessageHandlerAnnotations(messageHandlerAnnotations,
-                annotationScannerContext,
-                asyncApi);
+        final var handlerAnnotations = getHandlerAnnotations(annotationScannerContext.getIndex(),
+                List.of(DOT_NAME_MESSAGE_HANDLER, DOT_NAME_SNAPSHOT_MESSAGE_HANDLER));
+        final var consumedMessageAnnotations = processMessageHandlerAnnotations(handlerAnnotations,
+                annotationScannerContext, asyncApi);
+
         LOG.debug(String.format("Got %s consumed message annotations", consumedMessageAnnotations.size()));
 
         processProducedMessages(annotationScannerContext, asyncApi, messageAnnotations, consumedMessageAnnotations);
@@ -149,9 +155,12 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         return asyncApi;
     }
 
-    private Stream<AnnotationInstance> getMessageHandlerAnnotations(IndexView index) {
-        final var annotationName = DotName.createSimple(MessageHandler.class.getName());
-        return index.getAnnotations(annotationName).stream().filter(this::annotatedMethods);
+    private List<AnnotationInstance> getHandlerAnnotations(IndexView index, List<DotName> handlerDotNames) {
+        return handlerDotNames.stream()
+                .map(index::getAnnotations)
+                .flatMap(Collection::stream)
+                .filter(this::annotatedMethods)
+                .toList();
     }
 
     private Stream<AnnotationInstance> getMessageAnnotations(IndexView index) {
@@ -213,11 +222,11 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var channelInfos = new ArrayList<ChannelInfo>();
         final var messageTypes = new HashMap<String, Scope>();
 
-        for (AnnotationInstance messageHandlerAnnotation : methodAnnotationInstances) {
+        for (AnnotationInstance handlerAnnotation : methodAnnotationInstances) {
 
-            final var annotationName = messageHandlerAnnotation.name();
-            final var annotationValues = messageHandlerAnnotation.values();
-            final var methodInfo = (MethodInfo) messageHandlerAnnotation.target();
+            final var annotationName = handlerAnnotation.name();
+            final var annotationValues = handlerAnnotation.values();
+            final var methodInfo = (MethodInfo) handlerAnnotation.target();
             final var methodParameters = methodInfo.parameters();
 
             final var messageAnnotation = getMessageAnnotation(methodParameters, index);
@@ -226,14 +235,13 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var messageClass = messageAnnotation.target().asClass();
             final var messageClassSimpleName = messageClass.simpleName();
 
-            final var bindingKeys = BindingKeysParser.getFromAnnotationInstanceAsCsv(messageHandlerAnnotation,
-                    messageAnnotation);
+            final var bindingKeys = getBindingKeys(handlerAnnotation, messageAnnotation);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(messageAnnotation, index);
             final var exchange = ExchangeParser.getFromAnnotationInstance(messageAnnotation);
             final var scope = MessageScopeParser.getFromAnnotationInstance(messageAnnotation, index);
 
-            final var durable = QueueDurableParser.getFromAnnotationInstance(messageHandlerAnnotation, index);
-            final var autodelete = QueueAutoDeleteParser.getFromAnnotationInstance(messageHandlerAnnotation, index);
+            final var durable = getDurable(handlerAnnotation, index);
+            final var autoDelete = getAutoDelete(handlerAnnotation, index);
             final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(messageAnnotation, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);
 
@@ -253,8 +261,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                     messageClassSimpleName,
                     exchangeType,
                     durable,
-                    autodelete,
-                    RolesAllowedParser.getFromAnnotationInstance(messageHandlerAnnotation, index),
+                    autoDelete,
+                    RolesAllowedParser.getFromAnnotationInstance(handlerAnnotation, index),
                     deadLetterQueue,
                     ttl,
                     responseType);
@@ -268,6 +276,36 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         createChannels(channelInfos, messageTypes, asyncApi);
 
         return consumedMessages;
+    }
+
+    private String getBindingKeys(AnnotationInstance handlerAnnotationInstance, AnnotationInstance messageAnnotation) {
+        final var dotName = handlerAnnotationInstance.name();
+        if (DOT_NAME_SNAPSHOT_MESSAGE_HANDLER.equals(dotName)) {
+            return ResourceTypeParser.getFromAnnotationInstance(handlerAnnotationInstance);
+        } else if (DOT_NAME_MESSAGE_HANDLER.equals(dotName)) {
+            return BindingKeysParser.getFromAnnotationInstanceAsCsv(handlerAnnotationInstance, messageAnnotation);
+        }
+        throw new IllegalArgumentException("Unsupported annotation instance " + dotName);
+    }
+
+    private boolean getDurable(AnnotationInstance handlerAnnotationInstance, FilteredIndexView indexView) {
+        final var dotName = handlerAnnotationInstance.name();
+        if (DOT_NAME_SNAPSHOT_MESSAGE_HANDLER.equals(dotName)) {
+            return HandlerDefaultParameter.SnapshotMessageHandler.DURABLE;
+        } else if (DOT_NAME_MESSAGE_HANDLER.equals(dotName)) {
+            return QueueDurableParser.getFromAnnotationInstance(handlerAnnotationInstance, indexView);
+        }
+        throw new IllegalArgumentException("Unsupported annotation instance " + dotName);
+    }
+
+    private boolean getAutoDelete(AnnotationInstance handlerAnnotationInstance, FilteredIndexView indexView) {
+        final var dotName = handlerAnnotationInstance.name();
+        if (DOT_NAME_SNAPSHOT_MESSAGE_HANDLER.equals(dotName)) {
+            return HandlerDefaultParameter.SnapshotMessageHandler.AUTO_DELETE;
+        } else if (DOT_NAME_MESSAGE_HANDLER.equals(dotName)) {
+            return QueueAutoDeleteParser.getFromAnnotationInstance(handlerAnnotationInstance, indexView);
+        }
+        throw new IllegalArgumentException("Unsupported annotation instance " + dotName);
     }
 
     private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, Aai20Document asyncApi) {
@@ -358,7 +396,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 .map(Type::name)
                 .map(index::getClassByName)
                 .filter(Objects::nonNull)
-                .map(classInfo -> classInfo.classAnnotation(DOTNAME_MESSAGE))
+                .map(classInfo -> classInfo.classAnnotation(DOT_NAME_MESSAGE))
                 .filter(Objects::nonNull).toList();
 
         if (consumedEventTypes.isEmpty()) {

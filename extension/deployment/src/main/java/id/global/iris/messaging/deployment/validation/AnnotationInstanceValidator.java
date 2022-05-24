@@ -1,36 +1,13 @@
 package id.global.iris.messaging.deployment.validation;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.IndexView;
 
-public class AnnotationInstanceValidator {
+public interface AnnotationInstanceValidator {
 
-    private final Map<AnnotationTarget.Kind, AbstractAnnotationInstanceValidator> validatorsForKind = new HashMap<>();
-    private final IndexView index;
+    Pattern KEBAB_CASE_PATTERN = Pattern.compile("^([a-z][a-z0-9]*)(-[a-z0-9]+)*$");
+    Pattern TOPIC_PATTERN = Pattern.compile("^([*#]|[a-z0-9-]+)([.]([*#]|[a-z0-9-]+))*$");
 
-    public AnnotationInstanceValidator(final IndexView index, String serviceName) {
-        this.index = index;
-        final var classAnnotationValidator = new ClassAnnotationValidator(serviceName);
-        final var methodAnnotationValidator = new MethodAnnotationValidator(index, classAnnotationValidator);
-        validatorsForKind.put(AnnotationTarget.Kind.METHOD, methodAnnotationValidator);
-        validatorsForKind.put(AnnotationTarget.Kind.CLASS, classAnnotationValidator);
-    }
-
-    public void validate(final AnnotationInstance annotationInstance) {
-        final var optionalValidator = findValidator(annotationInstance.target());
-        final var validator = optionalValidator.orElseThrow(
-                () -> new IllegalArgumentException(
-                        "Annotation validator not found. Unsupported annotation target kind: " + annotationInstance.target()
-                                .kind()));
-        validator.validate(annotationInstance, index);
-    }
-
-    private Optional<AbstractAnnotationInstanceValidator> findValidator(final AnnotationTarget target) {
-        return Optional.ofNullable(validatorsForKind.get(target.kind()));
-    }
+    void validate(AnnotationInstance annotationInstance);
 }

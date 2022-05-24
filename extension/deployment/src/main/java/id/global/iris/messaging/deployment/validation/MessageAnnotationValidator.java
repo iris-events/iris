@@ -18,16 +18,20 @@ import id.global.iris.asyncapi.runtime.scanner.validator.ReservedAmqpNamesProvid
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 
-class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
-    private final String serviceName;
+public class MessageAnnotationValidator implements AnnotationInstanceValidator {
 
-    public ClassAnnotationValidator(String serviceName) {
-        super();
+    private static final List<String> RESERVED_NAME_EXCLUSIONS = List.of("iris-subscription", "iris-manager");
+
+    private final String serviceName;
+    private final IndexView index;
+
+    public MessageAnnotationValidator(String serviceName, IndexView index) {
         this.serviceName = serviceName;
+        this.index = index;
     }
 
     @Override
-    public void validate(final AnnotationInstance annotationInstance, final IndexView index) {
+    public void validate(final AnnotationInstance annotationInstance) {
         validateReservedQueuesExchanges(annotationInstance, index);
         validateParamsAreKebabCase(annotationInstance, index);
         validateDeadLetterParam(annotationInstance, index);
@@ -94,8 +98,7 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
                 .matches();
     }
 
-    @Override
-    protected MessageHandlerValidationException createNonKebabCaseParamsFoundException(
+    private MessageHandlerValidationException createNonKebabCaseParamsFoundException(
             final AnnotationInstance annotationInstance, final Set<String> nonKebabCaseParams) {
 
         final var nonKebabCaseParamsString = String.join(", ", nonKebabCaseParams);
@@ -112,8 +115,7 @@ class ClassAnnotationValidator extends AbstractAnnotationInstanceValidator {
                         annotationInstance.name(), getTargetClassName(annotationInstance), usedReservedNames));
     }
 
-    @Override
-    protected ExchangeType getExchangeType(AnnotationInstance annotationInstance, IndexView index) {
+    private ExchangeType getExchangeType(AnnotationInstance annotationInstance, IndexView index) {
         return ExchangeTypeParser.getFromAnnotationInstance(annotationInstance, index);
     }
 

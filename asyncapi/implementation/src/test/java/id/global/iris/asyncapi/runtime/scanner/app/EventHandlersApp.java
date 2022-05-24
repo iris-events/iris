@@ -16,6 +16,8 @@ import id.global.common.iris.annotations.GlobalIdGenerated;
 import id.global.common.iris.annotations.Message;
 import id.global.common.iris.annotations.MessageHandler;
 import id.global.common.iris.annotations.Scope;
+import id.global.common.iris.annotations.SnapshotMessageHandler;
+import id.global.common.iris.message.SnapshotRequested;
 import id.global.iris.asyncapi.runtime.scanner.model.User;
 
 public class EventHandlersApp {
@@ -79,6 +81,16 @@ public class EventHandlersApp {
     @MessageHandler
     public void handleListPayloadEvent(ListPayloadEvent event) {
         LOG.info("Handling event with list payload");
+    }
+
+    @SnapshotMessageHandler(resourceType = "inventory")
+    public void handleSnapshotRequested(SnapshotRequested snapshotRequested) {
+        LOG.info("Handle snapshot requested event: " + snapshotRequested);
+    }
+
+    @SnapshotMessageHandler(resourceType = "inventory", rolesAllowed = { Role.ADMIN_REWARD, Role.ADMIN_MERCHANT })
+    public void handleSnapshotRequestedWithRoles(SnapshotRequested snapshotRequested) {
+        LOG.info("Handle snapshot requested event: " + snapshotRequested);
     }
 
     @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD, Role.ADMIN_MERCHANT })
