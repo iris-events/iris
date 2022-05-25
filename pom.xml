@@ -80,16 +80,6 @@
                 <version>${version.globalid-common}</version>
             </dependency>
 
-<!--            <dependency>-->
-<!--                <groupId>id.global.iris</groupId>-->
-<!--                <artifactId>iris-common</artifactId>-->
-<!--                <version>${project.version}</version>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>id.global.iris</groupId>-->
-<!--                <artifactId>iris-asyncapi</artifactId>-->
-<!--                <version>${version.iris-common}</version>-->
-<!--            </dependency>-->
             <!-- Dependencies provided by the project -->
             <dependency>
                 <groupId>id.global.iris</groupId>
