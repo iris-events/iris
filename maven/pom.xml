@@ -26,8 +26,6 @@
         <url>https://github.com/globalid/iris-maven</url>
     </scm>
 
-    <properties></properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>

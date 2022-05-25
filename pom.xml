@@ -39,10 +39,8 @@
         <version.apicurio-registry-client>2.2.3.Final</version.apicurio-registry-client>
         <version.commons-logging>1.2</version.commons-logging>
         <version.globalid-common>2.0.0</version.globalid-common>
-        <version.iris-common>${project.version}</version.iris-common>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.13</version.httpclient>
-        <version.iris.asyncapi>${project.version}</version.iris.asyncapi>
         <version.jackson-databind>2.13.3</version.jackson-databind>
         <version.jandex>2.4.2.Final</version.jandex>
         <version.json-simple>1.1.1</version.json-simple>
@@ -84,18 +82,18 @@
             <dependency>
                 <groupId>id.global.iris</groupId>
                 <artifactId>iris-common</artifactId>
-                <version>${version.iris-common}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>id.global.iris</groupId>
                 <artifactId>iris-asyncapi</artifactId>
-                <version>${version.iris.asyncapi}</version>
+                <version>${project.version}</version>
             </dependency>
             <!-- Dependencies provided by the project -->
             <dependency>
                 <groupId>id.global.iris</groupId>
                 <artifactId>iris-asyncapi-spec-api</artifactId>
-                <version>${version.iris.asyncapi}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.resilience4j</groupId>

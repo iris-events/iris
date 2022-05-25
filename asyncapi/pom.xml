@@ -14,10 +14,6 @@
     <packaging>pom</packaging>
     <name>Iris AsyncAPI: Parent</name>
 
-    <properties>
-    </properties>
-
-
     <modules>
         <module>spec/api</module>
         <module>implementation</module>
