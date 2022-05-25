@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
+import id.global.iris.common.annotations.Scope;
 import id.global.iris.messaging.AbstractAnnotationInstanceValidatorTest;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 
@@ -27,9 +28,10 @@ class MessageHandlerAnnotationInstanceValidatorTest extends AbstractAnnotationIn
 
     @ParameterizedTest
     @ValueSource(classes = { WrongBindingKeyService.class,
-            WrongEventExchangeService.class })
+            WrongEventExchangeService.class,
+            FrontendScopeExchangeService.class})
     void validateNotValid(Class<?> serviceClass) {
-        final var index = indexOf(serviceClass, Event.class, WrongExchangeEvent.class);
+        final var index = indexOf(serviceClass, Event.class, WrongExchangeEvent.class, FrontendScopeEvent.class);
         final var validator = new MessageHandlerAnnotationInstanceValidator(index, "TestService");
 
         final var annotationInstance = getAnnotationInstance(MessageHandler.class, serviceClass);
@@ -62,11 +64,23 @@ class MessageHandlerAnnotationInstanceValidatorTest extends AbstractAnnotationIn
         }
     }
 
+    private static class FrontendScopeExchangeService {
+
+        @SuppressWarnings("unused")
+        @MessageHandler(perInstance = true)
+        public void handle(FrontendScopeEvent event) {
+        }
+    }
+
     @Message(exchangeType = TOPIC, name = "kebab-topic-exchange", routingKey = "valid.topic.event")
     public record Event() {
     }
 
     @Message(exchangeType = TOPIC, name = "WRONG-topic-exchange", routingKey = "valid.topic.event")
     public record WrongExchangeEvent() {
+    }
+
+    @Message(name = "topic-exchange", scope = Scope.FRONTEND)
+    public record FrontendScopeEvent() {
     }
 }

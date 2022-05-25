@@ -18,8 +18,9 @@ public class MessageHandlerAnnotationInstanceValidator implements AnnotationInst
                 List.of(messageAnnotationValidator));
         final var bindingKeyParamAnnotationValidator = new BindingKeyParamAnnotationValidator(indexView);
 
+        final var perInstanceParamAnnotationValidator = new PerInstanceParamAnnotationValidator(indexView);
         this.validators = List.of(methodParameterTypeAnnotationValidator,
-                methodReturnTypeAnnotationValidator, bindingKeyParamAnnotationValidator);
+                methodReturnTypeAnnotationValidator, bindingKeyParamAnnotationValidator, perInstanceParamAnnotationValidator);
     }
 
     @Override
