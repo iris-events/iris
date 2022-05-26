@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import com.rabbitmq.client.AMQP;
 
 import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.constants.DeliveryMode;
 import id.global.iris.messaging.runtime.context.EventAppContext;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
@@ -111,6 +112,12 @@ public class AmqpBasicPropertiesProvider {
             headers.put(SESSION_ID, sessionId);
         }
 
+        builder.deliveryMode(getDeliveryMode(routingDetails));
+
         return builder.headers(headers).build();
+    }
+
+    private int getDeliveryMode(final RoutingDetails routingDetails) {
+        return routingDetails.persistent() ? DeliveryMode.PERSISTENT.getValue() : DeliveryMode.NON_PERSISTENT.getValue();
     }
 }

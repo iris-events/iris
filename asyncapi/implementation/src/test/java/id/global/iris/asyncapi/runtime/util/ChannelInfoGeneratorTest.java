@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelInfo;
+import id.global.iris.asyncapi.runtime.scanner.model.OperationBindingsInfo;
 import id.global.iris.common.annotations.ExchangeType;
 
 public class ChannelInfoGeneratorTest {
@@ -25,9 +26,11 @@ public class ChannelInfoGeneratorTest {
         final var deadLetterQueue = "dead-letter";
         final var ttl = -1;
         final var exchangeType = ExchangeType.DIRECT;
+        final var persistentMessage = false;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
-                .generateSubscribeChannelInfo(exchange, queue, eventClass, exchangeType, emptySet(), deadLetterQueue, ttl);
+                .generateSubscribeChannelInfo(exchange, queue, eventClass, exchangeType, emptySet(), deadLetterQueue, ttl,
+                        persistentMessage);
 
         assertNotNull(channelInfo);
         assertEquals(eventClass, channelInfo.getEventKey());
@@ -39,6 +42,9 @@ public class ChannelInfoGeneratorTest {
         assertEquals(queue, bindingsInfo.getQueue());
         assertTrue(bindingsInfo.isExchangeDurable());
         assertFalse(bindingsInfo.isExchangeAutoDelete());
+
+        OperationBindingsInfo operationBindingsInfo = channelInfo.getOperationBindingsInfo();
+        assertFalse(operationBindingsInfo.persistent());
 
         assertThat(bindingsInfo.isQueueAutoDelete(), is(nullValue()));
         assertThat(bindingsInfo.isQueueDurable(), is(nullValue()));
@@ -54,11 +60,12 @@ public class ChannelInfoGeneratorTest {
         final var queueName = "event-class-name";
         final var deadLetterQueue = "dead-letter";
         final var ttl = -1;
+        final var persistentMessage = false;
         final var exchangeType = ExchangeType.DIRECT;
 
         ChannelInfo channelInfo = ChannelInfoGenerator
                 .generateSubscribeChannelInfo(exchange, queueName, eventClass, exchangeType, emptySet(), deadLetterQueue,
-                        ttl);
+                        ttl, persistentMessage);
 
         assertThat(channelInfo.getBindingsInfo().getQueue(), is(queueName));
         assertThat(channelInfo.getEventKey(), is(eventClass));

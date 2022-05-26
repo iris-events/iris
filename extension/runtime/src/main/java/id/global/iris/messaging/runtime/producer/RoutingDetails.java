@@ -10,5 +10,6 @@ public record RoutingDetails(String eventName,
         Scope scope,
         String userId,
         String sessionId,
-        String subscriptionId) {
+        String subscriptionId,
+        boolean persistent) {
 }

@@ -8,6 +8,7 @@ import id.global.common.auth.jwt.Role;
 import id.global.iris.asyncapi.runtime.io.channel.operation.OperationConstant;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelInfo;
+import id.global.iris.asyncapi.runtime.scanner.model.OperationBindingsInfo;
 import id.global.iris.common.annotations.ExchangeType;
 
 public class ChannelInfoGenerator {
@@ -19,11 +20,13 @@ public class ChannelInfoGenerator {
             final ExchangeType exchangeType,
             final Set<Role> rolesAllowed,
             final String deadLetterQueue,
-            final Integer ttl) {
+            final Integer ttl,
+            final boolean persistent) {
 
+        final var operationBindingsInfo = new OperationBindingsInfo(persistent);
         final var channelBindingsInfo = new ChannelBindingsInfo(exchange, bindingKeysCsv, exchangeType);
-        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, OperationConstant.PROP_SUBSCRIBE, rolesAllowed,
-                deadLetterQueue, ttl, null);
+        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, operationBindingsInfo,
+                OperationConstant.PROP_SUBSCRIBE, rolesAllowed, deadLetterQueue, ttl, null);
     }
 
     public static ChannelInfo generatePublishChannelInfo(
@@ -36,10 +39,12 @@ public class ChannelInfoGenerator {
             final Set<Role> rolesAllowed,
             final String deadLetterQueue,
             final Integer ttl,
-            final Type responseType) {
+            final Type responseType,
+            final boolean persistent) {
 
+        final var operationBindingsInfo = new OperationBindingsInfo(persistent);
         final var channelBindingsInfo = new ChannelBindingsInfo(exchange, routingKey, exchangeType, durable, autodelete);
-        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, OperationConstant.PROP_PUBLISH, rolesAllowed,
-                deadLetterQueue, ttl, responseType);
+        return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, operationBindingsInfo, OperationConstant.PROP_PUBLISH,
+                rolesAllowed, deadLetterQueue, ttl, responseType);
     }
 }

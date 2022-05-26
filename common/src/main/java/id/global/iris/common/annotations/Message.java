@@ -62,4 +62,6 @@ public @interface Message {
      * annotated with the {@link Message} annotation
      */
     Class<?> response() default Void.class;
+
+    boolean persistent() default false;
 }

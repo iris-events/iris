@@ -10,16 +10,19 @@ public class ChannelInfo {
 
     private final String eventKey;
     private final ChannelBindingsInfo bindingsInfo;
+    private final OperationBindingsInfo operationBindingsInfo;
     private final String operationType;
     private final Set<Role> rolesAllowed;
     private final String deadLetterQueue;
     private final Integer ttl;
     private final Type responseType;
 
-    public ChannelInfo(String eventKey, ChannelBindingsInfo bindingsInfo, String operationType, Set<Role> rolesAllowed,
+    public ChannelInfo(String eventKey, ChannelBindingsInfo bindingsInfo, OperationBindingsInfo operationBindingsInfo,
+            String operationType, Set<Role> rolesAllowed,
             String deadLetterQueue, Integer ttl, Type responseType) {
         this.eventKey = eventKey;
         this.bindingsInfo = bindingsInfo;
+        this.operationBindingsInfo = operationBindingsInfo;
         this.operationType = operationType;
         this.rolesAllowed = rolesAllowed;
         this.deadLetterQueue = deadLetterQueue;
@@ -33,6 +36,10 @@ public class ChannelInfo {
 
     public ChannelBindingsInfo getBindingsInfo() {
         return bindingsInfo;
+    }
+
+    public OperationBindingsInfo getOperationBindingsInfo() {
+        return operationBindingsInfo;
     }
 
     public String getOperationType() {

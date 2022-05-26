@@ -93,7 +93,8 @@ public class EventHandlersApp {
         LOG.info("Handle snapshot requested event: " + snapshotRequested);
     }
 
-    @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD, Role.ADMIN_MERCHANT })
+    @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD,
+            Role.ADMIN_MERCHANT }, persistent = true)
     public record TestEventV1(int id, String status, User user) {
     }
 
