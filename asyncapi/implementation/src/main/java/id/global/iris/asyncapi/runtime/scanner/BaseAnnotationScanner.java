@@ -24,11 +24,13 @@ import id.global.iris.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAai20Message;
+import id.global.iris.asyncapi.runtime.scanner.model.GidAaiAMQPOperationBinding;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAaiHeaderItem;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAaiHeaderItems;
 import id.global.iris.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import id.global.iris.common.annotations.GlobalIdGenerated;
 import id.global.iris.common.annotations.Scope;
+import id.global.iris.common.constants.DeliveryMode;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
@@ -37,6 +39,7 @@ import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelItem;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Components;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Operation;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20OperationBindings;
 import io.apicurio.datamodels.core.models.common.Schema;
 
 public abstract class BaseAnnotationScanner {
@@ -95,6 +98,13 @@ public abstract class BaseAnnotationScanner {
                 throw new IllegalArgumentException("opType argument should be one of [publish, subscribe]");
             }
 
+            final var persistent = channelInfo.getOperationBindingsInfo().persistent();
+            final var deliveryMode = getDeliveryMode(persistent);
+            final var aaiAMQPOperationBinding = new GidAaiAMQPOperationBinding();
+            aaiAMQPOperationBinding.setDeliveryMode(deliveryMode);
+
+            operation.bindings = new Aai20OperationBindings();
+            operation.bindings.amqp = aaiAMQPOperationBinding;
             operation.message = new GidAai20Message(messageKey);
 
             operation.message.headers = buildHeaders(channelInfo, messageScopes);
@@ -137,6 +147,10 @@ public abstract class BaseAnnotationScanner {
 
             asyncApi.channels.put(channelKey, channelItem);
         });
+    }
+
+    private int getDeliveryMode(final boolean persistent) {
+        return persistent ? DeliveryMode.PERSISTENT.getValue() : DeliveryMode.NON_PERSISTENT.getValue();
     }
 
     private void setResponseType(final ChannelInfo channelInfo, final AaiOperation operation) {

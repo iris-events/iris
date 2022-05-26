@@ -8,6 +8,11 @@
   "channels": {
     "test-event-v1/default-test-event-v1": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 2
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -66,6 +71,11 @@
     },
     "test-event-v2/test-event-v2": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -121,6 +131,11 @@
     },
     "frontend-test-event-v1/fe-test-event-v1": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -176,6 +191,11 @@
     },
     "test-topic-exchange/*.*.rabbit,fast.orange.*": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -231,6 +251,11 @@
     },
     "test-fanout-exchange/test-fanout-exchange": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -286,6 +311,11 @@
     },
     "test-generated-exchange/test-generated-exchange": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -341,6 +371,11 @@
     },
     "event-defaults/event-defaults": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -396,6 +431,11 @@
     },
     "passthrough-inbound-event/passthrough-inbound-event": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -454,6 +494,11 @@
     },
     "map-payload-event/map-payload-event": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -509,6 +554,11 @@
     },
     "list-payload-event/list-payload-event": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -564,6 +614,11 @@
     },
     "snapshot-requested/inventory": {
       "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -622,6 +677,11 @@
     },
     "produced-event/produced-event": {
       "subscribe": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",
@@ -675,6 +735,11 @@
     },
     "passthrough-outbound-event/passthrough-outbound-event": {
       "subscribe": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
         "message": {
           "headers": {
             "type": "object",

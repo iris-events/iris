@@ -37,6 +37,7 @@ import com.rabbitmq.client.ReturnListener;
 import id.global.iris.amqp.parsers.ExchangeParser;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.amqp.parsers.MessageScopeParser;
+import id.global.iris.amqp.parsers.PersistentParser;
 import id.global.iris.amqp.parsers.RoutingKeyParser;
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Scope;
@@ -133,8 +134,11 @@ public class AmqpProducer {
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = String.format("%s.%s", eventName, RESOURCE);
         final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
-        publish(resourceUpdate,
-                new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null, null, null, null));
+        final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
+
+        final var routingDetails = new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null,
+                null, null, null, persistent);
+        publish(resourceUpdate, routingDetails);
     }
 
     private void doSend(final Object message, final String userId) throws AmqpSendException {
@@ -156,8 +160,9 @@ public class AmqpProducer {
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
+        final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null);
+        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null, persistent);
     }
 
     private RoutingDetails getRoutingDetailsForClientScope(final id.global.iris.common.annotations.Message messageAnnotation,
@@ -174,8 +179,9 @@ public class AmqpProducer {
 
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = String.format("%s.%s", eventName, exchange);
+        final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null);
+        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null, persistent);
     }
 
     private id.global.iris.common.annotations.Message getMessageAnnotation(final Object message) {

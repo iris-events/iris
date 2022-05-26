@@ -48,6 +48,7 @@ import id.global.iris.amqp.parsers.ExchangeParser;
 import id.global.iris.amqp.parsers.ExchangeTtlParser;
 import id.global.iris.amqp.parsers.ExchangeTypeParser;
 import id.global.iris.amqp.parsers.MessageScopeParser;
+import id.global.iris.amqp.parsers.PersistentParser;
 import id.global.iris.amqp.parsers.QueueAutoDeleteParser;
 import id.global.iris.amqp.parsers.QueueDurableParser;
 import id.global.iris.amqp.parsers.ResourceTypeParser;
@@ -194,6 +195,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var rolesAllowed = RolesAllowedParser.getFromAnnotationInstance(anno, index);
             final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(anno, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(anno, index);
+            final var persistent = PersistentParser.getFromAnnotationInstance(anno, index);
 
             channelInfos.add(ChannelInfoGenerator.generateSubscribeChannelInfo(
                     exchange,
@@ -202,7 +204,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                     exchangeType,
                     rolesAllowed,
                     deadLetterQueue,
-                    ttl));
+                    ttl,
+                    persistent));
         }
 
         insertComponentSchemas(context, producedMessages, asyncApi);
@@ -244,6 +247,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var autoDelete = getAutoDelete(handlerAnnotation, index);
             final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(messageAnnotation, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);
+            final var persistent = PersistentParser.getFromAnnotationInstance(messageAnnotation, index);
 
             final var responseType = ResponseParser.getFromAnnotationInstance(messageAnnotation, index);
 
@@ -265,7 +269,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                     RolesAllowedParser.getFromAnnotationInstance(handlerAnnotation, index),
                     deadLetterQueue,
                     ttl,
-                    responseType);
+                    responseType,
+                    persistent);
 
             messageTypes.put(messageClassSimpleName, scope);
             incomingMessages.put(messageClassSimpleName, jsonSchemaInfo);
