@@ -29,7 +29,7 @@ class MessageHandlerAnnotationInstanceValidatorTest extends AbstractAnnotationIn
     @ParameterizedTest
     @ValueSource(classes = { WrongBindingKeyService.class,
             WrongEventExchangeService.class,
-            FrontendScopeExchangeService.class})
+            FrontendScopeExchangeService.class })
     void validateNotValid(Class<?> serviceClass) {
         final var index = indexOf(serviceClass, Event.class, WrongExchangeEvent.class, FrontendScopeEvent.class);
         final var validator = new MessageHandlerAnnotationInstanceValidator(index, "TestService");

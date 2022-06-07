@@ -145,5 +145,4 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
                 ", rolesAllowed='" + rolesJoiner + '\'' +
                 '}';
     }
-
 }

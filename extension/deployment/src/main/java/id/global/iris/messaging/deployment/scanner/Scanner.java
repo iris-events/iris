@@ -7,6 +7,7 @@ import org.jboss.jandex.IndexView;
 
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.validation.MessageHandlerAnnotationInstanceValidator;
+import id.global.iris.messaging.deployment.validation.MessageHandlerCompatibilityValidator;
 import id.global.iris.messaging.deployment.validation.SnapshotHandlerAnnotationInstanceValidator;
 
 public class Scanner {
@@ -20,10 +21,14 @@ public class Scanner {
     }
 
     public List<MessageHandlerInfoBuildItem> scanEventHandlerAnnotations() {
-        return annotationScanners.stream()
+        final var messageHandlerInfoBuildItems = annotationScanners.stream()
                 .map(messageHandlerScanner -> messageHandlerScanner.scanHandlerAnnotations(indexView))
                 .flatMap(Collection::stream)
                 .toList();
+
+        MessageHandlerCompatibilityValidator.validate(messageHandlerInfoBuildItems);
+
+        return messageHandlerInfoBuildItems;
     }
 
     private List<AnnotationScanner> getAnnotationScanners(String serviceName) {
