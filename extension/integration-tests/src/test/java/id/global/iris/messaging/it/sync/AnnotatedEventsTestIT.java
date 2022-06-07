@@ -154,24 +154,7 @@ public class AnnotatedEventsTestIT extends IsolatedEventContextTest {
 
     @SuppressWarnings("unused")
     @ApplicationScoped
-    public static class FirstFanoutService {
-
-        private final CompletableFuture<String> future = new CompletableFuture<>();
-
-        @MessageHandler
-        public void handleLogEvents(FanoutLoggingEvent event) {
-            future.complete(event.log());
-        }
-
-        public CompletableFuture<String> getFuture() {
-            return future;
-        }
-
-    }
-
-    @SuppressWarnings("unused")
-    @ApplicationScoped
-    public static class SecondFanoutService {
+    public static class FanoutService {
 
         private final CompletableFuture<String> future = new CompletableFuture<>();
 
