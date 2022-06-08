@@ -12,9 +12,8 @@
         <appVersion>APPLICATION_VERSION</appVersion>
         <groupId>PACKAGE_NAME</groupId>
         <version.jandex-maven-plugin>1.2.1</version.jandex-maven-plugin>
-        <version.globalid-common>1.1.12</version.globalid-common>
-        <version.jackson-annotations>2.12.3</version.jackson-annotations>
-        <version.jackson-databind>2.5.4</version.jackson-databind>
+        <version.globalid.iris>2.0.4</version.globalid.iris>
+        <version.jackson>2.13.3</version.jackson>
         <version.validation-api>2.0.1.Final</version.validation-api>
     </properties>
 
@@ -35,9 +34,9 @@
             <version>${version.jackson-annotations}</version>
         </dependency>
         <dependency>
-            <groupId>id.global.common</groupId>
-            <artifactId>globalid-common</artifactId>
-            <version>${version.globalid-common}</version>
+            <groupId>id.global.iris</groupId>
+            <artifactId>iris-common</artifactId>
+            <version>${version.globalid.iris}</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>
