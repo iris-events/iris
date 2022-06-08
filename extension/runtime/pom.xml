@@ -4,7 +4,7 @@
     <parent>
         <groupId>id.global.iris</groupId>
         <artifactId>iris-extension-parent</artifactId>
-        <version>2.0.4-SNAPSHOT</version>
+        <version>2.0.4</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>quarkus-iris</artifactId>
@@ -114,4 +114,8 @@
             </plugin>
         </plugins>
     </build>
+
+  <scm>
+    <tag>v2.0.4</tag>
+  </scm>
 </project>
