@@ -1,21 +1,27 @@
 package id.global.iris.plugin.model.generator.utils;
 
-import id.global.iris.plugin.model.generator.AmqpGeneratorMojo;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.stream.Stream;
+
 import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.stream.Stream;
+import id.global.iris.plugin.model.generator.AmqpGeneratorMojo;
 
 public class FileInteractor {
 
@@ -44,8 +50,8 @@ public class FileInteractor {
             throw new IllegalArgumentException(String.format("Cannot get input stream for resource file: [%s]", fileName));
         }
         try {
-            return Files.readString(Paths.get(r.toURI()), StandardCharsets.UTF_8);
-        } catch (URISyntaxException | IOException e) {
+            return readResource(r.toURI());
+        } catch (URISyntaxException | IOException | NullPointerException e) {
             log.error("Cannot read resource file content!", e);
             throw new RuntimeException(e);
         }
@@ -123,5 +129,16 @@ public class FileInteractor {
 
         createDirectories(
                 pathResolver.getSchemasDirectory().resolve(StringConstants.PAYLOAD));
+    }
+
+    public static String readResource(URI uri) throws IOException {
+        try {
+            return Files.readString(Paths.get(uri), StandardCharsets.UTF_8);
+        } catch (FileSystemNotFoundException ex) {
+            try (FileSystem fs = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+                final var path = fs.provider().getPath(uri);
+                return Files.readString(path, StandardCharsets.UTF_8);
+            }
+        }
     }
 }
