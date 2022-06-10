@@ -1,8 +1,5 @@
 package id.global.iris.messaging.runtime.exception;
 
-import static id.global.iris.common.constants.MessagingHeaders.Message.EVENT_TYPE;
-import static id.global.iris.common.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
@@ -17,8 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-import id.global.iris.common.constants.Exchanges;
-import id.global.iris.common.constants.MessagingHeaders;
+import id.global.iris.common.error.ErrorMessageDetailsBuilder;
 import id.global.iris.common.error.ErrorType;
 import id.global.iris.common.exception.ClientException;
 import id.global.iris.common.exception.MessagingException;
@@ -139,17 +135,23 @@ public class AmqpExceptionHandler {
     }
 
     private void sendErrorMessage(ErrorMessage message, Delivery consumedMessage, Channel channel) {
-        final var headers = new HashMap<>(eventContext.getHeaders());
-        headers.remove(MessagingHeaders.Message.JWT);
-        headers.put(EVENT_TYPE, Exchanges.ERROR.getValue());
-        headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
+        final var originalExchange = consumedMessage.getEnvelope().getExchange();
+        final var originalMessageHeaders = new HashMap<>(eventContext.getHeaders());
+        final var currentTimestamp = timestampProvider.getCurrentTimestamp();
+        final var errorMessageDetails = ErrorMessageDetailsBuilder
+                .build(originalExchange,
+                        originalMessageHeaders,
+                        currentTimestamp);
+
+        final var messageHeaders = errorMessageDetails.messageHeaders();
         final var basicProperties = consumedMessage.getProperties().builder()
-                .headers(headers)
+                .headers(messageHeaders)
                 .build();
-        final var routingKey = consumedMessage.getEnvelope().getExchange() + ERROR_ROUTING_KEY_SUFFIX;
         try {
-            channel.basicPublish(Exchanges.ERROR.getValue(), routingKey, basicProperties,
-                    objectMapper.writeValueAsBytes(message));
+            channel.basicPublish(
+                    errorMessageDetails.exchange(),
+                    errorMessageDetails.routingKey(),
+                    basicProperties, objectMapper.writeValueAsBytes(message));
         } catch (IOException e) {
             log.error("Unable to write error message as bytes. Discarding error message. Message: {}", message);
         }
