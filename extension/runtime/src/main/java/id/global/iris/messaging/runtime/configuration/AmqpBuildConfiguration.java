@@ -18,6 +18,12 @@ public final class AmqpBuildConfiguration {
     @ConfigItem(defaultValue = "true")
     public boolean healthCheckEnabled;
 
+    /**
+     * Enable or disable extension readiness check
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean readinessCheckEnabled;
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -26,10 +32,15 @@ public final class AmqpBuildConfiguration {
         this.healthCheckEnabled = healthCheckEnabled;
     }
 
+    public void setReadinessCheckEnabled(final boolean readinessCheckEnabled) {
+        this.readinessCheckEnabled = readinessCheckEnabled;
+    }
+
     @Override
     public String toString() {
         return "AmqpBuildConfiguration{" +
                 "enabled=" + enabled +
+                ", readinessEnabled=" + readinessCheckEnabled +
                 ", healthEnabled=" + healthCheckEnabled +
                 '}';
     }

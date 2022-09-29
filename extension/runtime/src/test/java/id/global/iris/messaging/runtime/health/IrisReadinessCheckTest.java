@@ -10,13 +10,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class IrisHealthCheckTest {
+class IrisReadinessCheckTest {
 
-    private IrisHealthCheck healthCheck;
+    private IrisReadinessCheck healthCheck;
 
     @BeforeEach
     public void setup() {
-        this.healthCheck = new IrisHealthCheck();
+        this.healthCheck = new IrisReadinessCheck();
     }
 
     @ParameterizedTest

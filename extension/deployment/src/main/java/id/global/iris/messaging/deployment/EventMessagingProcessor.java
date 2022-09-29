@@ -29,7 +29,7 @@ import id.global.iris.messaging.runtime.context.EventAppContext;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.context.MethodHandleContext;
 import id.global.iris.messaging.runtime.exception.AmqpExceptionHandler;
-import id.global.iris.messaging.runtime.health.IrisHealthCheck;
+import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
 import id.global.iris.messaging.runtime.recorder.ConsumerInitRecorder;
@@ -96,7 +96,7 @@ class EventMessagingProcessor {
                                 FrontendAmqpConsumer.class,
                                 AmqpExceptionHandler.class,
                                 QueueNameProvider.class,
-                                IrisHealthCheck.class,
+                                IrisReadinessCheck.class,
                                 TimestampProvider.class,
                                 AmqpBasicPropertiesProvider.class)
                         .setUnremovable()
@@ -198,9 +198,20 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep
-    HealthBuildItem addHealthCheck(Capabilities capabilities, AmqpBuildConfiguration configuration) {
+    HealthBuildItem addReadinessCheck(Capabilities capabilities, AmqpBuildConfiguration configuration) {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
-            return new HealthBuildItem("id.global.iris.messaging.runtime.health.IrisHealthCheck",
+            return new HealthBuildItem("id.global.iris.messaging.runtime.health.IrisReadinessCheck",
+                    configuration.readinessCheckEnabled);
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @BuildStep
+    HealthBuildItem addLivenessCheck(Capabilities capabilities, AmqpBuildConfiguration configuration) {
+        if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
+            return new HealthBuildItem("id.global.iris.messaging.runtime.health.IrisLivenessCheck",
                     configuration.healthCheckEnabled);
         } else {
             return null;
