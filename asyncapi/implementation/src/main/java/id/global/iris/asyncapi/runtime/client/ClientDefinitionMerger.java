@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import id.global.iris.asyncapi.api.AsyncApiConstants;
-import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
+import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.model.ClientDefinitions;
 
 public class ClientDefinitionMerger {
@@ -53,7 +53,7 @@ public class ClientDefinitionMerger {
     }
 
     private JsonNode generateBase(String version) {
-        ObjectMapper objectMapper = EdaObjectMapper.getObjectMapper();
+        ObjectMapper objectMapper = IrisObjectMapper.getObjectMapper();
         ObjectNode root = objectMapper.createObjectNode();
 
         root.put("asyncapi", "2.0.0");
@@ -78,7 +78,7 @@ public class ClientDefinitionMerger {
         nestSchemas(definitions.getSchemasNodes(), definitions.getServiceName());
         ObjectNode schemasNode = (ObjectNode) ((ObjectNode) clientAsyncApi.findPath(AsyncApiConstants.COMPONENTS_NODE)
                 .findPath(AsyncApiConstants.SCHEMAS_NODE)).set(
-                        definitions.getServiceName(), EdaObjectMapper.getObjectMapper().createObjectNode())
+                        definitions.getServiceName(), IrisObjectMapper.getObjectMapper().createObjectNode())
                 .findPath(definitions.getServiceName());
         definitions.getSchemasNodes().forEach(schemasNode::set);
     }

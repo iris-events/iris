@@ -6,21 +6,21 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.iris.amqp.parsers.BindingKeysParser;
-import id.global.iris.amqp.parsers.ConsumerPerInstanceParser;
-import id.global.iris.amqp.parsers.ConsumerPrefetchCountParser;
-import id.global.iris.amqp.parsers.DeadLetterQueueParser;
-import id.global.iris.amqp.parsers.ExchangeParser;
-import id.global.iris.amqp.parsers.ExchangeTtlParser;
-import id.global.iris.amqp.parsers.MessageScopeParser;
-import id.global.iris.amqp.parsers.QueueAutoDeleteParser;
-import id.global.iris.amqp.parsers.QueueDurableParser;
-import id.global.iris.amqp.parsers.RolesAllowedParser;
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;
+import id.global.iris.parsers.BindingKeysParser;
+import id.global.iris.parsers.ConsumerPerInstanceParser;
+import id.global.iris.parsers.ConsumerPrefetchCountParser;
+import id.global.iris.parsers.DeadLetterQueueParser;
+import id.global.iris.parsers.ExchangeParser;
+import id.global.iris.parsers.ExchangeTtlParser;
+import id.global.iris.parsers.MessageScopeParser;
+import id.global.iris.parsers.QueueAutoDeleteParser;
+import id.global.iris.parsers.QueueDurableParser;
+import id.global.iris.parsers.RolesAllowedParser;
 
 public class MessageHandlerAnnotationScanner extends AnnotationScanner {
 

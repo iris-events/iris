@@ -23,7 +23,7 @@ import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.context.EventContext;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
@@ -36,7 +36,7 @@ public class MessagePropagationIT extends IsolatedEventContextTest {
     private static final String EXCHANGE = "message-propagation-exchange";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Inject
     Service originService;

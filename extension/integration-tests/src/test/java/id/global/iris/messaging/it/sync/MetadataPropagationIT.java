@@ -24,10 +24,10 @@ import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.context.EventContext;
-import id.global.iris.messaging.runtime.exception.AmqpSendException;
-import id.global.iris.messaging.runtime.exception.AmqpTransactionException;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.exception.IrisSendException;
+import id.global.iris.messaging.runtime.exception.IrisTransactionException;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
@@ -41,7 +41,7 @@ public class MetadataPropagationIT extends IsolatedEventContextTest {
     private static final String EXCHANGE = "metadata-propagation-it";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Inject
     Service1 service1;
@@ -80,15 +80,15 @@ public class MetadataPropagationIT extends IsolatedEventContextTest {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class Service1 {
-        private final AmqpProducer producer;
+        private final EventProducer producer;
 
         @Inject
-        public Service1(AmqpProducer producer) {
+        public Service1(EventProducer producer) {
             this.producer = producer;
         }
 
         @MessageHandler(bindingKeys = EVENT_QUEUE1)
-        public void handle(Event1 event) throws AmqpSendException, AmqpTransactionException {
+        public void handle(Event1 event) throws IrisSendException, IrisTransactionException {
             final var forwardedEvent = new Event2();
             producer.send(forwardedEvent);
         }
@@ -97,15 +97,15 @@ public class MetadataPropagationIT extends IsolatedEventContextTest {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class Service2 {
-        private final AmqpProducer producer;
+        private final EventProducer producer;
 
         @Inject
-        public Service2(AmqpProducer producer) {
+        public Service2(EventProducer producer) {
             this.producer = producer;
         }
 
         @MessageHandler(bindingKeys = EVENT_QUEUE2)
-        public void handle(Event2 event) throws AmqpSendException, AmqpTransactionException {
+        public void handle(Event2 event) throws IrisSendException, IrisTransactionException {
             final var forwardedEvent = new Event3();
             producer.send(forwardedEvent);
         }

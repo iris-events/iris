@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.iris.asyncapi.runtime.io.schema.SchemaReader;
-import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
+import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 
 public class SchemaReaderTest extends IndexScannerTestBase {
@@ -24,7 +24,7 @@ public class SchemaReaderTest extends IndexScannerTestBase {
         String schemaString = "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"definitions\":{\"Status\":{\"type\":\"string\",\"enum\":[\"inProgress\",\"actionRequired\",\"completed\",\"declined\",\"expired\"]}},\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"clientId\":{\"type\":\"string\"},\"actionId\":{\"type\":\"string\"},\"uuid\":{\"type\":\"string\"},\"createdAt\":{\"type\":\"string\"},\"status\":{\"$ref\":\"#/definitions/Status\"}}}";
         String propertiesString = "{\"id\":{\"type\":\"string\"},\"clientId\":{\"type\":\"string\"},\"actionId\":{\"type\":\"string\"},\"uid\":{\"type\":\"string\"},\"createdAt\":{\"type\":\"string\"},\"status\":{\"$ref\":\"#/definitions/Status\"}}";
 
-        ObjectMapper mapper = EdaObjectMapper.getObjectMapper();
+        ObjectMapper mapper = IrisObjectMapper.getObjectMapper();
         JsonNode schemaNode = mapper.readTree(schemaString);
         JsonNode propertiesNode = mapper.readTree(propertiesString);
 

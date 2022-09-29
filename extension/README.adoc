@@ -18,9 +18,12 @@ mvn verify
 * link:runtime/[] - Run time part of the extension. Consumer and producer classes, etc.
 
 == Extension configuration
-- `quarkus.amqp.url` - AMQP broker address. Default value is read from `QUARKUS_EDA_RABBIT_HOST` environment variable. Make sure that is set, or run with `-Dquarkus.amqp.url=YOUR_AMQP_HOST`.
-- `quarkus.amqp.port` - AMQP broker port. Default value = 5672
-- `quarkus.amqp.authenticated` - To use authenticated connection to the AMQP broker or not. If `true` set the `username` and `password` config properties also. Default value = `false`.
-- `quarkus.amqp.username` - AMQP authenticated connection username. Default value = `user`
-- `quarkus.amqp.password` - AMQP authenticated connection password. Default value = `user`
-- `quarkus.amqp.ssl-enabled` - AMQP connection uses SSL. Default value = `false`
+Extension uses Quarkus RabbitMQ Connector Configuration https://quarkus.io/guides/rabbitmq-reference#configuration-reference
+
+- `rabbitmq-host` - AMQP message broker address. Default value is read from *_io.vertx.rabbitmq.RabbitMQOptions.DEFAULT_HOST_*.
+- `rabbitmq-port` - AMQP message broker port.
+Default value is *_5672_*
+- `rabbitmq-username` - AMQP authenticated connection username. Default value is read from *_io.vertx.rabbitmq.RabbitMQOptions.DEFAULT_USER_*
+- `rabbitmq-password` - AMQP authenticated connection password. Default value is read from *_io.vertx.rabbitmq.RabbitMQOptions.DEFAULT_PASSWORD_*
+- `rabbitmq-ssl` - AMQP connection uses SSL. Default value is `false`
+- `rabbitmq-virtual-host` - AMQP virtual host. Default value is read from *_io.vertx.rabbitmq.RabbitMQOptions.DEFAULT_VIRTUAL_HOST_*

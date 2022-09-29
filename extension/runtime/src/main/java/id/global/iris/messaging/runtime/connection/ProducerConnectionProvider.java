@@ -5,7 +5,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
-import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
 import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 import io.quarkus.runtime.StartupEvent;
@@ -16,7 +16,7 @@ public class ProducerConnectionProvider extends AbstractConnectionProvider {
 
     @Inject
     public ProducerConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, AmqpConfiguration configuration, IrisReadinessCheck readinessCheck,
+            InstanceInfoProvider instanceInfoProvider, IrisConfiguration configuration, IrisReadinessCheck readinessCheck,
             IrisLivenessCheck livenessCheck) {
         super(connectionFactoryProvider, instanceInfoProvider, configuration, readinessCheck, livenessCheck);
     }

@@ -4,16 +4,12 @@
     <parent>
         <groupId>id.global.iris</groupId>
         <artifactId>iris-extension-parent</artifactId>
-        <version>2.0.8-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>quarkus-iris</artifactId>
     <name>Iris Quarkus - Runtime</name>
     <dependencies>
-        <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-        </dependency>
         <dependency>
             <groupId>id.global.iris</groupId>
             <artifactId>iris-common</artifactId>
@@ -25,6 +21,10 @@
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-retry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-rabbitmq</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -86,7 +86,7 @@
         <plugins>
             <plugin>
                 <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+                <artifactId>quarkus-extension-maven-plugin</artifactId>
                 <version>${version.quarkus}</version>
                 <executions>
                     <execution>

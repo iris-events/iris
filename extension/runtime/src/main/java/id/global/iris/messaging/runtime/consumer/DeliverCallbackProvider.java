@@ -14,11 +14,11 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 
 import id.global.iris.messaging.runtime.auth.GidJwtValidator;
-import id.global.iris.messaging.runtime.context.AmqpContext;
 import id.global.iris.messaging.runtime.context.EventContext;
+import id.global.iris.messaging.runtime.context.IrisContext;
 import id.global.iris.messaging.runtime.context.MethodHandleContext;
-import id.global.iris.messaging.runtime.exception.AmqpExceptionHandler;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.exception.IrisExceptionHandler;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
@@ -29,28 +29,28 @@ public class DeliverCallbackProvider {
     public static final String GID_UUID = "gidUuid";
     private final EventContext eventContext;
     private final ObjectMapper objectMapper;
-    private final AmqpProducer producer;
-    private final AmqpContext amqpContext;
+    private final EventProducer producer;
+    private final IrisContext irisContext;
     private final Object eventHandlerInstance;
     private final MethodHandle methodHandle;
     private final MethodHandleContext methodHandleContext;
     private final GidJwtValidator jwtValidator;
-    private final AmqpExceptionHandler errorHandler;
+    private final IrisExceptionHandler errorHandler;
 
     public DeliverCallbackProvider(
             final ObjectMapper objectMapper,
-            final AmqpProducer producer,
-            final AmqpContext amqpContext,
+            final EventProducer producer,
+            final IrisContext irisContext,
             final EventContext eventContext,
             final Object eventHandlerInstance,
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
             final GidJwtValidator jwtValidator,
-            final AmqpExceptionHandler errorHandler) {
+            final IrisExceptionHandler errorHandler) {
 
         this.objectMapper = objectMapper;
         this.producer = producer;
-        this.amqpContext = amqpContext;
+        this.irisContext = irisContext;
         this.eventHandlerInstance = eventHandlerInstance;
         this.methodHandle = methodHandle;
         this.methodHandleContext = methodHandleContext;
@@ -78,20 +78,20 @@ public class DeliverCallbackProvider {
                 optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
                 channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
             } catch (Throwable throwable) {
-                errorHandler.handleException(amqpContext, message, channel, throwable);
+                errorHandler.handleException(irisContext, message, channel, throwable);
             } finally {
                 MDC.setContextMap(currentContextMap);
             }
         };
     }
 
-    public AmqpContext getAmqpContext() {
-        return amqpContext;
+    public IrisContext getIrisContext() {
+        return irisContext;
     }
 
     private void authorizeMessage() {
         try {
-            final SecurityIdentity securityIdentity = jwtValidator.authenticate(this.amqpContext.getHandlerRolesAllowed());
+            final SecurityIdentity securityIdentity = jwtValidator.authenticate(this.irisContext.getHandlerRolesAllowed());
             final Instance<CurrentIdentityAssociation> association = CDI.current().select(CurrentIdentityAssociation.class);
             if (!association.isResolvable()) {
                 throw new AuthenticationFailedException("JWT identity association not resolvable.");
@@ -102,7 +102,7 @@ public class DeliverCallbackProvider {
                     .ifPresent(subject -> MDC.put(GID_UUID, subject));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
-            throw AmqpExceptionHandler.getSecurityException(securityException);
+            throw IrisExceptionHandler.getSecurityException(securityException);
         }
     }
 

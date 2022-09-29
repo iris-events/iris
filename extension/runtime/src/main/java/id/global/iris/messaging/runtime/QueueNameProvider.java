@@ -7,7 +7,7 @@ import javax.inject.Inject;
 
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.constants.Queues;
-import id.global.iris.messaging.runtime.context.AmqpContext;
+import id.global.iris.messaging.runtime.context.IrisContext;
 
 @ApplicationScoped
 public class QueueNameProvider {
@@ -21,7 +21,7 @@ public class QueueNameProvider {
         this.instanceName = instanceInfoProvider.getInstanceName();
     }
 
-    public String getQueueName(final AmqpContext context) {
+    public String getQueueName(final IrisContext context) {
         final var name = context.getName();
         final var exchangeType = context.getExchangeType();
 

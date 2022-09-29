@@ -11,12 +11,12 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.iris.amqp.parsers.ExchangeTypeParser;
-import id.global.iris.asyncapi.runtime.scanner.validator.ReservedAmqpNamesProvider;
+import id.global.iris.asyncapi.runtime.scanner.validator.ReservedIrisNamesProvider;
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.constants.Queues;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
+import id.global.iris.parsers.ExchangeTypeParser;
 
 public class MessageAnnotationValidator implements AnnotationInstanceValidator {
 
@@ -52,7 +52,7 @@ public class MessageAnnotationValidator implements AnnotationInstanceValidator {
     private void validateReservedQueuesExchanges(AnnotationInstance annotationInstance, IndexView index) {
         final var params = Stream.of(AnnotationInstanceParams.NAME_PARAM, AnnotationInstanceParams.ROUTING_KEY_PARAM);
 
-        final var illigalNames = ReservedAmqpNamesProvider.getReservedNames();
+        final var illigalNames = ReservedIrisNamesProvider.getReservedNames();
         final var paramsWithIllegalNames = params
                 .filter(param -> illigalNames.contains(annotationInstance.valueWithDefault(index, param).asString()))
                 .toList();

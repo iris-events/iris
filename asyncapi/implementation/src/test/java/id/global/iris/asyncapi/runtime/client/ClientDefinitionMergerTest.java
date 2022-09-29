@@ -12,7 +12,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
+import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.model.ClientDefinitions;
 
 class ClientDefinitionMergerTest {
@@ -29,7 +29,7 @@ class ClientDefinitionMergerTest {
         File file3 = new File(MERGE_FILE_3);
         File merged = new File(MERGED_FILE);
 
-        ObjectMapper objectMapper = EdaObjectMapper.getObjectMapper();
+        ObjectMapper objectMapper = IrisObjectMapper.getObjectMapper();
         JsonNode rootNode1 = objectMapper.readTree(file1);
         JsonNode rootNode2 = objectMapper.readTree(file2);
         JsonNode rootNode3 = objectMapper.readTree(file3);

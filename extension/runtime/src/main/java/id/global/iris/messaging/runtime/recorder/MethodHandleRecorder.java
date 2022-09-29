@@ -6,8 +6,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Optional;
 
-import id.global.iris.messaging.runtime.consumer.AmqpConsumerContainer;
-import id.global.iris.messaging.runtime.context.AmqpContext;
+import id.global.iris.messaging.runtime.consumer.ConsumerContainer;
+import id.global.iris.messaging.runtime.context.IrisContext;
 import id.global.iris.messaging.runtime.context.MethodHandleContext;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
@@ -16,24 +16,24 @@ import io.quarkus.runtime.annotations.Recorder;
 public class MethodHandleRecorder {
 
     public void registerConsumer(final BeanContainer beanContainer, MethodHandleContext methodHandleContext,
-            AmqpContext amqpContext)
+            IrisContext irisContext)
             throws NoSuchMethodException, IllegalAccessException, IOException {
 
         Object eventHandlerInstance = beanContainer.instance(methodHandleContext.getHandlerClass());
-        beanContainer.instance(AmqpConsumerContainer.class)
+        beanContainer.instance(ConsumerContainer.class)
                 .addConsumer(
                         createMethodHandle(methodHandleContext),
                         methodHandleContext,
-                        amqpContext,
+                        irisContext,
                         eventHandlerInstance);
     }
 
     public void registerFrontendCallback(final BeanContainer beanContainer, MethodHandleContext methodHandleContext,
-            AmqpContext amqpContext) throws NoSuchMethodException, IllegalAccessException, IOException {
+            IrisContext irisContext) throws NoSuchMethodException, IllegalAccessException, IOException {
 
         Object eventHandlerInstance = beanContainer.instance(methodHandleContext.getHandlerClass());
-        beanContainer.instance(AmqpConsumerContainer.class)
-                .addFrontendCallback(createMethodHandle(methodHandleContext), methodHandleContext, amqpContext,
+        beanContainer.instance(ConsumerContainer.class)
+                .addFrontendCallback(createMethodHandle(methodHandleContext), methodHandleContext, irisContext,
                         eventHandlerInstance);
 
     }

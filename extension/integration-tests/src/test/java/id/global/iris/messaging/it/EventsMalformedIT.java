@@ -20,11 +20,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.global.iris.common.annotations.Message;
-import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
+import id.global.iris.messaging.runtime.BasicPropertiesProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
-import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.iris.messaging.runtime.exception.AmqpSendException;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
+import id.global.iris.messaging.runtime.exception.IrisSendException;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -42,13 +42,13 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
     ChannelService producerChannelService;
 
     @Inject
-    AmqpConfiguration configuration;
+    IrisConfiguration configuration;
 
     @Inject
     TransactionManager transactionManager;
 
     @Inject
-    AmqpBasicPropertiesProvider amqpBasicPropertiesProvider;
+    BasicPropertiesProvider basicPropertiesProvider;
 
     @Test
     @DisplayName("Exception while serializing events should fail publishing.")
@@ -60,16 +60,16 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
                 .thenThrow(new JsonProcessingException("") {
                 });
 
-        AmqpProducer producer = new AmqpProducer(producerChannelService, objectMapper, eventContext, configuration,
-                transactionManager, amqpBasicPropertiesProvider);
+        EventProducer producer = new EventProducer(producerChannelService, objectMapper, eventContext, configuration,
+                transactionManager, basicPropertiesProvider);
 
-        Assertions.assertThrows(AmqpSendException.class, () -> {
+        Assertions.assertThrows(IrisSendException.class, () -> {
             producer.send(new TopicEventTmp("topic", 1L));
         });
-        Assertions.assertThrows(AmqpSendException.class, () -> {
+        Assertions.assertThrows(IrisSendException.class, () -> {
             producer.send(new FanoutEventTmp("fanout", 1L));
         });
-        Assertions.assertThrows(AmqpSendException.class, () -> {
+        Assertions.assertThrows(IrisSendException.class, () -> {
             producer.send(new DirectEventTmp("direct", 1L));
         });
     }

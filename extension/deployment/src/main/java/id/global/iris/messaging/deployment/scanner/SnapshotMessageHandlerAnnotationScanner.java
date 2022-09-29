@@ -6,18 +6,18 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.iris.amqp.parsers.ConsumerPrefetchCountParser;
-import id.global.iris.amqp.parsers.DeadLetterQueueParser;
-import id.global.iris.amqp.parsers.ExchangeParser;
-import id.global.iris.amqp.parsers.ExchangeTtlParser;
-import id.global.iris.amqp.parsers.MessageScopeParser;
-import id.global.iris.amqp.parsers.RolesAllowedParser;
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.constants.HandlerDefaultParameter;
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;
+import id.global.iris.parsers.ConsumerPrefetchCountParser;
+import id.global.iris.parsers.DeadLetterQueueParser;
+import id.global.iris.parsers.ExchangeParser;
+import id.global.iris.parsers.ExchangeTtlParser;
+import id.global.iris.parsers.MessageScopeParser;
+import id.global.iris.parsers.RolesAllowedParser;
 
 public class SnapshotMessageHandlerAnnotationScanner extends AnnotationScanner {
 

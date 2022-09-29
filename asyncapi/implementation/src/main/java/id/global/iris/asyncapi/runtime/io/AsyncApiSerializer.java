@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
+import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 
 /**
@@ -31,10 +31,10 @@ public class AsyncApiSerializer {
         try {
             ObjectMapper mapper;
             if (format == Format.JSON) {
-                mapper = EdaObjectMapper.getObjectMapper();
+                mapper = IrisObjectMapper.getObjectMapper();
                 return mapper.writeValueAsString(asyncApi);
             } else {
-                mapper = EdaObjectMapper.getYamlObjectMapper();
+                mapper = IrisObjectMapper.getYamlObjectMapper();
                 return mapper.writer().writeValueAsString(asyncApi);
             }
         } catch (JsonProcessingException e) {

@@ -8,10 +8,10 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 
-import id.global.iris.amqp.parsers.ExchangeParser;
-import id.global.iris.amqp.parsers.RoutingKeyParser;
 import id.global.iris.asyncapi.runtime.exception.AnnotationValidationException;
 import id.global.iris.common.annotations.Message;
+import id.global.iris.parsers.ExchangeParser;
+import id.global.iris.parsers.RoutingKeyParser;
 
 public class MessageAnnotationValidator {
     private final List<String> SERVICES_TO_IGNORE_RESERVED = List.of("id.global.iris.iris-subscription",
@@ -20,7 +20,7 @@ public class MessageAnnotationValidator {
     public void validateReservedNames(List<AnnotationInstance> messageAnnotations, String projectName, String projectGroupId) {
         validateIsMessageAnnotations(messageAnnotations);
 
-        List<String> reservedExchangeNames = ReservedAmqpNamesProvider.getReservedNames();
+        List<String> reservedExchangeNames = ReservedIrisNamesProvider.getReservedNames();
 
         if (SERVICES_TO_IGNORE_RESERVED.contains(String.join(".", List.of(projectGroupId, projectName)))) {
             return;

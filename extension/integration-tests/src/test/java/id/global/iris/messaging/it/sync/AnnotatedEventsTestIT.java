@@ -23,8 +23,8 @@ import org.junit.jupiter.api.TestInstance;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
-import id.global.iris.messaging.runtime.exception.AmqpSendException;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.exception.IrisSendException;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -51,7 +51,7 @@ public class AnnotatedEventsTestIT extends IsolatedEventContextTest {
     private static final String ANNOTATED_QUEUE_FANOUT = "annotated-queue-fanout";
 
     @Inject
-    AmqpProducer testProducer;
+    EventProducer testProducer;
 
     @Inject
     AnnotationService annotationService;
@@ -68,7 +68,7 @@ public class AnnotatedEventsTestIT extends IsolatedEventContextTest {
     @Test
     @DisplayName("Event without annotations should not be published successfully.")
     void publishMessageWithoutAnnotations() {
-        final var amqpSendException = assertThrows(AmqpSendException.class, () -> {
+        final var amqpSendException = assertThrows(IrisSendException.class, () -> {
             testProducer.send(new Event("name", 1L));
         });
         MatcherAssert.assertThat(amqpSendException.getMessage(), is("Message annotation is required."));
