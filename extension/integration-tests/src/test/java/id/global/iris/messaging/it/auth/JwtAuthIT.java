@@ -12,11 +12,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +35,7 @@ import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.constants.Exchanges;
 import id.global.iris.common.constants.MessagingHeaders;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
+import id.global.iris.messaging.runtime.channel.ChannelService;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -48,6 +49,10 @@ public class JwtAuthIT extends AbstractIntegrationTest {
     @Inject
     JwtTestService service;
 
+    @Inject
+    @Named("consumerChannelService")
+    ChannelService channelService;
+
     @Override
     public String getErrorMessageQueue() {
         return "error-message-jwt-aut-it";
@@ -55,8 +60,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        final var connection = rabbitMQClient.connect("JwtAuthIT publisher");
-        channel = connection.createChannel(ThreadLocalRandom.current().nextInt(0, 1000));
+        channel = channelService.createChannel();
         channel.exchangeDeclare(ERROR_EXCHANGE, BuiltinExchangeType.TOPIC, true);
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());

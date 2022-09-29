@@ -171,10 +171,10 @@ public class AmqpProducer {
         final var exchange = Optional.ofNullable(userId)
                 .map(u -> USER.getValue())
                 .orElseGet(() -> switch (scope) {
-                case USER -> USER.getValue();
-                case SESSION -> SESSION.getValue();
-                case BROADCAST -> BROADCAST.getValue();
-                default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
+                    case USER -> USER.getValue();
+                    case SESSION -> SESSION.getValue();
+                    case BROADCAST -> BROADCAST.getValue();
+                    default -> throw new AmqpSendException("Message scope " + scope + " not supported!");
                 });
 
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
