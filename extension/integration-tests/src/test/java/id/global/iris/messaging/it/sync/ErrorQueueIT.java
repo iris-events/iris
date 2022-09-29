@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,7 @@ import id.global.iris.common.exception.BadPayloadException;
 import id.global.iris.common.exception.MessagingException;
 import id.global.iris.common.exception.ServerException;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
+import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.test.junit.QuarkusTest;
@@ -50,6 +52,10 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     @Inject
     AmqpProducer producer;
 
+    @Inject
+    @Named("consumerChannelService")
+    ChannelService channelService;
+
     @InjectMock
     MessageRequeueHandler requeueHandler;
 
@@ -60,8 +66,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        final var connection = rabbitMQClient.connect("ErrorQueueIT publisher");
-        channel = connection.createChannel();
+        channel = channelService.createChannel();
         channel.exchangeDeclare(ERROR_EXCHANGE, BuiltinExchangeType.TOPIC, true);
         final var errorMessageQueue = getErrorMessageQueue();
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());

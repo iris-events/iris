@@ -41,7 +41,7 @@ class ApicurioClientTest {
     private ApicurioClient client;
 
     @BeforeEach
-    private void setup() {
+    public void setup() {
         this.apicurioClientMock = Mockito.mock(RegistryClientImpl.class);
         this.client = new ApicurioClient(apicurioClientMock);
     }

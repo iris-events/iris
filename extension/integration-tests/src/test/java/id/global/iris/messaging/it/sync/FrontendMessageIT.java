@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.constants.Exchanges;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
-import io.quarkiverse.rabbitmqclient.RabbitMQClient;
+import id.global.iris.messaging.runtime.channel.ChannelService;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -42,7 +43,8 @@ public class FrontendMessageIT extends IsolatedEventContextTest {
     HandlerService service;
 
     @Inject
-    RabbitMQClient rabbitMQClient;
+    @Named("consumerChannelService")
+    ChannelService channelService;
 
     @Inject
     ObjectMapper objectMapper;
@@ -51,8 +53,7 @@ public class FrontendMessageIT extends IsolatedEventContextTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        final var connection = rabbitMQClient.connect("FrontendMessageIT publisher");
-        channel = connection.createChannel();
+        channel = channelService.createChannel();
     }
 
     @Test

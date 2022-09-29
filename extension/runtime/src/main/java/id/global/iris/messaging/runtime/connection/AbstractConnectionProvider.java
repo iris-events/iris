@@ -12,7 +12,8 @@ import com.rabbitmq.client.Connection;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
 import id.global.iris.messaging.runtime.exception.AmqpConnectionException;
-import id.global.iris.messaging.runtime.health.IrisHealthCheck;
+import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
+import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
@@ -23,7 +24,8 @@ public abstract class AbstractConnectionProvider {
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
     private AmqpConfiguration configuration;
-    private IrisHealthCheck healthCheck;
+    private IrisReadinessCheck readinessCheck;
+    private IrisLivenessCheck livenessCheck;
     private AtomicBoolean connecting;
     protected Connection connection;
 
@@ -32,11 +34,13 @@ public abstract class AbstractConnectionProvider {
     }
 
     public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, AmqpConfiguration configuration, IrisHealthCheck healthCheck) {
+            InstanceInfoProvider instanceInfoProvider, AmqpConfiguration configuration, IrisReadinessCheck readinessCheck,
+            IrisLivenessCheck livenessCheck) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;
         this.configuration = configuration;
-        this.healthCheck = healthCheck;
+        this.readinessCheck = readinessCheck;
+        this.livenessCheck = livenessCheck;
         this.connecting = new AtomicBoolean(false);
     }
 
@@ -124,11 +128,12 @@ public abstract class AbstractConnectionProvider {
 
     private void setConnecting(boolean connecting) {
         this.connecting.set(connecting);
-        this.healthCheck.setConnecting(connecting);
+        this.readinessCheck.setConnecting(connecting);
     }
 
     private void setTimedOut(boolean timedOut) {
-        this.healthCheck.setTimedOut(timedOut);
+        this.readinessCheck.setTimedOut(timedOut);
+        this.livenessCheck.setTimedOut(timedOut);
     }
 
     private boolean getConnecting() {
