@@ -52,9 +52,9 @@
         <version.maven-project>2.2.1</version.maven-project>
         <version.maven-resolver-api>1.8.0</version.maven-resolver-api>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
-        <version.org.skyscreamer>1.5.0</version.org.skyscreamer>
         <version.quarkiverse.rabbitmqclient>0.5.0.Final</version.quarkiverse.rabbitmqclient>
-        <version.rabbit.amqp-client>5.14.2</version.rabbit.amqp-client>
+        <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
+        <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
         <version.victools>4.24.3</version.victools>
     </properties>
@@ -117,13 +117,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.quarkiverse.rabbitmqclient</groupId>
-                <artifactId>quarkus-rabbitmq-client</artifactId>
-                <version>${version.quarkiverse.rabbitmqclient}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
                 <version>${version.hamcrest}</version>
@@ -133,19 +126,6 @@
                 <groupId>org.jboss.logmanager</groupId>
                 <artifactId>jboss-logmanager</artifactId>
                 <version>2.1.18.Final</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>${version.junit-jupiter}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <version>${version.junit-jupiter}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
