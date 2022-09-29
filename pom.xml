@@ -54,7 +54,7 @@
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
-        <version.victools>4.26.0</version.victools>
+        <version.victools>4.27.0</version.victools>
     </properties>
 
     <dependencyManagement>
