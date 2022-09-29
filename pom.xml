@@ -44,7 +44,7 @@
         <version.jandex>2.4.3.Final</version.jandex>
         <version.json-simple>1.1.1</version.json-simple>
         <version.jsonschema2pojo-core>1.1.2</version.jsonschema2pojo-core>
-        <version.junit-jupiter>5.8.2</version.junit-jupiter>
+        <version.junit-jupiter>5.9.1</version.junit-jupiter>
         <version.maven>3.8.6</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
         <version.maven-plugin-annotations>3.6.4</version.maven-plugin-annotations>
