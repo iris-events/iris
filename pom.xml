@@ -52,7 +52,7 @@
         <version.maven-project>2.2.1</version.maven-project>
         <version.maven-resolver-api>1.8.2</version.maven-resolver-api>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
-        <version.org.skyscreamer>1.5.0</version.org.skyscreamer>
+        <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <version.quarkiverse.rabbitmqclient>0.5.1.Final</version.quarkiverse.rabbitmqclient>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
