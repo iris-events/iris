@@ -17,7 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 /**
@@ -33,7 +33,7 @@ public class FanoutTestIT extends IsolatedEventContextTest {
     private static final String EXCHANGE = "test-fanout-exchange";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Inject
     LoggingService loggingService;

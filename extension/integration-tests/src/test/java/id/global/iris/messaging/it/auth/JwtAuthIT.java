@@ -1,7 +1,7 @@
 package id.global.iris.messaging.it.auth;
 
-import static id.global.iris.messaging.runtime.exception.AmqpExceptionHandler.AUTHENTICATION_FAILED_CLIENT_CODE;
-import static id.global.iris.messaging.runtime.exception.AmqpExceptionHandler.FORBIDDEN_CLIENT_CODE;
+import static id.global.iris.messaging.runtime.exception.IrisExceptionHandler.AUTHENTICATION_FAILED_CLIENT_CODE;
+import static id.global.iris.messaging.runtime.exception.IrisExceptionHandler.FORBIDDEN_CLIENT_CODE;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

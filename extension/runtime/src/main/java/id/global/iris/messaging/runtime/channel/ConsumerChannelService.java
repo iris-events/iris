@@ -4,14 +4,14 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
 import id.global.iris.messaging.runtime.connection.ConsumerConnectionProvider;
 
 @Named("consumerChannelService")
 @ApplicationScoped()
 public class ConsumerChannelService extends AbstractChannelService {
     @Inject
-    public ConsumerChannelService(ConsumerConnectionProvider connectionProvider, AmqpConfiguration configuration) {
+    public ConsumerChannelService(ConsumerConnectionProvider connectionProvider, IrisConfiguration configuration) {
         super(connectionProvider, configuration);
     }
 }

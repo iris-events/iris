@@ -32,7 +32,7 @@ public class IrisLivenessCheck implements HealthCheck {
 
     @Override
     public HealthCheckResponse call() {
-        HealthCheckResponseBuilder builder = HealthCheckResponse.named("IRIS amqp connection health check")
+        HealthCheckResponseBuilder builder = HealthCheckResponse.named("Iris amqp connection health check")
                 .withData("timedOut", livenessStatus.timedOut().get())
                 .up();
         if (livenessStatus.isHealthy().get()) {

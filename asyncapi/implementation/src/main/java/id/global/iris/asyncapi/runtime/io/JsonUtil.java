@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
+import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 
 /**
  * Utilities methods for reading information from a Json Tree.
@@ -282,7 +282,7 @@ public final class JsonUtil {
             case '8':
             case '9':
                 try {
-                    JsonNode node = EdaObjectMapper.getObjectMapper().readTree(value);
+                    JsonNode node = IrisObjectMapper.getObjectMapper().readTree(value);
                     return readObject(node);
                 } catch (Exception e) {
                     // TODO log the error

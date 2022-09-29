@@ -1,9 +1,5 @@
 name: Quarkus Iris
-description: Iris is EDA framework
+description: Iris is event driven architecture framework
 metadata:
   keywords:
     - quarkus-iris
-#  guide: ...
-#  categories:
-#    - "miscellaneous"
-#  status: "preview"

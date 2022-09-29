@@ -1,7 +1,7 @@
 package id.global.iris.plugin.asyncapi.generator;
 
-import static id.global.iris.asyncapi.runtime.json.EdaObjectMapper.getObjectMapper;
-import static id.global.iris.asyncapi.runtime.json.EdaObjectMapper.getYamlObjectMapper;
+import static id.global.iris.asyncapi.runtime.json.IrisObjectMapper.getObjectMapper;
+import static id.global.iris.asyncapi.runtime.json.IrisObjectMapper.getYamlObjectMapper;
 
 import java.io.File;
 import java.io.IOException;

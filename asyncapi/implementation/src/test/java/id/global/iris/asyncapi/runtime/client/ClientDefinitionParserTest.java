@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
+import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.model.ClientDefinitions;
 
 class ClientDefinitionParserTest {
@@ -24,7 +24,7 @@ class ClientDefinitionParserTest {
     @DisplayName("Test extracting channels and schemas in [frontend, user, session, broadcast] scopes from asyncapi document.")
     void parse() throws IOException {
         File file = new File(ASYNCAPI_FE_FILE);
-        JsonNode rootNode = EdaObjectMapper.getObjectMapper().readTree(file);
+        JsonNode rootNode = IrisObjectMapper.getObjectMapper().readTree(file);
 
         ClientDefinitionParser definitionParser = new ClientDefinitionParser();
         ClientDefinitions parsedFeDefs = definitionParser.parse(rootNode);

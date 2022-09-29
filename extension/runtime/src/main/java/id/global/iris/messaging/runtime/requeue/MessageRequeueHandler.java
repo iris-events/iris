@@ -17,10 +17,8 @@ import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
 import id.global.iris.common.constants.Exchanges;
@@ -28,39 +26,38 @@ import id.global.iris.common.constants.Queues;
 import id.global.iris.common.exception.MessagingException;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
-import id.global.iris.messaging.runtime.channel.ChannelService;
-import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.iris.messaging.runtime.context.AmqpContext;
+import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
+import id.global.iris.messaging.runtime.context.IrisContext;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.rabbitmq.RabbitMQClient;
 
 @ApplicationScoped
 public class MessageRequeueHandler {
 
-    private final Channel channel;
-    private final AmqpConfiguration configuration;
+    private final RabbitMQClient rabbitMQClient;
+    private final IrisConfiguration configuration;
     private final QueueNameProvider queueNameProvider;
     private final TimestampProvider timestampProvider;
 
     @Inject
-    public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
-            AmqpConfiguration configuration, QueueNameProvider queueNameProvider,
-            TimestampProvider timestampProvider) throws IOException {
-
+    public MessageRequeueHandler(RabbitMQClient rabbitMQClient, IrisConfiguration configuration,
+            QueueNameProvider queueNameProvider, TimestampProvider timestampProvider) throws IOException {
+        this.rabbitMQClient = rabbitMQClient;
         this.configuration = configuration;
         this.queueNameProvider = queueNameProvider;
         this.timestampProvider = timestampProvider;
         final var channelId = UUID.randomUUID().toString();
-        this.channel = channelService.getOrCreateChannelById(channelId);
     }
 
-    public void enqueueWithBackoff(final AmqpContext amqpContext, Delivery message,
+    public void enqueueWithBackoff(final IrisContext irisContext, Delivery message,
             final MessagingException messagingException, final boolean shouldNotifyFrontend)
             throws IOException {
-        final var newMessage = getMessageWithNewHeaders(amqpContext, message, messagingException, shouldNotifyFrontend);
-        channel.basicPublish(Exchanges.RETRY.getValue(), Queues.RETRY.getValue(), newMessage.getProperties(),
-                newMessage.getBody());
+        final var newMessage = getMessageWithNewHeaders(irisContext, message, messagingException, shouldNotifyFrontend);
+        rabbitMQClient.basicPublish(Exchanges.RETRY.getValue(), Queues.RETRY.getValue(), newMessage.getProperties(),
+                Buffer.buffer(newMessage.getBody()));
     }
 
-    private Delivery getMessageWithNewHeaders(final AmqpContext amqpContext,
+    private Delivery getMessageWithNewHeaders(final IrisContext irisContext,
             Delivery message, final MessagingException messagingException, final boolean shouldNotifyFrontend) {
         final var properties = message.getProperties();
         final var headers = properties.getHeaders();
@@ -75,10 +72,10 @@ public class MessageRequeueHandler {
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
         newHeaders.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
 
-        final var deadLetterExchangeName = amqpContext.getDeadLetterExchangeName();
+        final var deadLetterExchangeName = irisContext.getDeadLetterExchangeName();
         if (deadLetterExchangeName.isPresent()) {
-            final var queueName = queueNameProvider.getQueueName(amqpContext);
-            final var deadLetterRoutingKey = amqpContext.getDeadLetterRoutingKey(queueName);
+            final var queueName = queueNameProvider.getQueueName(irisContext);
+            final var deadLetterRoutingKey = irisContext.getDeadLetterRoutingKey(queueName);
             newHeaders.put(X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
             newHeaders.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
         }

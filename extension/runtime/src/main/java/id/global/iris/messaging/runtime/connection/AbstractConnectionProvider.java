@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import com.rabbitmq.client.Connection;
 
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
-import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
-import id.global.iris.messaging.runtime.exception.AmqpConnectionException;
+import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
+import id.global.iris.messaging.runtime.exception.IrisConnectionException;
 import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 import io.github.resilience4j.core.IntervalFunction;
@@ -23,7 +23,7 @@ public abstract class AbstractConnectionProvider {
 
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
-    private AmqpConfiguration configuration;
+    private IrisConfiguration configuration;
     private IrisReadinessCheck readinessCheck;
     private IrisLivenessCheck livenessCheck;
     private AtomicBoolean connecting;
@@ -34,7 +34,7 @@ public abstract class AbstractConnectionProvider {
     }
 
     public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, AmqpConfiguration configuration, IrisReadinessCheck readinessCheck,
+            InstanceInfoProvider instanceInfoProvider, IrisConfiguration configuration, IrisReadinessCheck readinessCheck,
             IrisLivenessCheck livenessCheck) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;
@@ -64,7 +64,7 @@ public abstract class AbstractConnectionProvider {
         final var retryConfig = RetryConfig.custom()
                 .maxAttempts(maxRetries)
                 .intervalFunction(intervalFn)
-                .retryExceptions(AmqpConnectionException.class)
+                .retryExceptions(IrisConnectionException.class)
                 .failAfterMaxAttempts(true)
                 .build();
         final var retry = Retry.of("executeConnection", retryConfig);
@@ -122,7 +122,7 @@ public abstract class AbstractConnectionProvider {
             setTimedOut(false);
             return connection;
         } catch (IOException | TimeoutException e) {
-            throw new AmqpConnectionException("Could not create new AMQP connection", e);
+            throw new IrisConnectionException("Could not create new AMQP connection", e);
         }
     }
 

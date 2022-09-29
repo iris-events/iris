@@ -29,9 +29,9 @@ import org.junit.jupiter.api.TestInstance;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
-import id.global.iris.messaging.runtime.exception.AmqpSendException;
-import id.global.iris.messaging.runtime.exception.AmqpTransactionException;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.exception.IrisSendException;
+import id.global.iris.messaging.runtime.exception.IrisTransactionException;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import id.global.iris.messaging.runtime.tx.TransactionCallback;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -134,8 +134,8 @@ public class TransactionalIT extends IsolatedEventContextTest {
         service.getProducer().registerTransactionCallback(new TransactionCallback() {
             @Override
             public void beforeTxPublish(List<id.global.iris.messaging.runtime.producer.Message> messages)
-                    throws AmqpSendException {
-                throw new AmqpSendException("Test exception");
+                    throws IrisSendException {
+                throw new IrisSendException("Test exception");
             }
 
             @Override
@@ -150,7 +150,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
         });
         try {
             service.sendTransactionalCustomCallback(false);
-        } catch (AmqpSendException e) {
+        } catch (IrisSendException e) {
             fail();
         } catch (RuntimeException runtimeException) {
             List<Throwable> causes = new ArrayList<>();
@@ -161,7 +161,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
                 cause = cause.getCause();
             }
 
-            Optional<Throwable> optionalThrowable = causes.stream().filter(c -> c instanceof AmqpTransactionException)
+            Optional<Throwable> optionalThrowable = causes.stream().filter(c -> c instanceof IrisTransactionException)
                     .findFirst();
 
             assertThat(optionalThrowable.isPresent(), is(true));
@@ -173,7 +173,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
         private final static int EXPECTED_MESSAGES = 4;
 
         @Inject
-        AmqpProducer producer;
+        EventProducer producer;
 
         private List<CompletableFuture<TestEvent>> futures = new ArrayList<>();
 
@@ -208,12 +208,12 @@ public class TransactionalIT extends IsolatedEventContextTest {
             return futures.stream().filter(CompletableFuture::isDone).collect(Collectors.toSet()).size();
         }
 
-        public void send(int i) throws AmqpSendException {
+        public void send(int i) throws IrisSendException {
             producer.send(new TestEvent(i));
         }
 
         @Transactional
-        public void sendTransactional(boolean throwException) throws AmqpSendException {
+        public void sendTransactional(boolean throwException) throws IrisSendException {
             for (int i = 0; i < EXPECTED_MESSAGES; i++) {
                 producer.send(new TestEvent(i));
             }
@@ -224,7 +224,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
         }
 
         @Transactional
-        public void sendTransactionalCustomCallback(boolean throwException) throws AmqpSendException {
+        public void sendTransactionalCustomCallback(boolean throwException) throws IrisSendException {
             for (int i = 0; i < EXPECTED_MESSAGES; i++) {
                 producer.send(new TestEvent(i));
             }
@@ -234,7 +234,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
             }
         }
 
-        public AmqpProducer getProducer() {
+        public EventProducer getProducer() {
             return producer;
         }
 

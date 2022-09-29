@@ -5,11 +5,11 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 
-import id.global.iris.amqp.parsers.MessageScopeParser;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 import id.global.iris.messaging.deployment.scanner.ScannerUtils;
+import id.global.iris.parsers.MessageScopeParser;
 
 public class PerInstanceParamAnnotationValidator implements AnnotationInstanceValidator {
 

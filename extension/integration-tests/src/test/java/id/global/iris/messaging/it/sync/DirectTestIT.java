@@ -1,7 +1,7 @@
 package id.global.iris.messaging.it.sync;
 
 import static id.global.iris.common.annotations.ExchangeType.DIRECT;
-import static id.global.iris.messaging.runtime.exception.AmqpExceptionHandler.SERVER_ERROR_CLIENT_CODE;
+import static id.global.iris.messaging.runtime.exception.IrisExceptionHandler.SERVER_ERROR_CLIENT_CODE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,8 +35,8 @@ import id.global.iris.common.exception.MessagingException;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.context.EventContext;
-import id.global.iris.messaging.runtime.exception.AmqpSendException;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.exception.IrisSendException;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -56,7 +56,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
     private static final String TEST_EXCEPTION_MESSAGE = "test exception message";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Inject
     TestHandlerService service;
@@ -75,7 +75,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
     @Test
     @DisplayName("Publish null message, should return false")
     void publishNullMessage() {
-        assertThrows(AmqpSendException.class, () -> producer.send(null));
+        assertThrows(IrisSendException.class, () -> producer.send(null));
     }
 
     @Test

@@ -25,7 +25,7 @@ import com.rabbitmq.client.AMQP;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.runtime.context.EventContext;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -37,7 +37,7 @@ public class EventAppRecorderIT extends IsolatedEventContextTest {
     public static final String APP_ID = "test-app";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Inject
     Service service;

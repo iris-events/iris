@@ -22,7 +22,7 @@ import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.context.EventContext;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -34,7 +34,7 @@ class EventContextTest extends IsolatedEventContextTest {
     public static final String SUBSCRIPTION_ID_HEADER_VALUE = UUID.randomUUID().toString();
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Inject
     TestHandlerService service;

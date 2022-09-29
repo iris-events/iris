@@ -33,7 +33,7 @@ import id.global.iris.common.exception.MessagingException;
 import id.global.iris.common.exception.ServerException;
 import id.global.iris.messaging.it.AbstractIntegrationTest;
 import id.global.iris.messaging.runtime.channel.ChannelService;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -50,7 +50,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     private static final String SERVER_ERROR_CLIENT_CODE = "SERVER_ERROR";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Inject
     @Named("consumerChannelService")

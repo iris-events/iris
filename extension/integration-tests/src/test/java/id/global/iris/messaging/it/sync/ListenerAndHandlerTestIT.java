@@ -27,7 +27,7 @@ import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
 import id.global.iris.messaging.runtime.channel.ChannelKey;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -42,7 +42,7 @@ public class ListenerAndHandlerTestIT extends IsolatedEventContextTest {
     private static final String UNKNOWN_QUEUE = "unknown-queue";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
 
     @Test
     @DisplayName("Event published to unknown exchange should fail!")

@@ -20,7 +20,7 @@ import org.junit.jupiter.api.TestInstance;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.it.IsolatedEventContextTest;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -29,7 +29,7 @@ public class TopicTestIT extends IsolatedEventContextTest {
     private static final String TOPIC_EXCHANGE = "topic-test-2222";
 
     @Inject
-    AmqpProducer producer;
+    EventProducer producer;
     @Inject
     MyLoggingServiceA internalLoggingServiceA;
 

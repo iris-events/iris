@@ -10,21 +10,21 @@ import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Channel;
 
-import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
 import id.global.iris.messaging.runtime.connection.AbstractConnectionProvider;
-import id.global.iris.messaging.runtime.exception.AmqpConnectionException;
+import id.global.iris.messaging.runtime.exception.IrisConnectionException;
 
 public abstract class AbstractChannelService implements ChannelService {
     private final static Logger log = LoggerFactory.getLogger(AbstractChannelService.class);
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private AbstractConnectionProvider connectionProvider;
-    private AmqpConfiguration configuration;
+    private IrisConfiguration configuration;
 
     @SuppressWarnings("unused")
     protected AbstractChannelService() {
     }
 
-    protected AbstractChannelService(AbstractConnectionProvider connectionProvider, AmqpConfiguration configuration) {
+    protected AbstractChannelService(AbstractConnectionProvider connectionProvider, IrisConfiguration configuration) {
         this.connectionProvider = connectionProvider;
         this.configuration = configuration;
     }
@@ -33,7 +33,7 @@ public abstract class AbstractChannelService implements ChannelService {
     public Channel getOrCreateChannelById(String channelId) {
         Channel channel = channelMap.computeIfAbsent(channelId, t -> createChannel());
         if (channel == null) {
-            throw new AmqpConnectionException("Could not create channel.");
+            throw new IrisConnectionException("Could not create channel.");
         }
         return channel;
     }

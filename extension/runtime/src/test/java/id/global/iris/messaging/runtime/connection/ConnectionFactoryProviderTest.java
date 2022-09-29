@@ -6,13 +6,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import id.global.iris.messaging.runtime.configuration.AmqpConfiguration;
+import io.vertx.rabbitmq.RabbitMQOptions;
 
 class ConnectionFactoryProviderTest {
 
     @Test
     void shouldSetAllProperties() {
-        final AmqpConfiguration amqpConfiguration = new AmqpConfiguration();
+        final RabbitMQOptions irisConfiguration = new RabbitMQOptions();
 
         final var username = "username.mock";
         final var password = "password.mock";
@@ -20,13 +20,13 @@ class ConnectionFactoryProviderTest {
         final var port = 1234;
         final var sslEnabled = true;
 
-        amqpConfiguration.setUsername(username);
-        amqpConfiguration.setPassword(password);
-        amqpConfiguration.setUrl(url);
-        amqpConfiguration.setPort(port);
-        amqpConfiguration.setSslEnabled(sslEnabled);
+        irisConfiguration.setUser(username);
+        irisConfiguration.setPassword(password);
+        irisConfiguration.setHost(url);
+        irisConfiguration.setPort(port);
+        irisConfiguration.setSsl(sslEnabled);
 
-        final var factoryProvider = new ConnectionFactoryProvider(amqpConfiguration);
+        final var factoryProvider = new ConnectionFactoryProvider(irisConfiguration);
         final var connectionFactory = factoryProvider.getConnectionFactory();
 
         assertThat(connectionFactory, notNullValue());
@@ -39,17 +39,17 @@ class ConnectionFactoryProviderTest {
 
     @Test
     void shouldUrlEncodeUsernameAndPassword() {
-        final AmqpConfiguration amqpConfiguration = new AmqpConfiguration();
+        final RabbitMQOptions irisConfiguration = new RabbitMQOptions();
 
         final var username = "u$ern@me.m//ck";
         final var password = "p@$$word.m//ck";
         final var port = 5432;
 
-        amqpConfiguration.setUsername(username);
-        amqpConfiguration.setPassword(password);
-        amqpConfiguration.setPort(port); // port is required here as mocked class does not provide default values
+        irisConfiguration.setUser(username);
+        irisConfiguration.setPassword(password);
+        irisConfiguration.setPort(port); // port is required here as mocked class does not provide default values
 
-        final var factoryProvider = new ConnectionFactoryProvider(amqpConfiguration);
+        final var factoryProvider = new ConnectionFactoryProvider(irisConfiguration);
         final var connectionFactory = factoryProvider.getConnectionFactory();
 
         assertThat(connectionFactory.getUsername(), is(username));

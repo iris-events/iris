@@ -1,6 +1,6 @@
 package id.global.iris.plugin.asyncapi.merge;
 
-import static id.global.iris.asyncapi.runtime.json.EdaObjectMapper.getObjectMapper;
+import static id.global.iris.asyncapi.runtime.json.IrisObjectMapper.getObjectMapper;
 
 import java.io.IOException;
 import java.util.List;

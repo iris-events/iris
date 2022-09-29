@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.messaging.deployment.scanner.Scanner;
-import id.global.iris.messaging.runtime.AmqpBasicPropertiesProvider;
+import id.global.iris.messaging.runtime.BasicPropertiesProvider;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.QueueNameProvider;
@@ -18,21 +18,22 @@ import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.auth.GidJwtValidator;
 import id.global.iris.messaging.runtime.channel.ConsumerChannelService;
 import id.global.iris.messaging.runtime.channel.ProducerChannelService;
-import id.global.iris.messaging.runtime.configuration.AmqpBuildConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisBuildConfiguration;
+import id.global.iris.messaging.runtime.configuration.RabbitConfig;
 import id.global.iris.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.iris.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.iris.messaging.runtime.connection.ProducerConnectionProvider;
-import id.global.iris.messaging.runtime.consumer.AmqpConsumerContainer;
-import id.global.iris.messaging.runtime.consumer.FrontendAmqpConsumer;
-import id.global.iris.messaging.runtime.context.AmqpContext;
+import id.global.iris.messaging.runtime.consumer.ConsumerContainer;
+import id.global.iris.messaging.runtime.consumer.FrontendEventConsumer;
 import id.global.iris.messaging.runtime.context.EventAppContext;
 import id.global.iris.messaging.runtime.context.EventContext;
+import id.global.iris.messaging.runtime.context.IrisContext;
 import id.global.iris.messaging.runtime.context.MethodHandleContext;
-import id.global.iris.messaging.runtime.exception.AmqpExceptionHandler;
+import id.global.iris.messaging.runtime.exception.IrisExceptionHandler;
 import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
-import id.global.iris.messaging.runtime.producer.AmqpProducer;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 import id.global.iris.messaging.runtime.recorder.ConsumerInitRecorder;
 import id.global.iris.messaging.runtime.recorder.EventAppRecorder;
 import id.global.iris.messaging.runtime.recorder.MethodHandleRecorder;
@@ -58,7 +59,7 @@ class EventMessagingProcessor {
 
     public static class EventMessagingEnabled implements BooleanSupplier {
 
-        AmqpBuildConfiguration config;
+        IrisBuildConfiguration config;
 
         @Override
         public boolean getAsBoolean() {
@@ -77,7 +78,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void declareAmqpBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
+    void declareIrisBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
         additionalBeanBuildItemBuildProducer.produce(
                 new AdditionalBeanBuildItem.Builder()
                         .addBeanClasses(
@@ -86,21 +87,22 @@ class EventMessagingProcessor {
                                 ProducerConnectionProvider.class,
                                 ConsumerChannelService.class,
                                 ProducerChannelService.class,
-                                AmqpConsumerContainer.class,
+                                ConsumerContainer.class,
                                 EventAppInfoProvider.class,
                                 EventContext.class,
-                                AmqpProducer.class,
+                                EventProducer.class,
                                 ConnectionFactoryProvider.class,
                                 MessageRequeueHandler.class,
                                 CorrelationIdProvider.class,
                                 GidJwtValidator.class,
-                                FrontendAmqpConsumer.class,
-                                AmqpExceptionHandler.class,
+                                FrontendEventConsumer.class,
+                                IrisExceptionHandler.class,
                                 QueueNameProvider.class,
                                 IrisReadinessCheck.class,
                                 IrisLivenessCheck.class,
                                 TimestampProvider.class,
-                                AmqpBasicPropertiesProvider.class)
+                                BasicPropertiesProvider.class,
+                                RabbitConfig.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
@@ -151,7 +153,7 @@ class EventMessagingProcessor {
 
                 MethodHandleContext methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
                         returnEventClass, col.getMethodName());
-                AmqpContext amqpContext = new AmqpContext(col.getName(),
+                IrisContext irisContext = new IrisContext(col.getName(),
                         col.getBindingKeys(),
                         col.getExchangeType(),
                         col.getScope(),
@@ -171,9 +173,9 @@ class EventMessagingProcessor {
                 }
 
                 if (col.getScope() != Scope.FRONTEND) {
-                    methodHandleRecorder.registerConsumer(beanContainer.getValue(), methodHandleContext, amqpContext);
+                    methodHandleRecorder.registerConsumer(beanContainer.getValue(), methodHandleContext, irisContext);
                 } else {
-                    methodHandleRecorder.registerFrontendCallback(beanContainer.getValue(), methodHandleContext, amqpContext);
+                    methodHandleRecorder.registerFrontendCallback(beanContainer.getValue(), methodHandleContext, irisContext);
                 }
 
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IOException e) {
@@ -200,7 +202,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep
-    HealthBuildItem addReadinessCheck(Capabilities capabilities, AmqpBuildConfiguration configuration) {
+    HealthBuildItem addReadinessCheck(Capabilities capabilities, IrisBuildConfiguration configuration) {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
             return new HealthBuildItem("id.global.iris.messaging.runtime.health.IrisReadinessCheck",
                     configuration.readinessCheckEnabled);
@@ -211,7 +213,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep
-    HealthBuildItem addLivenessCheck(Capabilities capabilities, AmqpBuildConfiguration configuration) {
+    HealthBuildItem addLivenessCheck(Capabilities capabilities, IrisBuildConfiguration configuration) {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
             return new HealthBuildItem("id.global.iris.messaging.runtime.health.IrisLivenessCheck",
                     configuration.livenessCheckEnabled);

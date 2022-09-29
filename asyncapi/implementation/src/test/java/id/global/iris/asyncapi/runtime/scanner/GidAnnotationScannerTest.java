@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import id.global.iris.asyncapi.runtime.json.EdaObjectMapper;
+import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
@@ -35,7 +35,7 @@ public class GidAnnotationScannerTest extends IndexScannerTestBase {
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
                 projectVersion);
         Aai20Document document = scanner.scan();
-        String schemaString = EdaObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
+        String schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
         JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
     }
 
