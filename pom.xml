@@ -41,7 +41,7 @@
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.13</version.httpclient>
         <version.jackson-databind>2.13.3</version.jackson-databind>
-        <version.jandex>2.4.2.Final</version.jandex>
+        <version.jandex>2.4.3.Final</version.jandex>
         <version.json-simple>1.1.1</version.json-simple>
         <version.jsonschema2pojo-core>1.1.2</version.jsonschema2pojo-core>
         <version.junit-jupiter>5.8.2</version.junit-jupiter>
