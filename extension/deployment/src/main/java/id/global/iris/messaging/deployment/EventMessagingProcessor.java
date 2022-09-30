@@ -121,7 +121,7 @@ class EventMessagingProcessor {
     @BuildStep
     UnremovableBeanBuildItem unremovable() {
         // Any bean that contains or is annotated with annotation defined within the given package is considered unremovable
-        return UnremovableBeanBuildItem.beanClassAnnotation("id.global.common.iris.annotations");
+        return UnremovableBeanBuildItem.beanClassAnnotation("id.global.iris.common.annotations");
     }
 
     @SuppressWarnings("unused")
