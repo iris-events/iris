@@ -1,6 +1,7 @@
 package id.global.iris.messaging.deployment;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -19,7 +20,7 @@ import id.global.iris.messaging.runtime.auth.GidJwtValidator;
 import id.global.iris.messaging.runtime.channel.ConsumerChannelService;
 import id.global.iris.messaging.runtime.channel.ProducerChannelService;
 import id.global.iris.messaging.runtime.configuration.IrisBuildConfiguration;
-import id.global.iris.messaging.runtime.configuration.RabbitConfig;
+import id.global.iris.messaging.runtime.configuration.IrisConfigProvider;
 import id.global.iris.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.iris.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.iris.messaging.runtime.connection.ProducerConnectionProvider;
@@ -102,7 +103,7 @@ class EventMessagingProcessor {
                                 IrisLivenessCheck.class,
                                 TimestampProvider.class,
                                 BasicPropertiesProvider.class,
-                                RabbitConfig.class)
+                                IrisConfigProvider.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
@@ -143,6 +144,8 @@ class EventMessagingProcessor {
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
             MethodHandleRecorder methodHandleRecorder) {
         QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
+        //        StringBuilder sb = new StringBuilder("Registering handlers ");
+        List<String> handlers = new ArrayList<>();
         messageHandlerInfoBuildItems.forEach(col -> {
             try {
                 Class<?> handlerClass = cl.loadClass(col.getDeclaringClass().name().toString());
@@ -165,23 +168,27 @@ class EventMessagingProcessor {
                         col.getDeadLetterQueue(),
                         col.getRolesAllowed());
 
-                LOG.info("Registering handler. Handler class = " + handlerClass.getName() +
-                        " eventClass = " + eventClass.getName() +
-                        " methodName = " + col.getMethodName());
-                if (returnEventClass != null) {
-                    LOG.info("we have reply event: {}", returnEventClass);
-                }
-
                 if (col.getScope() != Scope.FRONTEND) {
                     methodHandleRecorder.registerConsumer(beanContainer.getValue(), methodHandleContext, irisContext);
                 } else {
                     methodHandleRecorder.registerFrontendCallback(beanContainer.getValue(), methodHandleContext, irisContext);
                 }
 
+                StringBuilder sb = new StringBuilder();
+                sb.append(handlerClass.getSimpleName()).append("#").append(col.getMethodName());
+                sb.append(" (").append(eventClass.getSimpleName());
+                if (returnEventClass != null) {
+                    sb.append(" -> ").append(returnEventClass.getSimpleName());
+                }
+                sb.append(")");
+
+                handlers.add(sb.toString());
+
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IOException e) {
-                LOG.error("Could not record method handle", e);
+                LOG.error("Could not record method handle. methodName: " + col.getMethodName(), e);
             }
         });
+        LOG.info("Registered method handlers: " + String.join(", ", handlers));
     }
 
     @SuppressWarnings("unused")

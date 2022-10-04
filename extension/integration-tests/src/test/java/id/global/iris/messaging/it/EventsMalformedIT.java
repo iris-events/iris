@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.messaging.runtime.BasicPropertiesProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
-import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
 import id.global.iris.messaging.runtime.exception.IrisSendException;
 import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -42,7 +42,7 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
     ChannelService producerChannelService;
 
     @Inject
-    IrisConfiguration configuration;
+    IrisResilienceConfig resilienceConfig;
 
     @Inject
     TransactionManager transactionManager;
@@ -60,7 +60,7 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
                 .thenThrow(new JsonProcessingException("") {
                 });
 
-        EventProducer producer = new EventProducer(producerChannelService, objectMapper, eventContext, configuration,
+        EventProducer producer = new EventProducer(producerChannelService, objectMapper, eventContext, resilienceConfig,
                 transactionManager, basicPropertiesProvider);
 
         Assertions.assertThrows(IrisSendException.class, () -> {

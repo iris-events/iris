@@ -40,7 +40,7 @@ import id.global.iris.common.message.ResourceMessage;
 import id.global.iris.messaging.runtime.BasicPropertiesProvider;
 import id.global.iris.messaging.runtime.channel.ChannelKey;
 import id.global.iris.messaging.runtime.channel.ChannelService;
-import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.exception.IrisSendException;
 import id.global.iris.messaging.runtime.exception.IrisTransactionException;
@@ -62,7 +62,7 @@ public class EventProducer {
     private final ChannelService channelService;
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
-    private final IrisConfiguration configuration;
+    private final IrisResilienceConfig resilienceConfig;
     private final TransactionManager transactionManager;
     private final BasicPropertiesProvider basicPropertiesProvider;
 
@@ -76,12 +76,12 @@ public class EventProducer {
     @Inject
     public EventProducer(@Named("producerChannelService") ChannelService channelService, ObjectMapper objectMapper,
             EventContext eventContext,
-            IrisConfiguration configuration, TransactionManager transactionManager,
+            IrisResilienceConfig resilienceConfig, TransactionManager transactionManager,
             BasicPropertiesProvider basicPropertiesProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
-        this.configuration = configuration;
+        this.resilienceConfig = resilienceConfig;
         this.transactionManager = transactionManager;
         this.basicPropertiesProvider = basicPropertiesProvider;
     }
@@ -315,8 +315,8 @@ public class EventProducer {
     }
 
     private boolean shouldWaitForConfirmations() {
-        return configuration.getConfirmationBatchSize() > 0
-                && count.incrementAndGet() == configuration.getConfirmationBatchSize();
+        return resilienceConfig.getConfirmationBatchSize() > 0
+                && count.incrementAndGet() == resilienceConfig.getConfirmationBatchSize();
     }
 
     private class ProducerSynchronization implements Synchronization {
