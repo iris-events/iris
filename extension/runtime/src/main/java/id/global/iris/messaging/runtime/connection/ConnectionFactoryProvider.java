@@ -6,54 +6,53 @@ import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.ConnectionFactory;
 
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.exception.IrisConnectionFactoryException;
-import io.vertx.rabbitmq.RabbitMQOptions;
 
 @ApplicationScoped
 public class ConnectionFactoryProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
 
-    private final RabbitMQOptions rabbitMQOptions;
+    private final IrisRabbitMQConfig config;
 
     private ConnectionFactory connectionFactory;
 
     @Inject
-    public ConnectionFactoryProvider(@Named("IrisRabbitMQOptions") RabbitMQOptions rabbitMQOptions) {
-        this.rabbitMQOptions = rabbitMQOptions;
+    public ConnectionFactoryProvider(IrisRabbitMQConfig config) {
+        this.config = config;
     }
 
     public ConnectionFactory getConnectionFactory() {
         return Optional.ofNullable(connectionFactory).orElseGet(() -> {
-            final var connectionFactory = buildConnectionFactory(rabbitMQOptions);
+            final var connectionFactory = buildConnectionFactory(config);
             this.connectionFactory = connectionFactory;
             return connectionFactory;
         });
     }
 
-    private ConnectionFactory buildConnectionFactory(RabbitMQOptions rabbitMQOptions) {
-        int port = rabbitMQOptions.getPort();
-        String vhost = rabbitMQOptions.getVirtualHost();
+    private ConnectionFactory buildConnectionFactory(IrisRabbitMQConfig config) {
+        int port = config.getPort();
+        String vhost = config.getVirtualHost();
 
         LOG.info(String.format("Iris configuration: host=%s, port=%s, username=%s, ssl=%s",
-                rabbitMQOptions.getHost(), port, rabbitMQOptions.getUser(), rabbitMQOptions.isSsl()));
+                config.getHost(), port, config.getUsername(), config.isSsl()));
 
         try {
             ConnectionFactory connectionFactory = new ConnectionFactory();
 
-            connectionFactory.setUsername(rabbitMQOptions.getUser());
-            connectionFactory.setPassword((rabbitMQOptions.getPassword()));
-            connectionFactory.setHost(rabbitMQOptions.getHost());
+            connectionFactory.setUsername(config.getUsername());
+            connectionFactory.setPassword((config.getPassword()));
+            connectionFactory.setHost(config.getHost());
             connectionFactory.setPort(port);
             connectionFactory.setVirtualHost(vhost);
-            if (rabbitMQOptions.isSsl()) {
+            if (config.isSsl()) {
                 connectionFactory.useSslProtocol();
             }
 

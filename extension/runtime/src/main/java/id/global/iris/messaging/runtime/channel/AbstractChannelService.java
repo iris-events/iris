@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Channel;
 
-import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.connection.AbstractConnectionProvider;
 import id.global.iris.messaging.runtime.exception.IrisConnectionException;
 
@@ -18,15 +18,15 @@ public abstract class AbstractChannelService implements ChannelService {
     private final static Logger log = LoggerFactory.getLogger(AbstractChannelService.class);
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private AbstractConnectionProvider connectionProvider;
-    private IrisResilienceConfig resilienceConfig;
+    private IrisRabbitMQConfig config;
 
     @SuppressWarnings("unused")
     protected AbstractChannelService() {
     }
 
-    protected AbstractChannelService(AbstractConnectionProvider connectionProvider, IrisResilienceConfig resilienceConfig) {
+    protected AbstractChannelService(AbstractConnectionProvider connectionProvider, IrisRabbitMQConfig config) {
         this.connectionProvider = connectionProvider;
-        this.resilienceConfig = resilienceConfig;
+        this.config = config;
     }
 
     @Override
@@ -56,7 +56,7 @@ public abstract class AbstractChannelService implements ChannelService {
         try {
             Channel channel = connectionProvider.getConnection().createChannel();
 
-            if (channel != null && resilienceConfig.getConfirmationBatchSize() > 0) {
+            if (channel != null && config.getConfirmationBatchSize() > 0) {
                 channel.confirmSelect();
             }
             return channel;

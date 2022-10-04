@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import com.rabbitmq.client.Connection;
 
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
-import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.exception.IrisConnectionException;
 import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
@@ -20,7 +20,7 @@ import io.github.resilience4j.retry.RetryConfig;
 public abstract class AbstractConnectionProvider {
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
-    private IrisResilienceConfig resilienceConfig;
+    private IrisRabbitMQConfig config;
     private IrisReadinessCheck readinessCheck;
     private IrisLivenessCheck livenessCheck;
     private Logger log;
@@ -32,11 +32,11 @@ public abstract class AbstractConnectionProvider {
     }
 
     public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, IrisResilienceConfig resilienceConfig, IrisReadinessCheck readinessCheck,
+            InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
             IrisLivenessCheck livenessCheck, Logger log) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;
-        this.resilienceConfig = resilienceConfig;
+        this.config = config;
         this.readinessCheck = readinessCheck;
         this.livenessCheck = livenessCheck;
         this.log = log;
@@ -48,9 +48,9 @@ public abstract class AbstractConnectionProvider {
             log.info("Establishing new AMQP connection with resilience.");
             setConnecting(true);
             this.connection = connectWithResilience(
-                    resilienceConfig.getBackoffIntervalMillis(),
-                    resilienceConfig.getBackoffMultiplier(),
-                    resilienceConfig.getMaxRetries());
+                    config.getBackoffIntervalMillis(),
+                    config.getBackoffMultiplier(),
+                    config.getMaxRetries());
         }
         return connection;
     }
@@ -78,7 +78,7 @@ public abstract class AbstractConnectionProvider {
         eventPublisher.onRetry(onRetryEvent -> {
             log.warn(String.format("onRetryEvent: retryAttempts: %d/%d, interval: %d, creation time: %d, last throwable: %s",
                     onRetryEvent.getNumberOfRetryAttempts(),
-                    resilienceConfig.getMaxRetries(),
+                    config.getMaxRetries(),
                     onRetryEvent.getWaitInterval().getSeconds(),
                     onRetryEvent.getCreationTime().toInstant().getEpochSecond(),
                     onRetryEvent.getLastThrowable()));
@@ -89,7 +89,7 @@ public abstract class AbstractConnectionProvider {
         eventPublisher.onError(onErrorEvent -> {
             log.error(String.format("onErrorEvent: retryAttempts: %d/%d, creation time: %d",
                     onErrorEvent.getNumberOfRetryAttempts(),
-                    resilienceConfig.getMaxRetries(),
+                    config.getMaxRetries(),
                     onErrorEvent.getCreationTime().toInstant().getEpochSecond()));
             setConnecting(false);
             setTimedOut(true);
@@ -98,7 +98,7 @@ public abstract class AbstractConnectionProvider {
         eventPublisher.onSuccess(onSuccessEvent -> {
             log.info(String.format("onSuccessEvent, retryAttempts: %d/%d, creation time: %d",
                     onSuccessEvent.getNumberOfRetryAttempts(),
-                    resilienceConfig.getMaxRetries(),
+                    config.getMaxRetries(),
                     onSuccessEvent.getCreationTime().toInstant().getEpochSecond()));
             setConnecting(false);
             setTimedOut(false);
@@ -107,7 +107,7 @@ public abstract class AbstractConnectionProvider {
         eventPublisher.onIgnoredError(onIgnoredEvent -> {
             log.error(String.format("onIgnoredError: retryAttempts: %d/%d, creation time: %d",
                     onIgnoredEvent.getNumberOfRetryAttempts(),
-                    resilienceConfig.getMaxRetries(),
+                    config.getMaxRetries(),
                     onIgnoredEvent.getCreationTime().toInstant().getEpochSecond()));
         });
     }

@@ -6,13 +6,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import io.vertx.rabbitmq.RabbitMQOptions;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 
 class ConnectionFactoryProviderTest {
 
     @Test
     void shouldSetAllProperties() {
-        final RabbitMQOptions irisConfiguration = new RabbitMQOptions();
+        final IrisRabbitMQConfig irisConfiguration = new IrisRabbitMQConfig();
 
         final var username = "username.mock";
         final var password = "password.mock";
@@ -20,9 +20,10 @@ class ConnectionFactoryProviderTest {
         final var port = 1234;
         final var sslEnabled = true;
 
-        irisConfiguration.setUser(username);
+        irisConfiguration.setUsername(username);
         irisConfiguration.setPassword(password);
         irisConfiguration.setHost(url);
+        irisConfiguration.setProtocol(null);
         irisConfiguration.setPort(port);
         irisConfiguration.setSsl(sslEnabled);
 
@@ -39,15 +40,16 @@ class ConnectionFactoryProviderTest {
 
     @Test
     void shouldUrlEncodeUsernameAndPassword() {
-        final RabbitMQOptions irisConfiguration = new RabbitMQOptions();
-
         final var username = "u$ern@me.m//ck";
         final var password = "p@$$word.m//ck";
         final var port = 5432;
 
-        irisConfiguration.setUser(username);
-        irisConfiguration.setPassword(password);
-        irisConfiguration.setPort(port); // port is required here as mocked class does not provide default values
+        final IrisRabbitMQConfig irisConfiguration = new IrisRabbitMQConfig()
+                .setUsername(username)
+                .setPassword(password)
+                .setPort(port)
+                .setProtocol(null)
+                .setSsl(false); // port is required here as mocked class does not provide default values
 
         final var factoryProvider = new ConnectionFactoryProvider(irisConfiguration);
         final var connectionFactory = factoryProvider.getConnectionFactory();

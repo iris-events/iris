@@ -20,7 +20,7 @@ import id.global.iris.messaging.runtime.auth.GidJwtValidator;
 import id.global.iris.messaging.runtime.channel.ConsumerChannelService;
 import id.global.iris.messaging.runtime.channel.ProducerChannelService;
 import id.global.iris.messaging.runtime.configuration.IrisBuildConfiguration;
-import id.global.iris.messaging.runtime.configuration.IrisConfigProvider;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.connection.ConnectionFactoryProvider;
 import id.global.iris.messaging.runtime.connection.ConsumerConnectionProvider;
 import id.global.iris.messaging.runtime.connection.ProducerConnectionProvider;
@@ -103,7 +103,7 @@ class EventMessagingProcessor {
                                 IrisLivenessCheck.class,
                                 TimestampProvider.class,
                                 BasicPropertiesProvider.class,
-                                IrisConfigProvider.class)
+                                IrisRabbitMQConfig.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
