@@ -4,31 +4,18 @@ import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.quarkus.arc.DefaultBean;
-import io.smallrye.reactive.messaging.rabbitmq.RabbitMQConnector;
-import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 
 @ApplicationScoped
 public class IrisConfigProvider {
     private static final Logger log = LoggerFactory.getLogger(IrisConfigProvider.class);
-
-    @Inject
-    @Connector(value = "smallrye-rabbitmq")
-    RabbitMQConnector connector;
-
-    @Produces
-    public RabbitMQClient createClient(RabbitMQOptions options) {
-        return RabbitMQClient.create(connector.getVertx().getDelegate(), options);
-    }
 
     @Produces
     @DefaultBean
@@ -36,7 +23,7 @@ public class IrisConfigProvider {
     @Named("IrisRabbitMQOptions")
     public RabbitMQOptions createOptions(Config config) {
         var host = config.getOptionalValue("rabbitmq-host", String.class).orElse(RabbitMQOptions.DEFAULT_HOST);
-        final var optionalProtocol = config.getOptionalValue("rabbit-protocol", String.class);
+        final var optionalProtocol = config.getOptionalValue("rabbitmq-protocol", String.class);
         var port = getPort(config, optionalProtocol);
         var ssl = getSsl(config, optionalProtocol);
         var username = config.getOptionalValue("rabbitmq-username", String.class).orElse(RabbitMQOptions.DEFAULT_USER);
