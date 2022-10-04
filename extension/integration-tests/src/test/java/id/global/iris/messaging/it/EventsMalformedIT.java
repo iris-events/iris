@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.messaging.runtime.BasicPropertiesProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
-import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.exception.IrisSendException;
 import id.global.iris.messaging.runtime.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -42,7 +42,7 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
     ChannelService producerChannelService;
 
     @Inject
-    IrisResilienceConfig resilienceConfig;
+    IrisRabbitMQConfig resilienceConfig;
 
     @Inject
     TransactionManager transactionManager;

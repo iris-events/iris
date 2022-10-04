@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
-import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 
@@ -18,9 +18,9 @@ public class ConsumerConnectionProvider extends AbstractConnectionProvider {
 
     @Inject
     public ConsumerConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, IrisResilienceConfig resilienceConfig, IrisReadinessCheck readinessCheck,
+            InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
             IrisLivenessCheck livenessCheck) {
-        super(connectionFactoryProvider, instanceInfoProvider, resilienceConfig, readinessCheck, livenessCheck, log);
+        super(connectionFactoryProvider, instanceInfoProvider, config, readinessCheck, livenessCheck, log);
     }
 
     @Override

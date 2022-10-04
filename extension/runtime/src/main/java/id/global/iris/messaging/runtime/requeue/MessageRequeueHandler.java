@@ -29,22 +29,22 @@ import id.global.iris.common.exception.MessagingException;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
-import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.context.IrisContext;
 
 @ApplicationScoped
 public class MessageRequeueHandler {
 
     private final Channel channel;
-    private final IrisResilienceConfig resilienceConfig;
+    private final IrisRabbitMQConfig config;
     private final QueueNameProvider queueNameProvider;
     private final TimestampProvider timestampProvider;
 
     @Inject
     public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
-            IrisResilienceConfig resilienceConfig,
+            IrisRabbitMQConfig config,
             QueueNameProvider queueNameProvider, TimestampProvider timestampProvider) throws IOException {
-        this.resilienceConfig = resilienceConfig;
+        this.config = config;
         this.queueNameProvider = queueNameProvider;
         this.timestampProvider = timestampProvider;
         final var channelId = UUID.randomUUID().toString();
@@ -67,7 +67,7 @@ public class MessageRequeueHandler {
 
         newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
         newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
-        newHeaders.put(X_MAX_RETRIES, resilienceConfig.getRetryMaxCount());
+        newHeaders.put(X_MAX_RETRIES, config.getRetryMaxCount());
         newHeaders.put(X_ERROR_CODE, messagingException.getClientCode());
         newHeaders.put(X_ERROR_TYPE, messagingException.getErrorType());
         newHeaders.put(X_ERROR_MESSAGE, messagingException.getMessage());
