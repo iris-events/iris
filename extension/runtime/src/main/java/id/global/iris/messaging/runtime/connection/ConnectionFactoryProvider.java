@@ -5,6 +5,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +21,12 @@ public class ConnectionFactoryProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
 
-    private RabbitMQOptions rabbitMQOptions;
+    private final RabbitMQOptions rabbitMQOptions;
 
     private ConnectionFactory connectionFactory;
 
-    public ConnectionFactoryProvider(RabbitMQOptions rabbitMQOptions) {
+    @Inject
+    public ConnectionFactoryProvider(@Named("IrisRabbitMQOptions") RabbitMQOptions rabbitMQOptions) {
         this.rabbitMQOptions = rabbitMQOptions;
     }
 

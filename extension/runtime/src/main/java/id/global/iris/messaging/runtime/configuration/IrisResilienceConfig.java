@@ -5,7 +5,7 @@ import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
 @ConfigRoot(name = "iris", phase = ConfigPhase.RUN_TIME)
-public final class IrisConfiguration {
+public final class IrisResilienceConfig {
 
     /**
      * Connection retry initial backoff interval

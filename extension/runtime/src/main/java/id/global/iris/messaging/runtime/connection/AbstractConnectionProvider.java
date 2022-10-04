@@ -5,12 +5,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Connection;
 
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
-import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
 import id.global.iris.messaging.runtime.exception.IrisConnectionException;
 import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
@@ -19,13 +18,12 @@ import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 
 public abstract class AbstractConnectionProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractConnectionProvider.class);
-
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
-    private IrisConfiguration configuration;
+    private IrisResilienceConfig resilienceConfig;
     private IrisReadinessCheck readinessCheck;
     private IrisLivenessCheck livenessCheck;
+    private Logger log;
     private AtomicBoolean connecting;
     protected Connection connection;
 
@@ -34,24 +32,25 @@ public abstract class AbstractConnectionProvider {
     }
 
     public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, IrisConfiguration configuration, IrisReadinessCheck readinessCheck,
-            IrisLivenessCheck livenessCheck) {
+            InstanceInfoProvider instanceInfoProvider, IrisResilienceConfig resilienceConfig, IrisReadinessCheck readinessCheck,
+            IrisLivenessCheck livenessCheck, Logger log) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;
-        this.configuration = configuration;
+        this.resilienceConfig = resilienceConfig;
         this.readinessCheck = readinessCheck;
         this.livenessCheck = livenessCheck;
+        this.log = log;
         this.connecting = new AtomicBoolean(false);
     }
 
     public Connection getConnection() {
         if (connectionIsNullOrClosed() && !this.getConnecting()) {
-            LOG.info("Starting AMQP connection with resilience");
+            log.info("Establishing new AMQP connection with resilience.");
             setConnecting(true);
             this.connection = connectWithResilience(
-                    configuration.getBackoffIntervalMillis(),
-                    configuration.getBackoffMultiplier(),
-                    configuration.getMaxRetries());
+                    resilienceConfig.getBackoffIntervalMillis(),
+                    resilienceConfig.getBackoffMultiplier(),
+                    resilienceConfig.getMaxRetries());
         }
         return connection;
     }
@@ -72,15 +71,14 @@ public abstract class AbstractConnectionProvider {
 
         final var connectFn = Retry.decorateFunction(retry, v -> connect());
 
-        LOG.info("Creating new AMQP connection.");
         return connectFn.apply(null);
     }
 
     private void registerEventPublisher(Retry.EventPublisher eventPublisher) {
         eventPublisher.onRetry(onRetryEvent -> {
-            LOG.warn(String.format("onRetryEvent: retryAttempts: %d/%d, interval: %d, creation time: %d, last throwable: %s",
+            log.warn(String.format("onRetryEvent: retryAttempts: %d/%d, interval: %d, creation time: %d, last throwable: %s",
                     onRetryEvent.getNumberOfRetryAttempts(),
-                    configuration.getMaxRetries(),
+                    resilienceConfig.getMaxRetries(),
                     onRetryEvent.getWaitInterval().getSeconds(),
                     onRetryEvent.getCreationTime().toInstant().getEpochSecond(),
                     onRetryEvent.getLastThrowable()));
@@ -89,27 +87,27 @@ public abstract class AbstractConnectionProvider {
         });
 
         eventPublisher.onError(onErrorEvent -> {
-            LOG.error(String.format("onErrorEvent: retryAttempts: %d/%d, creation time: %d",
+            log.error(String.format("onErrorEvent: retryAttempts: %d/%d, creation time: %d",
                     onErrorEvent.getNumberOfRetryAttempts(),
-                    configuration.getMaxRetries(),
+                    resilienceConfig.getMaxRetries(),
                     onErrorEvent.getCreationTime().toInstant().getEpochSecond()));
             setConnecting(false);
             setTimedOut(true);
         });
 
         eventPublisher.onSuccess(onSuccessEvent -> {
-            LOG.info(String.format("onSuccessEvent, retryAttempts: %d/%d, creation time: %d",
+            log.info(String.format("onSuccessEvent, retryAttempts: %d/%d, creation time: %d",
                     onSuccessEvent.getNumberOfRetryAttempts(),
-                    configuration.getMaxRetries(),
+                    resilienceConfig.getMaxRetries(),
                     onSuccessEvent.getCreationTime().toInstant().getEpochSecond()));
             setConnecting(false);
             setTimedOut(false);
         });
 
         eventPublisher.onIgnoredError(onIgnoredEvent -> {
-            LOG.error(String.format("onIgnoredError: retryAttempts: %d/%d, creation time: %d",
+            log.error(String.format("onIgnoredError: retryAttempts: %d/%d, creation time: %d",
                     onIgnoredEvent.getNumberOfRetryAttempts(),
-                    configuration.getMaxRetries(),
+                    resilienceConfig.getMaxRetries(),
                     onIgnoredEvent.getCreationTime().toInstant().getEpochSecond()));
         });
     }

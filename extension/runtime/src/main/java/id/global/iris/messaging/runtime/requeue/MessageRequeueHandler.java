@@ -26,7 +26,7 @@ import id.global.iris.common.constants.Queues;
 import id.global.iris.common.exception.MessagingException;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
-import id.global.iris.messaging.runtime.configuration.IrisConfiguration;
+import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
 import id.global.iris.messaging.runtime.context.IrisContext;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.rabbitmq.RabbitMQClient;
@@ -35,15 +35,15 @@ import io.vertx.rabbitmq.RabbitMQClient;
 public class MessageRequeueHandler {
 
     private final RabbitMQClient rabbitMQClient;
-    private final IrisConfiguration configuration;
+    private final IrisResilienceConfig resilienceConfig;
     private final QueueNameProvider queueNameProvider;
     private final TimestampProvider timestampProvider;
 
     @Inject
-    public MessageRequeueHandler(RabbitMQClient rabbitMQClient, IrisConfiguration configuration,
+    public MessageRequeueHandler(RabbitMQClient rabbitMQClient, IrisResilienceConfig resilienceConfig,
             QueueNameProvider queueNameProvider, TimestampProvider timestampProvider) throws IOException {
         this.rabbitMQClient = rabbitMQClient;
-        this.configuration = configuration;
+        this.resilienceConfig = resilienceConfig;
         this.queueNameProvider = queueNameProvider;
         this.timestampProvider = timestampProvider;
         final var channelId = UUID.randomUUID().toString();
@@ -65,7 +65,7 @@ public class MessageRequeueHandler {
 
         newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
         newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
-        newHeaders.put(X_MAX_RETRIES, configuration.getRetryMaxCount());
+        newHeaders.put(X_MAX_RETRIES, resilienceConfig.getRetryMaxCount());
         newHeaders.put(X_ERROR_CODE, messagingException.getClientCode());
         newHeaders.put(X_ERROR_TYPE, messagingException.getErrorType());
         newHeaders.put(X_ERROR_MESSAGE, messagingException.getMessage());
