@@ -17,8 +17,10 @@ import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
 import id.global.iris.common.constants.Exchanges;
@@ -26,35 +28,35 @@ import id.global.iris.common.constants.Queues;
 import id.global.iris.common.exception.MessagingException;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.TimestampProvider;
+import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.configuration.IrisResilienceConfig;
 import id.global.iris.messaging.runtime.context.IrisContext;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.rabbitmq.RabbitMQClient;
 
 @ApplicationScoped
 public class MessageRequeueHandler {
 
-    private final RabbitMQClient rabbitMQClient;
+    private final Channel channel;
     private final IrisResilienceConfig resilienceConfig;
     private final QueueNameProvider queueNameProvider;
     private final TimestampProvider timestampProvider;
 
     @Inject
-    public MessageRequeueHandler(RabbitMQClient rabbitMQClient, IrisResilienceConfig resilienceConfig,
+    public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
+            IrisResilienceConfig resilienceConfig,
             QueueNameProvider queueNameProvider, TimestampProvider timestampProvider) throws IOException {
-        this.rabbitMQClient = rabbitMQClient;
         this.resilienceConfig = resilienceConfig;
         this.queueNameProvider = queueNameProvider;
         this.timestampProvider = timestampProvider;
         final var channelId = UUID.randomUUID().toString();
+        this.channel = channelService.getOrCreateChannelById(channelId);
     }
 
     public void enqueueWithBackoff(final IrisContext irisContext, Delivery message,
             final MessagingException messagingException, final boolean shouldNotifyFrontend)
             throws IOException {
         final var newMessage = getMessageWithNewHeaders(irisContext, message, messagingException, shouldNotifyFrontend);
-        rabbitMQClient.basicPublish(Exchanges.RETRY.getValue(), Queues.RETRY.getValue(), newMessage.getProperties(),
-                Buffer.buffer(newMessage.getBody()));
+        channel.basicPublish(Exchanges.RETRY.getValue(), Queues.RETRY.getValue(), newMessage.getProperties(),
+                newMessage.getBody());
     }
 
     private Delivery getMessageWithNewHeaders(final IrisContext irisContext,
