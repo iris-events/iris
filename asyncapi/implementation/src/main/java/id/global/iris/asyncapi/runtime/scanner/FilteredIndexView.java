@@ -11,9 +11,10 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.ModuleInfo;
-import org.jboss.logging.Logger;
 
 import id.global.iris.asyncapi.api.AsyncApiConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wraps an {@link IndexView} instance and filters the contents based on the
@@ -22,7 +23,7 @@ import id.global.iris.asyncapi.api.AsyncApiConfig;
  * @author eric.wittmann@gmail.com
  */
 public class FilteredIndexView implements IndexView {
-    private static final Logger LOG = Logger.getLogger(FilteredIndexView.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FilteredIndexView.class);
 
     private final IndexView delegate;
 

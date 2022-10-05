@@ -15,7 +15,7 @@
 
     <dependencies>
         <!-- MP Config Spec -->
-        <dependency>
+       <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
         </dependency>
@@ -57,10 +57,10 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-        </dependency>
+        </dependency>-->
 
         <!-- Test Only Dependencies -->
 

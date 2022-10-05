@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>id.global</groupId>
-        <artifactId>masterpom</artifactId>
-        <version>21</version>
-        <relativePath />
+        <artifactId>globalid-parent</artifactId>
+        <version>11</version>
+        <relativePath/>
     </parent>
     <groupId>id.global.iris</groupId>
     <artifactId>iris-parent</artifactId>
@@ -33,6 +34,7 @@
         <!-- plugin dependencies -->
 
         <!--<maven.compiler.release>17</maven.compiler.release>-->
+        <version.quarkus>2.13.1.Final</version.quarkus>
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>1.1.26</version.apicurio-data-models>
         <version.apicurio-registry-client>2.3.1.Final</version.apicurio-registry-client>
@@ -40,9 +42,8 @@
         <version.globalid-common>2.0.2</version.globalid-common>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.13</version.httpclient>
-        <version.jackson-databind>2.13.4</version.jackson-databind>
+        <version.jackson>2.13.4</version.jackson>
         <version.jandex>2.4.3.Final</version.jandex>
-        <version.json-simple>1.1.1</version.json-simple>
         <version.jsonschema2pojo-core>1.1.2</version.jsonschema2pojo-core>
         <version.maven>3.8.6</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
@@ -55,7 +56,12 @@
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>1.7.1</version.resilience4j-retry>
         <version.victools>4.27.0</version.victools>
+        <version.junit>5.9.1</version.junit>
+        <version.mockito-core>4.8.0</version.mockito-core>
+        <version.slf4j-api>1.7.36</version.slf4j-api>
+        <version.microprofile-config-api>2.0.1</version.microprofile-config-api>
     </properties>
+
 
     <dependencyManagement>
         <dependencies>
@@ -68,7 +74,18 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${version.jackson-databind}</version>
+                <version>${version.jackson}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${version.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${version.jackson}</version>
             </dependency>
 
             <dependency>
@@ -88,6 +105,12 @@
                 <version>${project.version}</version>
             </dependency>
             <!-- Dependencies provided by the project -->
+            <dependency>
+                <groupId>org.eclipse.microprofile.config</groupId>
+                <artifactId>microprofile-config-api</artifactId>
+                <version>${version.microprofile-config-api}</version>
+            </dependency>
+
             <dependency>
                 <groupId>id.global.iris</groupId>
                 <artifactId>iris-asyncapi-spec-api</artifactId>
@@ -128,10 +151,29 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${version.slf4j-api}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
                 <version>${version.org.skyscreamer}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${version.mockito-core}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${version.junit}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
         </dependencies>

@@ -10,7 +10,17 @@
     <artifactId>iris-extension-parent</artifactId>
     <packaging>pom</packaging>
     <name>Iris Quarkus - Parent</name>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${version.quarkus}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <modules>
         <module>deployment</module>
         <module>runtime</module>

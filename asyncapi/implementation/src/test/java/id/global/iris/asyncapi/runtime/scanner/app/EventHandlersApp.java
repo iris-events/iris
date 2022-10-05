@@ -7,8 +7,6 @@ import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.logging.Logger;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import id.global.common.auth.jwt.Role;
@@ -19,9 +17,11 @@ import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.message.SnapshotRequested;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventHandlersApp {
-    private static final Logger LOG = Logger.getLogger(EventHandlersApp.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventHandlersApp.class);
 
     @SuppressWarnings("unused")
     @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = { Role.ADMIN_REWARD, Role.AUTHENTICATED })

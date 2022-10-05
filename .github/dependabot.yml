@@ -1,6 +1,16 @@
 version: 2
+registries:
+  gid-nexus:
+    type: maven-repository
+    url: https://repository.internal.globalid.dev/repository/maven-internal-group/
+    username: ${{secrets.NEXUS_USERNAME}}
+    password: ${{secrets.NEXUS_PASSWORD}}
+
 updates:
   - package-ecosystem: maven
     directory: "/"
+    registries:
+      - gid-nexus
     schedule:
       interval: daily
+

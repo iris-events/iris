@@ -16,4 +16,4 @@ jobs:
           nexus-username: "${{ secrets.NEXUS_USERNAME }}"
           nexus-password: "${{ secrets.NEXUS_PASSWORD }}"
       - shell: sh
-        run: "mvn  verify -Dci=${{ github.run_id }} -ntp"
+        run: "mvn  deploy -Dci=${{ github.run_id }} -ntp"

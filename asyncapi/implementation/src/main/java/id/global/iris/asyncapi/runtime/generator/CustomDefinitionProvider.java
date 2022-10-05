@@ -6,8 +6,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jboss.logging.Logger;
-
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.CustomPropertyDefinition;
@@ -17,9 +15,11 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
 import id.global.iris.asyncapi.runtime.io.schema.SchemaConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CustomDefinitionProvider {
-    private static final Logger LOG = Logger.getLogger(CustomDefinitionProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CustomDefinitionProvider.class);
     private static final Pattern JAVA_UTIL_MAP_PATTERN = Pattern.compile("^(java\\.util\\.)(.*)(Map)(.*)\\<(.+),(.+)\\>$");
     private static final Set<String> DEFAULT_CONVERT_TO_OBJECT_CANDIDATES = Set.of(
             "java.util.Map", "java.util.HashMap", "java.util.TreeMap", "com.fasterxml.jackson.databind.JsonNode");

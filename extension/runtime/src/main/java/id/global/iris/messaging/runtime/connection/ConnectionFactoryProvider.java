@@ -14,8 +14,6 @@ import com.rabbitmq.client.ConnectionFactory;
 
 import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.exception.IrisConnectionFactoryException;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProtocols;
 
 @ApplicationScoped
 public class ConnectionFactoryProvider {

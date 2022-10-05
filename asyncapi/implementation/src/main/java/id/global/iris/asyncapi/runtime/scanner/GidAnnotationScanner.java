@@ -32,7 +32,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
-import org.jboss.logging.Logger;
 
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
@@ -70,6 +69,8 @@ import id.global.iris.parsers.RolesAllowedParser;
 import id.global.iris.parsers.RoutingKeyParser;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Info;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Scans a deployment (using the archive and jandex annotation index) for relevant annotations. These
@@ -78,7 +79,7 @@ import io.apicurio.datamodels.asyncapi.v2.models.Aai20Info;
  * @author gasper.vrhovsek@gmail.com
  */
 public class GidAnnotationScanner extends BaseAnnotationScanner {
-    private static final Logger LOG = Logger.getLogger(GidAnnotationScanner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GidAnnotationScanner.class);
 
     private final SchemaGenerator schemaGenerator;
     private final String projectName;
