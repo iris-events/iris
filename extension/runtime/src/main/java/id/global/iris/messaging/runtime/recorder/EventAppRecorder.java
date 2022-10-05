@@ -14,7 +14,7 @@ public class EventAppRecorder {
     private static final Logger log = LoggerFactory.getLogger(EventAppRecorder.class.getName());
 
     public void registerEventAppContext(final BeanContainer beanContainer, final EventAppContext eventAppContext) {
-        log.info("Event app context received: {}", eventAppContext);
+        log.info("Registering Iris for application with id '{}'", eventAppContext.getId());
         beanContainer.instance(EventAppInfoProvider.class).addEventAppContext(eventAppContext);
     }
 }
