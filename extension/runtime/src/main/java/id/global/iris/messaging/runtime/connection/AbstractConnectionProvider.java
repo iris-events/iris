@@ -76,39 +76,37 @@ public abstract class AbstractConnectionProvider {
 
     private void registerEventPublisher(Retry.EventPublisher eventPublisher) {
         eventPublisher.onRetry(onRetryEvent -> {
-            log.warn(String.format("onRetryEvent: retryAttempts: %d/%d, interval: %d, creation time: %d, last throwable: %s",
+            log.warn(String.format("Establishing AMQP connection - retry. attempt: %d/%d, interval: %ds, last exception: %s",
                     onRetryEvent.getNumberOfRetryAttempts(),
                     config.getMaxRetries(),
                     onRetryEvent.getWaitInterval().getSeconds(),
-                    onRetryEvent.getCreationTime().toInstant().getEpochSecond(),
                     onRetryEvent.getLastThrowable()));
             setConnecting(true);
             setTimedOut(false);
         });
 
         eventPublisher.onError(onErrorEvent -> {
-            log.error(String.format("onErrorEvent: retryAttempts: %d/%d, creation time: %d",
+            log.error(String.format("Error establishing AMQP connection. attempt: %d/%d",
                     onErrorEvent.getNumberOfRetryAttempts(),
-                    config.getMaxRetries(),
-                    onErrorEvent.getCreationTime().toInstant().getEpochSecond()));
+                    config.getMaxRetries()));
             setConnecting(false);
             setTimedOut(true);
         });
 
         eventPublisher.onSuccess(onSuccessEvent -> {
-            log.info(String.format("onSuccessEvent, retryAttempts: %d/%d, creation time: %d",
+            log.info(String.format("AMQP connection established. attempt: %d/%d",
                     onSuccessEvent.getNumberOfRetryAttempts(),
-                    config.getMaxRetries(),
-                    onSuccessEvent.getCreationTime().toInstant().getEpochSecond()));
+                    config.getMaxRetries()));
             setConnecting(false);
             setTimedOut(false);
         });
 
         eventPublisher.onIgnoredError(onIgnoredEvent -> {
-            log.error(String.format("onIgnoredError: retryAttempts: %d/%d, creation time: %d",
+            log.error(String.format("Ignored exception encountered while establishing AMQP connection."
+                    + " attempt: %d/%d, last exception: %s",
                     onIgnoredEvent.getNumberOfRetryAttempts(),
                     config.getMaxRetries(),
-                    onIgnoredEvent.getCreationTime().toInstant().getEpochSecond()));
+                    onIgnoredEvent.getLastThrowable()));
         });
     }
 

@@ -14,6 +14,8 @@ import com.rabbitmq.client.ConnectionFactory;
 
 import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.exception.IrisConnectionFactoryException;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProtocols;
 
 @ApplicationScoped
 public class ConnectionFactoryProvider {
@@ -41,12 +43,11 @@ public class ConnectionFactoryProvider {
         int port = config.getPort();
         String vhost = config.getVirtualHost();
 
-        LOG.info(String.format("Iris configuration: host=%s, port=%s, username=%s, ssl=%s",
+        LOG.info(String.format("Iris AMQP connection config: host=%s, port=%s, username=%s, ssl=%s",
                 config.getHost(), port, config.getUsername(), config.isSsl()));
 
         try {
             ConnectionFactory connectionFactory = new ConnectionFactory();
-
             connectionFactory.setUsername(config.getUsername());
             connectionFactory.setPassword((config.getPassword()));
             connectionFactory.setHost(config.getHost());
