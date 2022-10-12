@@ -44,10 +44,13 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
     private static final String ERROR_QUEUE_BAD_REQUEST = "error-queue-bad-request";
     private static final String ERROR_QUEUE_SERVER_ERROR = "error-queue-server-error";
+    private static final String ERROR_QUEUE_RUNTIME_EXCEPTION = "error-queue-runtime-exception";
     private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
     private static final String INTERNAL_SERVICE_ERROR = "Internal service error.";
+    private static final String RUNTIME_EXCEPTION_ERROR = "Runtime exception.";
     private static final String BAD_PAYLOAD_CLIENT_CODE = "BAD_MESSAGE_PAYLOAD";
     private static final String SERVER_ERROR_CLIENT_CODE = "SERVER_ERROR";
+    private static final String INTERNAL_SERVER_ERROR_CLIENT_CODE = "INTERNAL_SERVER_ERROR";
 
     @Inject
     EventProducer producer;
@@ -113,6 +116,32 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         assertThat(notifyFrontend, CoreMatchers.is(true));
     }
 
+    @DisplayName("Requeue server error message on runtime exception")
+    @Test
+    void runtimeException() throws Exception {
+        final var message = new RuntimeExceptionMessage(UUID.randomUUID().toString());
+
+        producer.send(message);
+
+        final var messagingExceptionArgumentCaptor = ArgumentCaptor.forClass(MessagingException.class);
+        final var notifyFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
+        verify(requeueHandler, timeout(500).times(1))
+                .enqueueWithBackoff(any(), any(), messagingExceptionArgumentCaptor.capture(),
+                        notifyFrontendCaptor.capture());
+
+        final var messagingException = messagingExceptionArgumentCaptor.getValue();
+        final var errorCode = messagingException.getClientCode();
+        final var type = messagingException.getErrorType();
+        final var exceptionMessage = messagingException.getMessage();
+        final var notifyFrontend = notifyFrontendCaptor.getValue();
+
+        assertThat(errorCode, is(notNullValue()));
+        assertThat(errorCode, is(INTERNAL_SERVER_ERROR_CLIENT_CODE));
+        assertThat(type, is(ErrorType.INTERNAL_SERVER_ERROR));
+        assertThat(exceptionMessage, is(RUNTIME_EXCEPTION_ERROR));
+        assertThat(notifyFrontend, CoreMatchers.is(false));
+    }
+
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class ErrorQueueService {
@@ -130,6 +159,11 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         public void handle(ServerErrorMessage message) {
             throw new ServerException(SERVER_ERROR_CLIENT_CODE, INTERNAL_SERVICE_ERROR, true);
         }
+
+        @MessageHandler
+        public void handle(RuntimeExceptionMessage message) {
+            throw new RuntimeException(RUNTIME_EXCEPTION_ERROR);
+        }
     }
 
     @Message(name = ERROR_QUEUE_BAD_REQUEST)
@@ -138,5 +172,9 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
     @Message(name = ERROR_QUEUE_SERVER_ERROR)
     public record ServerErrorMessage(String name) {
+    }
+
+    @Message(name = ERROR_QUEUE_RUNTIME_EXCEPTION)
+    public record RuntimeExceptionMessage(String name) {
     }
 }
