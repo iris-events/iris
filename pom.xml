@@ -33,7 +33,7 @@
         <!-- plugin dependencies -->
 
         <!--<maven.compiler.release>17</maven.compiler.release>-->
-        <version.quarkus>2.13.1.Final</version.quarkus>
+        <version.quarkus>2.13.2.Final</version.quarkus>
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>1.1.26</version.apicurio-data-models>
         <version.apicurio-registry-client>2.3.1.Final</version.apicurio-registry-client>
