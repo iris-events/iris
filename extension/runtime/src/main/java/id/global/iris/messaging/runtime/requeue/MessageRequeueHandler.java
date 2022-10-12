@@ -19,6 +19,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
@@ -31,10 +34,12 @@ import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.context.IrisContext;
+import id.global.iris.messaging.runtime.producer.EventProducer;
 
 @ApplicationScoped
 public class MessageRequeueHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(MessageRequeueHandler.class);
     private final Channel channel;
     private final IrisRabbitMQConfig config;
     private final QueueNameProvider queueNameProvider;
@@ -61,24 +66,35 @@ public class MessageRequeueHandler {
 
     private Delivery getMessageWithNewHeaders(final IrisContext irisContext,
             Delivery message, final MessagingException messagingException, final boolean shouldNotifyFrontend) {
+        log.info("invalid-value-in-table: building message with new headers");
         final var properties = message.getProperties();
         final var headers = properties.getHeaders();
         final var newHeaders = new HashMap<String, Object>(headers);
 
+        log.info("invalid-value-in-table: adding header: {}, value: {}", X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
         newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
+        log.info("invalid-value-in-table: adding header: {}, value: {}", X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
         newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
+        log.info("invalid-value-in-table: adding header: {}, value: {}", X_MAX_RETRIES,  config.getRetryMaxCount());
         newHeaders.put(X_MAX_RETRIES, config.getRetryMaxCount());
+        log.info("invalid-value-in-table: adding header: {}, value: {}", X_ERROR_CODE, messagingException.getClientCode());
         newHeaders.put(X_ERROR_CODE, messagingException.getClientCode());
-        newHeaders.put(X_ERROR_TYPE, messagingException.getErrorType());
+        log.info("invalid-value-in-table: adding header: {}, value: {}", X_ERROR_TYPE, messagingException.getErrorType().name());
+        newHeaders.put(X_ERROR_TYPE, messagingException.getErrorType().name());
+        log.info("invalid-value-in-table: adding header: {}, value: {}", X_ERROR_MESSAGE, messagingException.getMessage());
         newHeaders.put(X_ERROR_MESSAGE, messagingException.getMessage());
+        log.info("invalid-value-in-table: adding header: {}, value: {}", X_NOTIFY_CLIENT, shouldNotifyFrontend);
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
+        log.info("invalid-value-in-table: adding header: {}, value: {}", SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
         newHeaders.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
 
         final var deadLetterExchangeName = irisContext.getDeadLetterExchangeName();
         if (deadLetterExchangeName.isPresent()) {
             final var queueName = queueNameProvider.getQueueName(irisContext);
             final var deadLetterRoutingKey = irisContext.getDeadLetterRoutingKey(queueName);
+            log.info("invalid-value-in-table: adding header: {}, value: {}", X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
             newHeaders.put(X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
+            log.info("invalid-value-in-table: adding header: {}, value: {}", X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
             newHeaders.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
         }
 
