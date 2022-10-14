@@ -9,7 +9,7 @@
     </parent>
     <groupId>id.global.iris</groupId>
     <artifactId>iris-parent</artifactId>
-    <version>2.0.8-SNAPSHOT</version>
+    <version>2.0.9</version>
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
@@ -22,7 +22,8 @@
         <connection>scm:git:git@github.com:globalid/iris.git</connection>
         <developerConnection>scm:git:git@github.com:globalid/iris.git</developerConnection>
         <url>https://github.com/globalid/iris</url>
-    </scm>
+      <tag>v2.0.9</tag>
+  </scm>
     <!--
     sort poms
     mvn com.github.ekryd.sortpom:sortpom-maven-plugin:3.1.0:sort "-Dsort.sortProperties=true" "-Dsort.nrOfIndentSpace=4" "-Dsort.keepBlankLines=true" "-Dsort.sortDependencies=scope,groupId,artifactId"

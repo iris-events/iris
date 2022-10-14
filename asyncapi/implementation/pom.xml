@@ -5,7 +5,7 @@
     <parent>
         <groupId>id.global.iris</groupId>
         <artifactId>iris-asyncapi-parent</artifactId>
-        <version>2.0.8-SNAPSHOT</version>
+        <version>2.0.9</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -112,4 +112,8 @@
         </profile>
     </profiles>
 
+
+  <scm>
+    <tag>v2.0.9</tag>
+  </scm>
 </project>
