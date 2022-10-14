@@ -379,8 +379,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY);
         final var configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7,
                 OptionPreset.PLAIN_JSON)
-                .with(Option.DEFINITIONS_FOR_ALL_OBJECTS)
-                .with(module);
+                        .with(Option.DEFINITIONS_FOR_ALL_OBJECTS)
+                        .with(module);
 
         configBuilder.forTypesInGeneral()
                 .withCustomDefinitionProvider(

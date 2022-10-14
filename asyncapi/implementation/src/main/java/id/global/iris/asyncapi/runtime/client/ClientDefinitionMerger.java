@@ -79,7 +79,7 @@ public class ClientDefinitionMerger {
         ObjectNode schemasNode = (ObjectNode) ((ObjectNode) clientAsyncApi.findPath(AsyncApiConstants.COMPONENTS_NODE)
                 .findPath(AsyncApiConstants.SCHEMAS_NODE)).set(
                         definitions.getServiceName(), EdaObjectMapper.getObjectMapper().createObjectNode())
-                .findPath(definitions.getServiceName());
+                        .findPath(definitions.getServiceName());
         definitions.getSchemasNodes().forEach(schemasNode::set);
     }
 
