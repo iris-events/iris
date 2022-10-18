@@ -7,6 +7,9 @@ import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import id.global.common.auth.jwt.Role;
@@ -17,11 +20,15 @@ import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.message.SnapshotRequested;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EventHandlersApp {
     private static final Logger LOG = LoggerFactory.getLogger(EventHandlersApp.class);
+
+    @SuppressWarnings("unused")
+    @MessageHandler
+    public void handleTestEventWithRequirements(TestEventWithRequirements event) {
+        LOG.info("Handle event: " + event);
+    }
 
     @SuppressWarnings("unused")
     @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = { Role.ADMIN_REWARD, Role.AUTHENTICATED })
@@ -91,6 +98,12 @@ public class EventHandlersApp {
     @SnapshotMessageHandler(resourceType = "inventory", rolesAllowed = { Role.ADMIN_REWARD, Role.ADMIN_MERCHANT })
     public void handleSnapshotRequestedWithRoles(SnapshotRequested snapshotRequested) {
         LOG.info("Handle snapshot requested event: " + snapshotRequested);
+    }
+
+    @Message(name = "test-event-with-requirements", exchangeType = DIRECT, persistent = true)
+    public record TestEventWithRequirements(@jakarta.validation.constraints.NotNull int id,
+                                            @javax.validation.constraints.NotNull String status,
+                                            User user) {
     }
 
     @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD,
