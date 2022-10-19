@@ -12,7 +12,7 @@
         <appVersion>APPLICATION_VERSION</appVersion>
         <groupId>PACKAGE_NAME</groupId>
         <version.jandex-maven-plugin>1.2.1</version.jandex-maven-plugin>
-        <version.globalid.iris>3.0.2</version.globalid.iris>
+        <version.globalid.iris>3.0.3</version.globalid.iris>
         <version.jackson>2.13.4</version.jackson>
         <version.validation-api>2.0.1.Final</version.validation-api>
     </properties>

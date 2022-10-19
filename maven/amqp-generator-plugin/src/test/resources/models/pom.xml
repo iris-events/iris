@@ -13,7 +13,7 @@
         <version.jandex-maven-plugin>1.2.1</version.jandex-maven-plugin>
         <version.globalid-common>1.1.12</version.globalid-common>
         <version.jackson-annotations>2.12.3</version.jackson-annotations>
-        <version.jackson-databind>2.13.4.1</version.jackson-databind>
+        <version.jackson-databind>2.13.4.2</version.jackson-databind>
     </properties>
 
 

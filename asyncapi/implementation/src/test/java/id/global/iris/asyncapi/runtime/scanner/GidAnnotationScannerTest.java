@@ -41,6 +41,7 @@ public class GidAnnotationScannerTest extends IndexScannerTestBase {
 
     private static Index getEventHandlersAppIndex() {
         return indexOf(EventHandlersApp.class,
+                EventHandlersApp.TestEventWithDocumentation.class,
                 EventHandlersApp.TestEventWithRequirements.class,
                 EventHandlersApp.TestEventV1.class,
                 EventHandlersApp.TestEventV2.class,
