@@ -41,7 +41,7 @@
         <version.globalid-common>2.0.2</version.globalid-common>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.13</version.httpclient>
-        <version.jackson>2.13.4</version.jackson>
+        <version.jackson>2.13.4.1</version.jackson>
         <version.jandex>2.4.3.Final</version.jandex>
         <version.jsonschema2pojo-core>1.1.2</version.jsonschema2pojo-core>
         <version.maven>3.8.6</version.maven>
