@@ -14,15 +14,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import id.global.common.auth.jwt.Role;
 import id.global.iris.asyncapi.runtime.scanner.model.User;
+import id.global.iris.asyncapi.spec.annotations.media.Schema;
+import id.global.iris.asyncapi.spec.annotations.media.SchemaProperty;
 import id.global.iris.common.annotations.GlobalIdGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.message.SnapshotRequested;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 public class EventHandlersApp {
     private static final Logger LOG = LoggerFactory.getLogger(EventHandlersApp.class);
+
+    @SuppressWarnings("unused")
+    @MessageHandler
+    public void handleTestEventWithDocumentation(TestEventWithDocumentation event) {
+        LOG.info("Handle event: " + event);
+    }
 
     @SuppressWarnings("unused")
     @MessageHandler
@@ -98,6 +108,22 @@ public class EventHandlersApp {
     @SnapshotMessageHandler(resourceType = "inventory", rolesAllowed = { Role.ADMIN_REWARD, Role.ADMIN_MERCHANT })
     public void handleSnapshotRequestedWithRoles(SnapshotRequested snapshotRequested) {
         LOG.info("Handle snapshot requested event: " + snapshotRequested);
+    }
+
+    @Message(name = "test-event-with-documentation", exchangeType = DIRECT, persistent = true)
+    @Schema(implementation = TestEventWithDocumentation.class, description = "Event with extensive documentation for test purposes")
+    public record TestEventWithDocumentation(
+            @SchemaProperty(name = "id", minimum = "5", maximum = "100", exclusiveMaximum = true)
+            int id,
+            @Min(value = 18, message = "Age should not be less than 18")
+            @Max(value = 150, message = "Age should not be greater than 150")
+            @SchemaProperty(description = "Alternative event id")
+            int altId,
+            @SchemaProperty(name = "status",
+                    description = "status of the user entity",
+                    enumeration = { "available", "pending", "sold" })
+            String status,
+            User user) {
     }
 
     @Message(name = "test-event-with-requirements", exchangeType = DIRECT, persistent = true)

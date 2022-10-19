@@ -69,7 +69,6 @@
                 <version>${version.victools}</version>
             </dependency>
 
-
         </dependencies>
     </dependencyManagement>
     <dependencies>

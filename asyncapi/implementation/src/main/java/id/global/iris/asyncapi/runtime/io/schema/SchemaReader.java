@@ -56,9 +56,9 @@ public class SchemaReader {
         schema.default_ = readObject(node.get(SchemaConstant.PROP_DEFAULT));
         schema.multipleOf = JsonUtil.bigDecimalProperty(node, SchemaConstant.PROP_MULTIPLE_OF);
         schema.maximum = JsonUtil.bigDecimalProperty(node, SchemaConstant.PROP_MAXIMUM);
-        schema.exclusiveMaximum = JsonUtil.booleanProperty(node, SchemaConstant.PROP_EXCLUSIVE_MAXIMUM).orElse(null);
+        schema.exclusiveMaximum = JsonUtil.bigDecimalProperty(node, SchemaConstant.PROP_EXCLUSIVE_MAXIMUM);
         schema.minimum = JsonUtil.bigDecimalProperty(node, SchemaConstant.PROP_MINIMUM);
-        schema.exclusiveMinimum = JsonUtil.booleanProperty(node, SchemaConstant.PROP_EXCLUSIVE_MINIMUM).orElse(null);
+        schema.exclusiveMinimum = JsonUtil.bigDecimalProperty(node, SchemaConstant.PROP_EXCLUSIVE_MINIMUM);
         schema.maxLength = (JsonUtil.intProperty(node, SchemaConstant.PROP_MAX_LENGTH));
         schema.minLength = (JsonUtil.intProperty(node, SchemaConstant.PROP_MIN_LENGTH));
         schema.pattern = (JsonUtil.stringProperty(node, SchemaConstant.PROP_PATTERN));
@@ -73,12 +73,12 @@ public class SchemaReader {
         schema.type = (schemaType != null) ? schemaType.toString() : null;
         schema.items = (readSchema(node.get(SchemaConstant.PROP_ITEMS), true));
         schema.not = (readSchema(node.get(SchemaConstant.PROP_NOT), true));
-        schema.allOf = (readSchemaArray(node.get(SchemaConstant.PROP_ALL_OF)).orElse(null));
+        schema.allOf = (readSchemaArray(node.get(SchemaConstant.PROP_ALL_OF), fixRef).orElse(null));
         schema.properties = readSchemas(node.get(SchemaConstant.PROP_PROPERTIES), fixRef).orElse(null);
         schema.readOnly = (JsonUtil.booleanProperty(node, SchemaConstant.PROP_READ_ONLY).orElse(null));
         schema.example = (readObject(node.get(SchemaConstant.PROP_EXAMPLE)));
-        schema.oneOf = (readSchemaArray(node.get(SchemaConstant.PROP_ONE_OF)).orElse(null));
-        schema.anyOf = (readSchemaArray(node.get(SchemaConstant.PROP_ANY_OF)).orElse(null));
+        schema.oneOf = (readSchemaArray(node.get(SchemaConstant.PROP_ONE_OF), fixRef).orElse(null));
+        schema.anyOf = (readSchemaArray(node.get(SchemaConstant.PROP_ANY_OF), fixRef).orElse(null));
         schema.not = (readSchema(node.get(SchemaConstant.PROP_NOT)));
         schema.writeOnly = (JsonUtil.booleanProperty(node, SchemaConstant.PROP_WRITE_ONLY).orElse(null));
         schema.deprecated = (JsonUtil.booleanProperty(node, SchemaConstant.PROP_DEPRECATED).orElse(null));
@@ -158,12 +158,12 @@ public class SchemaReader {
      * @param node the json array
      * @return List of Schema models
      */
-    private static Optional<List<AaiSchema>> readSchemaArray(final JsonNode node) {
+    private static Optional<List<AaiSchema>> readSchemaArray(final JsonNode node, final boolean fixRef) {
         if (node != null && node.isArray()) {
             List<AaiSchema> rval = new ArrayList<>(node.size());
             ArrayNode arrayNode = (ArrayNode) node;
             for (JsonNode arrayItem : arrayNode) {
-                rval.add(readSchema(arrayItem));
+                rval.add(readSchema(arrayItem, fixRef));
             }
             return Optional.of(rval);
         }

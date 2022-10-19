@@ -89,14 +89,14 @@ public @interface SchemaProperty {
     Class<?>[] allOf() default {};
 
     /**
-     * The name of the property.
+     * The name of the property when you want to override variable name set by code or @JsonProperty.
      * <p>
      * The name will be used as the key to add this schema to the parent schema's 'properties' map.
      * </p>
      *
      * @return the name of the schema
      **/
-    String name();
+    String name() default "";
 
     /**
      * A title to explain the purpose of the schema.
