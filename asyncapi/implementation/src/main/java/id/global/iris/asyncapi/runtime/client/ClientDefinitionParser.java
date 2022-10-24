@@ -71,7 +71,7 @@ public class ClientDefinitionParser {
         return feScopeChannels.values().stream()
                 .map(scopeChannelNode -> extractRefValue(scopeChannelNode).replace(AsyncApiConstants.COMPONENT_SCHEMAS_PREFIX,
                         ""))
-                .collect(Collectors.toMap(s -> s, schemasNode::get));
+                .collect(Collectors.toMap(s -> s, schemasNode::get, (s1, s2) -> s1));
     }
 
     private String extractRefValue(JsonNode scopeChannelNode) {

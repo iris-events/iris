@@ -32,6 +32,8 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
@@ -40,11 +42,17 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
+import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationModule;
+import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationOption;
+import com.github.victools.jsonschema.module.javax.validation.JavaxValidationModule;
+import com.github.victools.jsonschema.module.javax.validation.JavaxValidationOption;
 
 import id.global.iris.asyncapi.api.AsyncApiConfig;
 import id.global.iris.asyncapi.runtime.generator.CustomDefinitionProvider;
 import id.global.iris.asyncapi.runtime.io.components.ComponentReader;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelInfo;
+import id.global.iris.asyncapi.runtime.scanner.model.GidOpenApiModule;
+import id.global.iris.asyncapi.runtime.scanner.model.GidOpenApiOption;
 import id.global.iris.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import id.global.iris.asyncapi.runtime.scanner.validator.MessageAnnotationValidator;
 import id.global.iris.asyncapi.runtime.util.ChannelInfoGenerator;
@@ -69,8 +77,6 @@ import id.global.iris.parsers.RolesAllowedParser;
 import id.global.iris.parsers.RoutingKeyParser;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Info;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Scans a deployment (using the archive and jandex annotation index) for relevant annotations. These
@@ -94,8 +100,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     /**
      * Constructor.
      *
-     * @param config AsyncApiConfig instance
-     * @param index IndexView of deployment
+     * @param config      AsyncApiConfig instance
+     * @param index       IndexView of deployment
      * @param projectName Name of project
      */
     public GidAnnotationScanner(AsyncApiConfig config, IndexView index, String projectName, String projectGroupId,
@@ -375,13 +381,27 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     }
 
     private SchemaGenerator initSchemaGenerator(AsyncApiConfig config) {
-        // Schema generator JsonSchema of components
-        final var module = new JacksonModule(
-                JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY);
+        final var jacksonModule = new JacksonModule(JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY);
+        final var gidOpenApiModule = new GidOpenApiModule(
+                GidOpenApiOption.IGNORING_HIDDEN_PROPERTIES,
+                GidOpenApiOption.ENABLE_PROPERTY_NAME_OVERRIDES);
+        final var javaxValidationModule = new JavaxValidationModule(
+                JavaxValidationOption.NOT_NULLABLE_FIELD_IS_REQUIRED,
+                JavaxValidationOption.NOT_NULLABLE_METHOD_IS_REQUIRED,
+                JavaxValidationOption.PREFER_IDN_EMAIL_FORMAT,
+                JavaxValidationOption.INCLUDE_PATTERN_EXPRESSIONS);
+        final var jakartaValidationModule = new JakartaValidationModule(
+                JakartaValidationOption.NOT_NULLABLE_FIELD_IS_REQUIRED,
+                JakartaValidationOption.NOT_NULLABLE_METHOD_IS_REQUIRED,
+                JakartaValidationOption.PREFER_IDN_EMAIL_FORMAT,
+                JakartaValidationOption.INCLUDE_PATTERN_EXPRESSIONS);
         final var configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7,
                 OptionPreset.PLAIN_JSON)
                 .with(Option.DEFINITIONS_FOR_ALL_OBJECTS)
-                .with(module);
+                .with(jacksonModule)
+                .with(javaxValidationModule)
+                .with(jakartaValidationModule)
+                .with(gidOpenApiModule);
 
         configBuilder.forTypesInGeneral()
                 .withCustomDefinitionProvider(
