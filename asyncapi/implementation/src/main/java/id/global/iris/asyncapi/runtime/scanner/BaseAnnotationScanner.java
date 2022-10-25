@@ -19,16 +19,16 @@ import id.global.iris.asyncapi.api.AsyncApiConfig;
 import id.global.iris.asyncapi.api.Headers;
 import id.global.iris.asyncapi.runtime.io.channel.operation.OperationConstant;
 import id.global.iris.asyncapi.runtime.io.schema.SchemaReader;
-import id.global.iris.asyncapi.runtime.scanner.model.AaiSchemaAdditionalProperties;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.ChannelInfo;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAai20Message;
+import id.global.iris.asyncapi.runtime.scanner.model.GidAai20Schema;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAaiAMQPOperationBinding;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAaiHeaderItem;
 import id.global.iris.asyncapi.runtime.scanner.model.GidAaiHeaderItems;
 import id.global.iris.asyncapi.runtime.scanner.model.JsonSchemaInfo;
-import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.constants.DeliveryMode;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
@@ -63,7 +63,7 @@ public abstract class BaseAnnotationScanner {
         }
 
         final var generatedClassAnnotations = filteredIndexView.getAnnotations(
-                DotName.createSimple(GlobalIdGenerated.class.getName()));
+                DotName.createSimple(IrisGenerated.class.getName()));
 
         this.annotationScannerContext = new AnnotationScannerContext(filteredIndexView, new Aai20Document(),
                 generatedClassAnnotations);
@@ -189,9 +189,8 @@ public abstract class BaseAnnotationScanner {
                     context.addDefinitionSchema(key, definitionAaiSchema);
                 }
             }
-            AaiSchema aaiSchema = SchemaReader.readSchema(jsonSchemaInfo.getGeneratedSchema(), true);
-
-            aaiSchema.additionalProperties = new AaiSchemaAdditionalProperties(jsonSchemaInfo.isGeneratedClass());
+            GidAai20Schema aaiSchema = SchemaReader.readSchema(jsonSchemaInfo.getGeneratedSchema(), true);
+            aaiSchema.setGeneratedClass(jsonSchemaInfo.isGeneratedClass());
 
             asyncApi.components.schemas.put(s, aaiSchema);
         });

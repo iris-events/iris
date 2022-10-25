@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE, ElementType.RECORD_COMPONENT })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface GlobalIdGenerated {
+public @interface IrisGenerated {
 }

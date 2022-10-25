@@ -749,10 +749,7 @@
             "type": "string"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": true,
-          "generatedClass": true
-        }
+        "x-iris-generated" : true
       },
       "User": {
         "type": "object",

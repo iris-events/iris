@@ -15,7 +15,7 @@ import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 
 import id.global.iris.common.annotations.ExchangeType;
-import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.asyncapi.api.Headers;
@@ -82,7 +82,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
         Optional<ExchangeType> exchangeType = getExchangeType(bindingsExchange.path(TYPE));
         Optional<String> routingKey = Optional.ofNullable(bindingsQueue.path(NAME).textValue());
 
-        clazz.annotate(GlobalIdGenerated.class);
+        clazz.annotate(IrisGenerated.class);
 
         JAnnotationUse annotatedClazz = clazz.annotate(Message.class)
                 .param(NAME, exchangeName);

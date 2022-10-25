@@ -7,10 +7,9 @@ import id.global.iris.plugin.model.generator.utils.FileInteractor;
 import id.global.iris.plugin.model.generator.utils.PathResolver;
 import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
 import junit.framework.Assert;
-import org.apache.maven.monitor.logging.DefaultLog;
+
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.apache.maven.plugin.testing.SilentLog;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,43 +45,48 @@ class AmqpGeneratorTest {
     @SuppressWarnings("unused")
     private static Stream<Arguments> generate() {
         return Stream.of(
-                Arguments.of(new GenerateArguments("models")),
-                Arguments.of(new GenerateArguments("models/src/main/java")),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest")),
+                Arguments.of(new GenerateArguments("models", true)),
+                Arguments.of(new GenerateArguments("models/src/main/java", true)),
+                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest", true)),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventDefaults.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventDefaults.java",
+                                true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FanoutTestEventV1.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FanoutTestEventV1.java", true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FrontendTestEventV1.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FrontendTestEventV1.java", true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/GeneratedTestEvent.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/GeneratedTestEvent.java", false)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughInboundEvent.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughInboundEvent.java", true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughOutboundEvent.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughOutboundEvent.java", true)),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/ProducedEvent.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/ProducedEvent.java",
+                                true)),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV1.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV1.java",
+                                true)),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV2.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV2.java",
+                                true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/TopicTestEventV1.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/TopicTestEventV1.java", true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventWithRequiredProperties.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventWithRequiredProperties.java", true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/MapPayloadEvent.java")),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/MapPayloadEvent.java", true)),
+                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload", true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Status.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Status.java", true)),
                 Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/User.java")),
+                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/User.java",
+                                true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/MapValue.java")),
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/MapValue.java", true)),
                 Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Requirement.java")),
-                Arguments.of(new GenerateArguments("models/pom.xml"))
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Requirement.java", true)),
+                Arguments.of(new GenerateArguments("models/pom.xml", true))
 
         );
     }
@@ -127,9 +131,13 @@ class AmqpGeneratorTest {
     @MethodSource
     public void generate(GenerateArguments arg) throws IOException {
         Path generatedModelPath = Paths.get(arg.path);
-        Path expectedModelPath = Paths.get(TEST_RESOURCES_DIR + "/" + arg.path);
 
-        assertThat(Files.exists(generatedModelPath, LINK_OPTIONS), is(true));
+        final var shouldGenerate = arg.shouldGenerate();
+        assertThat(Files.exists(generatedModelPath, LINK_OPTIONS), is(shouldGenerate));
+        if (!shouldGenerate) {
+            return;
+        }
+        Path expectedModelPath = Paths.get(TEST_RESOURCES_DIR + "/" + arg.path);
         assertThat(Files.exists(expectedModelPath, LINK_OPTIONS), is(true));
 
         if (arg.path.endsWith(".java")) {
@@ -137,7 +145,6 @@ class AmqpGeneratorTest {
                 showDiff(generatedModelPath, expectedModelPath);
             }
         }
-
     }
 
     private void showDiffOld(Path generatedFilePath, Path expectedFilePath) throws IOException {
@@ -174,6 +181,6 @@ class AmqpGeneratorTest {
         Assertions.assertEquals(expected, generated);
     }
 
-    private record GenerateArguments(String path) {
+    private record GenerateArguments(String path, boolean shouldGenerate) {
     }
 }

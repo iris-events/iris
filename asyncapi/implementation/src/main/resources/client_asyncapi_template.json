@@ -1,6 +1,6 @@
 {
   "info": {
-    "title": "GlobalID Client API",
+    "title": "Iris Client API",
     "version": "{VERSION}"
   },
   "asyncapi": "2.0.0",
