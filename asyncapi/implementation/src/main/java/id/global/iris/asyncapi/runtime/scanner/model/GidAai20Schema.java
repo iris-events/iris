@@ -12,7 +12,7 @@ public class GidAai20Schema extends Aai20Schema {
     public BigDecimal exclusiveMinimum;
 
     @JsonProperty("x-iris-generated")
-    public Boolean generatedClass;
+    public Boolean irisGenerated;
 
     public void setExistingJavaType(final String existingJavaType) {
         this.existingJavaType = existingJavaType;
@@ -26,7 +26,7 @@ public class GidAai20Schema extends Aai20Schema {
         this.exclusiveMinimum = exclusiveMinimum;
     }
 
-    public void setGeneratedClass(final Boolean generatedClass) {
-        this.generatedClass = generatedClass;
+    public void setIrisGenerated(final Boolean irisGenerated) {
+        this.irisGenerated = irisGenerated;
     }
 }
