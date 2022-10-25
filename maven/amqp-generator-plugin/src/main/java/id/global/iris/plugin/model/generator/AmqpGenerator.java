@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.sun.codemodel.JCodeModel;
+
 import id.global.iris.plugin.model.generator.annotators.MetadataAnnotator;
 import id.global.iris.plugin.model.generator.configs.EventSchemaGeneratorConfig;
 import id.global.iris.plugin.model.generator.exception.AmqpGeneratorException;
@@ -19,6 +20,7 @@ import id.global.iris.plugin.model.generator.utils.FileInteractor;
 import id.global.iris.plugin.model.generator.utils.JsonUtils;
 import id.global.iris.plugin.model.generator.utils.PathResolver;
 import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
+
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.StringUtils;
 import org.jsonschema2pojo.GenerationConfig;
@@ -69,8 +71,7 @@ import static java.util.stream.Collectors.joining;
 
 public class AmqpGenerator {
     private static final String defaultUrl = "https://schema.tools.global.id";
-    public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
-    public static final String IS_GENERATED_EVENT = "isGeneratedEvent";
+    public static final String X_IRIS_GENERATED_PROPERTY = "x-iris-generated";
 
     private final Pattern REF_PATTERN = Pattern.compile(REF_REGEX);
     private final Map<String, ChannelDetails> channelDetails;
@@ -193,9 +194,8 @@ public class AmqpGenerator {
         if (schemas instanceof ObjectNode) {
             schemas.fields()
                     .forEachRemaining((schema) -> {
-                        if (!schema.getValue().has(ADDITIONAL_PROPERTIES) ||
-                                !schema.getValue().get(ADDITIONAL_PROPERTIES).has(IS_GENERATED_EVENT) ||
-                                !schema.getValue().get(ADDITIONAL_PROPERTIES).get(IS_GENERATED_EVENT).booleanValue()) {
+                        if (!schema.getValue().has(X_IRIS_GENERATED_PROPERTY)
+                                || !schema.getValue().get(X_IRIS_GENERATED_PROPERTY).booleanValue()) {
                             filteredSchemas.set(schema.getKey(), schema.getValue());
                         }
                     });
@@ -440,7 +440,7 @@ public class AmqpGenerator {
             List<AbstractMap.SimpleEntry<String, Integer>> parentToChildCount) {
 
         parentToChildCount.stream()
-                .sorted(Map.Entry.<String, Integer> comparingByValue().reversed())
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .forEach(entry -> {
 
                     generate(entry.getKey(), PAYLOAD);

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import id.global.iris.common.annotations.ExchangeType;
-import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
 
@@ -20,7 +20,7 @@ import id.global.iris.common.annotations.Scope;
  * Required properties event.
  * 
  */
-@GlobalIdGenerated
+@IrisGenerated
 @Message(name = "event-with-required-properties", exchangeType = ExchangeType.FANOUT, routingKey = "event-with-required-properties", scope = Scope.FRONTEND, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({

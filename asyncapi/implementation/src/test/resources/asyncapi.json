@@ -932,10 +932,7 @@
             "type": "string"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": true,
-          "generatedClass": true
-        }
+        "x-iris-generated": true
       },
       "User": {
         "description": "This is a User schema component",
@@ -978,10 +975,7 @@
             "$ref": "#/components/schemas/User"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "FrontendTestEventV1": {
         "type": "object",
@@ -996,10 +990,7 @@
             "$ref": "#/components/schemas/User"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "PassthroughOutboundEvent": {
         "type": "object",
@@ -1008,10 +999,7 @@
             "type": "integer"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "ProducedEvent": {
         "type": "object",
@@ -1020,10 +1008,7 @@
             "type": "integer"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "FanoutTestEventV1": {
         "type": "object",
@@ -1038,10 +1023,7 @@
             "$ref": "#/components/schemas/User"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "MapPayloadEvent": {
         "type": "object",
@@ -1054,10 +1036,7 @@
             "existingJavaType": "java.util.Map<java.lang.String, id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp$MapValue>"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "MapValue": {
         "type": "object",
@@ -1087,10 +1066,7 @@
             "$ref": "#/components/schemas/User"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "PassthroughInboundEvent": {
         "type": "object",
@@ -1099,10 +1075,7 @@
             "type": "integer"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "TestEventV2": {
         "type": "object",
@@ -1130,10 +1103,7 @@
             "$ref": "#/components/schemas/User"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "EventDefaults": {
         "type": "object",
@@ -1142,10 +1112,7 @@
             "type": "integer"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "TestEventV1": {
         "type": "object",
@@ -1160,10 +1127,7 @@
             "$ref": "#/components/schemas/User"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "SnapshotRequested": {
         "type": "object",
@@ -1175,10 +1139,7 @@
             "type": "string"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": true,
-          "generatedClass": true
-        }
+        "x-iris-generated": true
       },
       "TestEventWithDocumentation": {
         "description": "Event with extensive documentation for test purposes",
@@ -1208,10 +1169,7 @@
             "$ref": "#/components/schemas/User"
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       },
       "ListPayloadEvent": {
         "type": "object",
@@ -1223,10 +1181,7 @@
             }
           }
         },
-        "additionalProperties": {
-          "isGeneratedClass": false,
-          "generatedClass": false
-        }
+        "x-iris-generated": false
       }
     }
   }

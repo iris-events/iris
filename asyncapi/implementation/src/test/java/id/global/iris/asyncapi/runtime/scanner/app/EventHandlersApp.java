@@ -16,7 +16,7 @@ import id.global.common.auth.jwt.Role;
 import id.global.iris.asyncapi.runtime.scanner.model.User;
 import id.global.iris.asyncapi.spec.annotations.media.Schema;
 import id.global.iris.asyncapi.spec.annotations.media.SchemaProperty;
-import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.Scope;
@@ -163,7 +163,7 @@ public class EventHandlersApp {
     public record EventDefaults(int id) {
     }
 
-    @GlobalIdGenerated
+    @IrisGenerated
     @Message(name = "test-generated-exchange", exchangeType = TOPIC)
     public record GeneratedTestEvent(int id, String status) {
 

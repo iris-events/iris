@@ -7,11 +7,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import id.global.iris.common.annotations.ExchangeType;
-import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
 
-@GlobalIdGenerated
+@IrisGenerated
 @Message(name = "event-defaults", exchangeType = ExchangeType.FANOUT, routingKey = "event-defaults", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({

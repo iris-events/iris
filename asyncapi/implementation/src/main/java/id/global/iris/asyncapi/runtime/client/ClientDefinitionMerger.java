@@ -57,10 +57,11 @@ public class ClientDefinitionMerger {
         ObjectNode root = objectMapper.createObjectNode();
 
         root.put("asyncapi", "2.0.0");
+        // TODO: opensource - remove id.global (should be configurable)
         root.put("id", "urn:id:global:client-api");
 
         ObjectNode infoNode = objectMapper.createObjectNode();
-        infoNode.put("title", "GlobalID Client API");
+        infoNode.put("title", "Iris Client API");
         infoNode.put("version", version);
 
         root.set("info", infoNode);

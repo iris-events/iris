@@ -9,11 +9,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import id.global.amqp.test.amqpgeneratortest.payload.User;
 import id.global.iris.common.annotations.ExchangeType;
-import id.global.iris.common.annotations.GlobalIdGenerated;
+import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
 
-@GlobalIdGenerated
+@IrisGenerated
 @Message(name = "test-fanout-exchange", exchangeType = ExchangeType.FANOUT, routingKey = "test-fanout-exchange", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
