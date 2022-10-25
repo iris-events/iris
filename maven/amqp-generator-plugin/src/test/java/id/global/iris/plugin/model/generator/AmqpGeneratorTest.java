@@ -70,6 +70,8 @@ class AmqpGeneratorTest {
                 Arguments.of(new GenerateArguments(
                         "models/src/main/java/id/global/amqp/test/amqpgeneratortest/TopicTestEventV1.java")),
                 Arguments.of(new GenerateArguments(
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventWithRequiredProperties.java")),
+                Arguments.of(new GenerateArguments(
                         "models/src/main/java/id/global/amqp/test/amqpgeneratortest/MapPayloadEvent.java")),
                 Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload")),
                 Arguments.of(new GenerateArguments(
@@ -78,6 +80,8 @@ class AmqpGeneratorTest {
                         new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/User.java")),
                 Arguments.of(new GenerateArguments(
                         "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/MapValue.java")),
+                Arguments.of(new GenerateArguments(
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Requirement.java")),
                 Arguments.of(new GenerateArguments("models/pom.xml"))
 
         );

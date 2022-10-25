@@ -62,7 +62,7 @@ public class EventSchemaGeneratorConfig {
 
         @Override
         public boolean isIncludeRequiredPropertiesConstructor() {
-            return true;
+            return false;
         }
     };
 
@@ -124,7 +124,7 @@ public class EventSchemaGeneratorConfig {
 
         @Override
         public boolean isIncludeRequiredPropertiesConstructor() {
-            return true;
+            return false;
         }
     };
 }
