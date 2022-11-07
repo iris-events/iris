@@ -46,7 +46,7 @@
         <version.jsonschema2pojo-core>1.1.2</version.jsonschema2pojo-core>
         <version.maven>3.8.6</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
-        <version.maven-plugin-annotations>3.6.4</version.maven-plugin-annotations>
+        <version.maven-plugin-annotations>3.7.0</version.maven-plugin-annotations>
         <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
         <version.maven-project>2.2.1</version.maven-project>
         <version.maven-resolver-api>1.8.2</version.maven-resolver-api>
