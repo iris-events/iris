@@ -1,5 +1,11 @@
 package id.global.iris.messaging.runtime.consumer;
 
+import static id.global.iris.common.constants.MessagingHeaders.Message.CLIENT_TRACE_ID;
+import static id.global.iris.common.constants.MessagingHeaders.Message.CORRELATION_ID;
+import static id.global.iris.common.constants.MessagingHeaders.Message.EVENT_TYPE;
+import static id.global.iris.common.constants.MessagingHeaders.Message.SESSION_ID;
+import static id.global.iris.common.constants.MessagingHeaders.Message.USER_ID;
+
 import java.lang.invoke.MethodHandle;
 import java.security.Principal;
 import java.util.Optional;
@@ -10,8 +16,11 @@ import javax.enterprise.inject.spi.CDI;
 import org.slf4j.MDC;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.Delivery;
 
 import id.global.iris.messaging.runtime.auth.GidJwtValidator;
 import id.global.iris.messaging.runtime.context.EventContext;
@@ -23,6 +32,7 @@ import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
 import io.quarkus.security.identity.SecurityIdentity;
+import io.smallrye.reactive.messaging.providers.helpers.VertxContext;
 
 public class DeliverCallbackProvider {
 
@@ -61,32 +71,48 @@ public class DeliverCallbackProvider {
 
     public DeliverCallback createDeliverCallback(final Channel channel) {
         return (consumerTag, message) -> {
-            final var currentContextMap = MDC.getCopyOfContextMap();
-            MDC.clear();
-            try {
-                Arc.container().requestContext().activate();
-                final var properties = message.getProperties();
-                final var envelope = message.getEnvelope();
-                eventContext.setBasicProperties(properties);
-                eventContext.setEnvelope(envelope);
-
-                authorizeMessage();
-                final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
-                final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
-                final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
-                final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
-                optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
-                channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-            } catch (Throwable throwable) {
-                errorHandler.handleException(irisContext, message, channel, throwable);
-            } finally {
-                MDC.setContextMap(currentContextMap);
-            }
+            final var newDuplicatedContext = VertxContext.createNewDuplicatedContext();
+            VertxContext.runOnContext(newDuplicatedContext, () -> handleMessage(channel, message));
         };
+    }
+
+    private void handleMessage(final Channel channel, final Delivery message) {
+        try {
+            Arc.container().requestContext().activate();
+            final var properties = message.getProperties();
+            final var envelope = message.getEnvelope();
+            eventContext.setBasicProperties(properties);
+            eventContext.setEnvelope(envelope);
+            enrichMDC(properties);
+
+            authorizeMessage();
+            final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
+            final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
+            final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
+            final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
+            optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
+            channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+        } catch (Throwable throwable) {
+            errorHandler.handleException(irisContext, message, channel, throwable);
+        }
     }
 
     public IrisContext getIrisContext() {
         return irisContext;
+    }
+
+    private static void enrichMDC(final AMQP.BasicProperties properties) {
+        getStringHeader(properties, SESSION_ID).ifPresent(s -> MDC.put(SESSION_ID, s));
+        getStringHeader(properties, USER_ID).ifPresent(s -> MDC.put(USER_ID, s));
+        getStringHeader(properties, CLIENT_TRACE_ID).ifPresent(s -> MDC.put(CLIENT_TRACE_ID, s));
+        getStringHeader(properties, CORRELATION_ID).ifPresent(s -> MDC.put(CORRELATION_ID, s));
+        getStringHeader(properties, EVENT_TYPE).ifPresent(s -> MDC.put(EVENT_TYPE, s));
+    }
+
+    private static Optional<String> getStringHeader(BasicProperties props, String name) {
+        return Optional.ofNullable(props.getHeaders())
+                .map(headers -> headers.get(name))
+                .map(Object::toString);
     }
 
     private void authorizeMessage() {
