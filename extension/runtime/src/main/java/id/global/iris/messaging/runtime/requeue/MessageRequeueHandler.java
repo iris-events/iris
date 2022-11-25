@@ -19,8 +19,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.slf4j.MDC;
-
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
@@ -67,30 +65,20 @@ public class MessageRequeueHandler {
         final var headers = properties.getHeaders();
         final var newHeaders = new HashMap<String, Object>(headers);
 
-        MDC.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
         newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
-        MDC.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
         newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
-        MDC.put(X_MAX_RETRIES, String.valueOf(config.getRetryMaxCount()));
         newHeaders.put(X_MAX_RETRIES, config.getRetryMaxCount());
-        MDC.put(X_ERROR_CODE, messagingException.getClientCode());
         newHeaders.put(X_ERROR_CODE, messagingException.getClientCode());
-        MDC.put(X_ERROR_TYPE, messagingException.getErrorType().name());
         newHeaders.put(X_ERROR_TYPE, messagingException.getErrorType().name());
-        MDC.put(X_ERROR_MESSAGE, messagingException.getMessage());
         newHeaders.put(X_ERROR_MESSAGE, messagingException.getMessage());
-        MDC.put(X_NOTIFY_CLIENT, String.valueOf(shouldNotifyFrontend));
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
-        MDC.put(SERVER_TIMESTAMP, String.valueOf(timestampProvider.getCurrentTimestamp()));
         newHeaders.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
 
         final var deadLetterExchangeName = irisContext.getDeadLetterExchangeName();
         if (deadLetterExchangeName.isPresent()) {
             final var queueName = queueNameProvider.getQueueName(irisContext);
             final var deadLetterRoutingKey = irisContext.getDeadLetterRoutingKey(queueName);
-            MDC.put(X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
             newHeaders.put(X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
-            MDC.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
             newHeaders.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
         }
 
