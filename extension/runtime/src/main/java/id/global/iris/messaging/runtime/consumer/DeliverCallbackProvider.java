@@ -22,6 +22,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
 
+import id.global.iris.common.constants.MDCProperties;
 import id.global.iris.messaging.runtime.auth.GidJwtValidator;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.context.IrisContext;
@@ -35,8 +36,6 @@ import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.reactive.messaging.providers.helpers.VertxContext;
 
 public class DeliverCallbackProvider {
-
-    public static final String GID_UUID = "gidUuid";
     private final EventContext eventContext;
     private final ObjectMapper objectMapper;
     private final EventProducer producer;
@@ -102,11 +101,11 @@ public class DeliverCallbackProvider {
     }
 
     private static void enrichMDC(final AMQP.BasicProperties properties) {
-        getStringHeader(properties, SESSION_ID).ifPresent(s -> MDC.put(SESSION_ID, s));
-        getStringHeader(properties, USER_ID).ifPresent(s -> MDC.put(USER_ID, s));
-        getStringHeader(properties, CLIENT_TRACE_ID).ifPresent(s -> MDC.put(CLIENT_TRACE_ID, s));
-        getStringHeader(properties, CORRELATION_ID).ifPresent(s -> MDC.put(CORRELATION_ID, s));
-        getStringHeader(properties, EVENT_TYPE).ifPresent(s -> MDC.put(EVENT_TYPE, s));
+        getStringHeader(properties, SESSION_ID).ifPresent(s -> MDC.put(MDCProperties.SESSION_ID, s));
+        getStringHeader(properties, USER_ID).ifPresent(s -> MDC.put(MDCProperties.USER_ID, s));
+        getStringHeader(properties, CLIENT_TRACE_ID).ifPresent(s -> MDC.put(MDCProperties.CLIENT_TRACE_ID, s));
+        getStringHeader(properties, CORRELATION_ID).ifPresent(s -> MDC.put(MDCProperties.CORRELATION_ID, s));
+        getStringHeader(properties, EVENT_TYPE).ifPresent(s -> MDC.put(MDCProperties.EVENT_TYPE, s));
     }
 
     private static Optional<String> getStringHeader(BasicProperties props, String name) {
@@ -125,7 +124,7 @@ public class DeliverCallbackProvider {
             Optional.ofNullable(securityIdentity)
                     .map(SecurityIdentity::getPrincipal)
                     .map(Principal::getName)
-                    .ifPresent(subject -> MDC.put(GID_UUID, subject));
+                    .ifPresent(subject -> MDC.put(MDCProperties.GID_UUID, subject));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
             throw IrisExceptionHandler.getSecurityException(securityException);
