@@ -95,6 +95,7 @@ public class EventHandlersApp {
         LOG.info("Handling event with map payload");
     }
 
+    @SuppressWarnings("unused")
     @MessageHandler
     public void handleListPayloadEvent(ListPayloadEvent event) {
         LOG.info("Handling event with list payload");

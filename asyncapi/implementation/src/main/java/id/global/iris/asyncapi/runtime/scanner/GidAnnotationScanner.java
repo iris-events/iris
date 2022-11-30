@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -35,6 +36,8 @@ import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
 import com.github.victools.jsonschema.generator.SchemaGenerator;
@@ -349,8 +352,9 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var loadedClass = loadClass(className);
         final var classSimpleName = loadedClass.getSimpleName();
         final var isGeneratedClass = isGeneratedClass(classInfo);
-
         final var generatedSchema = schemaGenerator.generateSchema(loadedClass);
+        validateRefProperties(className, generatedSchema);
+
         return new JsonSchemaInfo(
                 null,
                 classSimpleName,
@@ -364,12 +368,32 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var loadedClass = loadClass(className);
         final var eventSimpleName = loadedClass.getSimpleName();
         final var generatedSchema = schemaGenerator.generateSchema(loadedClass);
+        validateRefProperties(className, generatedSchema);
+
         return new JsonSchemaInfo(
                 annotationName,
                 eventSimpleName,
                 generatedSchema,
                 annotationValues,
                 isGeneratedClass);
+    }
+
+    private static void validateRefProperties(final String className, final ObjectNode generatedSchema) {
+        // prevent adding schema property description to properties with referenced object
+        final var properties = generatedSchema.get("properties");
+        if (properties != null) {
+            StreamSupport.stream(properties.spliterator(), false)
+                    .filter(jsonNode -> jsonNode.has("allOf"))
+                    .map(jsonNode -> jsonNode.get("allOf"))
+                    .filter(JsonNode::isArray)
+                    .forEach(jsonNode -> jsonNode.forEach(node -> {
+                        if (node.has("$ref") && jsonNode.size() > 1) {
+                            throw new IllegalArgumentException(String.format(
+                                    "Referenced schema property cannot have additional schema properties specified (e.g. description)."
+                                            + " className: %s, reference: %s", className, jsonNode));
+                        }
+                    }));
+        }
     }
 
     private Class<?> loadClass(String className) throws ClassNotFoundException {
