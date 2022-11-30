@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.jandex.Index;
 import org.json.JSONException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -13,6 +16,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp;
+import id.global.iris.asyncapi.runtime.scanner.app.ParseErrorEventHandlersApp;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
@@ -37,6 +41,27 @@ public class GidAnnotationScannerTest extends IndexScannerTestBase {
         Aai20Document document = scanner.scan();
         String schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
         JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
+    }
+
+    @Test
+    @DisplayName("Fail generating of JSON where referenced properties have additional descriptive properties.")
+    public void failGeneratedJson() throws IOException, JSONException {
+        File file = new File(EXPECTED_JSON_RESULT_FILE);
+        String expectedContent = Files.readString(file.toPath());
+
+        var projectName = ParseErrorEventHandlersApp.class.getSimpleName();
+        var projectGroupId = ParseErrorEventHandlersApp.class.getCanonicalName().replaceAll("." + projectName, "");
+        var projectVersion = "1.0.0";
+        Index index = indexOf(ParseErrorEventHandlersApp.class,
+                ParseErrorEventHandlersApp.EventWithDescribedEnum.class,
+                MessageHandler.class,
+                Message.class);
+
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
+                projectVersion);
+        var exception = Assertions.assertThrows(IllegalArgumentException.class, scanner::scan);
+        MatcherAssert.assertThat(exception.getMessage(),
+                CoreMatchers.startsWith("Referenced schema property cannot have additional schema properties specified"));
     }
 
     private static Index getEventHandlersAppIndex() {
