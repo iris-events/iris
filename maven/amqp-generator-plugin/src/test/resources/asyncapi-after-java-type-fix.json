@@ -727,6 +727,66 @@
           }
         }
       }
+    },
+    "event-with-described-enum/event-with-described-enum": {
+      "publish": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "INTERNAL"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": [ ]
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead.dead-letter"
+              }
+            }
+          },
+          "name": "EventWithDescribedEnum",
+          "title": "EventWithDescribedEnum",
+          "payload": {
+            "$ref": "#/components/schemas/EventWithDescribedEnum"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "event-with-described-enum",
+            "autoDelete": false,
+            "type": "fanout"
+          },
+          "queue": {
+            "durable": true,
+            "vhost": "/",
+            "name": "event-with-described-enum",
+            "autoDelete": false,
+            "exclusive": false
+          }
+        }
+      }
     }
   },
   "components": {
@@ -968,11 +1028,8 @@
         "type" : "object",
         "properties" : {
           "requirement" : {
-            "allOf" : [ {
-              "$ref" : "#/components/schemas/Requirement"
-            }, {
-              "description" : "Requirement to verify."
-            } ]
+            "$ref" : "#/components/schemas/Requirement",
+            "description" : "Requirement to verify."
           },
           "state_id" : {
             "description" : "Id of the state returned by Onboard Started event.",
@@ -991,6 +1048,20 @@
       "Requirement" : {
         "type" : "string",
         "enum" : [ "PHONE", "EMAIL", "GID_NAME" ]
+      },
+      "TestType" : {
+        "type" : "string",
+        "enum" : [ "FOO", "BAR" ]
+      },
+      "EventWithDescribedEnum" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "description" : "Requirement to verify.",
+            "$ref" : "#/components/schemas/TestType"
+          }
+        },
+        "x-iris-generated" : false
       }
     }
   }

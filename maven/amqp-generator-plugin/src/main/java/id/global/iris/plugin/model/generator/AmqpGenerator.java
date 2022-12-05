@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static id.global.iris.plugin.model.generator.utils.AmqpStringUtils.getRefToBeReplaced;
+import static id.global.iris.plugin.model.generator.utils.AmqpStringUtils.getRefRegexToBeReplaced;
 import static id.global.iris.plugin.model.generator.utils.AmqpStringUtils.getReplacementForRef;
 import static id.global.iris.plugin.model.generator.utils.StringConstants.COMMA;
 import static id.global.iris.plugin.model.generator.utils.StringConstants.DOT;
@@ -381,9 +381,8 @@ public class AmqpGenerator {
         String replaceWith = getReplacementForRef(fileName, packageName, AmqpStringUtils.getPackageName(modelName));
 
         String fileLocation = nameWithLocation.getValue();
-        String toReplace = getRefToBeReplaced(fileLocation);
-
-        String replacementContent = fileContent.replace(toReplace, replaceWith);
+        String toReplace = getRefRegexToBeReplaced(fileLocation);
+        String replacementContent = fileContent.replaceAll(toReplace, replaceWith);
         fileInteractor.writeFile(Path.of(file.toURI()), jsonUtils.getFormattedJson(replacementContent));
     }
 

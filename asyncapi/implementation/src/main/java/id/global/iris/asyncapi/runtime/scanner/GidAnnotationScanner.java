@@ -36,7 +36,6 @@ import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
@@ -353,7 +352,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var classSimpleName = loadedClass.getSimpleName();
         final var isGeneratedClass = isGeneratedClass(classInfo);
         final var generatedSchema = schemaGenerator.generateSchema(loadedClass);
-        validateRefProperties(className, generatedSchema);
+        fixDocumentedRefProperties(className, generatedSchema);
 
         return new JsonSchemaInfo(
                 null,
@@ -368,7 +367,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var loadedClass = loadClass(className);
         final var eventSimpleName = loadedClass.getSimpleName();
         final var generatedSchema = schemaGenerator.generateSchema(loadedClass);
-        validateRefProperties(className, generatedSchema);
+        fixDocumentedRefProperties(className, generatedSchema);
 
         return new JsonSchemaInfo(
                 annotationName,
@@ -378,21 +377,19 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 isGeneratedClass);
     }
 
-    private static void validateRefProperties(final String className, final ObjectNode generatedSchema) {
-        // prevent adding schema property description to properties with referenced object
+    private static void fixDocumentedRefProperties(final String className, final ObjectNode generatedSchema) {
         final var properties = generatedSchema.get("properties");
         if (properties != null) {
             StreamSupport.stream(properties.spliterator(), false)
                     .filter(jsonNode -> jsonNode.has("allOf"))
-                    .map(jsonNode -> jsonNode.get("allOf"))
-                    .filter(JsonNode::isArray)
-                    .forEach(jsonNode -> jsonNode.forEach(node -> {
-                        if (node.has("$ref") && jsonNode.size() > 1) {
-                            throw new IllegalArgumentException(String.format(
-                                    "Referenced schema property cannot have additional schema properties specified (e.g. description)."
-                                            + " className: %s, reference: %s", className, jsonNode));
-                        }
-                    }));
+                    .forEach(jsonNode -> {
+                        final var objectNode = (ObjectNode) jsonNode;
+                        var allOf = jsonNode.get("allOf");
+                        allOf.forEach(allOfItem ->
+                                allOfItem.fields().forEachRemaining(stringJsonNodeEntry ->
+                                        objectNode.set(stringJsonNodeEntry.getKey(), stringJsonNodeEntry.getValue())));
+                        objectNode.remove("allOf");
+                    });
         }
     }
 

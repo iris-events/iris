@@ -3,11 +3,13 @@ package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import javax.annotation.processing.Generated;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import id.global.amqp.test.amqpgeneratortest.payload.Requirement;
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
@@ -18,7 +20,7 @@ import id.global.iris.common.annotations.Scope;
  * Event With Required Properties
  * <p>
  * Required properties event.
- * 
+ *
  */
 @IrisGenerated
 @Message(name = "event-with-required-properties", exchangeType = ExchangeType.FANOUT, routingKey = "event-with-required-properties", scope = Scope.FRONTEND, deadLetter = "dead.dead-letter", ttl = -1)
@@ -33,17 +35,19 @@ public class EventWithRequiredProperties implements Serializable
 {
 
     /**
-     * 
+     * Requirement to verify.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("requirement")
+    @JsonPropertyDescription("Requirement to verify.")
+    @Valid
     @NotNull
-    private Object requirement;
+    private Requirement requirement;
     /**
      * Id of the state returned by Onboard Started event.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("state_id")
     @JsonPropertyDescription("Id of the state returned by Onboard Started event.")
@@ -52,28 +56,28 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Value of the requirement.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("value")
     @JsonPropertyDescription("Value of the requirement.")
     @NotNull
     private String value;
-    private final static long serialVersionUID = 3274290212430735327L;
+    private final static long serialVersionUID = 7029086880915866375L;
 
     /**
      * No args constructor for use in serialization
-     * 
+     *
      */
     public EventWithRequiredProperties() {
     }
 
     /**
-     * 
+     *
      * @param stateId
      * @param requirement
      * @param value
      */
-    public EventWithRequiredProperties(Object requirement, String stateId, String value) {
+    public EventWithRequiredProperties(Requirement requirement, String stateId, String value) {
         super();
         this.requirement = requirement;
         this.stateId = stateId;
@@ -81,29 +85,29 @@ public class EventWithRequiredProperties implements Serializable
     }
 
     /**
-     * 
+     * Requirement to verify.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("requirement")
-    public Object getRequirement() {
+    public Requirement getRequirement() {
         return requirement;
     }
 
     /**
-     * 
+     * Requirement to verify.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("requirement")
-    public void setRequirement(Object requirement) {
+    public void setRequirement(Requirement requirement) {
         this.requirement = requirement;
     }
 
     /**
      * Id of the state returned by Onboard Started event.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("state_id")
     public String getStateId() {
@@ -113,7 +117,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Id of the state returned by Onboard Started event.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("state_id")
     public void setStateId(String stateId) {
@@ -123,7 +127,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Value of the requirement.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("value")
     public String getValue() {
@@ -133,7 +137,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Value of the requirement.
      * (Required)
-     * 
+     *
      */
     @JsonProperty("value")
     public void setValue(String value) {

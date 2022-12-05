@@ -86,6 +86,10 @@ class AmqpGeneratorTest {
                         "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/MapValue.java", true)),
                 Arguments.of(new GenerateArguments(
                         "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Requirement.java", true)),
+                Arguments.of(new GenerateArguments(
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventWithDescribedEnum.java", true)),
+                Arguments.of(new GenerateArguments(
+                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/TestType.java", true)),
                 Arguments.of(new GenerateArguments("models/pom.xml", true))
 
         );
@@ -124,7 +128,6 @@ class AmqpGeneratorTest {
                 APICURIO_URL);
 
         generator.generate(ArtifactSource.FILE);
-
     }
 
     @ParameterizedTest
