@@ -1,11 +1,12 @@
 package id.global.iris.asyncapi.runtime.scanner;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.jboss.jandex.Index;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +17,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp;
+import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersAppWithMapProperty;
 import id.global.iris.asyncapi.runtime.scanner.app.ParseErrorEventHandlersApp;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
@@ -25,6 +27,8 @@ import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 
 public class GidAnnotationScannerTest extends IndexScannerTestBase {
     private static final String EXPECTED_JSON_RESULT_FILE = "src/test/resources/asyncapi.json";
+    private static final String EXPECTED_JSON_MAP_VALUE_RESULT_FILE = "src/test/resources/asyncapi_map_value.json";
+    private static final String EXPECTED_JSON_ALL_OF_VALUE_RESULT_FILE = "src/test/resources/asyncapi_allOf_value.json";
 
     @Test
     @DisplayName("Generate JSON from a test app and compare to expected result.")
@@ -44,9 +48,9 @@ public class GidAnnotationScannerTest extends IndexScannerTestBase {
     }
 
     @Test
-    @DisplayName("Fail generating of JSON where referenced properties have additional descriptive properties.")
-    public void failGeneratedJson() throws IOException, JSONException {
-        File file = new File(EXPECTED_JSON_RESULT_FILE);
+    @DisplayName("Generate JSON schema of event with object description resulting in allOf property")
+    public void generateSchemaWithReferencedPropertyDescription() throws IOException, JSONException {
+        File file = new File(EXPECTED_JSON_ALL_OF_VALUE_RESULT_FILE);
         String expectedContent = Files.readString(file.toPath());
 
         var projectName = ParseErrorEventHandlersApp.class.getSimpleName();
@@ -59,9 +63,30 @@ public class GidAnnotationScannerTest extends IndexScannerTestBase {
 
         GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
                 projectVersion);
-        var exception = Assertions.assertThrows(IllegalArgumentException.class, scanner::scan);
-        MatcherAssert.assertThat(exception.getMessage(),
-                CoreMatchers.startsWith("Referenced schema property cannot have additional schema properties specified"));
+        Aai20Document document = scanner.scan();
+        String schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
+        JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
+    }
+
+    @Test
+    @DisplayName("Generate JSON schema of event with map value.")
+    public void generateSchemaWithMappedValue() throws IOException, JSONException {
+        File file = new File(EXPECTED_JSON_MAP_VALUE_RESULT_FILE);
+        String expectedContent = Files.readString(file.toPath());
+
+        var projectName = EventHandlersAppWithMapProperty.class.getSimpleName();
+        var projectGroupId = EventHandlersAppWithMapProperty.class.getCanonicalName().replaceAll("." + projectName, "");
+        var projectVersion = "1.0.0";
+        Index index = indexOf(EventHandlersAppWithMapProperty.class,
+                EventHandlersAppWithMapProperty.EventWithMapValue.class,
+                MessageHandler.class,
+                Message.class);
+
+        GidAnnotationScanner scanner = new GidAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
+                projectVersion);
+        Aai20Document document = scanner.scan();
+        String schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
+        JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
     }
 
     private static Index getEventHandlersAppIndex() {

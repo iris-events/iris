@@ -1,0 +1,11 @@
+{
+  "type" : "object",
+  "properties" : {
+    "type" : {
+      "description" : "Requirement to verify.",
+      "type" : "object",
+      "javaType" : "id.global.iris.directorymodels.payload.TestType"
+    }
+  },
+  "x-iris-generated" : false
+}

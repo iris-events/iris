@@ -1,0 +1,88 @@
+{
+  "info" : {
+    "title" : "ParseErrorEventHandlersApp",
+    "version" : "1.0.0"
+  },
+  "asyncapi" : "2.0.0",
+  "id" : "urn:id:global:ParseErrorEventHandlersApp",
+  "channels" : {
+    "event-with-described-enum/event-with-described-enum" : {
+      "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
+        "message" : {
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "x-scope" : {
+                "description" : "Message scope. Default is INTERNAL",
+                "type" : "string",
+                "value" : "INTERNAL"
+              },
+              "x-ttl" : {
+                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type" : "integer",
+                "value" : -1
+              },
+              "x-roles-allowed" : {
+                "description" : "Allowed roles for this message. Default is empty",
+                "type" : "array",
+                "value" : [ ]
+              },
+              "x-dead-letter" : {
+                "description" : "Dead letter queue definition. Default is dead-letter",
+                "type" : "string",
+                "value" : "dead.dead-letter"
+              }
+            }
+          },
+          "name" : "EventWithDescribedEnum",
+          "title" : "EventWithDescribedEnum",
+          "payload" : {
+            "$ref" : "#/components/schemas/EventWithDescribedEnum"
+          }
+        }
+      },
+      "bindings" : {
+        "amqp" : {
+          "is" : "routingKey",
+          "exchange" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "event-with-described-enum",
+            "autoDelete" : false,
+            "type" : "fanout"
+          },
+          "queue" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "event-with-described-enum",
+            "autoDelete" : false,
+            "exclusive" : false
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "TestType" : {
+        "type" : "string",
+        "enum" : [ "FOO", "BAR" ]
+      },
+      "EventWithDescribedEnum" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/TestType",
+            "description" : "Requirement to verify."
+          }
+        },
+        "x-iris-generated" : false
+      }
+    }
+  }
+}

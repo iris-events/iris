@@ -6,6 +6,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.CustomPropertyDefinition;
@@ -15,8 +18,6 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
 import id.global.iris.asyncapi.runtime.io.schema.SchemaConstant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CustomDefinitionProvider {
     private static final Logger LOG = LoggerFactory.getLogger(CustomDefinitionProvider.class);
@@ -40,13 +41,12 @@ public class CustomDefinitionProvider {
             String fullTypeDescription = context.getTypeContext().getFullTypeDescription(javaType);
 
             SchemaGeneratorConfig generatorConfig = context.getGeneratorConfig();
-            if (!isInExcludeFromSchemas(fullTypeDescription, candidates)) {
-                return null;
-            } else {
+            if (isInExcludeFromSchemas(fullTypeDescription, candidates)) {
                 return new CustomDefinition(generatorConfig.createObjectNode()
                         .put(generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE),
                                 generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_NULL)));
             }
+            return null;
         };
     }
 
@@ -63,12 +63,10 @@ public class CustomDefinitionProvider {
         candidates.addAll(conversionCandidates);
 
         return (scope, context) -> {
-            String fullTypeDescription = context.getTypeContext().getFullTypeDescription(scope.getDeclaredType());
+            String fullTypeDescription = scope.getFullTypeDescription();
 
             SchemaGeneratorConfig generatorConfig = context.getGeneratorConfig();
-            if (!isInExcludeFromSchemas(fullTypeDescription, candidates)) {
-                return null;
-            } else {
+            if (isInExcludeFromSchemas(fullTypeDescription, candidates)) {
                 final var mapTypeOptional = getMapType(fullTypeDescription);
 
                 return mapTypeOptional.map(mapType -> {
@@ -77,11 +75,11 @@ public class CustomDefinitionProvider {
                             generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_OBJECT));
                     definitionNode.put(SchemaConstant.PROP_EXISTING_JAVA_TYPE, fullTypeDescription);
                     return new CustomPropertyDefinition(definitionNode);
-                }).orElse(new CustomPropertyDefinition(
-                        generatorConfig.createObjectNode()
-                                .put(generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE),
-                                        generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_NULL))));
+                }).orElseGet(() -> new CustomPropertyDefinition(generatorConfig.createObjectNode()
+                        .put(generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE),
+                                generatorConfig.getKeyword(SchemaKeyword.TAG_TYPE_NULL))));
             }
+            return null;
         };
     }
 
