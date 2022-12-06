@@ -17,6 +17,9 @@ import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
 
 @Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)
 public class AmqpGeneratorMojo extends AbstractMojo {
+
+    @Parameter(defaultValue = "${project.version}", required = true, readonly = true)
+    String projectVersion;
     @Parameter(property = "artifactSource", required = true)
     ArtifactSource artifactSource;
 
@@ -59,8 +62,7 @@ public class AmqpGeneratorMojo extends AbstractMojo {
         fileInteractor.cleanUpDirectories(pathResolver.getWorkingDirectory());
 
         AmqpGenerator generator = new AmqpGenerator(schemaFileGenerator, objectMapper, pathResolver, fileInteractor, log,
-                packageName, modelVersion, modelName,
-                asyncApiFilename, asyncApiDirectory, apicurioUrl);
+                packageName, modelVersion, modelName, projectVersion, asyncApiFilename, asyncApiDirectory, apicurioUrl);
 
         try {
             generator.generate(artifactSource);
