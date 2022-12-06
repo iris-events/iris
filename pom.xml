@@ -49,7 +49,7 @@
         <version.maven-plugin-annotations>3.7.0</version.maven-plugin-annotations>
         <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
         <version.maven-project>2.2.1</version.maven-project>
-        <version.maven-resolver-api>1.8.2</version.maven-resolver-api>
+        <version.maven-resolver-api>1.9.2</version.maven-resolver-api>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
