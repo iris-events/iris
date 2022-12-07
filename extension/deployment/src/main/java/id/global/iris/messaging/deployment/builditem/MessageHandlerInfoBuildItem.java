@@ -1,4 +1,4 @@
-package id.global.iris.messaging.deployment;
+package id.global.iris.messaging.deployment.builditem;
 
 import java.util.List;
 import java.util.Set;

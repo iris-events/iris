@@ -9,7 +9,7 @@ import org.jboss.jandex.IndexView;
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.constants.HandlerDefaultParameter;
-import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;
 import id.global.iris.parsers.ConsumerPrefetchCountParser;

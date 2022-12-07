@@ -20,7 +20,7 @@ import org.mockito.Mockito;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.messaging.BaseIndexingTest;
-import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;
 import id.global.iris.messaging.test.Event;
 import id.global.iris.messaging.test.PriorityQueueEvent;

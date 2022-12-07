@@ -1,4 +1,4 @@
-package id.global.iris.messaging.deployment;
+package id.global.iris.messaging.deployment.builditem;
 
 import io.quarkus.builder.item.MultiBuildItem;
 import org.jboss.jandex.DotName;

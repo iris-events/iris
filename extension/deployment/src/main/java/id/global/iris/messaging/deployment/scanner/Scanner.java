@@ -3,10 +3,10 @@ package id.global.iris.messaging.deployment.scanner;
 import java.util.Collection;
 import java.util.List;
 
-import id.global.iris.messaging.deployment.MessageInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
 import org.jboss.jandex.IndexView;
 
-import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.validation.MessageHandlerAnnotationInstanceValidator;
 import id.global.iris.messaging.deployment.validation.MessageHandlerCompatibilityValidator;
 import id.global.iris.messaging.deployment.validation.SnapshotHandlerAnnotationInstanceValidator;

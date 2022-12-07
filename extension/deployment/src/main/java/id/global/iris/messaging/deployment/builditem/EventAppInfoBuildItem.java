@@ -1,4 +1,4 @@
-package id.global.iris.messaging.deployment;
+package id.global.iris.messaging.deployment.builditem;
 
 import id.global.iris.messaging.runtime.context.EventAppContext;
 import io.quarkus.builder.item.SimpleBuildItem;
