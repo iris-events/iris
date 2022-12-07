@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import id.global.iris.common.annotations.ExchangeType;
-import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 
 public class MessageHandlerCompatibilityValidator {

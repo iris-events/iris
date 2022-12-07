@@ -1,7 +1,7 @@
 package id.global.iris.messaging.deployment.scanner;
 
 import id.global.iris.common.annotations.Message;
-import id.global.iris.messaging.deployment.MessageInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;

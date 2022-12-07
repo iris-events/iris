@@ -21,7 +21,7 @@ import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.message.SnapshotRequested;
 import id.global.iris.messaging.BaseIndexingTest;
-import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.validation.AnnotationInstanceValidator;
 
 class SnapshotMessageHandlerAnnotationScannerTest extends BaseIndexingTest {

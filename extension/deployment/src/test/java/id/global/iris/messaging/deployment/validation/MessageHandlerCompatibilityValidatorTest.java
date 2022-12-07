@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.messaging.AbstractAnnotationInstanceValidatorTest;
-import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.MessageHandlerValidationException;
 
 class MessageHandlerCompatibilityValidatorTest extends AbstractAnnotationInstanceValidatorTest {

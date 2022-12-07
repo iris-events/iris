@@ -1,6 +1,9 @@
 package id.global.iris.messaging.deployment;
 
 import id.global.iris.common.annotations.Scope;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.ProducerDefinedExchangeBuildItem;
 import id.global.iris.messaging.deployment.scanner.Scanner;
 import id.global.iris.messaging.runtime.BasicPropertiesProvider;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
@@ -130,12 +133,22 @@ class EventMessagingProcessor {
     }
 
     @SuppressWarnings("unused")
+    @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void declareProducerDefinedExchanges(List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems, List<MessageInfoBuildItem> messageInfoBuildItems) {
+    void initProducerDefinedExchangeRequests(List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems, List<MessageInfoBuildItem> messageInfoBuildItems) {
+        // Fills ProducedEventExchangeDeclarator with requests for producer defined exchanges
+
         // get classes that are messages (filter out those that are already generated)
         // get classes that are arguments in messageHandlers
         // subtract them from messages
         // those left are producerDefined, send them to an exchange declarator (see how we create consumers)
+    }
+
+    @SuppressWarnings("unused")
+    @Record(ExecutionTime.RUNTIME_INIT)
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void declareProducerDefinedExchanges(List<ProducerDefinedExchangeBuildItem> messageHandlerInfoBuildItems) {
+        // Reads requests for producer defined exchanges and creates them on the broker
     }
 
     @SuppressWarnings("unused")

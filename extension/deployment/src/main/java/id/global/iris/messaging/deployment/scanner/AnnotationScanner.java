@@ -9,7 +9,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
+import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 
 public abstract class AnnotationScanner {
 
