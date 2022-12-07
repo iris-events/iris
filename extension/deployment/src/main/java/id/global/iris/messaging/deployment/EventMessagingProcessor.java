@@ -1,14 +1,5 @@
 package id.global.iris.messaging.deployment;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BooleanSupplier;
-
-import org.jboss.jandex.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.messaging.deployment.scanner.Scanner;
 import id.global.iris.messaging.runtime.BasicPropertiesProvider;
@@ -55,6 +46,14 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
+import org.jboss.jandex.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
 
 class EventMessagingProcessor {
 
@@ -112,12 +111,31 @@ class EventMessagingProcessor {
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void scanForMessageHandlers(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
-            BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
+                                BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
 
         final var index = combinedIndexBuildItem.getIndex();
         final var scanner = new Scanner(index, appInfo.getName());
         scanner.scanEventHandlerAnnotations()
                 .forEach(messageHandlerProducer::produce);
+    }
+
+    @SuppressWarnings("unused")
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void scanForMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo, BuildProducer<MessageInfoBuildItem> messageInfoProducer) {
+
+        final var index = combinedIndexBuildItem.getIndex();
+        final var scanner = new Scanner(index, appInfo.getName());
+        scanner.scanMessageAnnotations()
+                .forEach(messageInfoProducer::produce);
+    }
+
+    @SuppressWarnings("unused")
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void declareProducerDefinedExchanges(List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems, List<MessageInfoBuildItem> messageInfoBuildItems) {
+        // get classes that are messages (filter out those that are already generated)
+        // get classes that are arguments in messageHandlers
+        // subtract them from messages
+        // those left are producerDefined, send them to an exchange declarator (see how we create consumers)
     }
 
     @SuppressWarnings("unused")
@@ -131,7 +149,7 @@ class EventMessagingProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerInitRecorder consumerInitRecorder,
-            List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
+                           List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
         if (!messageHandlerInfoBuildItems.isEmpty()) {
             consumerInitRecorder.initConsumers(beanContainer.getValue());
         }
@@ -141,10 +159,9 @@ class EventMessagingProcessor {
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void declareMessageHandlers(final BeanContainerBuildItem beanContainer,
-            List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
-            MethodHandleRecorder methodHandleRecorder) {
+                                List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
+                                MethodHandleRecorder methodHandleRecorder) {
         QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
-        //        StringBuilder sb = new StringBuilder("Registering handlers ");
         List<String> handlers = new ArrayList<>();
         messageHandlerInfoBuildItems.forEach(col -> {
             try {
@@ -195,7 +212,7 @@ class EventMessagingProcessor {
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void provideEventAppContext(final BeanContainerBuildItem beanContainer, ApplicationInfoBuildItem applicationInfoBuildItem,
-            EventAppRecorder eventAppRecorder) {
+                                EventAppRecorder eventAppRecorder) {
         eventAppRecorder.registerEventAppContext(beanContainer.getValue(), new EventAppContext(
                 applicationInfoBuildItem.getName()));
     }

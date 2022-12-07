@@ -3,6 +3,7 @@ package id.global.iris.messaging.deployment.scanner;
 import java.util.Collection;
 import java.util.List;
 
+import id.global.iris.messaging.deployment.MessageInfoBuildItem;
 import org.jboss.jandex.IndexView;
 
 import id.global.iris.messaging.deployment.MessageHandlerInfoBuildItem;
@@ -13,15 +14,17 @@ import id.global.iris.messaging.deployment.validation.SnapshotHandlerAnnotationI
 public class Scanner {
 
     private final IndexView indexView;
-    private final List<AnnotationScanner> annotationScanners;
+    private final List<AnnotationScanner> messageHandlerAnnotationScanners;
+    private final MessageAnnotationScanner messageAnnotationScanner;
 
     public Scanner(IndexView indexView, String serviceName) {
         this.indexView = indexView;
-        this.annotationScanners = getAnnotationScanners(serviceName);
+        this.messageHandlerAnnotationScanners = getAnnotationScanners(serviceName);
+        this.messageAnnotationScanner = getMessageAnnotationScanner();
     }
 
     public List<MessageHandlerInfoBuildItem> scanEventHandlerAnnotations() {
-        final var messageHandlerInfoBuildItems = annotationScanners.stream()
+        final var messageHandlerInfoBuildItems = messageHandlerAnnotationScanners.stream()
                 .map(messageHandlerScanner -> messageHandlerScanner.scanHandlerAnnotations(indexView))
                 .flatMap(Collection::stream)
                 .toList();
@@ -31,12 +34,20 @@ public class Scanner {
         return messageHandlerInfoBuildItems;
     }
 
+    public List<MessageInfoBuildItem> scanMessageAnnotations() {
+        return messageAnnotationScanner.scanHandlerAnnotations(indexView);
+    }
+
     private List<AnnotationScanner> getAnnotationScanners(String serviceName) {
         final var snapshotMessageHandlerAnnotationScanner = getSnapshotMessageHandlerAnnotationScanner(serviceName);
 
         final var messageHandlerAnnotationScanner = getMessageHandlerAnnotationScanner(serviceName);
 
         return List.of(snapshotMessageHandlerAnnotationScanner, messageHandlerAnnotationScanner);
+    }
+
+    private MessageAnnotationScanner getMessageAnnotationScanner() {
+        return new MessageAnnotationScanner();
     }
 
     private MessageHandlerAnnotationScanner getMessageHandlerAnnotationScanner(String serviceName) {
