@@ -33,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class AmqpGeneratorTest {
 
-    private static final String PROJECT_VERSION = "1.0.0-test";
     private static final String PACKAGE_NAME = "id.global.amqp.test";
     private static final String MODEL_VERSION = "0.1";
     private static final String MODEL_NAME = "amqpGeneratorTest";
@@ -124,7 +123,6 @@ class AmqpGeneratorTest {
                 PACKAGE_NAME,
                 MODEL_VERSION,
                 MODEL_NAME,
-                PROJECT_VERSION,
                 ASYNCAPI_FILENAME,
                 TEST_RESOURCES_DIR,
                 APICURIO_URL);

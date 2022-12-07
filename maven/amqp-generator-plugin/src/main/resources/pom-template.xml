@@ -11,10 +11,7 @@
         <appName>APPLICATION_NAME</appName>
         <appVersion>APPLICATION_VERSION</appVersion>
         <groupId>PACKAGE_NAME</groupId>
-        <version.jandex-maven-plugin>1.2.1</version.jandex-maven-plugin>
-        <version.globalid.iris>IRIS_VERSION</version.globalid.iris>
-        <version.jackson>2.13.4.2</version.jackson>
-        <version.validation-api>2.0.1.Final</version.validation-api>
+        <version.globalid.iris>${project.version}</version.globalid.iris>
     </properties>
 
 
@@ -26,12 +23,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${version.jackson}</version>
+            <version>2.13.4</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${version.jackson}</version>
+            <version>2.13.4</version>
         </dependency>
         <dependency>
             <groupId>id.global.iris</groupId>
@@ -41,7 +38,7 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>${version.validation-api}</version>
+            <version>2.0.1.Final</version>
         </dependency>
     </dependencies>
 
@@ -50,7 +47,7 @@
             <plugin>
                 <groupId>org.jboss.jandex</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
-                <version>${version.jandex-maven-plugin}</version>
+                <version>1.2.1</version>
                 <executions>
                     <execution>
                         <id>make-index</id>

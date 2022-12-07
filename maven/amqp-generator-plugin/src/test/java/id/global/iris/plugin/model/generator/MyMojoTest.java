@@ -13,7 +13,6 @@ public class MyMojoTest extends AbstractMojoTestCase {
     private static final String ASYNC_API_FILENAME = "asyncapi.json";
     private static final String ASYNC_API_DIRECTORY = "src,test,resources";
     private static final String MODEL_NAME = "test-models";
-    private static final String PROJECT_VERSION = "1.0.0-test";
     private static final ArtifactSource ARTIFACT_SOURCE = ArtifactSource.FILE;
     private static final String PACKAGE_NAME = "id.global.iris.models";
     private static final String MODEL_VERSION = "2.0.0";
@@ -41,7 +40,6 @@ public class MyMojoTest extends AbstractMojoTestCase {
         mojo.asyncApiFilename = ASYNC_API_FILENAME;
         mojo.asyncApiDirectory = ASYNC_API_DIRECTORY;
         mojo.modelName = MODEL_NAME;
-        mojo.projectVersion = PROJECT_VERSION;
         mojo.artifactSource = ARTIFACT_SOURCE;
         mojo.packageName = PACKAGE_NAME;
         mojo.modelVersion = MODEL_VERSION;

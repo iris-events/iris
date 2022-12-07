@@ -86,7 +86,6 @@ public class AmqpGenerator {
     private final String packageName;
     private final String modelVersion;
     private final String modelName;
-    private String projectVersion;
     private final String asyncApiFilename;
     private final String asyncApiDirectory;
     private final String apicurioUrl;
@@ -97,13 +96,12 @@ public class AmqpGenerator {
 
     public AmqpGenerator(SchemaFileGenerator schemaFileGenerator, ObjectMapper objectMapper, PathResolver pathResolver,
             FileInteractor fileInteractor, Log log, String packageName, String modelVersion, String modelName,
-            String projectVersion, String asyncApiFilename, String asyncApiDirectory, String apicurioUrl) {
+            String asyncApiFilename, String asyncApiDirectory, String apicurioUrl) {
         this.schemaFileGenerator = schemaFileGenerator;
         this.log = log;
         this.packageName = packageName;
         this.modelVersion = modelVersion;
         this.modelName = modelName;
-        this.projectVersion = projectVersion;
         this.asyncApiFilename = asyncApiFilename;
         this.asyncApiDirectory = asyncApiDirectory;
         this.apicurioUrl = apicurioUrl;
@@ -504,8 +502,7 @@ public class AmqpGenerator {
         return pomTemplate
                 .replace("APPLICATION_NAME", AmqpStringUtils.getPomArtifactId(modelName))
                 .replace("APPLICATION_VERSION", modelVersion)
-                .replace("PACKAGE_NAME", packageName)
-                .replace("IRIS_VERSION", projectVersion);
+                .replace("PACKAGE_NAME", packageName);
 
     }
 
