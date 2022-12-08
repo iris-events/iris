@@ -1,15 +1,24 @@
 package id.global.iris.messaging.deployment.scanner;
 
-import id.global.iris.common.annotations.Message;
-import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
+import static java.util.function.Predicate.not;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.function.Predicate.not;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+
+import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.Message;
+import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
+import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
+import id.global.iris.parsers.DeadLetterQueueParser;
+import id.global.iris.parsers.ExchangeParser;
+import id.global.iris.parsers.ExchangeTtlParser;
+import id.global.iris.parsers.MessageScopeParser;
+import id.global.iris.parsers.PersistentParser;
+import id.global.iris.parsers.RoutingKeyParser;
 
 public class MessageAnnotationScanner {
     private static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getCanonicalName());
@@ -18,12 +27,30 @@ public class MessageAnnotationScanner {
         return indexView.getAnnotations(DOT_NAME_MESSAGE)
                 .stream()
                 .filter(not(annotationInstance -> annotationInstance.target().asClass().isSynthetic()))
-                .map(this::build)
+                .map(item -> build(item, indexView))
                 .collect(Collectors.toList());
     }
 
-    protected MessageInfoBuildItem build(AnnotationInstance annotationInstance) {
-        final var classInfo = annotationInstance.target().asClass();
-        return new MessageInfoBuildItem(classInfo.name());
+    protected MessageInfoBuildItem build(AnnotationInstance annotationInstance, IndexView index) {
+        final var classType = annotationInstance.target().asClass().asType().target();
+        final var exchangeType = ExchangeType.valueOf(
+                annotationInstance.valueWithDefault(index, AnnotationInstanceParams.EXCHANGE_TYPE_PARAM).asString());
+        final var exchange = ExchangeParser.getFromAnnotationInstance(annotationInstance);
+        final var routingKey = RoutingKeyParser.getFromAnnotationInstance(annotationInstance);
+        final var scope = MessageScopeParser.getFromAnnotationInstance(annotationInstance, index);
+        final var ttl = ExchangeTtlParser.getFromAnnotationInstance(annotationInstance, index);
+        final var deadLetter = DeadLetterQueueParser.getFromAnnotationInstance(annotationInstance, index);
+        final var persistent = PersistentParser.getFromAnnotationInstance(annotationInstance, index);
+
+        return new MessageInfoBuildItem(
+                classType,
+                exchangeType,
+                exchange,
+                routingKey,
+                scope,
+                ttl,
+                deadLetter,
+                persistent
+        );
     }
 }

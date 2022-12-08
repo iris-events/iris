@@ -62,7 +62,7 @@ public class MessageHandlerAnnotationScanner extends AnnotationScanner {
 
         return new MessageHandlerInfoBuildItem(
                 methodInfo.declaringClass(),
-                methodInfo.parameters().get(0),
+                methodInfo.parameterTypes().get(0),
                 methodInfo.returnType(),
                 methodInfo.name(),
                 exchange,
