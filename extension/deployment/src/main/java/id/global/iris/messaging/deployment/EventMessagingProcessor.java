@@ -71,7 +71,7 @@ class EventMessagingProcessor {
     }
 
     private static final String FEATURE = "quarkus-iris";
-    private static final Logger LOG = LoggerFactory.getLogger(EventMessagingProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(EventMessagingProcessor.class);
 
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
@@ -125,11 +125,16 @@ class EventMessagingProcessor {
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void scanForMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo, BuildProducer<MessageInfoBuildItem> messageInfoProducer) {
+        log.info("Scanning for message annotations.");
 
         final var index = combinedIndexBuildItem.getIndex();
         final var scanner = new Scanner(index, appInfo.getName());
         scanner.scanMessageAnnotations()
                 .forEach(messageInfoProducer::produce);
+        scanner.scanMessageAnnotations()
+                .forEach(annotation -> {
+                    log.info("Got Message annotation instance {}", annotation);
+                });
     }
 
     @SuppressWarnings("unused")
@@ -215,10 +220,10 @@ class EventMessagingProcessor {
                 handlers.add(sb.toString());
 
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IOException e) {
-                LOG.error("Could not record method handle. methodName: " + col.getMethodName(), e);
+                log.error("Could not record method handle. methodName: " + col.getMethodName(), e);
             }
         });
-        LOG.info("Registered method handlers: " + String.join(", ", handlers));
+        log.info("Registered method handlers: " + String.join(", ", handlers));
     }
 
     @SuppressWarnings("unused")
