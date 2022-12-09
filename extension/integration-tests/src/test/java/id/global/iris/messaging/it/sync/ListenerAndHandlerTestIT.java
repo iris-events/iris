@@ -45,13 +45,6 @@ public class ListenerAndHandlerTestIT extends IsolatedEventContextTest {
     EventProducer producer;
 
     @Test
-    @DisplayName("Event published to unknown exchange should fail!")
-    void publishToUnknownExchange() {
-        Assertions.assertThrows(ShutdownSignalException.class,
-                () -> producer.send(new UnknownExchangeEvent(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
-    }
-
-    @Test
     @DisplayName("Message published that cannot be routed will be lost")
     void publishNonRoutableMessages()
             throws ExecutionException, InterruptedException {

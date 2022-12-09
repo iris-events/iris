@@ -24,6 +24,7 @@ import id.global.iris.messaging.runtime.context.MethodHandleContext;
 import id.global.iris.messaging.runtime.exception.IrisConnectionException;
 import id.global.iris.messaging.runtime.exception.IrisExceptionHandler;
 import id.global.iris.messaging.runtime.producer.EventProducer;
+import id.global.iris.messaging.runtime.producer.ExchangeDeclarator;
 
 @ApplicationScoped
 public class ConsumerContainer {
@@ -39,6 +40,7 @@ public class ConsumerContainer {
     private final FrontendEventConsumer frontendEventConsumer;
     private final IrisExceptionHandler errorHandler;
     private final QueueDeclarator queueDeclarator;
+    private final ExchangeDeclarator exchangeDeclarator;
 
     @Inject
     public ConsumerContainer(
@@ -50,13 +52,15 @@ public class ConsumerContainer {
             final GidJwtValidator jwtValidator,
             final FrontendEventConsumer frontendEventConsumer,
             final IrisExceptionHandler errorHandler,
-            final QueueDeclarator queueDeclarator) {
+            final QueueDeclarator queueDeclarator,
+            final ExchangeDeclarator exchangeDeclarator) {
 
         this.consumerChannelService = consumerChannelService;
         this.queueNameProvider = queueNameProvider;
         this.jwtValidator = jwtValidator;
         this.errorHandler = errorHandler;
         this.queueDeclarator = queueDeclarator;
+        this.exchangeDeclarator = exchangeDeclarator;
         this.consumerMap = new HashMap<>();
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
@@ -95,7 +99,8 @@ public class ConsumerContainer {
                 consumerChannelService,
                 deliverCallbackProvider,
                 queueNameProvider,
-                queueDeclarator));
+                queueDeclarator,
+                exchangeDeclarator));
     }
 
     public void addFrontendCallback(MethodHandle methodHandle, MethodHandleContext methodHandleContext,

@@ -44,6 +44,7 @@ public class AnnotatedEventsTestIT extends IsolatedEventContextTest {
 
     private static final String ANNOTATED_QUEUE = "annotated-queue";
     private static final String ANNOTATED_EXCHANGE = "annotated-exchange";
+    private static final String ANNOTATED_EXCHANGE_TOPIC = "annotated-exchange-topic";
     private static final String ANNOTATED_EXCHANGE_FANOUT = "annotated-exchange-fanout";
     private static final String TOPIC_EXCHANGE = "topic-exchange";
     private static final String SOMETHING_NOTHING = "#.nothing";
@@ -255,7 +256,7 @@ public class AnnotatedEventsTestIT extends IsolatedEventContextTest {
     private record FanoutEvent(String name, Long age) {
     }
 
-    @Message(name = ANNOTATED_EXCHANGE, exchangeType = TOPIC)
+    @Message(name = ANNOTATED_EXCHANGE_TOPIC, exchangeType = TOPIC)
     private record TopicEventWrongRoutingKey(String name, Long age) {
     }
 }

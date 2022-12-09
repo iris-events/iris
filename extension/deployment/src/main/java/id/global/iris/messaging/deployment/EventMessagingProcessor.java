@@ -1,9 +1,17 @@
 package id.global.iris.messaging.deployment;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+
+import org.jboss.jandex.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
-import id.global.iris.messaging.deployment.builditem.ProducerDefinedExchangeBuildItem;
 import id.global.iris.messaging.deployment.scanner.Scanner;
 import id.global.iris.messaging.runtime.BasicPropertiesProvider;
 import id.global.iris.messaging.runtime.EventAppInfoProvider;
@@ -29,9 +37,11 @@ import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
 import id.global.iris.messaging.runtime.producer.EventProducer;
+import id.global.iris.messaging.runtime.producer.ProducedEventExchangeDeclarator;
 import id.global.iris.messaging.runtime.recorder.ConsumerInitRecorder;
 import id.global.iris.messaging.runtime.recorder.EventAppRecorder;
 import id.global.iris.messaging.runtime.recorder.MethodHandleRecorder;
+import id.global.iris.messaging.runtime.recorder.ProducerDefinedExchangesRecorder;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
@@ -49,14 +59,6 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
-import org.jboss.jandex.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BooleanSupplier;
 
 class EventMessagingProcessor {
 
@@ -105,7 +107,8 @@ class EventMessagingProcessor {
                                 IrisLivenessCheck.class,
                                 TimestampProvider.class,
                                 BasicPropertiesProvider.class,
-                                IrisRabbitMQConfig.class)
+                                IrisRabbitMQConfig.class,
+                                ProducedEventExchangeDeclarator.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
@@ -114,7 +117,7 @@ class EventMessagingProcessor {
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void scanForMessageHandlers(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
-                                BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
+            BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
 
         final var index = combinedIndexBuildItem.getIndex();
         final var scanner = new Scanner(index, appInfo.getName());
@@ -124,36 +127,45 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void scanForMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo, BuildProducer<MessageInfoBuildItem> messageInfoProducer) {
+    void scanForMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
+            BuildProducer<MessageInfoBuildItem> messageInfoProducer) {
         log.info("Scanning for message annotations.");
 
         final var index = combinedIndexBuildItem.getIndex();
         final var scanner = new Scanner(index, appInfo.getName());
         scanner.scanMessageAnnotations()
                 .forEach(messageInfoProducer::produce);
-        scanner.scanMessageAnnotations()
-                .forEach(annotation -> {
-                    log.info("Got Message annotation instance {}", annotation);
-                });
     }
 
     @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void initProducerDefinedExchangeRequests(List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems, List<MessageInfoBuildItem> messageInfoBuildItems) {
-        // Fills ProducedEventExchangeDeclarator with requests for producer defined exchanges
+    void initProducerDefinedExchangeRequests(final BeanContainerBuildItem beanContainer,
+            List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
+            List<MessageInfoBuildItem> messageInfoBuildItems,
+            ProducerDefinedExchangesRecorder producerDefinedExchangesRecorder) {
 
-        // get classes that are messages (filter out those that are already generated)
-        // get classes that are arguments in messageHandlers
-        // subtract them from messages
-        // those left are producerDefined, send them to an exchange declarator (see how we create consumers)
+        final var messageInfoBuildItemStream = messageInfoBuildItems.stream().filter(messageInfoBuildItem ->
+                messageHandlerInfoBuildItems.stream().filter(
+                        messageHandlerInfoBuildItem -> messageHandlerInfoBuildItem.getParameterType().name()
+                                .equals(messageInfoBuildItem.getAnnotatedClassInfo().name())
+                ).findAny().isEmpty()
+        ).toList();
+        messageInfoBuildItemStream.forEach(buildItem -> producerDefinedExchangesRecorder.registerProducerDefinedExchange(
+                beanContainer.getValue(),
+                buildItem.getName(),
+                buildItem.getExchangeType(),
+                buildItem.getScope()
+        ));
     }
 
     @SuppressWarnings("unused")
     @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void declareProducerDefinedExchanges(List<ProducerDefinedExchangeBuildItem> messageHandlerInfoBuildItems) {
-        // Reads requests for producer defined exchanges and creates them on the broker
+    void declareProducerDefinedExchanges(final BeanContainerBuildItem beanContainer,
+            ProducerDefinedExchangesRecorder producerDefinedExchangesRecorder) {
+        producerDefinedExchangesRecorder.init(beanContainer.getValue());
+
     }
 
     @SuppressWarnings("unused")
@@ -167,7 +179,7 @@ class EventMessagingProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerInitRecorder consumerInitRecorder,
-                           List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
+            List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
         if (!messageHandlerInfoBuildItems.isEmpty()) {
             consumerInitRecorder.initConsumers(beanContainer.getValue());
         }
@@ -177,8 +189,8 @@ class EventMessagingProcessor {
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void declareMessageHandlers(final BeanContainerBuildItem beanContainer,
-                                List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
-                                MethodHandleRecorder methodHandleRecorder) {
+            List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
+            MethodHandleRecorder methodHandleRecorder) {
         QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
         List<String> handlers = new ArrayList<>();
         messageHandlerInfoBuildItems.forEach(col -> {
@@ -230,7 +242,7 @@ class EventMessagingProcessor {
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void provideEventAppContext(final BeanContainerBuildItem beanContainer, ApplicationInfoBuildItem applicationInfoBuildItem,
-                                EventAppRecorder eventAppRecorder) {
+            EventAppRecorder eventAppRecorder) {
         eventAppRecorder.registerEventAppContext(beanContainer.getValue(), new EventAppContext(
                 applicationInfoBuildItem.getName()));
     }
