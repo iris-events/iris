@@ -53,7 +53,7 @@
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
-        <version.resilience4j-retry>2.0.1</version.resilience4j-retry>
+        <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.victools>4.28.0</version.victools>
         <version.junit>5.9.1</version.junit>
         <version.mockito-core>4.9.0</version.mockito-core>
