@@ -11,7 +11,7 @@ import org.jboss.jandex.IndexView;
 
 import id.global.iris.messaging.deployment.builditem.MessageHandlerInfoBuildItem;
 
-public abstract class AnnotationScanner {
+public abstract class HandlerAnnotationScanner {
 
     public List<MessageHandlerInfoBuildItem> scanHandlerAnnotations(IndexView indexView) {
         return indexView.getAnnotations(getAnnotationName())
