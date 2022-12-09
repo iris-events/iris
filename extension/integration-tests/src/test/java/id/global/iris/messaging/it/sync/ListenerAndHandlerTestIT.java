@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.ConfirmListener;
-import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
@@ -43,6 +42,12 @@ public class ListenerAndHandlerTestIT extends IsolatedEventContextTest {
 
     @Inject
     EventProducer producer;
+
+    @Test
+    @DisplayName("Event published to producer defined exchange should not fail!")
+    void publishToProducerDefinedExchange() {
+        Assertions.assertDoesNotThrow(() -> producer.send(new UnknownExchangeEvent(EVENT_PAYLOAD_NAME, EVENT_PAYLOAD_AGE)));
+    }
 
     @Test
     @DisplayName("Message published that cannot be routed will be lost")
