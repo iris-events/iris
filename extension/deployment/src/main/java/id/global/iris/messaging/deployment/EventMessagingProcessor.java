@@ -142,17 +142,17 @@ class EventMessagingProcessor {
             List<MessageInfoBuildItem> messageInfoBuildItems,
             ProducerDefinedExchangesRecorder producerDefinedExchangesRecorder) {
 
-        messageInfoBuildItems.stream().filter(messageInfoBuildItem ->
-                messageHandlerInfoBuildItems.stream().filter(
-                        messageHandlerInfoBuildItem -> messageHandlerInfoBuildItem.getParameterType().name()
-                                .equals(messageInfoBuildItem.getAnnotatedClassInfo().name())
-                ).findAny().isEmpty()
-        ).forEach(buildItem -> producerDefinedExchangesRecorder.registerProducerDefinedExchange(
-                beanContainer.getValue(),
-                buildItem.getName(),
-                buildItem.getExchangeType(),
-                buildItem.getScope()
-        ));
+        final var handledMessageTypeNames = messageHandlerInfoBuildItems.stream()
+                .map(messageHandlerInfoBuildItem -> messageHandlerInfoBuildItem.getParameterType().name())
+                .toList();
+        messageInfoBuildItems.stream()
+                .filter(buildItem -> !handledMessageTypeNames.contains(buildItem.getAnnotatedClassInfo().name()))
+                .forEach(buildItem -> producerDefinedExchangesRecorder.registerProducerDefinedExchange(
+                        beanContainer.getValue(),
+                        buildItem.getName(),
+                        buildItem.getExchangeType(),
+                        buildItem.getScope()
+                ));
     }
 
     @SuppressWarnings("unused")

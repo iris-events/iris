@@ -14,7 +14,7 @@ import id.global.iris.messaging.deployment.validation.SnapshotHandlerAnnotationI
 public class Scanner {
 
     private final IndexView indexView;
-    private final List<AnnotationScanner> messageHandlerAnnotationScanners;
+    private final List<HandlerAnnotationScanner> messageHandlerAnnotationScanners;
     private final MessageAnnotationScanner messageAnnotationScanner;
 
     public Scanner(IndexView indexView, String serviceName) {
@@ -38,7 +38,7 @@ public class Scanner {
         return messageAnnotationScanner.scanHandlerAnnotations(indexView);
     }
 
-    private List<AnnotationScanner> getAnnotationScanners(String serviceName) {
+    private List<HandlerAnnotationScanner> getAnnotationScanners(String serviceName) {
         final var snapshotMessageHandlerAnnotationScanner = getSnapshotMessageHandlerAnnotationScanner(serviceName);
 
         final var messageHandlerAnnotationScanner = getMessageHandlerAnnotationScanner(serviceName);

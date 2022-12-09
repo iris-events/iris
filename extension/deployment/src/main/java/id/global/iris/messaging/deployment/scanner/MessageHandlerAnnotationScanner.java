@@ -22,7 +22,7 @@ import id.global.iris.parsers.QueueAutoDeleteParser;
 import id.global.iris.parsers.QueueDurableParser;
 import id.global.iris.parsers.RolesAllowedParser;
 
-public class MessageHandlerAnnotationScanner extends AnnotationScanner {
+public class MessageHandlerAnnotationScanner extends HandlerAnnotationScanner {
 
     private static final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getCanonicalName());
 

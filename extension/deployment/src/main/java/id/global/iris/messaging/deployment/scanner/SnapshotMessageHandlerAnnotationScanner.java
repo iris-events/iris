@@ -19,7 +19,7 @@ import id.global.iris.parsers.ExchangeTtlParser;
 import id.global.iris.parsers.MessageScopeParser;
 import id.global.iris.parsers.RolesAllowedParser;
 
-public class SnapshotMessageHandlerAnnotationScanner extends AnnotationScanner {
+public class SnapshotMessageHandlerAnnotationScanner extends HandlerAnnotationScanner {
 
     private static final DotName DOT_NAME_SNAPSHOT_MESSAGE_HANDLER = DotName
             .createSimple(SnapshotMessageHandler.class.getCanonicalName());
