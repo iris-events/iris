@@ -14,15 +14,14 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Scope;
 
 @ApplicationScoped
-public class ProducedEventExchangeDeclarator {
-    private final static Logger log = LoggerFactory.getLogger(ProducedEventExchangeDeclarator.class);
+public class ProducedEventExchangeInitializer {
+    private final static Logger log = LoggerFactory.getLogger(ProducedEventExchangeInitializer.class);
 
-    ExchangeDeclarator exchangeDeclarator;
-
+    private final ExchangeDeclarator exchangeDeclarator;
     private final List<ProducerDefinedExchange> producerDefinedExchanges;
 
     @Inject
-    public ProducedEventExchangeDeclarator(ExchangeDeclarator exchangeDeclarator) {
+    public ProducedEventExchangeInitializer(ExchangeDeclarator exchangeDeclarator) {
         this.exchangeDeclarator = exchangeDeclarator;
         this.producerDefinedExchanges = new ArrayList<>();
     }
