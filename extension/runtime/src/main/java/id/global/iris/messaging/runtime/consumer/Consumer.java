@@ -22,6 +22,7 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.context.IrisContext;
+import id.global.iris.messaging.runtime.producer.ExchangeDeclarator;
 
 public class Consumer {
     private static final Logger log = LoggerFactory.getLogger(Consumer.class);
@@ -31,6 +32,7 @@ public class Consumer {
     private final DeliverCallbackProvider deliverCallbackProvider;
     private final QueueNameProvider queueNameProvider;
     private final QueueDeclarator queueDeclarator;
+    private final ExchangeDeclarator exchangeDeclarator;
 
     private DeliverCallback callback;
     private String channelId;
@@ -40,13 +42,15 @@ public class Consumer {
             final ChannelService channelService,
             final DeliverCallbackProvider deliverCallbackProvider,
             final QueueNameProvider queueNameProvider,
-            final QueueDeclarator queueDeclarator) {
+            final QueueDeclarator queueDeclarator,
+            final ExchangeDeclarator exchangeDeclarator) {
 
         this.context = context;
         this.channelService = channelService;
         this.deliverCallbackProvider = deliverCallbackProvider;
         this.queueNameProvider = queueNameProvider;
         this.queueDeclarator = queueDeclarator;
+        this.exchangeDeclarator = exchangeDeclarator;
         this.channelId = UUID.randomUUID().toString();
     }
 
@@ -92,7 +96,7 @@ public class Consumer {
 
         // declare queue & exchange
         declareQueue(channel, consumerOnEveryInstance, queueName, queueDeclarationArgs);
-        declareExchange(channel, exchange, exchangeType);
+        exchangeDeclarator.declareExchange(exchange, exchangeType, context.isFrontendMessage());
 
         // bind queues
         final var bindingKeys = getBindingKeys(exchangeType);
@@ -117,17 +121,6 @@ public class Consumer {
             initChannel();
         } catch (IOException e) {
             log.error(String.format("Could not re-initialize channel for queue %s", queueName), e);
-        }
-    }
-
-    private void declareExchange(final Channel channel, final String exchange, final ExchangeType exchangeType)
-            throws IOException {
-
-        if (context.isFrontendMessage()) {
-            channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, false);
-        } else {
-            final var type = BuiltinExchangeType.valueOf(exchangeType.name());
-            channel.exchangeDeclare(exchange, type, true);
         }
     }
 

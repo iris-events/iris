@@ -32,25 +32,19 @@ public class MessageAnnotationScanner {
     }
 
     protected MessageInfoBuildItem build(AnnotationInstance annotationInstance, IndexView index) {
-        final var classType = annotationInstance.target().asClass().asType().target();
+        final var classType = annotationInstance.target().asClass();
         final var exchangeType = ExchangeType.valueOf(
                 annotationInstance.valueWithDefault(index, AnnotationInstanceParams.EXCHANGE_TYPE_PARAM).asString());
         final var exchange = ExchangeParser.getFromAnnotationInstance(annotationInstance);
         final var routingKey = RoutingKeyParser.getFromAnnotationInstance(annotationInstance);
         final var scope = MessageScopeParser.getFromAnnotationInstance(annotationInstance, index);
-        final var ttl = ExchangeTtlParser.getFromAnnotationInstance(annotationInstance, index);
-        final var deadLetter = DeadLetterQueueParser.getFromAnnotationInstance(annotationInstance, index);
-        final var persistent = PersistentParser.getFromAnnotationInstance(annotationInstance, index);
 
         return new MessageInfoBuildItem(
                 classType,
                 exchangeType,
                 exchange,
                 routingKey,
-                scope,
-                ttl,
-                deadLetter,
-                persistent
+                scope
         );
     }
 }
