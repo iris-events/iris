@@ -20,7 +20,7 @@ public class Scanner {
     public Scanner(IndexView indexView, String serviceName) {
         this.indexView = indexView;
         this.messageHandlerAnnotationScanners = getAnnotationScanners(serviceName);
-        this.messageAnnotationScanner = getMessageAnnotationScanner();
+        this.messageAnnotationScanner = new MessageAnnotationScanner();
     }
 
     public List<MessageHandlerInfoBuildItem> scanEventHandlerAnnotations() {
@@ -44,10 +44,6 @@ public class Scanner {
         final var messageHandlerAnnotationScanner = getMessageHandlerAnnotationScanner(serviceName);
 
         return List.of(snapshotMessageHandlerAnnotationScanner, messageHandlerAnnotationScanner);
-    }
-
-    private MessageAnnotationScanner getMessageAnnotationScanner() {
-        return new MessageAnnotationScanner();
     }
 
     private MessageHandlerAnnotationScanner getMessageHandlerAnnotationScanner(String serviceName) {

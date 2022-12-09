@@ -18,9 +18,9 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 
-class ProducedEventExchangeDeclaratorTest {
+class ProducedEventExchangeInitializerTest {
 
-    ProducedEventExchangeDeclarator producedEventExchangeDeclarator;
+    ProducedEventExchangeInitializer producedEventExchangeInitializer;
     ChannelService channelServiceMock;
     ExchangeDeclarator exchangeDeclarator;
 
@@ -28,13 +28,13 @@ class ProducedEventExchangeDeclaratorTest {
     public void setup() {
         channelServiceMock = Mockito.mock(ChannelService.class);
         exchangeDeclarator = Mockito.mock(ExchangeDeclarator.class);
-        producedEventExchangeDeclarator = new ProducedEventExchangeDeclarator(exchangeDeclarator);
+        producedEventExchangeInitializer = new ProducedEventExchangeInitializer(exchangeDeclarator);
     }
 
     @Test
     void addProducerDefinedExchange() {
-        producedEventExchangeDeclarator.addProducerDefinedExchange("exchangename", ExchangeType.FANOUT, Scope.INTERNAL);
-        final var producerDefinedExchanges = producedEventExchangeDeclarator.getProducerDefinedExchanges();
+        producedEventExchangeInitializer.addProducerDefinedExchange("exchangename", ExchangeType.FANOUT, Scope.INTERNAL);
+        final var producerDefinedExchanges = producedEventExchangeInitializer.getProducerDefinedExchanges();
 
         assertThat(producerDefinedExchanges, is(notNullValue()));
         assertThat(producerDefinedExchanges.size(), is(1));
@@ -49,11 +49,11 @@ class ProducedEventExchangeDeclaratorTest {
         final var exchangeTypeCaptor = ArgumentCaptor.forClass(ExchangeType.class);
         final var isFrontendCaptor = ArgumentCaptor.forClass(Boolean.class);
 
-        producedEventExchangeDeclarator.addProducerDefinedExchange("exchangename1", ExchangeType.FANOUT, Scope.INTERNAL);
-        producedEventExchangeDeclarator.addProducerDefinedExchange("exchangename2", ExchangeType.FANOUT, Scope.INTERNAL);
-        producedEventExchangeDeclarator.addProducerDefinedExchange("exchangename3", ExchangeType.FANOUT, Scope.FRONTEND);
+        producedEventExchangeInitializer.addProducerDefinedExchange("exchangename1", ExchangeType.FANOUT, Scope.INTERNAL);
+        producedEventExchangeInitializer.addProducerDefinedExchange("exchangename2", ExchangeType.FANOUT, Scope.INTERNAL);
+        producedEventExchangeInitializer.addProducerDefinedExchange("exchangename3", ExchangeType.FANOUT, Scope.FRONTEND);
 
-        producedEventExchangeDeclarator.initExchanges();
+        producedEventExchangeInitializer.initExchanges();
 
         Mockito.doNothing().when(exchangeDeclarator).declareExchange(anyString(), any(ExchangeType.class), anyBoolean());
         Mockito.verify(exchangeDeclarator, Mockito.times(3))

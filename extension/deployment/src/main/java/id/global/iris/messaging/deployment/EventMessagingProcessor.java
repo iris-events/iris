@@ -37,7 +37,7 @@ import id.global.iris.messaging.runtime.health.IrisLivenessCheck;
 import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 import id.global.iris.messaging.runtime.producer.CorrelationIdProvider;
 import id.global.iris.messaging.runtime.producer.EventProducer;
-import id.global.iris.messaging.runtime.producer.ProducedEventExchangeDeclarator;
+import id.global.iris.messaging.runtime.producer.ProducedEventExchangeInitializer;
 import id.global.iris.messaging.runtime.recorder.ConsumerInitRecorder;
 import id.global.iris.messaging.runtime.recorder.EventAppRecorder;
 import id.global.iris.messaging.runtime.recorder.MethodHandleRecorder;
@@ -108,7 +108,7 @@ class EventMessagingProcessor {
                                 TimestampProvider.class,
                                 BasicPropertiesProvider.class,
                                 IrisRabbitMQConfig.class,
-                                ProducedEventExchangeDeclarator.class)
+                                ProducedEventExchangeInitializer.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
@@ -129,10 +129,7 @@ class EventMessagingProcessor {
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void scanForMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
             BuildProducer<MessageInfoBuildItem> messageInfoProducer) {
-        log.info("Scanning for message annotations.");
-
-        final var index = combinedIndexBuildItem.getIndex();
-        final var scanner = new Scanner(index, appInfo.getName());
+        final var scanner = new Scanner(combinedIndexBuildItem.getIndex(), appInfo.getName());
         scanner.scanMessageAnnotations()
                 .forEach(messageInfoProducer::produce);
     }
@@ -140,18 +137,17 @@ class EventMessagingProcessor {
     @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
-    void initProducerDefinedExchangeRequests(final BeanContainerBuildItem beanContainer,
+    void initProducerDefinedExchangeRequests(BeanContainerBuildItem beanContainer,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
             List<MessageInfoBuildItem> messageInfoBuildItems,
             ProducerDefinedExchangesRecorder producerDefinedExchangesRecorder) {
 
-        final var messageInfoBuildItemStream = messageInfoBuildItems.stream().filter(messageInfoBuildItem ->
+        messageInfoBuildItems.stream().filter(messageInfoBuildItem ->
                 messageHandlerInfoBuildItems.stream().filter(
                         messageHandlerInfoBuildItem -> messageHandlerInfoBuildItem.getParameterType().name()
                                 .equals(messageInfoBuildItem.getAnnotatedClassInfo().name())
                 ).findAny().isEmpty()
-        ).toList();
-        messageInfoBuildItemStream.forEach(buildItem -> producerDefinedExchangesRecorder.registerProducerDefinedExchange(
+        ).forEach(buildItem -> producerDefinedExchangesRecorder.registerProducerDefinedExchange(
                 beanContainer.getValue(),
                 buildItem.getName(),
                 buildItem.getExchangeType(),
