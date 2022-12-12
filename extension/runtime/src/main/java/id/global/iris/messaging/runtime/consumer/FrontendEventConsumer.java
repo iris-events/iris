@@ -1,32 +1,31 @@
 package id.global.iris.messaging.runtime.consumer;
 
-import static id.global.iris.common.constants.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.rabbitmq.client.CancelCallback;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
-
+import com.rabbitmq.client.Recoverable;
+import com.rabbitmq.client.RecoveryListener;
 import id.global.iris.common.constants.Exchanges;
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.QueueNameProvider;
 import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.exception.IrisConnectionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static id.global.iris.common.constants.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 @ApplicationScoped
-public class FrontendEventConsumer {
+public class FrontendEventConsumer implements RecoveryListener {
     private static final Logger log = LoggerFactory.getLogger(FrontendEventConsumer.class);
 
     private static final int DEFAULT_MESSAGE_TTL = 15000;
@@ -70,6 +69,10 @@ public class FrontendEventConsumer {
             setupDeliverCallbacks(channel);
 
             channel.basicConsume(frontendQueue, false, getDeliverCallback(), getCancelCallback(), getShutdownCallback());
+
+            if (channel instanceof Recoverable) {
+                ((Recoverable) channel).addRecoveryListener(this);
+            }
         } catch (IOException e) {
             String msg = "Could not initialize frontend consumer";
             log.error(msg, e);
@@ -123,5 +126,16 @@ public class FrontendEventConsumer {
                 log.error(String.format("Could not re-initialize channel for queue %s", queueName), e);
             }
         };
+    }
+
+    @Override
+    public void handleRecovery(Recoverable recoverable) {
+        log.info("handleRecovery called for frontend consumer for queue {}", queueName);
+        initChannel();
+    }
+
+    @Override
+    public void handleRecoveryStarted(Recoverable recoverable) {
+        log.info("handleRecoveryStarted called for frontend consumer for queue {}", queueName);
     }
 }

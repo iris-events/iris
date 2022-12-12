@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.rabbitmq.client.Recoverable;
+import com.rabbitmq.client.RecoveryListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +26,7 @@ import id.global.iris.messaging.runtime.channel.ChannelService;
 import id.global.iris.messaging.runtime.context.IrisContext;
 import id.global.iris.messaging.runtime.producer.ExchangeDeclarator;
 
-public class Consumer {
+public class Consumer implements RecoveryListener {
     private static final Logger log = LoggerFactory.getLogger(Consumer.class);
 
     private final IrisContext context;
@@ -59,7 +61,11 @@ public class Consumer {
         this.callback = deliverCallbackProvider.createDeliverCallback(channel);
         final var exchangeType = context.exchangeType();
         validateBindingKeys(context.getBindingKeys(), exchangeType);
-        createQueues(channel, exchangeType);
+        declareTopology(channel, exchangeType);
+
+        if (channel instanceof Recoverable) {
+            ((Recoverable)channel).addRecoveryListener(this);
+        }
     }
 
     public DeliverCallback getCallback() {
@@ -70,7 +76,7 @@ public class Consumer {
         return context;
     }
 
-    private void createQueues(Channel channel, final ExchangeType exchangeType) throws IOException {
+    private void declareTopology(Channel channel, final ExchangeType exchangeType) throws IOException {
         final var queueDeclarationArgs = new HashMap<String, Object>();
         final var exchange = context.getName();
         final var consumerOnEveryInstance = context.isConsumerOnEveryInstance();
@@ -175,5 +181,21 @@ public class Consumer {
         if (exchangeType == ExchangeType.DIRECT && bindingKeys.size() > 1) {
             throw new IllegalArgumentException("Exactly one binding key is required when declaring a direct type exchange.");
         }
+    }
+
+    @Override
+    public void handleRecovery(Recoverable recoverable) {
+        log.info("handleRecovery called for consumer {}", context.getName());
+        try {
+            initChannel();
+        } catch (IOException e) {
+            log.error(String.format("Failed handling recovery for consumer %s", context.getName()), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void handleRecoveryStarted(Recoverable recoverable) {
+        log.info("handleRecoveryStarted for consumer {}", context.getName());
     }
 }

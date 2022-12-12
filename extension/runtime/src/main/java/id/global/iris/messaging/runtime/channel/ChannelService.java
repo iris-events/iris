@@ -1,6 +1,7 @@
 package id.global.iris.messaging.runtime.channel;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.rabbitmq.client.Channel;
 
@@ -10,4 +11,8 @@ public interface ChannelService {
     Channel createChannel() throws IOException;
 
     void removeChannel(String oldChannelId) throws IOException;
+
+    void closeAndRemoveAllChannels();
+
+    ConcurrentHashMap<String, Channel> getChannelMap();
 }

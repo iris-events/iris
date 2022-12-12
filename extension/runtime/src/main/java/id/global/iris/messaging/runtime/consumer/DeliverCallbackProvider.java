@@ -13,6 +13,8 @@ import java.util.Optional;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.CDI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +47,8 @@ public class DeliverCallbackProvider {
     private final MethodHandleContext methodHandleContext;
     private final GidJwtValidator jwtValidator;
     private final IrisExceptionHandler errorHandler;
+
+    private final static Logger log = LoggerFactory.getLogger(DeliverCallbackProvider.class);
 
     public DeliverCallbackProvider(
             final ObjectMapper objectMapper,
@@ -92,6 +96,7 @@ public class DeliverCallbackProvider {
             optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
         } catch (Throwable throwable) {
+            log.error("Exception handling message", throwable);
             errorHandler.handleException(irisContext, message, channel, throwable);
         }
     }

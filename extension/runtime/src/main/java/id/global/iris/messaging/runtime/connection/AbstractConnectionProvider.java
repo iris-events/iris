@@ -1,13 +1,6 @@
 package id.global.iris.messaging.runtime.connection;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-
 import com.rabbitmq.client.Connection;
-
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.exception.IrisConnectionException;
@@ -16,6 +9,11 @@ import id.global.iris.messaging.runtime.health.IrisReadinessCheck;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractConnectionProvider {
     private ConnectionFactoryProvider connectionFactoryProvider;
@@ -32,8 +30,8 @@ public abstract class AbstractConnectionProvider {
     }
 
     public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
-            IrisLivenessCheck livenessCheck, Logger log) {
+                                      InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
+                                      IrisLivenessCheck livenessCheck, Logger log) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;
         this.config = config;
@@ -44,14 +42,17 @@ public abstract class AbstractConnectionProvider {
     }
 
     public Connection getConnection() {
-        if (connectionIsNullOrClosed() && !this.getConnecting()) {
-            log.info("Establishing new AMQP connection with resilience.");
-            setConnecting(true);
-            this.connection = connectWithResilience(
-                    config.getBackoffIntervalMillis(),
-                    config.getBackoffMultiplier(),
-                    config.getMaxRetries());
+        if (isConnectionOpen() || isConnecting()) {
+            return connection;
         }
+
+        log.info("Establishing new AMQP connection with resilience.");
+        setConnecting(true);
+        this.connection = connectWithResilience(
+                config.getBackoffIntervalMillis(),
+                config.getBackoffMultiplier(),
+                config.getMaxRetries());
+
         return connection;
     }
 
@@ -103,7 +104,7 @@ public abstract class AbstractConnectionProvider {
 
         eventPublisher.onIgnoredError(onIgnoredEvent -> {
             log.error(String.format("Ignored exception encountered while establishing AMQP connection."
-                    + " attempt: %d/%d, last exception: %s",
+                            + " attempt: %d/%d, last exception: %s",
                     onIgnoredEvent.getNumberOfRetryAttempts(),
                     config.getMaxRetries(),
                     onIgnoredEvent.getLastThrowable()));
@@ -132,11 +133,11 @@ public abstract class AbstractConnectionProvider {
         this.livenessCheck.setTimedOut(timedOut);
     }
 
-    private boolean getConnecting() {
+    private boolean isConnecting() {
         return this.connecting.get();
     }
 
-    private boolean connectionIsNullOrClosed() {
-        return connection == null || !connection.isOpen();
+    private boolean isConnectionOpen() {
+        return connection != null && connection.isOpen();
     }
 }
