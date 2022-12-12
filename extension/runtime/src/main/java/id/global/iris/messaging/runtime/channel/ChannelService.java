@@ -10,4 +10,6 @@ public interface ChannelService {
     Channel createChannel() throws IOException;
 
     void removeChannel(String oldChannelId) throws IOException;
+
+    void removeAllChannels();
 }

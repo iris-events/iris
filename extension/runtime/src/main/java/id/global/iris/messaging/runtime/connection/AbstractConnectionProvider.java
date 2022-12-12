@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.iris.messaging.runtime.InstanceInfoProvider;
 import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
@@ -17,7 +19,7 @@ import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 
-public abstract class AbstractConnectionProvider {
+public abstract class AbstractConnectionProvider implements ShutdownListener {
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
     private IrisRabbitMQConfig config;
@@ -51,6 +53,8 @@ public abstract class AbstractConnectionProvider {
                     config.getBackoffIntervalMillis(),
                     config.getBackoffMultiplier(),
                     config.getMaxRetries());
+
+            this.connection.addShutdownListener(this);
         }
         return connection;
     }
@@ -138,5 +142,12 @@ public abstract class AbstractConnectionProvider {
 
     private boolean connectionIsNullOrClosed() {
         return connection == null || !connection.isOpen();
+    }
+
+    @Override public void shutdownCompleted(final ShutdownSignalException cause) {
+        log.warn("Rabbitmq connection shutdown detected", cause);
+        this.connection = null;
+        this.setConnecting(true);
+        this.setTimedOut(false);
     }
 }

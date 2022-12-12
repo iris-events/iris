@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
 
 import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.connection.AbstractConnectionProvider;
 import id.global.iris.messaging.runtime.exception.IrisConnectionException;
 
-public abstract class AbstractChannelService implements ChannelService {
+public abstract class AbstractChannelService implements ChannelService, ShutdownListener {
     private final static Logger log = LoggerFactory.getLogger(AbstractChannelService.class);
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private AbstractConnectionProvider connectionProvider;
@@ -63,5 +65,14 @@ public abstract class AbstractChannelService implements ChannelService {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    public void removeAllChannels() {
+        channelMap.clear();
+    }
+
+    @Override public void shutdownCompleted(final ShutdownSignalException cause) {
+        this.removeAllChannels();
     }
 }
