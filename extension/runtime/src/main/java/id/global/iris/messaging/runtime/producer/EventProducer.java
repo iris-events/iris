@@ -74,9 +74,11 @@ public class EventProducer {
     private TransactionCallback transactionCallback;
 
     @Inject
-    public EventProducer(@Named("producerChannelService") ChannelService channelService, ObjectMapper objectMapper,
+    public EventProducer(@Named("producerChannelService") ChannelService channelService,
+            ObjectMapper objectMapper,
             EventContext eventContext,
-            IrisRabbitMQConfig config, TransactionManager transactionManager,
+            IrisRabbitMQConfig config,
+            TransactionManager transactionManager,
             BasicPropertiesProvider basicPropertiesProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;

@@ -2,6 +2,7 @@ package id.global.iris.messaging.runtime.consumer;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -52,7 +53,7 @@ public class QueueDeclarator {
         final var autoDelete = details.autoDelete;
         final var arguments = details.arguments;
 
-        try (Channel channel = channelService.createChannel()) {
+        try (Channel channel = channelService.getOrCreateChannelById(UUID.randomUUID().toString())) {
             final var declareOk = channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
             log.info("Queue declared. name: {}, durable: {}, autoDelete: {}, consumers: {}, message count: {}",
                     declareOk.getQueue(),
