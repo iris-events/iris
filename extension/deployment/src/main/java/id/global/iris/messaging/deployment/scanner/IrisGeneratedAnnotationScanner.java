@@ -16,15 +16,15 @@ public class IrisGeneratedAnnotationScanner {
     // TODO this has alot of similarities with MessageAnnotationScanner
     private static final DotName DOT_NAME_IRIS_GENERATED = DotName.createSimple(IrisGenerated.class.getCanonicalName());
 
-    public List<MessageInfoBuildItem> scanMessageAnnotations(IndexView indexView) {
+    public List<MessageInfoBuildItem> scanIrisGeneratedAnnotations(IndexView indexView) {
         return indexView.getAnnotations(DOT_NAME_IRIS_GENERATED)
                 .stream()
                 .filter(not(annotationInstance -> annotationInstance.target().asClass().isSynthetic()))
-                .map(item -> build(item, indexView))
+                .map(this::build)
                 .collect(Collectors.toList());
     }
 
-    protected MessageInfoBuildItem build(AnnotationInstance annotationInstance, IndexView index) {
+    protected MessageInfoBuildItem build(AnnotationInstance annotationInstance) {
         final var classType = annotationInstance.target().asClass();
         return new MessageInfoBuildItem(classType);
     }

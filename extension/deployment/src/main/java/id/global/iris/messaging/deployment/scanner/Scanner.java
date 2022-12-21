@@ -41,7 +41,7 @@ public class Scanner {
     }
 
     public List<MessageInfoBuildItem> scanIrisGeneratedAnnotations() {
-        return irisGeneratedAnnotationScanner.scanMessageAnnotations(indexView);
+        return irisGeneratedAnnotationScanner.scanIrisGeneratedAnnotations(indexView);
     }
 
     private List<HandlerAnnotationScanner> getAnnotationScanners(String serviceName) {

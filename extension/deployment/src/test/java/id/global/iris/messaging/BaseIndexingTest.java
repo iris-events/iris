@@ -8,6 +8,7 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 
 import id.global.iris.common.annotations.ExchangeType;
+import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.Scope;
@@ -24,9 +25,23 @@ public class BaseIndexingTest {
         index(indexer, pathOf(Message.class));
         index(indexer, pathOf(MessageHandler.class));
         index(indexer, pathOf(SnapshotMessageHandler.class));
+        index(indexer, pathOf(IrisGenerated.class));
         index(indexer, pathOf(Scope.class));
         index(indexer, pathOf(ExchangeType.class));
         index(indexer, pathOf(SnapshotRequested.class));
+
+        return indexer.complete();
+    }
+
+    protected Index basicIndexOf(Class<?>... classes) {
+        Indexer indexer = new Indexer();
+
+        for (Class<?> klazz : classes) {
+            index(indexer, pathOf(klazz));
+        }
+        index(indexer, pathOf(Message.class));
+        index(indexer, pathOf(MessageHandler.class));
+        index(indexer, pathOf(IrisGenerated.class));
 
         return indexer.complete();
     }
