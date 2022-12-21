@@ -26,6 +26,14 @@ public final class MessageInfoBuildItem extends MultiBuildItem {
         this.scope = scope;
     }
 
+    public MessageInfoBuildItem(final ClassInfo annotatedClassInfo) {
+        this.annotatedClassInfo = annotatedClassInfo;
+        this.exchangeType = null;
+        this.name = null;
+        this.routingKey = null;
+        this.scope = null;
+    }
+
     public ClassInfo getAnnotatedClassInfo() {
         return annotatedClassInfo;
     }

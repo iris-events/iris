@@ -130,7 +130,12 @@ class EventMessagingProcessor {
     void scanForMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
             BuildProducer<MessageInfoBuildItem> messageInfoProducer) {
         final var scanner = new Scanner(combinedIndexBuildItem.getIndex(), appInfo.getName());
+        final var irisGeneratedMessageAnnotations = scanner.scanIrisGeneratedAnnotations();
+
         scanner.scanMessageAnnotations()
+                .stream().filter(messageInfoBuildItem -> !irisGeneratedMessageAnnotations.stream()
+                        .map(MessageInfoBuildItem::getAnnotatedClassInfo).toList()
+                        .contains(messageInfoBuildItem.getAnnotatedClassInfo()))
                 .forEach(messageInfoProducer::produce);
     }
 
