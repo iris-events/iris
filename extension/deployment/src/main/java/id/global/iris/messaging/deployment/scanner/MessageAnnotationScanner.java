@@ -13,17 +13,14 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
-import id.global.iris.parsers.DeadLetterQueueParser;
 import id.global.iris.parsers.ExchangeParser;
-import id.global.iris.parsers.ExchangeTtlParser;
 import id.global.iris.parsers.MessageScopeParser;
-import id.global.iris.parsers.PersistentParser;
 import id.global.iris.parsers.RoutingKeyParser;
 
 public class MessageAnnotationScanner {
     private static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getCanonicalName());
 
-    public List<MessageInfoBuildItem> scanHandlerAnnotations(IndexView indexView) {
+    public List<MessageInfoBuildItem> scanMessageAnnotations(IndexView indexView) {
         return indexView.getAnnotations(DOT_NAME_MESSAGE)
                 .stream()
                 .filter(not(annotationInstance -> annotationInstance.target().asClass().isSynthetic()))

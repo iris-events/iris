@@ -16,11 +16,13 @@ public class Scanner {
     private final IndexView indexView;
     private final List<HandlerAnnotationScanner> messageHandlerAnnotationScanners;
     private final MessageAnnotationScanner messageAnnotationScanner;
+    private final IrisGeneratedAnnotationScanner irisGeneratedAnnotationScanner;
 
     public Scanner(IndexView indexView, String serviceName) {
         this.indexView = indexView;
         this.messageHandlerAnnotationScanners = getAnnotationScanners(serviceName);
         this.messageAnnotationScanner = new MessageAnnotationScanner();
+        this.irisGeneratedAnnotationScanner = new IrisGeneratedAnnotationScanner();
     }
 
     public List<MessageHandlerInfoBuildItem> scanEventHandlerAnnotations() {
@@ -35,7 +37,11 @@ public class Scanner {
     }
 
     public List<MessageInfoBuildItem> scanMessageAnnotations() {
-        return messageAnnotationScanner.scanHandlerAnnotations(indexView);
+        return messageAnnotationScanner.scanMessageAnnotations(indexView);
+    }
+
+    public List<MessageInfoBuildItem> scanIrisGeneratedAnnotations() {
+        return irisGeneratedAnnotationScanner.scanMessageAnnotations(indexView);
     }
 
     private List<HandlerAnnotationScanner> getAnnotationScanners(String serviceName) {
