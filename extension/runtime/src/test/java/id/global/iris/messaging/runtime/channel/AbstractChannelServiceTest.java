@@ -1,18 +1,19 @@
 package id.global.iris.messaging.runtime.channel;
 
-import id.global.iris.messaging.runtime.channel.mock.MockConnection;
-import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
-import id.global.iris.messaging.runtime.connection.ConsumerConnectionProvider;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import id.global.iris.messaging.runtime.channel.mock.MockConnection;
+import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
+import id.global.iris.messaging.runtime.connection.ConsumerConnectionProvider;
 
 class AbstractChannelServiceTest {
 

@@ -34,15 +34,12 @@ public abstract class AbstractChannelService implements ChannelService, Shutdown
 
     @Override
     public Channel getOrCreateChannelById(String channelId) {
-        Channel channel = channelMap.computeIfAbsent(channelId, t -> createChannel());
-        if (channel == null) {
-            throw new IrisConnectionException("Could not create channel.");
-        }
-        if (channel.isOpen()) {
+        final var channel = channelMap.get(channelId);
+        if (channel != null && channel.isOpen()) {
             return channel;
         }
-        channelMap.put(channelId, createChannel());
-        return channelMap.get(channelId);
+
+        return channelMap.compute(channelId, (key, value) -> createChannel());
     }
 
     @Override
