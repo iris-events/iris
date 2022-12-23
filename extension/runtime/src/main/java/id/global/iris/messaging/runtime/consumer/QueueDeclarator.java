@@ -22,10 +22,12 @@ public class QueueDeclarator {
     private static final Logger log = LoggerFactory.getLogger(QueueDeclarator.class);
 
     ChannelService channelService;
+    private final String channelId;
 
     @Inject
     public QueueDeclarator(@Named("consumerChannelService") final ChannelService channelService) {
         this.channelService = channelService;
+        this.channelId = UUID.randomUUID().toString();
     }
 
     public void declareQueueWithRecreateOnConflict(final Channel channel, final QueueDeclarationDetails details)
@@ -53,21 +55,17 @@ public class QueueDeclarator {
         final var autoDelete = details.autoDelete;
         final var arguments = details.arguments;
 
-        try (Channel channel = channelService.getOrCreateChannelById(UUID.randomUUID().toString())) {
-            final var declareOk = channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
-            log.info("Queue declared. name: {}, durable: {}, autoDelete: {}, consumers: {}, message count: {}",
-                    declareOk.getQueue(),
-                    durable, autoDelete,
-                    declareOk.getConsumerCount(),
-                    declareOk.getMessageCount());
-        } catch (TimeoutException e) {
-            log.error("Timeout exception obtaining channel while declaring queue. Queue name: " + queueName, e);
-            throw new RuntimeException(e);
-        }
+        Channel channel = channelService.getOrCreateChannelById(this.channelId);
+        final var declareOk = channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
+        log.info("Queue declared. name: {}, durable: {}, autoDelete: {}, consumers: {}, message count: {}",
+                declareOk.getQueue(),
+                durable, autoDelete,
+                declareOk.getConsumerCount(),
+                declareOk.getMessageCount());
     }
 
     public record QueueDeclarationDetails(String queueName, boolean durable, boolean exclusive, boolean autoDelete,
-            Map<String, Object> arguments) {
+                                          Map<String, Object> arguments) {
 
     }
 }
