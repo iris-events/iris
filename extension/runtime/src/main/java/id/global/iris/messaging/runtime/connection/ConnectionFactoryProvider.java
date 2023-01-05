@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.net.ssl.SSLContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +53,12 @@ public class ConnectionFactoryProvider {
             connectionFactory.setPort(port);
             connectionFactory.setVirtualHost(vhost);
             if (config.isSsl()) {
-                connectionFactory.useSslProtocol();
+                connectionFactory.useSslProtocol(SSLContext.getDefault());
+                connectionFactory.enableHostnameVerification();
             }
 
             return connectionFactory;
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+        } catch (NoSuchAlgorithmException e) {
             LOG.error("Could not create AMQP ConnectionFactory!", e);
             throw new IrisConnectionFactoryException("Could not create AMQP ConnectionFactory", e);
         }
