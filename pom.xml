@@ -56,7 +56,7 @@
         <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.victools>4.28.0</version.victools>
         <version.junit>5.9.1</version.junit>
-        <version.mockito-core>4.10.0</version.mockito-core>
+        <version.mockito-core>5.0.0</version.mockito-core>
         <version.slf4j-api>2.0.6</version.slf4j-api>
         <version.microprofile-config-api>2.0.1</version.microprofile-config-api>
     </properties>
