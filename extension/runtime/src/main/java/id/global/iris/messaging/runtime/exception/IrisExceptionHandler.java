@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,8 @@ public class IrisExceptionHandler {
                 throw (IrisSendException) throwable;
             } else if (throwable instanceof SecurityException) {
                 handleSecurityException(message, channel, (SecurityException) throwable);
-            } else if (throwable instanceof ClientException) {
+            } else if (throwable instanceof ClientException
+                    || throwable instanceof ValidationException) {
                 handleBadMessageException(message, channel, (ClientException) throwable);
             } else {
                 handleServerException(irisContext, message, channel, throwable);
