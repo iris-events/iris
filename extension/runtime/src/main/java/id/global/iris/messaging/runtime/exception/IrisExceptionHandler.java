@@ -17,6 +17,7 @@ import com.rabbitmq.client.Delivery;
 
 import id.global.iris.common.error.ErrorMessageDetailsBuilder;
 import id.global.iris.common.error.ErrorType;
+import id.global.iris.common.exception.BadPayloadException;
 import id.global.iris.common.exception.ClientException;
 import id.global.iris.common.exception.MessagingException;
 import id.global.iris.common.exception.SecurityException;
@@ -69,8 +70,10 @@ public class IrisExceptionHandler {
                 throw (IrisSendException) throwable;
             } else if (throwable instanceof SecurityException) {
                 handleSecurityException(message, channel, (SecurityException) throwable);
-            } else if (throwable instanceof ClientException
-                    || throwable instanceof ValidationException) {
+            } else if (throwable instanceof ValidationException) {
+                var clientException = new BadPayloadException(ErrorType.BAD_PAYLOAD.name(), throwable.getMessage());
+                handleBadMessageException(message, channel, clientException);
+            } else if (throwable instanceof ClientException) {
                 handleBadMessageException(message, channel, (ClientException) throwable);
             } else {
                 handleServerException(irisContext, message, channel, throwable);
