@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
@@ -70,6 +71,9 @@ public class IrisExceptionHandler {
                 throw (IrisSendException) throwable;
             } else if (throwable instanceof SecurityException) {
                 handleSecurityException(message, channel, (SecurityException) throwable);
+            } else if (throwable instanceof InvalidFormatException) {
+                var clientException = new BadPayloadException(ErrorType.BAD_PAYLOAD.name(), throwable.getMessage());
+                handleBadMessageException(message, channel, clientException);
             } else if (throwable instanceof ValidationException) {
                 var clientException = new BadPayloadException(ErrorType.BAD_PAYLOAD.name(), throwable.getMessage());
                 handleBadMessageException(message, channel, clientException);
