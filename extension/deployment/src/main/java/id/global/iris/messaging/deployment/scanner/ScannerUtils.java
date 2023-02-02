@@ -2,12 +2,7 @@ package id.global.iris.messaging.deployment.scanner;
 
 import java.util.Objects;
 
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.Type;
+import org.jboss.jandex.*;
 
 import id.global.iris.common.annotations.Message;
 
@@ -28,7 +23,7 @@ public class ScannerUtils {
     }
 
     private static ClassInfo getConsumedEventClassInfo(final MethodInfo methodInfo, final IndexView index) {
-        final var parameters = methodInfo.parameters();
+        final var parameters = methodInfo.parameterTypes();
         final var consumedEventTypes = parameters.stream()
                 .map(Type::name)
                 .map(index::getClassByName)

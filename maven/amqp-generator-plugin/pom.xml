@@ -4,7 +4,7 @@
     <parent>
         <groupId>id.global.iris</groupId>
         <artifactId>iris-maven-parent</artifactId>
-        <version>3.0.12-SNAPSHOT</version>
+        <version>3.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,11 +19,11 @@
         </dependency>
         <dependency>
             <groupId>id.global.iris</groupId>
-            <artifactId>iris-common</artifactId>
+            <artifactId>iris-asyncapi</artifactId>
         </dependency>
         <dependency>
             <groupId>id.global.iris</groupId>
-            <artifactId>iris-asyncapi</artifactId>
+            <artifactId>iris-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -81,6 +81,12 @@
         </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -103,11 +109,5 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
     </build>
 </project>

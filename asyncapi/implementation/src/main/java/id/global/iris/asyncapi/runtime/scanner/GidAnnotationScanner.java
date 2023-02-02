@@ -239,7 +239,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var annotationName = handlerAnnotation.name();
             final var annotationValues = handlerAnnotation.values();
             final var methodInfo = (MethodInfo) handlerAnnotation.target();
-            final var methodParameters = methodInfo.parameters();
+            final var methodParameters = methodInfo.parameterTypes();
 
             final var messageAnnotation = getMessageAnnotation(methodParameters, index);
             consumedMessages.add(messageAnnotation);

@@ -1,6 +1,7 @@
 package id.global.iris.asyncapi.runtime.scanner;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -269,6 +270,29 @@ public class FilteredIndexView implements IndexView {
     public Collection<ClassInfo> getKnownDirectImplementors(DotName className) {
         return this.delegate.getKnownDirectImplementors(className).stream().filter(ci -> accepts(ci.name()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<ClassInfo> getKnownDirectSubinterfaces(DotName interfaceName) {
+        return this.delegate.getKnownDirectSubinterfaces(interfaceName).stream().filter(ci -> accepts(ci.name()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<ClassInfo> getAllKnownSubinterfaces(DotName interfaceName) {
+        return this.delegate.getAllKnownSubinterfaces(interfaceName).stream().filter(ci -> accepts(ci.name()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<ClassInfo> getClassesInPackage(DotName packageName) {
+        return this.delegate.getClassesInPackage(packageName).stream().filter(ci -> accepts(ci.name()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Set<DotName> getSubpackages(DotName packageName) {
+        return this.delegate.getSubpackages(packageName);
     }
 
     /**

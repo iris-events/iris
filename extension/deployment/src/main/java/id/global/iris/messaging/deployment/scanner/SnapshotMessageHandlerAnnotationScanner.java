@@ -60,7 +60,7 @@ public class SnapshotMessageHandlerAnnotationScanner extends HandlerAnnotationSc
 
         return new MessageHandlerInfoBuildItem(
                 methodInfo.declaringClass(),
-                methodInfo.parameters().get(0),
+                methodInfo.parameterType(0),
                 methodInfo.returnType(),
                 methodInfo.name(),
                 exchange,
