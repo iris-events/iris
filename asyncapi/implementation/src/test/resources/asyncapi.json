@@ -126,7 +126,7 @@
         }
       }
     },
-    "test-event-v1/default-test-event-v1": {
+    "namespace/test-event-v1/default-test-event-v1": {
       "publish": {
         "bindings": {
           "amqp": {
@@ -175,7 +175,7 @@
           "exchange": {
             "durable": true,
             "vhost": "/",
-            "name": "test-event-v1",
+            "name": "namespace/test-event-v1",
             "autoDelete": false,
             "type": "direct"
           },

@@ -133,7 +133,7 @@ public class EventHandlersApp {
                                             User user) {
     }
 
-    @Message(name = "test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD,
+    @Message(name = "namespace/test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD,
             Role.ADMIN_MERCHANT }, persistent = true)
     public record TestEventV1(int id, String status, User user) {
     }

@@ -87,7 +87,6 @@ public class MessageAnnotationValidator implements AnnotationInstanceValidator {
 
     private boolean paramMatchesKebabCase(final String param, final AnnotationInstance annotationInstance) {
         AnnotationValue value = annotationInstance.value(param);
-
         if (value.kind().equals(AnnotationValue.Kind.ARRAY)) {
             return Arrays.stream(value.asStringArray()).map(val -> val.replaceFirst(Queues.Constants.DEAD_LETTER_PREFIX, ""))
                     .allMatch(val -> KEBAB_CASE_PATTERN.matcher(val).matches());
