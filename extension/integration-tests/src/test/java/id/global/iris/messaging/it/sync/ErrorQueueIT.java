@@ -86,8 +86,8 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(BAD_PAYLOAD_CLIENT_CODE));
-        assertThat(errorMessage.message(), is("Unable to process message. Message corrupted."));
+        assertThat(errorMessage.getCode(), is(BAD_PAYLOAD_CLIENT_CODE));
+        assertThat(errorMessage.getMessage(), is("Unable to process message. Message corrupted."));
     }
 
     @DisplayName("Requeue server error message on server exception")

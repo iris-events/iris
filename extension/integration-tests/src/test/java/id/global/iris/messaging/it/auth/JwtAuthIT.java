@@ -97,8 +97,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
-        assertThat(errorMessage.message(), is("Invalid authorization token"));
+        assertThat(errorMessage.getCode(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
+        assertThat(errorMessage.getMessage(), is("Invalid authorization token"));
     }
 
     @DisplayName("Consume on role protected handler")
@@ -130,8 +130,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(FORBIDDEN_CLIENT_CODE));
-        assertThat(errorMessage.message(), is("Role is not allowed"));
+        assertThat(errorMessage.getCode(), is(FORBIDDEN_CLIENT_CODE));
+        assertThat(errorMessage.getMessage(), is("Role is not allowed"));
     }
 
     @DisplayName("Throw exception on invalid claim")
@@ -148,8 +148,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
-        assertThat(errorMessage.message(), is("Invalid authorization token"));
+        assertThat(errorMessage.getCode(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
+        assertThat(errorMessage.getMessage(), is("Invalid authorization token"));
     }
 
     @SuppressWarnings("unused")
