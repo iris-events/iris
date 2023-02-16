@@ -11,7 +11,7 @@
         <appName>APPLICATION_NAME</appName>
         <appVersion>APPLICATION_VERSION</appVersion>
         <version.jandex-maven-plugin>1.2.1</version.jandex-maven-plugin>
-        <version.globalid-common>2.0.2</version.globalid-common>
+        <version.globalid-common>2.0.4</version.globalid-common>
         <version.jackson-annotations>2.13.4.2</version.jackson-annotations>
         <version.jackson-databind>2.13.4.2</version.jackson-databind>
         <version.validation-api>2.0.1.Final</version.validation-api>

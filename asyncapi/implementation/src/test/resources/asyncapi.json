@@ -152,7 +152,7 @@
                 "type": "array",
                 "value": [
                   "admin.reward",
-                  "AUTHENTICATED"
+                  "**"
                 ]
               },
               "x-dead-letter": {
