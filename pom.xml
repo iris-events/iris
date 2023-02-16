@@ -55,7 +55,7 @@
         <!-- plugin dependencies -->
 
         <!--<maven.compiler.release>17</maven.compiler.release>-->
-        <version.quarkus>2.16.1.Final</version.quarkus>
+        <version.quarkus>2.16.3.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.slf4j-api>2.0.6</version.slf4j-api>
