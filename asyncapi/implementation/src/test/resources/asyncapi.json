@@ -1132,10 +1132,10 @@
       "SnapshotRequested": {
         "type": "object",
         "properties": {
-          "resourceId": {
+          "resource_id": {
             "type": "string"
           },
-          "resourceType": {
+          "resource_type": {
             "type": "string"
           }
         },
