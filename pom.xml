@@ -42,7 +42,7 @@
         <version.jandex>3.0.5</version.jandex>
         <version.jsonschema2pojo-core>1.1.3</version.jsonschema2pojo-core>
         <version.junit>5.9.2</version.junit>
-        <version.maven>3.8.7</version.maven>
+        <version.maven>3.9.0</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
         <version.maven-plugin-annotations>3.7.0</version.maven-plugin-annotations>
         <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
