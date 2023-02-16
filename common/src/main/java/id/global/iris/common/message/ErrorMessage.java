@@ -1,11 +1,13 @@
 package id.global.iris.common.message;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import id.global.iris.common.error.ErrorType;
 
 public class ErrorMessage {
-   private final ErrorType errorType;
-   private final String code;
-   private final String message;
+   private final @JsonProperty("error_type") ErrorType errorType;
+   private final @JsonProperty("code") String code;
+   private final @JsonProperty("message") String message;
 
     public ErrorMessage(final ErrorType errorType, final String code, final String message) {
         this.errorType = errorType;
