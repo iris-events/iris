@@ -1,6 +1,7 @@
 package id.global.iris.messaging.runtime.auth;
 
 import static id.global.iris.common.constants.MessagingHeaders.Message.JWT;
+import static io.quarkus.security.identity.SecurityIdentity.USER_ATTRIBUTE;
 
 import java.util.Optional;
 import java.util.Set;
@@ -75,7 +76,7 @@ public class GidJwtValidator {
                     .setPrincipal(jwtPrincipal)
                     .addCredential(jsonWebTokenCredential)
                     .addRoles(jwtPrincipal.getGroups())
-                    .addAttribute("quarkus.user", jwtPrincipal).build();
+                    .addAttribute(USER_ATTRIBUTE, jwtPrincipal).build();
         } catch (ParseException e) {
             log.error("Authentication failed. Error message: " + e.getMessage(), e);
             throw new AuthenticationFailedException("Invalid authorization token", e);
