@@ -1,12 +1,17 @@
 package id.global.iris.plugin.model.generator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import id.global.iris.plugin.model.generator.exception.AmqpGeneratorException;
-import id.global.iris.plugin.model.generator.models.ArtifactSource;
-import id.global.iris.plugin.model.generator.utils.FileInteractor;
-import id.global.iris.plugin.model.generator.utils.PathResolver;
-import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
-import junit.framework.Assert;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
@@ -16,20 +21,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import id.global.iris.plugin.model.generator.exception.AmqpGeneratorException;
+import id.global.iris.plugin.model.generator.models.ArtifactSource;
+import id.global.iris.plugin.model.generator.utils.FileInteractor;
+import id.global.iris.plugin.model.generator.utils.PathResolver;
+import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
 
 class AmqpGeneratorTest {
 
@@ -44,54 +42,31 @@ class AmqpGeneratorTest {
 
     @SuppressWarnings("unused")
     private static Stream<Arguments> generate() {
+        final var testModelPath = "models/src/main/java/id/global/amqp/test/amqpgeneratortest";
         return Stream.of(
                 Arguments.of(new GenerateArguments("models", true)),
                 Arguments.of(new GenerateArguments("models/src/main/java", true)),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest", true)),
-                Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventDefaults.java",
-                                true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FanoutTestEventV1.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/FrontendTestEventV1.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/GeneratedTestEvent.java", false)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughInboundEvent.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/PassthroughOutboundEvent.java", true)),
-                Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/ProducedEvent.java",
-                                true)),
-                Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV1.java",
-                                true)),
-                Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/TestEventV2.java",
-                                true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/TopicTestEventV1.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventWithRequiredProperties.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/MapPayloadEvent.java", true)),
-                Arguments.of(new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Status.java", true)),
-                Arguments.of(
-                        new GenerateArguments("models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/User.java",
-                                true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/MapValue.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/Requirement.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/EventWithDescribedEnum.java", true)),
-                Arguments.of(new GenerateArguments(
-                        "models/src/main/java/id/global/amqp/test/amqpgeneratortest/payload/TestType.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath, true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/EventDefaults.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/FanoutTestEventV1.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/FrontendTestEventV1.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/GeneratedTestEvent.java", false)),
+                Arguments.of(new GenerateArguments(testModelPath + "/PassthroughInboundEvent.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/PassthroughOutboundEvent.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/ProducedEvent.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/TestEventV1.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/TestEventV2.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/TopicTestEventV1.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/EventWithRequiredProperties.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/MapPayloadEvent.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/payload", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/payload/Status.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/payload/User.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/payload/MapValue.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/payload/Requirement.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/EventWithDescribedEnum.java", true)),
+                Arguments.of(new GenerateArguments(testModelPath + "/payload/TestType.java", true)),
                 Arguments.of(new GenerateArguments("models/pom.xml", true))
-
         );
     }
 
@@ -147,31 +122,6 @@ class AmqpGeneratorTest {
             if (Files.mismatch(generatedModelPath, expectedModelPath) != -1L) {
                 showDiff(generatedModelPath, expectedModelPath);
             }
-        }
-    }
-
-    private void showDiffOld(Path generatedFilePath, Path expectedFilePath) throws IOException {
-        Stream<String> generatedFileLines = Files.lines(generatedFilePath);
-        Stream<String> expectedFileLines = Files.lines(expectedFilePath);
-
-        Iterator<String> generatedIt = generatedFileLines.iterator();
-        Iterator<String> expectedIt = expectedFileLines.iterator();
-
-        int lineNumber = 1;
-        while (generatedIt.hasNext() && expectedIt.hasNext()) {
-            String lineGenerated = generatedIt.next();
-            String lineExpected = expectedIt.next();
-            Assert.assertEquals("Files differ on line " + lineNumber, lineExpected, lineGenerated);
-            /*
-             * if (!lineGenerated.equals(lineExpected)) {
-             * fail(String.format("Files differ on line %d: Generated file line:\n%s\nExpected file line:\n%s", lineNumber,
-             * lineGenerated, lineExpected));
-             * }
-             */
-            lineNumber++;
-        }
-        if (generatedIt.hasNext() || expectedIt.hasNext()) {
-            fail(String.format("Files %s and %s differ in length", generatedFilePath, expectedFilePath));
         }
     }
 

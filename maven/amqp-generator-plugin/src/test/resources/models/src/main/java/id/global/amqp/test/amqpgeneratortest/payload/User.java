@@ -45,13 +45,6 @@ public class User implements Serializable
     public User() {
     }
 
-    /**
-     *
-     * @param surname
-     * @param name
-     * @param age
-     * @param status
-     */
     public User(int age, String name, Status status, String surname) {
         super();
         this.age = age;

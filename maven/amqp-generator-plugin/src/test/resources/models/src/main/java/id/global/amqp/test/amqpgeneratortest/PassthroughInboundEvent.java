@@ -32,10 +32,6 @@ public class PassthroughInboundEvent implements Serializable
     public PassthroughInboundEvent() {
     }
 
-    /**
-     *
-     * @param id
-     */
     public PassthroughInboundEvent(int id) {
         super();
         this.id = id;

@@ -44,6 +44,7 @@ public class EventWithDescribedEnum implements Serializable
     /**
      *
      * @param type
+     *     Requirement to verify.
      */
     public EventWithDescribedEnum(TestType type) {
         super();

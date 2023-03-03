@@ -41,12 +41,6 @@ public class FanoutTestEventV1 implements Serializable
     public FanoutTestEventV1() {
     }
 
-    /**
-     *
-     * @param id
-     * @param user
-     * @param status
-     */
     public FanoutTestEventV1(int id, String status, User user) {
         super();
         this.id = id;

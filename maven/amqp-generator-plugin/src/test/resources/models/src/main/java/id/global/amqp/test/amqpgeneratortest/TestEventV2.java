@@ -52,15 +52,6 @@ public class TestEventV2 implements Serializable
     public TestEventV2() {
     }
 
-    /**
-     *
-     * @param payload
-     * @param surname
-     * @param name
-     * @param id
-     * @param someMap
-     * @param user
-     */
     public TestEventV2(int id, String name, Object payload, Map<String, String> someMap, String surname, User user) {
         super();
         this.id = id;

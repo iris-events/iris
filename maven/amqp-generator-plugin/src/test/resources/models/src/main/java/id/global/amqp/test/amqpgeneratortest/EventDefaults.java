@@ -32,10 +32,6 @@ public class EventDefaults implements Serializable
     public EventDefaults() {
     }
 
-    /**
-     *
-     * @param id
-     */
     public EventDefaults(int id) {
         super();
         this.id = id;
