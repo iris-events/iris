@@ -8,7 +8,7 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 import id.global.iris.plugin.model.generator.models.ArtifactSource;
 
-public class MyMojoTest extends AbstractMojoTestCase {
+public class AmqpGeneratorPluginTest extends AbstractMojoTestCase {
 
     private static final String ASYNC_API_FILENAME = "asyncapi.json";
     private static final String ASYNC_API_DIRECTORY = "src,test,resources";

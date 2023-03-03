@@ -41,12 +41,6 @@ public class FrontendTestEventV1 implements Serializable
     public FrontendTestEventV1() {
     }
 
-    /**
-     *
-     * @param id
-     * @param user
-     * @param status
-     */
     public FrontendTestEventV1(int id, String status, User user) {
         super();
         this.id = id;

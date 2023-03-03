@@ -74,8 +74,11 @@ public class EventWithRequiredProperties implements Serializable
     /**
      *
      * @param stateId
+     *     Id of the state returned by Onboard Started event.
      * @param requirement
+     *     Requirement to verify.
      * @param value
+     *     Value of the requirement.
      */
     public EventWithRequiredProperties(Requirement requirement, String stateId, String value) {
         super();

@@ -35,11 +35,6 @@ public class GeneratedTestEvent implements Serializable
     public GeneratedTestEvent() {
     }
 
-    /**
-     *
-     * @param id
-     * @param status
-     */
     public GeneratedTestEvent(int id, String status) {
         super();
         this.id = id;

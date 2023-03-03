@@ -38,11 +38,6 @@ public class MapValue implements Serializable
     public MapValue() {
     }
 
-    /**
-     *
-     * @param id
-     * @param value
-     */
     public MapValue(String id, String value) {
         super();
         this.id = id;

@@ -36,10 +36,6 @@ public class MapPayloadEvent implements Serializable
     public MapPayloadEvent() {
     }
 
-    /**
-     *
-     * @param userMap
-     */
     public MapPayloadEvent(Map<String, MapValue> userMap) {
         super();
         this.userMap = userMap;

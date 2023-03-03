@@ -41,12 +41,6 @@ public class TopicTestEventV1 implements Serializable
     public TopicTestEventV1() {
     }
 
-    /**
-     *
-     * @param id
-     * @param user
-     * @param status
-     */
     public TopicTestEventV1(int id, String status, User user) {
         super();
         this.id = id;

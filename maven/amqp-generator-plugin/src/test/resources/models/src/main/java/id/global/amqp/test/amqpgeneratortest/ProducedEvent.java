@@ -32,10 +32,6 @@ public class ProducedEvent implements Serializable
     public ProducedEvent() {
     }
 
-    /**
-     *
-     * @param id
-     */
     public ProducedEvent(int id) {
         super();
         this.id = id;

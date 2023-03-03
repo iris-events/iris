@@ -37,10 +37,6 @@ public class ListPayloadEvent implements Serializable
     public ListPayloadEvent() {
     }
 
-    /**
-     *
-     * @param userList
-     */
     public ListPayloadEvent(List<User> userList) {
         super();
         this.userList = userList;

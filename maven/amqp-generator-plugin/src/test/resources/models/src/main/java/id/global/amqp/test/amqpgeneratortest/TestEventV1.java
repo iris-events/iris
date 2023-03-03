@@ -41,12 +41,6 @@ public class TestEventV1 implements Serializable
     public TestEventV1() {
     }
 
-    /**
-     *
-     * @param id
-     * @param user
-     * @param status
-     */
     public TestEventV1(int id, String status, User user) {
         super();
         this.id = id;
