@@ -22,7 +22,6 @@ import id.global.iris.plugin.model.generator.utils.PathResolver;
 import id.global.iris.plugin.model.generator.utils.SchemaFileGenerator;
 
 import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.util.StringUtils;
 import org.jsonschema2pojo.GenerationConfig;
 import org.jsonschema2pojo.Jackson2Annotator;
 import org.jsonschema2pojo.SchemaGenerator;
@@ -325,7 +324,7 @@ public class AmqpGenerator {
             List<JsonSchemaWrapper> baseClassesSchemasWithContent) {
         return baseClassesSchemasWithContent.stream()
                 .map(schemaWithContent -> {
-                    var javaTypeCount = StringUtils.countMatches(schemaWithContent.getSchemaContent(), JAVA_TYPE);
+                    var javaTypeCount = schemaWithContent.getSchemaContent().split(JAVA_TYPE).length -1;
                     return new AbstractMap.SimpleEntry<>(schemaWithContent.getClassName(), javaTypeCount);
                 }).collect(Collectors.toList());
     }
