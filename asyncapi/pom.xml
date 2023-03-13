@@ -45,19 +45,6 @@
                 <artifactId>jsonschema-module-javax-validation</artifactId>
                 <version>${version.victools}</version>
             </dependency>
-            <!-- Apicurio Data Models -->
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-data-models</artifactId>
-                <version>${version.apicurio-data-models}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-registry-client</artifactId>
-                <version>${version.apicurio-registry-client}</version>
-            </dependency>
-
             <dependency>
                 <groupId>jakarta.validation</groupId>
                 <artifactId>jakarta.validation-api</artifactId>

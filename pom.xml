@@ -60,6 +60,8 @@
         <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.slf4j-api>2.0.6</version.slf4j-api>
         <version.victools>4.28.0</version.victools>
+        <version.apicurio-codegen-quarkus-extension-deployment>1.0.14.Final
+        </version.apicurio-codegen-quarkus-extension-deployment>
     </properties>
 
     <dependencyManagement>
@@ -131,6 +133,23 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${version.httpclient}</version>
+            </dependency>
+            <!-- Apicurio Data Models -->
+            <dependency>
+                <groupId>io.apicurio</groupId>
+                <artifactId>apicurio-data-models</artifactId>
+                <version>${version.apicurio-data-models}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.apicurio</groupId>
+                <artifactId>apicurio-registry-client</artifactId>
+                <version>${version.apicurio-registry-client}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.apicurio</groupId>
+                <artifactId>apicurio-codegen-quarkus-extension-deployment</artifactId>
+                <version>${version.apicurio-codegen-quarkus-extension-deployment}</version>
             </dependency>
             <!-- Dependencies provided by the project -->
             <dependency>
