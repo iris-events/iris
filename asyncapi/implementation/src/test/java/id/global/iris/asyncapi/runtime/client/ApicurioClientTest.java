@@ -70,7 +70,7 @@ class ApicurioClientTest {
         final var groupIdCaptor = ArgumentCaptor.forClass(String.class);
         final var artifactIdCaptor = ArgumentCaptor.forClass(String.class);
         final var versionCaptor = ArgumentCaptor.forClass(String.class);
-        final var artifactTypeCaptor = ArgumentCaptor.forClass(ArtifactType.class);
+        final var artifactTypeCaptor = ArgumentCaptor.forClass(String.class);
         final var ifExistsCaptor = ArgumentCaptor.forClass(IfExists.class);
         final var canonicalCaptor = ArgumentCaptor.forClass(Boolean.class);
         final var inputStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
