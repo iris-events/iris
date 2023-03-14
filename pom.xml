@@ -59,7 +59,7 @@
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.slf4j-api>2.0.6</version.slf4j-api>
-        <version.victools>4.28.0</version.victools>
+        <version.victools>4.29.0</version.victools>
         <version.apicurio-codegen-quarkus-extension-deployment>1.0.14.Final
         </version.apicurio-codegen-quarkus-extension-deployment>
     </properties>
