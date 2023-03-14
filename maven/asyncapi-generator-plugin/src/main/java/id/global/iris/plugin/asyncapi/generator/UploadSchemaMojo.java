@@ -18,15 +18,6 @@ import io.apicurio.registry.rest.client.RegistryClientFactory;
 @Mojo(name = "upload-schema", defaultPhase = LifecyclePhase.NONE, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresProject = false)
 public class UploadSchemaMojo extends AbstractMojo {
 
-    /*
-     * Usage example in pipeline or terminal:
-     * mvn id.global.iris:asyncapi-schema-generator-maven-plugin:upload-schema \
-     * -DschemaFilePath=target/generated/asyncapi.json \
-     * -DregistryUrl=https://schema.internal.globalid.dev/ \
-     * -DartifactId=iris-{service_name} \
-     * -DartifactVersion=1.0.0[-SNAPSHOT]
-     */
-
     @Parameter(property = "schemaFilePath")
     private String schemaFilePath;
 
