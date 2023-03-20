@@ -1,0 +1,21 @@
+name: Build client asyncapi document
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs "At 00:00 every day" (see https://crontab.guru)
+    - cron: '0 0 * * *'
+jobs:
+  build:
+    name: Asyncapi client definitions
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup java
+        uses: globalid/github-actions/java-setup@main
+        with:
+          nexus-username: "${{ secrets.NEXUS_USERNAME }}"
+          nexus-password: "${{ secrets.NEXUS_PASSWORD }}"
+      - name: merge and upload
+        # Hit the webhook endpoint to rebuild  from the "main" branch
+        run: |
+          mvn id.global.iris:asyncapi-merge-maven-plugin:generate-client-asyncapi -DapicurioUrl=https://schema.tools.global.id/ -DclientArtifactId=client-schemas
