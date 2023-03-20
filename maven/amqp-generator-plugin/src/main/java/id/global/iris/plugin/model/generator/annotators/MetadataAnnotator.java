@@ -73,6 +73,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
         } else if (!subscribeMessage.isMissingNode()) {
             headers = subscribeMessage.path(HEADERS);
         }
+
         Optional<Scope> scope = getScope(headers);
         Optional<String> deadLetter = getDeadLetter(headers);
         Optional<Integer> ttl = getTtl(headers);
@@ -117,7 +118,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
         if (extensions.isMissingNode()) {
             return Optional.empty();
         }
-        return Optional.of(extensions.path(Headers.HEADER_DEAD_LETTER).path(VALUE).textValue());
+        return Optional.ofNullable(extensions.path(Headers.HEADER_DEAD_LETTER).path(VALUE).textValue());
     }
 
     private Optional<Scope> getScope(JsonNode headers) {
@@ -125,7 +126,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
         if (properties.isMissingNode()) {
             return Optional.empty();
         }
-        return Optional.of(properties.path(Headers.HEADER_SCOPE).path(VALUE).textValue()).map(Scope::valueOf);
+        return Optional.ofNullable(properties.path(Headers.HEADER_SCOPE).path(VALUE).textValue()).map(Scope::valueOf);
     }
 
     private JsonNode getProperties(JsonNode headers) {
