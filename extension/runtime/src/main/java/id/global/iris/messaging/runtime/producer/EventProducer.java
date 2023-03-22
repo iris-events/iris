@@ -232,6 +232,8 @@ public class EventProducer {
 
         if (txOptional.isPresent()) {
             final var tx = txOptional.get();
+            log.info("Iris publish transactional. exchange: {}, routing key: {}, transaction: {}",
+                    routingDetails.exchange(), routingDetails.routingKey(), tx);
             enqueueDelayedMessage(message, routingDetails, tx);
             registerDefaultTransactionCallback(tx);
         } else {
