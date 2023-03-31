@@ -4,8 +4,12 @@ import id.global.iris.common.error.ErrorType;
 
 public abstract class MessagingException extends RuntimeException {
 
-    private final ErrorType errorType;
-    private final String clientCode;
+    private ErrorType errorType;
+    private String clientCode;
+
+    public MessagingException() {
+        super();
+    }
 
     MessagingException(final ErrorType errorType, final String clientCode, final String message) {
         super(message);
@@ -16,6 +20,14 @@ public abstract class MessagingException extends RuntimeException {
     MessagingException(final ErrorType errorType, final String clientCode, final String message, final Throwable cause) {
         super(message, cause);
         this.errorType = errorType;
+        this.clientCode = clientCode;
+    }
+
+    public void setErrorType(final ErrorType errorType) {
+        this.errorType = errorType;
+    }
+
+    public void setClientCode(final String clientCode) {
         this.clientCode = clientCode;
     }
 
