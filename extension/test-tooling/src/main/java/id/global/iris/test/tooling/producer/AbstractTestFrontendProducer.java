@@ -1,7 +1,10 @@
 package id.global.iris.test.tooling.producer;
 
+import static id.global.iris.common.constants.MessagingHeaders.Message.EVENT_TYPE;
+
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -28,11 +31,12 @@ public abstract class AbstractTestFrontendProducer {
 
     public void send(final Object message) throws IOException {
         final var channel = channelService.getOrCreateChannelById(UUID.randomUUID().toString());
+        final var eventType = message.getClass().getAnnotation(Message.class).name();
+        final var headers = Map.of(EVENT_TYPE, (Object) eventType);
         final var basicProperties = new AMQP.BasicProperties.Builder()
-                .headers(new HashMap<>())
+                .headers(headers)
                 .deliveryMode(DeliveryMode.PERSISTENT.getValue())
                 .build();
-        final var eventType = message.getClass().getAnnotation(Message.class).name();
         final var payload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(message);
         log.info("Publishing frontend event.\nevent: {}\npayload:\n{}", eventType, payload);
         final var body = objectMapper.writeValueAsBytes(message);
