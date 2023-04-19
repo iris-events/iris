@@ -2,7 +2,7 @@ package id.global.iris.messaging.runtime;
 
 import java.time.Instant;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class TimestampProvider {

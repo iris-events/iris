@@ -2,7 +2,7 @@ package id.global.iris.messaging.runtime.configuration;
 
 import java.util.Optional;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 

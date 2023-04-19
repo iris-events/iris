@@ -10,8 +10,8 @@ import java.lang.invoke.MethodHandle;
 import java.security.Principal;
 import java.util.Optional;
 
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

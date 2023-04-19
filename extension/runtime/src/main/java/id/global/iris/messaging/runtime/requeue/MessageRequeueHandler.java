@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;

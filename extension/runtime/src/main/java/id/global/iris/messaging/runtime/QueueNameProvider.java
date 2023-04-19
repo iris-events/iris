@@ -2,8 +2,8 @@ package id.global.iris.messaging.runtime;
 
 import java.util.Objects;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.constants.Queues;

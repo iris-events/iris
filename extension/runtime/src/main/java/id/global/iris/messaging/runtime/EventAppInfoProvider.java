@@ -1,6 +1,6 @@
 package id.global.iris.messaging.runtime;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import id.global.iris.messaging.runtime.context.EventAppContext;
 
