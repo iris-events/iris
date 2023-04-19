@@ -1,6 +1,6 @@
 package id.global.iris.messaging.it;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;

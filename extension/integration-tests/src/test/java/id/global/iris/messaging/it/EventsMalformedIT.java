@@ -6,9 +6,9 @@ import static id.global.iris.common.annotations.ExchangeType.TOPIC;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.transaction.TransactionManager;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.transaction.TransactionManager;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;

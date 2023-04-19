@@ -2,7 +2,7 @@ package id.global.iris.messaging.runtime.producer;
 
 import java.util.UUID;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class CorrelationIdProvider {

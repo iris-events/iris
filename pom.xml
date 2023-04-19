@@ -4,12 +4,12 @@
     <parent>
         <groupId>id.global</groupId>
         <artifactId>globalid-parent</artifactId>
-        <version>12</version>
+        <version>13</version>
         <relativePath />
     </parent>
     <groupId>id.global.iris</groupId>
     <artifactId>iris-parent</artifactId>
-    <version>3.1.7-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
@@ -34,12 +34,11 @@
         <version.apicurio-data-models>1.1.27</version.apicurio-data-models>
         <version.apicurio-registry-client>2.4.1.Final</version.apicurio-registry-client>
         <version.commons-logging>1.2</version.commons-logging>
-        <!-- TODO: replace with released version -->
-        <version.globalid-common>2.0.4</version.globalid-common>
+        <version.globalid-common>3.0.0</version.globalid-common>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.14</version.httpclient>
         <version.jackson>2.14.2</version.jackson>
-        <version.jandex>3.0.5</version.jandex>
+        <version.jandex>3.1.1</version.jandex>
         <version.jsonschema2pojo-core>1.2.1</version.jsonschema2pojo-core>
         <version.junit>5.9.2</version.junit>
         <version.maven>3.8.7</version.maven>
@@ -49,19 +48,18 @@
         <version.maven-project>2.2.1</version.maven-project>
         <version.maven-resolver-api>1.9.4</version.maven-resolver-api>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
-        <version.microprofile-config-api>2.0.1</version.microprofile-config-api>
+        <version.microprofile-config-api>3.0.2</version.microprofile-config-api>
         <version.mockito-core>5.1.1</version.mockito-core>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
         <!--<maven.compiler.release>17</maven.compiler.release>-->
-        <version.quarkus>2.16.4.Final</version.quarkus>
+        <version.quarkus>3.0.0.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.slf4j-api>2.0.6</version.slf4j-api>
-        <version.victools>4.28.0</version.victools>
-        <version.apicurio-codegen-quarkus-extension-deployment>1.0.14.Final
-        </version.apicurio-codegen-quarkus-extension-deployment>
+        <version.victools>4.29.0</version.victools>
+        <version.apicurio-codegen-quarkus-extension-deployment>1.0.14.Final</version.apicurio-codegen-quarkus-extension-deployment>
     </properties>
 
     <dependencyManagement>
@@ -159,6 +157,11 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss</groupId>
+                <artifactId>jandex</artifactId>
+                <version>${version.jandex}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
                 <artifactId>jandex</artifactId>
                 <version>${version.jandex}</version>
             </dependency>
