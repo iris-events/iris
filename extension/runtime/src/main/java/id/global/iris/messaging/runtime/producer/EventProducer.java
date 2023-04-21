@@ -23,7 +23,6 @@ import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
-import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +49,7 @@ import id.global.iris.parsers.ExchangeTypeParser;
 import id.global.iris.parsers.MessageScopeParser;
 import id.global.iris.parsers.PersistentParser;
 import id.global.iris.parsers.RoutingKeyParser;
+import jakarta.validation.constraints.NotNull;
 
 @ApplicationScoped
 public class EventProducer {

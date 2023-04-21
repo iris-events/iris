@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import javax.validation.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +30,7 @@ import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
+import jakarta.validation.ValidationException;
 
 @ApplicationScoped
 public class IrisExceptionHandler {
