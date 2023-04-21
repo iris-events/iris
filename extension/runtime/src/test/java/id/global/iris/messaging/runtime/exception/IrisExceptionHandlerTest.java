@@ -5,8 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.validation.ConstraintViolationException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,6 +21,7 @@ import id.global.iris.messaging.runtime.TimestampProvider;
 import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.context.IrisContext;
 import id.global.iris.messaging.runtime.requeue.MessageRequeueHandler;
+import jakarta.validation.ConstraintViolationException;
 
 class IrisExceptionHandlerTest {
 

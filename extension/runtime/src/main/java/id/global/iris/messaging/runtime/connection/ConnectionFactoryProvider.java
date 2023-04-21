@@ -4,9 +4,10 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
+import javax.net.ssl.SSLContext;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import javax.net.ssl.SSLContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
