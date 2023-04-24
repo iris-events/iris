@@ -151,8 +151,8 @@
                 "description": "Allowed roles for this message. Default is empty",
                 "type": "array",
                 "value": [
-                  "admin.reward",
-                  "**"
+                  "**",
+                  "admin.reward"
                 ]
               },
               "x-dead-letter": {

@@ -1,13 +1,9 @@
 package id.global.iris.messaging.runtime.connection;
 
-import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +12,8 @@ import com.rabbitmq.client.ConnectionFactory;
 
 import id.global.iris.messaging.runtime.configuration.IrisRabbitMQConfig;
 import id.global.iris.messaging.runtime.exception.IrisConnectionFactoryException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class ConnectionFactoryProvider {
