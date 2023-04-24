@@ -2,11 +2,11 @@ package id.global.iris.plugin.model.generator;
 
 import java.io.File;
 
-import javax.annotation.Nullable;
-
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 import id.global.iris.plugin.model.generator.models.ArtifactSource;
+
+import jakarta.annotation.Nullable;
 
 public class AmqpGeneratorPluginTest extends AbstractMojoTestCase {
 

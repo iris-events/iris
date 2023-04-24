@@ -19,7 +19,6 @@
     </modules>
     <properties>
         <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
-        <version.javax-validation-api>2.0.1.Final</version.javax-validation-api>
     </properties>
 
     <dependencyManagement>
@@ -41,21 +40,10 @@
                 <version>${version.victools}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.victools</groupId>
-                <artifactId>jsonschema-module-javax-validation</artifactId>
-                <version>${version.victools}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.validation</groupId>
                 <artifactId>jakarta.validation-api</artifactId>
                 <version>${version.jakarta-validation-api}</version>
             </dependency>
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${version.javax-validation-api}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
     <dependencies>

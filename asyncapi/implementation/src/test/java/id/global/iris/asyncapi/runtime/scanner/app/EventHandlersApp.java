@@ -24,6 +24,7 @@ import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.message.SnapshotRequested;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 public class EventHandlersApp {
     private static final Logger LOG = LoggerFactory.getLogger(EventHandlersApp.class);
@@ -128,8 +129,8 @@ public class EventHandlersApp {
     }
 
     @Message(name = "test-event-with-requirements", exchangeType = DIRECT, persistent = true)
-    public record TestEventWithRequirements(@jakarta.validation.constraints.NotNull int id,
-                                            @javax.validation.constraints.NotNull String status,
+    public record TestEventWithRequirements(@NotNull int id,
+                                            @NotNull String status,
                                             User user) {
     }
 

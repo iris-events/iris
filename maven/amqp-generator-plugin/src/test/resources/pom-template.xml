@@ -14,7 +14,7 @@
         <version.globalid-common>2.0.4</version.globalid-common>
         <version.jackson-annotations>2.13.4.2</version.jackson-annotations>
         <version.jackson-databind>2.13.4.2</version.jackson-databind>
-        <version.validation-api>2.0.1.Final</version.validation-api>
+        <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
     </properties>
 
 
@@ -39,9 +39,9 @@
             <version>${version.globalid-common}</version>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>${version.validation-api}</version>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${version.jakarta-validation-api}</version>
         </dependency>
     </dependencies>
 

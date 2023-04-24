@@ -46,8 +46,6 @@ import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
 import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationModule;
 import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationOption;
-import com.github.victools.jsonschema.module.javax.validation.JavaxValidationModule;
-import com.github.victools.jsonschema.module.javax.validation.JavaxValidationOption;
 
 import id.global.iris.asyncapi.api.AsyncApiConfig;
 import id.global.iris.asyncapi.runtime.generator.CustomDefinitionProvider;
@@ -406,11 +404,6 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         final var gidOpenApiModule = new GidOpenApiModule(
                 GidOpenApiOption.IGNORING_HIDDEN_PROPERTIES,
                 GidOpenApiOption.ENABLE_PROPERTY_NAME_OVERRIDES);
-        final var javaxValidationModule = new JavaxValidationModule(
-                JavaxValidationOption.NOT_NULLABLE_FIELD_IS_REQUIRED,
-                JavaxValidationOption.NOT_NULLABLE_METHOD_IS_REQUIRED,
-                JavaxValidationOption.PREFER_IDN_EMAIL_FORMAT,
-                JavaxValidationOption.INCLUDE_PATTERN_EXPRESSIONS);
         final var jakartaValidationModule = new JakartaValidationModule(
                 JakartaValidationOption.NOT_NULLABLE_FIELD_IS_REQUIRED,
                 JakartaValidationOption.NOT_NULLABLE_METHOD_IS_REQUIRED,
@@ -420,7 +413,6 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 OptionPreset.PLAIN_JSON)
                 .with(Option.DEFINITIONS_FOR_ALL_OBJECTS)
                 .with(jacksonModule)
-                .with(javaxValidationModule)
                 .with(jakartaValidationModule)
                 .with(gidOpenApiModule);
 
