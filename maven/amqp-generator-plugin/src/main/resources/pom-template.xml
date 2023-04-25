@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -11,7 +12,13 @@
         <appName>APPLICATION_NAME</appName>
         <appVersion>APPLICATION_VERSION</appVersion>
         <groupId>PACKAGE_NAME</groupId>
-        <version.globalid.iris>${project.version}</version.globalid.iris>
+        <version.iris-common>4.0.2</version.iris-common>
+        <version.jandex-maven-plugin>3.0.5</version.jandex-maven-plugin>
+        <version.globalid-common>3.0.0</version.globalid-common>
+        <version.jackson-annotations>2.14.2</version.jackson-annotations>
+        <version.jackson-databind>2.14.2</version.jackson-databind>
+        <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
+        <version.jakarta-annotation-api>2.1.1</version.jakarta-annotation-api>
     </properties>
 
 
@@ -23,22 +30,32 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.14.2</version>
+            <version>${version.jackson-databind}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.14.2</version>
+            <version>${version.jackson-annotations}</version>
+        </dependency>
+        <dependency>
+            <groupId>id.global.common</groupId>
+            <artifactId>globalid-common</artifactId>
+            <version>${version.globalid-common}</version>
         </dependency>
         <dependency>
             <groupId>id.global.iris</groupId>
             <artifactId>iris-common</artifactId>
-            <version>${version.globalid.iris}</version>
+            <version>${version.iris-common}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>3.0.2</version>
+            <version>${version.jakarta-validation-api}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${version.jakarta-annotation-api}</version>
         </dependency>
     </dependencies>
 
@@ -47,7 +64,7 @@
             <plugin>
                 <groupId>io.smallrye</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
-                <version>3.0.5</version>
+                <version>${version.jandex-maven-plugin}</version>
                 <executions>
                     <execution>
                         <id>make-index</id>

@@ -19,6 +19,7 @@ import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.asyncapi.api.Headers;
+import jakarta.annotation.Generated;
 
 public class MetadataAnnotator extends Jackson2Annotator {
 
@@ -84,6 +85,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
         Optional<String> routingKey = Optional.ofNullable(bindingsQueue.path(NAME).textValue());
 
         clazz.annotate(IrisGenerated.class);
+        clazz.annotate(Generated.class).param("value", "jsonschema2pojo");
 
         JAnnotationUse annotatedClazz = clazz.annotate(Message.class)
                 .param(NAME, exchangeName);

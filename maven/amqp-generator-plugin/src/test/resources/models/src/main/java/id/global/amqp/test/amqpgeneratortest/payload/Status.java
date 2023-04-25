@@ -3,11 +3,9 @@ package id.global.amqp.test.amqpgeneratortest.payload;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.processing.Generated;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-@Generated("jsonschema2pojo")
 public enum Status {
 
     DORMANT("dormant"),

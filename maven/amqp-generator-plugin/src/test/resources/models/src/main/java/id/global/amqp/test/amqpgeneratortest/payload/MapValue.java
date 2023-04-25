@@ -4,21 +4,19 @@ package id.global.amqp.test.amqpgeneratortest.payload;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.annotation.processing.Generated;
-import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import jakarta.validation.Valid;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id",
     "value"
 })
-@Generated("jsonschema2pojo")
 public class MapValue implements Serializable
 {
 
@@ -33,7 +31,7 @@ public class MapValue implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public MapValue() {
     }

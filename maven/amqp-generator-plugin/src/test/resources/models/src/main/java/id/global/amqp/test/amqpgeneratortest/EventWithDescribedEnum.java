@@ -2,8 +2,6 @@
 package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
-import javax.annotation.processing.Generated;
-import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -13,20 +11,22 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
+import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
 
 @IrisGenerated
+@Generated("jsonschema2pojo")
 @Message(name = "event-with-described-enum", exchangeType = ExchangeType.FANOUT, routingKey = "event-with-described-enum", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "type"
 })
-@Generated("jsonschema2pojo")
 public class EventWithDescribedEnum implements Serializable
 {
 
     /**
      * Requirement to verify.
-     *
+     * 
      */
     @JsonProperty("type")
     @JsonPropertyDescription("Requirement to verify.")
@@ -36,13 +36,13 @@ public class EventWithDescribedEnum implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public EventWithDescribedEnum() {
     }
 
     /**
-     *
+     * 
      * @param type
      *     Requirement to verify.
      */
@@ -53,7 +53,7 @@ public class EventWithDescribedEnum implements Serializable
 
     /**
      * Requirement to verify.
-     *
+     * 
      */
     @JsonProperty("type")
     public TestType getType() {
@@ -62,7 +62,7 @@ public class EventWithDescribedEnum implements Serializable
 
     /**
      * Requirement to verify.
-     *
+     * 
      */
     @JsonProperty("type")
     public void setType(TestType type) {

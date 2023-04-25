@@ -3,8 +3,6 @@ package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import java.util.Map;
-import javax.annotation.processing.Generated;
-import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -13,14 +11,16 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
+import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
 
 @IrisGenerated
+@Generated("jsonschema2pojo")
 @Message(name = "map-payload-event", exchangeType = ExchangeType.FANOUT, routingKey = "map-payload-event", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "userMap"
 })
-@Generated("jsonschema2pojo")
 public class MapPayloadEvent implements Serializable
 {
 
@@ -31,7 +31,7 @@ public class MapPayloadEvent implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public MapPayloadEvent() {
     }
