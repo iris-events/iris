@@ -2,9 +2,6 @@
 package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
-import javax.annotation.processing.Generated;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -14,15 +11,19 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
+import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 
 /**
  * Event With Required Properties
  * <p>
  * Required properties event.
- *
+ * 
  */
 @IrisGenerated
+@Generated("jsonschema2pojo")
 @Message(name = "event-with-required-properties", exchangeType = ExchangeType.FANOUT, routingKey = "event-with-required-properties", scope = Scope.FRONTEND, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -30,14 +31,13 @@ import id.global.iris.common.annotations.Scope;
     "state_id",
     "value"
 })
-@Generated("jsonschema2pojo")
 public class EventWithRequiredProperties implements Serializable
 {
 
     /**
      * Requirement to verify.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("requirement")
     @JsonPropertyDescription("Requirement to verify.")
@@ -47,7 +47,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Id of the state returned by Onboard Started event.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("state_id")
     @JsonPropertyDescription("Id of the state returned by Onboard Started event.")
@@ -56,7 +56,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Value of the requirement.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("value")
     @JsonPropertyDescription("Value of the requirement.")
@@ -66,13 +66,13 @@ public class EventWithRequiredProperties implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public EventWithRequiredProperties() {
     }
 
     /**
-     *
+     * 
      * @param stateId
      *     Id of the state returned by Onboard Started event.
      * @param requirement
@@ -90,7 +90,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Requirement to verify.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("requirement")
     public Requirement getRequirement() {
@@ -100,7 +100,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Requirement to verify.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("requirement")
     public void setRequirement(Requirement requirement) {
@@ -110,7 +110,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Id of the state returned by Onboard Started event.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("state_id")
     public String getStateId() {
@@ -120,7 +120,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Id of the state returned by Onboard Started event.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("state_id")
     public void setStateId(String stateId) {
@@ -130,7 +130,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Value of the requirement.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("value")
     public String getValue() {
@@ -140,7 +140,7 @@ public class EventWithRequiredProperties implements Serializable
     /**
      * Value of the requirement.
      * (Required)
-     *
+     * 
      */
     @JsonProperty("value")
     public void setValue(String value) {

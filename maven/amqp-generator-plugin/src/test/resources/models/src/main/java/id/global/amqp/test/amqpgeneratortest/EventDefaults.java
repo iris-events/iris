@@ -2,7 +2,6 @@
 package id.global.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
-import javax.annotation.processing.Generated;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -10,14 +9,15 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.Scope;
+import jakarta.annotation.Generated;
 
 @IrisGenerated
+@Generated("jsonschema2pojo")
 @Message(name = "event-defaults", exchangeType = ExchangeType.FANOUT, routingKey = "event-defaults", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id"
 })
-@Generated("jsonschema2pojo")
 public class EventDefaults implements Serializable
 {
 
@@ -27,7 +27,7 @@ public class EventDefaults implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public EventDefaults() {
     }

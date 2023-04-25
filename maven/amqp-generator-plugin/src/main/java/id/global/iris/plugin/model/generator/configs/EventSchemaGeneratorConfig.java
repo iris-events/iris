@@ -64,6 +64,14 @@ public class EventSchemaGeneratorConfig {
         public boolean isIncludeRequiredPropertiesConstructor() {
             return false;
         }
+
+        @Override public boolean isUseJakartaValidation() {
+            return true;
+        }
+
+        @Override public boolean isIncludeGeneratedAnnotation() {
+            return false;
+        }
     };
 
     public static final GenerationConfig classConfig = new DefaultGenerationConfig() {
@@ -124,6 +132,14 @@ public class EventSchemaGeneratorConfig {
 
         @Override
         public boolean isIncludeRequiredPropertiesConstructor() {
+            return false;
+        }
+
+        @Override public boolean isUseJakartaValidation() {
+            return true;
+        }
+
+        @Override public boolean isIncludeGeneratedAnnotation() {
             return false;
         }
     };
