@@ -140,7 +140,7 @@ public class DirectTestIT extends IsolatedEventContextTest {
 
     @Test
     @DisplayName("Message timestamp header should contain timestamp provided")
-    void testMessageTimestamo() throws ExecutionException, InterruptedException, TimeoutException {
+    void testMessageTimestamp() throws ExecutionException, InterruptedException, TimeoutException {
         long expectedTimestamp = 12345L;
         Mockito.when(timestampProvider.getCurrentTimestamp()).thenReturn(expectedTimestamp);
 
