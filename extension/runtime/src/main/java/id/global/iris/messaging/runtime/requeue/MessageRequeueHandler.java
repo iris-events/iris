@@ -10,6 +10,7 @@ import static id.global.iris.common.constants.MessagingHeaders.RequeueMessage.X_
 import static id.global.iris.common.constants.MessagingHeaders.RequeueMessage.X_NOTIFY_CLIENT;
 import static id.global.iris.common.constants.MessagingHeaders.RequeueMessage.X_ORIGINAL_EXCHANGE;
 import static id.global.iris.common.constants.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
+import static id.global.iris.common.constants.MessagingHeaders.RequeueMessage.X_ORIGINAL_QUEUE;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -73,10 +74,11 @@ public class MessageRequeueHandler {
         newHeaders.put(X_ERROR_MESSAGE, messagingException.getMessage());
         newHeaders.put(X_NOTIFY_CLIENT, shouldNotifyFrontend);
         newHeaders.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
+        final var queueName = queueNameProvider.getQueueName(irisContext);
+        newHeaders.put(X_ORIGINAL_QUEUE, queueName);
 
         final var deadLetterExchangeName = irisContext.getDeadLetterExchangeName();
         if (deadLetterExchangeName.isPresent()) {
-            final var queueName = queueNameProvider.getQueueName(irisContext);
             final var deadLetterRoutingKey = irisContext.getDeadLetterRoutingKey(queueName);
             newHeaders.put(X_DEAD_LETTER_EXCHANGE, deadLetterExchangeName.get());
             newHeaders.put(X_DEAD_LETTER_ROUTING_KEY, deadLetterRoutingKey);
