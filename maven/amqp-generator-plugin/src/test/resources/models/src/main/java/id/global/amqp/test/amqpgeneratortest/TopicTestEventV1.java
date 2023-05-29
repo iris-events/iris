@@ -6,10 +6,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import id.global.amqp.test.amqpgeneratortest.payload.User;
-import id.global.iris.common.annotations.ExchangeType;
-import id.global.iris.common.annotations.IrisGenerated;
-import id.global.iris.common.annotations.Message;
-import id.global.iris.common.annotations.Scope;
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.annotations.IrisGenerated;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.Scope;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 
@@ -36,7 +36,7 @@ public class TopicTestEventV1 implements Serializable
 
     /**
      * No args constructor for use in serialization
-     * 
+     *
      */
     public TopicTestEventV1() {
     }

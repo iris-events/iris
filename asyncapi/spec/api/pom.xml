@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>id.global.iris</groupId>
+        <groupId>org.iris-events</groupId>
         <artifactId>iris-asyncapi-parent</artifactId>
         <version>4.0.4-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>id.global.iris</groupId>
+            <groupId>org.iris-events</groupId>
             <artifactId>iris-common</artifactId>
         </dependency>
 

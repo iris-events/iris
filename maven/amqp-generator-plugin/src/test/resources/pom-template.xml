@@ -43,7 +43,7 @@
             <version>${version.globalid-common}</version>
         </dependency>
         <dependency>
-            <groupId>id.global.iris</groupId>
+            <groupId>org.iris-events</groupId>
             <artifactId>iris-common</artifactId>
             <version>${version.iris-common}</version>
         </dependency>

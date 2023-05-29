@@ -907,7 +907,7 @@
             "additionalProperties" : {
               "$ref" : "#/components/schemas/MapValue"
             },
-            "existingJavaType" : "java.util.Map<java.lang.String, id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp$MapValue>"
+            "existingJavaType" : "java.util.Map<java.lang.String, org.iris_events.asyncapi.runtime.scanner.app.EventHandlersApp$MapValue>"
           }
         },
         "additionalProperties" : {

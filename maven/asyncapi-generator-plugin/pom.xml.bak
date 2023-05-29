@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>iris-maven-parent</artifactId>
-        <groupId>id.global.iris</groupId>
+        <groupId>org.iris-events</groupId>
         <version>2.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -20,7 +20,7 @@
     <dependencies>
         <!-- Maven plugin stuff -->
         <dependency>
-            <groupId>id.global.iris</groupId>
+            <groupId>org.iris-events</groupId>
             <artifactId>iris-asyncapi</artifactId>
         </dependency>
         <dependency>

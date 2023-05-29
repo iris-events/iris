@@ -77,7 +77,7 @@
             "additionalProperties" : {
               "$ref" : "#/components/schemas/Foo"
             },
-            "existingJavaType" : "java.util.Map<java.lang.Integer, id.global.iris.asyncapi.runtime.scanner.app.EventHandlersAppWithMapProperty$Foo>"
+            "existingJavaType" : "java.util.Map<java.lang.Integer, org.iris_events.asyncapi.runtime.scanner.app.EventHandlersAppWithMapProperty$Foo>"
           }
         },
         "x-iris-generated" : false
