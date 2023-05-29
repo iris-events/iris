@@ -6,7 +6,7 @@ This repository contains some useful tools to be used for testing services using
 Include maven dependency in `test` scope as such:
 ```
 <dependency>
-    <groupId>id.global.iris</groupId>
+    <groupId>org.iris-events</groupId>
     <artifactId>iris-test</artifactId>
     <version>${version.iris}</version>
     <scope>test</scope>

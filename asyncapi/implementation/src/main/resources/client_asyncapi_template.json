@@ -4,7 +4,7 @@
     "version": "{VERSION}"
   },
   "asyncapi": "2.0.0",
-  "id": "urn:id:global:client-api",
+  "id": "urn:org:iris_events:client-api",
   "channels": {
   },
   "components": {

@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>id.global.iris</groupId>
+        <groupId>org.iris-events</groupId>
         <artifactId>iris-parent</artifactId>
-        <version>4.0.4-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

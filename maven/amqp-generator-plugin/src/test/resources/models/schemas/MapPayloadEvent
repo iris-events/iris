@@ -5,9 +5,9 @@
       "type" : "object",
       "additionalProperties" : {
         "type" : "object",
-        "javaType" : "id.global.amqp.test.amqpgeneratortest.payload.MapValue"
+        "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.MapValue"
       },
-      "existingJavaType" : "java.util.Map<java.lang.String, id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp$MapValue>"
+      "existingJavaType" : "java.util.Map<java.lang.String, app.scanner.runtime.asyncapi.org.iris_events.EventHandlersApp$MapValue>"
     }
   },
   "additionalProperties" : {

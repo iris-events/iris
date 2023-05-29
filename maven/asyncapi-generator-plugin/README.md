@@ -130,10 +130,10 @@ It's recommended to use the latest non-snapshot version of this plugin
 Asyncapi generator plugin also contains a UploadSchemaMojo dedicated for uploading your generated schema to the apicurio registry. The plugin is not project dependent and can be run as:
 - Latest version:
 ```shell
-mvn id.global.iris:asyncapi-schema-generator-maven-plugin:upload-schema -DschemaFilePath=/path/to/asyncapi.json -DregistryUrl=https://schema.tools.global.id/ -DartifactId=artifact-id -DartifactVersion=1.0.0-YOUR-VERSION
+mvn org.iris_events:asyncapi-schema-generator-maven-plugin:upload-schema -DschemaFilePath=/path/to/asyncapi.json -DregistryUrl=https://schema.tools.global.id/ -DartifactId=artifact-id -DartifactVersion=1.0.0-YOUR-VERSION
 
 ```
 - Specific version `3.1.6-SNAPSHOT` for instance:
 ```shell
-mvn id.global.iris:asyncapi-schema-generator-maven-plugin:3.1.6-SNAPSHOT:upload-schema -DschemaFilePath=/path/to/asyncapi.json -DregistryUrl=https://schema.tools.global.id/ -DartifactId=artifact-id -DartifactVersion=1.0.0-YOUR-VERSION
+mvn org.iris_events:asyncapi-schema-generator-maven-plugin:3.1.6-SNAPSHOT:upload-schema -DschemaFilePath=/path/to/asyncapi.json -DregistryUrl=https://schema.tools.global.id/ -DartifactId=artifact-id -DartifactVersion=1.0.0-YOUR-VERSION
 ```

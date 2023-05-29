@@ -21,7 +21,7 @@ Sample usage:
 
 ```xml
 <plugin>
-  <groupId>id.global.iris</groupId>
+  <groupId>org.iris-events</groupId>
   <artifactId>amqp-generator-maven-plugin</artifactId>
   <executions>
     <execution>
