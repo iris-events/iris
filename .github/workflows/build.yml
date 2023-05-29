@@ -10,10 +10,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: setup java
-        uses: globalid/github-actions/java-setup@main
+      - uses: actions/checkout@v3
+      - name: maven-settings-xml-action
+        uses: whelk-io/maven-settings-xml-action@v21
         with:
-          nexus-username: "${{ secrets.NEXUS_USERNAME }}"
-          nexus-password: "${{ secrets.NEXUS_PASSWORD }}"
+          repositories: '[{"id": "central","name": "Maven Central","url": "https://repo1.maven.org/maven2", "releases": {"enabled": "true"},"snapshots": {"enabled": "false"}}, { "id": "globalid", "name": "GlobalId repo", "url": "https://repository.internal.globalid.dev/repository/maven-internal-group/", "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
+          plugin_repositories: '[{"id": "central","name": "Maven Central","url": "https://repo1.maven.org/maven2", "releases": {"enabled": "true"},"snapshots": {"enabled": "false"}},{ "id": "globalid", "name": "GlobalId repo", "url": "https://repository.internal.globalid.dev/repository/maven-internal-group/", "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" }}]'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+          overwrite-settings: false
       - shell: sh
-        run: "mvn  deploy -Dci=${{ github.run_id }} -ntp"
+        run: "mvn verify -Dci=${{ github.run_id }} -ntp"
