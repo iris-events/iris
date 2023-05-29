@@ -3,18 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>id.global</groupId>
-        <artifactId>globalid-parent</artifactId>
-        <version>11</version>
-    </parent>
+
     <properties>
         <appName>APPLICATION_NAME</appName>
         <appVersion>APPLICATION_VERSION</appVersion>
         <groupId>PACKAGE_NAME</groupId>
-        <version.iris-common>4.0.2</version.iris-common>
-        <version.jandex-maven-plugin>3.0.5</version.jandex-maven-plugin>
-        <version.globalid-common>3.0.0</version.globalid-common>
+        <version.iris-common>5.0.0</version.iris-common>
+        <version.jandex-maven-plugin>3.1.1</version.jandex-maven-plugin>
         <version.jackson-annotations>2.14.2</version.jackson-annotations>
         <version.jackson-databind>2.14.2</version.jackson-databind>
         <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
@@ -38,12 +33,7 @@
             <version>${version.jackson-annotations}</version>
         </dependency>
         <dependency>
-            <groupId>id.global.common</groupId>
-            <artifactId>globalid-common</artifactId>
-            <version>${version.globalid-common}</version>
-        </dependency>
-        <dependency>
-            <groupId>id.global.iris</groupId>
+            <groupId>org.iris-events</groupId>
             <artifactId>iris-common</artifactId>
             <version>${version.iris-common}</version>
         </dependency>

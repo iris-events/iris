@@ -3,3 +3,6 @@ description: Iris is event driven architecture framework
 metadata:
   keywords:
     - quarkus-iris
+    - iris
+    - iris-events
+    - eda

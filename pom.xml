@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>id.global</groupId>
-        <artifactId>globalid-parent</artifactId>
-        <version>13</version>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>39</version>
         <relativePath />
     </parent>
-    <groupId>id.global.iris</groupId>
+    <groupId>org.iris-events</groupId>
     <artifactId>iris-parent</artifactId>
-    <version>4.0.4-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
@@ -19,10 +19,10 @@
         <module>asyncapi</module>
     </modules>
     <scm>
-        <connection>scm:git:git@github.com:globalid/iris.git</connection>
-        <developerConnection>scm:git:git@github.com:globalid/iris.git</developerConnection>
+        <connection>scm:git:git@github.com:iris-events/iris.git</connection>
+        <developerConnection>scm:git:git@github.com:iris-events/iris.git</developerConnection>
         <tag>HEAD</tag>
-        <url>https://github.com/globalid/iris</url>
+        <url>https://github.com/iris-events/iris</url>
     </scm>
     <!--
     sort poms
@@ -34,10 +34,10 @@
         <version.apicurio-data-models>1.1.27</version.apicurio-data-models>
         <version.apicurio-registry-client>2.4.1.Final</version.apicurio-registry-client>
         <version.commons-logging>1.2</version.commons-logging>
-        <version.globalid-common>3.0.0</version.globalid-common>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.14</version.httpclient>
         <version.jackson>2.14.2</version.jackson>
+        <version.jakarta.annotations>2.1.1</version.jakarta.annotations>
         <version.jandex>3.1.1</version.jandex>
         <version.jsonschema2pojo-core>1.2.1</version.jsonschema2pojo-core>
         <version.junit>5.9.2</version.junit>
@@ -47,19 +47,21 @@
         <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
         <version.maven-project>2.2.1</version.maven-project>
         <version.maven-resolver-api>1.9.4</version.maven-resolver-api>
-        <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
+        <version.maven-surefire-plugin>3.0.0</version.maven-surefire-plugin>
+        <version.plugin.plugin>3.8.2</version.plugin.plugin>
         <version.microprofile-config-api>3.0.2</version.microprofile-config-api>
         <version.mockito-core>5.3.0</version.mockito-core>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <!--<maven.compiler.release>17</maven.compiler.release>-->
-        <version.quarkus>3.0.0.Final</version.quarkus>
+        <version.quarkus>3.0.3.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.slf4j-api>2.0.6</version.slf4j-api>
         <version.victools>4.29.0</version.victools>
         <version.apicurio-codegen-quarkus-extension-deployment>1.0.14.Final</version.apicurio-codegen-quarkus-extension-deployment>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
     </properties>
 
     <dependencyManagement>
@@ -91,29 +93,30 @@
             </dependency>
 
             <dependency>
-                <groupId>id.global.common</groupId>
-                <artifactId>globalid-common</artifactId>
-                <version>${version.globalid-common}</version>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${version.jakarta.annotations}</version>
             </dependency>
+
             <dependency>
-                <groupId>id.global.iris</groupId>
+                <groupId>org.iris-events</groupId>
                 <artifactId>iris-asyncapi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>id.global.iris</groupId>
+                <groupId>org.iris-events</groupId>
                 <artifactId>iris-asyncapi-spec-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>id.global.iris</groupId>
+                <groupId>org.iris-events</groupId>
                 <artifactId>iris-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>id.global.iris</groupId>
+                <groupId>org.iris-events</groupId>
                 <artifactId>iris-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -155,11 +158,7 @@
                 <artifactId>microprofile-config-api</artifactId>
                 <version>${version.microprofile-config-api}</version>
             </dependency>
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jandex</artifactId>
-                <version>${version.jandex}</version>
-            </dependency>
+
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>jandex</artifactId>
@@ -209,5 +208,16 @@
 
         </dependencies>
     </dependencyManagement>
-
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/iris-events/iris</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/iris-events/iris</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

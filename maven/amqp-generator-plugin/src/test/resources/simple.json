@@ -5,7 +5,7 @@
     "version": "1.5.6-SNAPSHOT"
   },
   "asyncapi": "2.0.0",
-  "id": "urn:id:global:uphold",
+  "id": "urn:org:iris_events:uphold",
   "channels": {
     "uphold/PublishEvent": {
       "publish": {
