@@ -8,7 +8,7 @@ import io.quarkus.runtime.annotations.Recorder;
 @Recorder
 public class ConsumerInitRecorder {
     public void initConsumers(BeanContainer value) {
-        value.instance(ConsumerContainer.class).initConsumers();
-        value.instance(FrontendEventConsumer.class).initChannel();
+        value.beanInstance(ConsumerContainer.class).initConsumers();
+        value.beanInstance(FrontendEventConsumer.class).initChannel();
     }
 }

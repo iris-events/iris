@@ -1,6 +1,6 @@
 package org.iris_events.test.tooling.producer;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.EVENT_TYPE;
+import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,8 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 
 import org.iris_events.annotations.Message;
-import org.iris_events.common.constants.DeliveryMode;
-import org.iris_events.common.constants.Exchanges;
+import org.iris_events.common.DeliveryMode;
+import org.iris_events.common.Exchanges;
 import org.iris_events.runtime.channel.ChannelService;
 
 public abstract class AbstractTestFrontendProducer {

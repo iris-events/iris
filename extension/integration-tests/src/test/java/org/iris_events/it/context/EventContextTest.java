@@ -1,6 +1,6 @@
 package org.iris_events.it.context;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.SUBSCRIPTION_ID;
+import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;

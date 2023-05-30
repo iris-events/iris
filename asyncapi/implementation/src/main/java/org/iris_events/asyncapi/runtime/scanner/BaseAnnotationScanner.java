@@ -30,7 +30,7 @@ import org.iris_events.asyncapi.runtime.scanner.model.GidAaiHeaderItems;
 import org.iris_events.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Scope;
-import org.iris_events.common.constants.DeliveryMode;
+import org.iris_events.common.DeliveryMode;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;

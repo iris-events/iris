@@ -6,7 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.iris_events.annotations.ExchangeType;
-import org.iris_events.common.constants.Queues;
+import org.iris_events.common.Queues;
 import org.iris_events.context.IrisContext;
 
 @ApplicationScoped

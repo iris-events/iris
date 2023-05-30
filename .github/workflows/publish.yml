@@ -1,14 +1,15 @@
-name: Build & test
+name: Publish
 "on":
   push:
-    branches:
-      - '**'
     tags:
       - v*
   workflow_dispatch: null
 jobs:
-  test:
+  publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -16,7 +17,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
-          overwrite-settings: false
-      - shell: sh
-        run: "mvn -B verify -Dci=${{ github.run_id }} -ntp"
+
+      - name: Publish package
+        run: mvn --batch-mode deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

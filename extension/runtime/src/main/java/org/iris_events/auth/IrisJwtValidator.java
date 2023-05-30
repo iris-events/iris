@@ -1,6 +1,6 @@
 package org.iris_events.auth;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.JWT;
+import static org.iris_events.common.MessagingHeaders.Message.JWT;
 import static io.quarkus.security.identity.SecurityIdentity.USER_ATTRIBUTE;
 
 import java.util.Optional;

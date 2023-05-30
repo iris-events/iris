@@ -19,8 +19,8 @@ public class MethodHandleRecorder {
             IrisContext irisContext)
             throws NoSuchMethodException, IllegalAccessException, IOException {
 
-        Object eventHandlerInstance = beanContainer.instance(methodHandleContext.getHandlerClass());
-        beanContainer.instance(ConsumerContainer.class)
+        Object eventHandlerInstance = beanContainer.beanInstance(methodHandleContext.getHandlerClass());
+        beanContainer.beanInstance(ConsumerContainer.class)
                 .addConsumer(
                         createMethodHandle(methodHandleContext),
                         methodHandleContext,
@@ -31,8 +31,8 @@ public class MethodHandleRecorder {
     public void registerFrontendCallback(final BeanContainer beanContainer, MethodHandleContext methodHandleContext,
             IrisContext irisContext) throws NoSuchMethodException, IllegalAccessException, IOException {
 
-        Object eventHandlerInstance = beanContainer.instance(methodHandleContext.getHandlerClass());
-        beanContainer.instance(ConsumerContainer.class)
+        Object eventHandlerInstance = beanContainer.beanInstance(methodHandleContext.getHandlerClass());
+        beanContainer.beanInstance(ConsumerContainer.class)
                 .addFrontendCallback(createMethodHandle(methodHandleContext), methodHandleContext, irisContext,
                         eventHandlerInstance);
 

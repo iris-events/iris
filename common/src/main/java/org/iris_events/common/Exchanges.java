@@ -1,4 +1,4 @@
-package org.iris_events.common.constants;
+package org.iris_events.common;
 
 @SuppressWarnings("unused")
 public enum Exchanges {

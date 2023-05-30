@@ -1,9 +1,9 @@
 package org.iris_events.producer;
 
-import static org.iris_events.common.constants.Exchanges.BROADCAST;
-import static org.iris_events.common.constants.Exchanges.SESSION;
-import static org.iris_events.common.constants.Exchanges.SUBSCRIPTION;
-import static org.iris_events.common.constants.Exchanges.USER;
+import static org.iris_events.common.Exchanges.BROADCAST;
+import static org.iris_events.common.Exchanges.SESSION;
+import static org.iris_events.common.Exchanges.SUBSCRIPTION;
+import static org.iris_events.common.Exchanges.USER;
 
 import java.io.IOException;
 import java.util.LinkedList;

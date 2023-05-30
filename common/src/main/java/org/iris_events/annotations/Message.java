@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import jakarta.annotation.security.RolesAllowed;
 
-import org.iris_events.common.constants.Queues;
+import org.iris_events.common.Queues;
 
 /**
  * Iris producible event. Events annotated with this annotation should be used as a parameter in an Iris producer send method.

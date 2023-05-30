@@ -6,7 +6,7 @@ import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Recoverable;
 import com.rabbitmq.client.RecoveryListener;
-import org.iris_events.common.constants.Exchanges;
+import org.iris_events.common.Exchanges;
 import org.iris_events.runtime.InstanceInfoProvider;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.channel.ChannelService;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.iris_events.common.constants.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
+import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 @ApplicationScoped
 public class FrontendEventConsumer implements RecoveryListener {

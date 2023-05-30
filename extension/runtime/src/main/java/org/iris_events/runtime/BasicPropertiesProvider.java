@@ -1,15 +1,15 @@
 package org.iris_events.runtime;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.EVENT_TYPE;
-import static org.iris_events.common.constants.MessagingHeaders.Message.INSTANCE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.JWT;
-import static org.iris_events.common.constants.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.ROUTER;
-import static org.iris_events.common.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static org.iris_events.common.constants.MessagingHeaders.Message.SESSION_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.SUBSCRIPTION_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.USER_ID;
+import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
+import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.JWT;
+import static org.iris_events.common.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.ROUTER;
+import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static org.iris_events.common.MessagingHeaders.Message.SESSION_ID;
+import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
+import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ import jakarta.inject.Inject;
 import com.rabbitmq.client.AMQP;
 
 import org.iris_events.annotations.Scope;
-import org.iris_events.common.constants.DeliveryMode;
+import org.iris_events.common.DeliveryMode;
 import org.iris_events.context.EventAppContext;
 import org.iris_events.context.EventContext;
 import org.iris_events.producer.CorrelationIdProvider;

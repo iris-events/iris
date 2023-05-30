@@ -1,4 +1,4 @@
-package org.iris_events.common.error;
+package org.iris_events.common;
 
 public enum ErrorType {
     // security

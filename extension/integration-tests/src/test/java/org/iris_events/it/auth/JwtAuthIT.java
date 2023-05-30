@@ -32,8 +32,8 @@ import com.rabbitmq.client.BuiltinExchangeType;
 
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
-import org.iris_events.common.constants.Exchanges;
-import org.iris_events.common.constants.MessagingHeaders;
+import org.iris_events.common.Exchanges;
+import org.iris_events.common.MessagingHeaders;
 import org.iris_events.it.AbstractIntegrationTest;
 import org.iris_events.runtime.channel.ChannelService;
 import io.quarkus.test.junit.QuarkusTest;

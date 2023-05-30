@@ -8,7 +8,7 @@ import org.jboss.jandex.IndexView;
 
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.SnapshotMessageHandler;
-import org.iris_events.common.constants.HandlerDefaultParameter;
+import org.iris_events.common.HandlerDefaultParameter;
 import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 import org.iris_events.deployment.constants.AnnotationInstanceParams;
 import org.iris_events.deployment.validation.AnnotationInstanceValidator;

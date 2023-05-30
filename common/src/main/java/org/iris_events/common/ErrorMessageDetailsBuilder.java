@@ -1,10 +1,10 @@
-package org.iris_events.common.error;
+package org.iris_events.common;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.iris_events.common.constants.Exchanges;
-import org.iris_events.common.constants.MessagingHeaders;
+import org.iris_events.common.Exchanges;
+import org.iris_events.common.MessagingHeaders;
 
 public class ErrorMessageDetailsBuilder {
 

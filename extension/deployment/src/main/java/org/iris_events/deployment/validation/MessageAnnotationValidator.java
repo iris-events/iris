@@ -13,7 +13,7 @@ import org.jboss.jandex.IndexView;
 
 import org.iris_events.asyncapi.runtime.scanner.validator.ReservedIrisNamesProvider;
 import org.iris_events.annotations.ExchangeType;
-import org.iris_events.common.constants.Queues;
+import org.iris_events.common.Queues;
 import org.iris_events.deployment.MessageHandlerValidationException;
 import org.iris_events.deployment.constants.AnnotationInstanceParams;
 import org.iris_events.asyncapi.parsers.ExchangeTypeParser;

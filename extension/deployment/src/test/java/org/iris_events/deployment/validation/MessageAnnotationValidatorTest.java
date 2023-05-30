@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.iris_events.annotations.Message;
-import org.iris_events.common.constants.Queues;
+import org.iris_events.common.Queues;
 import org.iris_events.AbstractAnnotationInstanceValidatorTest;
 import org.iris_events.deployment.MessageHandlerValidationException;
 

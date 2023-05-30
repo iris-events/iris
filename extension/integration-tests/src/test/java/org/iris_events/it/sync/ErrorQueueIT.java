@@ -29,11 +29,11 @@ import com.rabbitmq.client.BuiltinExchangeType;
 
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
-import org.iris_events.common.constants.Exchanges;
-import org.iris_events.common.error.ErrorType;
-import org.iris_events.common.exception.BadPayloadException;
-import org.iris_events.common.exception.MessagingException;
-import org.iris_events.common.exception.ServerException;
+import org.iris_events.common.Exchanges;
+import org.iris_events.common.ErrorType;
+import org.iris_events.exception.BadPayloadException;
+import org.iris_events.exception.MessagingException;
+import org.iris_events.exception.ServerException;
 import org.iris_events.runtime.channel.ChannelService;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;

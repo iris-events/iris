@@ -1,11 +1,11 @@
 package org.iris_events.it.producer;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.EVENT_TYPE;
-import static org.iris_events.common.constants.MessagingHeaders.Message.INSTANCE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static org.iris_events.common.constants.MessagingHeaders.Message.USER_ID;
+import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
+import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
 import static org.iris_events.producer.EventProducer.SERVICE_ID_UNAVAILABLE_FALLBACK;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -35,8 +35,8 @@ import com.rabbitmq.client.Channel;
 
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.Scope;
-import org.iris_events.common.constants.DeliveryMode;
-import org.iris_events.common.constants.Exchanges;
+import org.iris_events.common.DeliveryMode;
+import org.iris_events.common.Exchanges;
 import org.iris_events.common.message.ResourceMessage;
 import org.iris_events.runtime.EventAppInfoProvider;
 import org.iris_events.runtime.InstanceInfoProvider;

@@ -15,13 +15,8 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-import org.iris_events.common.error.ErrorMessageDetailsBuilder;
-import org.iris_events.common.error.ErrorType;
-import org.iris_events.common.exception.BadPayloadException;
-import org.iris_events.common.exception.ClientException;
-import org.iris_events.common.exception.MessagingException;
-import org.iris_events.common.exception.SecurityException;
-import org.iris_events.common.exception.ServerException;
+import org.iris_events.common.ErrorMessageDetailsBuilder;
+import org.iris_events.common.ErrorType;
 import org.iris_events.common.message.ErrorMessage;
 import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.context.EventContext;
@@ -172,16 +167,16 @@ public class IrisExceptionHandler {
         final var cause = securityException.getCause();
 
         if (securityException instanceof AuthenticationFailedException) {
-            return new org.iris_events.common.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
+            return new org.iris_events.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
                     message,
                     cause);
         } else if (securityException instanceof ForbiddenException) {
-            return new org.iris_events.common.exception.ForbiddenException(FORBIDDEN_CLIENT_CODE, message, cause);
+            return new org.iris_events.exception.ForbiddenException(FORBIDDEN_CLIENT_CODE, message, cause);
         } else if (securityException instanceof UnauthorizedException) {
-            return new org.iris_events.common.exception.UnauthorizedException(UNAUTHORIZED_CLIENT_CODE, message, cause);
+            return new org.iris_events.exception.UnauthorizedException(UNAUTHORIZED_CLIENT_CODE, message, cause);
         }
 
-        return new org.iris_events.common.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
+        return new org.iris_events.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
                 message,
                 cause);
     }

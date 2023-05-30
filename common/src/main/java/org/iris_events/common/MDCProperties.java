@@ -1,4 +1,4 @@
-package org.iris_events.common.constants;
+package org.iris_events.common;
 
 public class MDCProperties {
     public static final String SESSION_ID = "sessionId";

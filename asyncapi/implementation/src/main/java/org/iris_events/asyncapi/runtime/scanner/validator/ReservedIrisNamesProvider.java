@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.iris_events.common.constants.Exchanges;
-import org.iris_events.common.constants.Queues;
+import org.iris_events.common.Exchanges;
+import org.iris_events.common.Queues;
 
 public class ReservedIrisNamesProvider {
     public static List<String> getReservedNames() {

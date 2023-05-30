@@ -15,7 +15,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
-import org.iris_events.common.constants.MessagingHeaders;
+import org.iris_events.common.MessagingHeaders;
 import org.iris_events.common.message.ErrorMessage;
 import org.iris_events.runtime.channel.ChannelService;
 

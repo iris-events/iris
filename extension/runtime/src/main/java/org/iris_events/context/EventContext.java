@@ -1,9 +1,9 @@
 package org.iris_events.context;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.SESSION_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.SUBSCRIPTION_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.USER_ID;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
+import static org.iris_events.common.MessagingHeaders.Message.SESSION_ID;
+import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
+import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
 
 import java.util.Collections;
 import java.util.HashMap;

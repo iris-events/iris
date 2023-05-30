@@ -1,8 +1,8 @@
 package org.iris_events.consumer;
 
-import static org.iris_events.common.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
-import static org.iris_events.common.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
-import static org.iris_events.common.constants.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
+import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
+import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
+import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -61,7 +61,7 @@ import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
 import org.iris_events.annotations.Scope;
 import org.iris_events.annotations.SnapshotMessageHandler;
-import org.iris_events.common.constants.HandlerDefaultParameter;
+import org.iris_events.common.HandlerDefaultParameter;
 import org.iris_events.asyncapi.parsers.BindingKeysParser;
 import org.iris_events.asyncapi.parsers.DeadLetterQueueParser;
 import org.iris_events.asyncapi.parsers.ExchangeParser;

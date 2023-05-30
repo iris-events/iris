@@ -35,9 +35,9 @@ import org.mockito.Mockito;
 
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
-import org.iris_events.common.constants.MessagingHeaders;
-import org.iris_events.common.error.ErrorType;
-import org.iris_events.common.exception.MessagingException;
+import org.iris_events.common.MessagingHeaders;
+import org.iris_events.common.ErrorType;
+import org.iris_events.exception.MessagingException;
 import org.iris_events.context.EventContext;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;

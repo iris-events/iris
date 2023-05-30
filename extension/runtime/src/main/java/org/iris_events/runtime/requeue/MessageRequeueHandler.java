@@ -1,16 +1,16 @@
 package org.iris_events.runtime.requeue;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static org.iris_events.common.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
-import static org.iris_events.common.constants.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_ERROR_CODE;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_ERROR_MESSAGE;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_ERROR_TYPE;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_MAX_RETRIES;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_NOTIFY_CLIENT;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_ORIGINAL_EXCHANGE;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
-import static org.iris_events.common.constants.MessagingHeaders.RequeueMessage.X_ORIGINAL_QUEUE;
+import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_EXCHANGE;
+import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_DEAD_LETTER_ROUTING_KEY;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ERROR_CODE;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ERROR_MESSAGE;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ERROR_TYPE;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_MAX_RETRIES;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_NOTIFY_CLIENT;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ORIGINAL_EXCHANGE;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ORIGINAL_QUEUE;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,9 +24,9 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-import org.iris_events.common.constants.Exchanges;
-import org.iris_events.common.constants.Queues;
-import org.iris_events.common.exception.MessagingException;
+import org.iris_events.common.Exchanges;
+import org.iris_events.common.Queues;
+import org.iris_events.exception.MessagingException;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.runtime.channel.ChannelService;

@@ -9,11 +9,11 @@ import io.quarkus.runtime.annotations.Recorder;
 @Recorder
 public class ProducerDefinedExchangesRecorder {
     public void init(BeanContainer beanContainer) {
-        beanContainer.instance(ProducedEventExchangeInitializer.class).initExchanges();
+        beanContainer.beanInstance(ProducedEventExchangeInitializer.class).initExchanges();
     }
 
     public void registerProducerDefinedExchange(final BeanContainer beanContainer, final String exchange, final ExchangeType exchangeType, final
             Scope scope) {
-        beanContainer.instance(ProducedEventExchangeInitializer.class).addProducerDefinedExchange(exchange, exchangeType, scope);
+        beanContainer.beanInstance(ProducedEventExchangeInitializer.class).addProducerDefinedExchange(exchange, exchangeType, scope);
     }
 }

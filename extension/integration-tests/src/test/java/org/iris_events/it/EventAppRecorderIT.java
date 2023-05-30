@@ -1,11 +1,11 @@
 package org.iris_events.it;
 
 import static org.iris_events.annotations.ExchangeType.DIRECT;
-import static org.iris_events.common.constants.MessagingHeaders.Message.CURRENT_SERVICE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.EVENT_TYPE;
-import static org.iris_events.common.constants.MessagingHeaders.Message.INSTANCE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.SERVER_TIMESTAMP;
+import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
+import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;

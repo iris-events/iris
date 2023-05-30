@@ -1,10 +1,10 @@
 package org.iris_events.consumer;
 
-import static org.iris_events.common.constants.MessagingHeaders.Message.CLIENT_TRACE_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.CORRELATION_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.EVENT_TYPE;
-import static org.iris_events.common.constants.MessagingHeaders.Message.SESSION_ID;
-import static org.iris_events.common.constants.MessagingHeaders.Message.USER_ID;
+import static org.iris_events.common.MessagingHeaders.Message.CLIENT_TRACE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.CORRELATION_ID;
+import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
+import static org.iris_events.common.MessagingHeaders.Message.SESSION_ID;
+import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
 
 import java.lang.invoke.MethodHandle;
 import java.security.Principal;
@@ -27,7 +27,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
 
-import org.iris_events.common.constants.MDCProperties;
+import org.iris_events.common.MDCProperties;
 import org.iris_events.context.EventContext;
 import org.iris_events.context.IrisContext;
 import org.iris_events.context.MethodHandleContext;

@@ -1,6 +1,6 @@
-package org.iris_events.common.exception;
+package org.iris_events.exception;
 
-import org.iris_events.common.error.ErrorType;
+import org.iris_events.common.ErrorType;
 
 public class ServerException extends MessagingException {
     private static final ErrorType ERROR_TYPE = ErrorType.INTERNAL_SERVER_ERROR;

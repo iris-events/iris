@@ -8,7 +8,7 @@ import java.util.StringJoiner;
 
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
-import org.iris_events.common.constants.Queues;
+import org.iris_events.common.Queues;
 
 public final class IrisContext {
 
