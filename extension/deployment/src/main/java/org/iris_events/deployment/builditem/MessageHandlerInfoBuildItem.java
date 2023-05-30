@@ -7,7 +7,6 @@ import java.util.StringJoiner;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
 import io.quarkus.builder.item.MultiBuildItem;
@@ -27,7 +26,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     private final int prefetchCount;
     private final long ttl;
     private final String deadLetterQueue;
-    private final Set<Role> rolesAllowed;
+    private final Set<String> rolesAllowed;
 
     public MessageHandlerInfoBuildItem(ClassInfo declaringClass,
             Type parameterType,
@@ -43,7 +42,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
             int prefetchCount,
             long ttl,
             String deadLetterQueue,
-            Set<Role> rolesAllowed) {
+            Set<String> rolesAllowed) {
         this.declaringClass = declaringClass;
         this.parameterType = parameterType;
         this.returnType = returnType;
@@ -117,7 +116,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
         return deadLetterQueue;
     }
 
-    public Set<Role> getRolesAllowed() {
+    public Set<String> getRolesAllowed() {
         return rolesAllowed;
     }
 
@@ -125,7 +124,7 @@ public final class MessageHandlerInfoBuildItem extends MultiBuildItem {
     public String toString() {
         final var rolesJoiner = new StringJoiner(", ", "[", "]");
         if (rolesAllowed != null) {
-            rolesAllowed.forEach(role -> rolesJoiner.add(role.value()));
+            rolesAllowed.forEach(rolesJoiner::add);
         }
         return "MessageHandlerInfoBuildItem{" +
                 "declaringClass=" + declaringClass +

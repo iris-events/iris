@@ -1,10 +1,8 @@
 package org.iris_events.asyncapi.runtime.scanner.model;
 
-import java.util.Set;
-
 import org.jboss.jandex.Type;
 
-import id.global.common.auth.jwt.Role;
+import java.util.Set;
 
 public class ChannelInfo {
 
@@ -12,14 +10,14 @@ public class ChannelInfo {
     private final ChannelBindingsInfo bindingsInfo;
     private final OperationBindingsInfo operationBindingsInfo;
     private final String operationType;
-    private final Set<Role> rolesAllowed;
+    private final Set<String> rolesAllowed;
     private final String deadLetterQueue;
     private final Integer ttl;
     private final Type responseType;
 
     public ChannelInfo(String eventKey, ChannelBindingsInfo bindingsInfo, OperationBindingsInfo operationBindingsInfo,
-            String operationType, Set<Role> rolesAllowed,
-            String deadLetterQueue, Integer ttl, Type responseType) {
+                       String operationType, Set<String> rolesAllowed,
+                       String deadLetterQueue, Integer ttl, Type responseType) {
         this.eventKey = eventKey;
         this.bindingsInfo = bindingsInfo;
         this.operationBindingsInfo = operationBindingsInfo;
@@ -46,7 +44,7 @@ public class ChannelInfo {
         return operationType;
     }
 
-    public Set<Role> getRolesAllowed() {
+    public Set<String> getRolesAllowed() {
         return rolesAllowed;
     }
 

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
 import org.iris_events.annotations.SnapshotMessageHandler;
@@ -67,7 +67,7 @@ class SnapshotMessageHandlerAnnotationScannerTest extends BaseIndexingTest {
         assertThat(messageHandlerInfoBuildItem.getDeadLetterQueue(), is("dead.dead-letter"));
         assertThat(messageHandlerInfoBuildItem.getRolesAllowed(), hasSize(1));
         final var role = messageHandlerInfoBuildItem.getRolesAllowed().iterator().next();
-        assertThat(role, is(Role.AUTHENTICATED));
+        assertThat(role, is("**"));
     }
 
     private List<MessageHandlerInfoBuildItem> scanService(Class<?>... classes) {
@@ -93,7 +93,7 @@ class SnapshotMessageHandlerAnnotationScannerTest extends BaseIndexingTest {
     @SuppressWarnings("unused")
     public static class SnapshotMessageHandlerService {
 
-        @SnapshotMessageHandler(resourceType = "apple-resource", rolesAllowed = { Role.AUTHENTICATED }, prefetchCount = 3)
+        @SnapshotMessageHandler(resourceType = "apple-resource", rolesAllowed = @RolesAllowed( "**" ), prefetchCount = 3)
         public void handleSnapshotApple(SnapshotRequested snapshotRequested) {
             System.out.println("Handling snapshotRequested");
         }

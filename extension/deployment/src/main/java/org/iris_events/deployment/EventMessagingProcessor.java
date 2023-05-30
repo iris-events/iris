@@ -251,7 +251,7 @@ class EventMessagingProcessor {
     @SuppressWarnings("unused")
     @BuildStep
     void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-        indexDependency.produce(new IndexDependencyBuildItem("id.global.common", "globalid-common"));
+        indexDependency.produce(new IndexDependencyBuildItem("jakarta.annotation", "jakarta.annotation-api"));
         indexDependency.produce(new IndexDependencyBuildItem("org.iris-events", "quarkus-iris"));
     }
 

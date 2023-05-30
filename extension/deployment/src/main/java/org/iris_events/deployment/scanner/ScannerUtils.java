@@ -12,7 +12,7 @@ public class ScannerUtils {
 
     public static AnnotationInstance getMessageAnnotation(final MethodInfo methodInfo, final IndexView index) {
         final var consumedClassInfo = getConsumedEventClassInfo(methodInfo, index);
-        final var annotationInstance = consumedClassInfo.classAnnotation(DOT_NAME_MESSAGE);
+        final var annotationInstance = consumedClassInfo.declaredAnnotation(DOT_NAME_MESSAGE);
 
         if (Objects.isNull(annotationInstance)) {
             throw new IllegalArgumentException(String.format("Consumed Event requires %s annotation for method %s in class %s.",

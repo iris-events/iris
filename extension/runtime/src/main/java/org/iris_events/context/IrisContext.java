@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
 import org.iris_events.common.constants.Queues;
@@ -25,7 +24,7 @@ public final class IrisContext {
     private int prefetch;
     private long ttl;
     private String deadLetterQueue;
-    private Set<Role> handlerRolesAllowed;
+    private Set<String> handlerRolesAllowed;
 
     public IrisContext() {
     }
@@ -40,7 +39,7 @@ public final class IrisContext {
             int prefetch,
             long ttl,
             String deadLetterQueue,
-            Set<Role> handlerRolesAllowed) {
+            Set<String> handlerRolesAllowed) {
         this.name = name;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -176,11 +175,11 @@ public final class IrisContext {
         this.deadLetterQueue = deadLetterQueue.trim();
     }
 
-    public Set<Role> getHandlerRolesAllowed() {
+    public Set<String> getHandlerRolesAllowed() {
         return handlerRolesAllowed;
     }
 
-    public void setHandlerRolesAllowed(final Set<Role> handlerRolesAllowed) {
+    public void setHandlerRolesAllowed(final Set<String> handlerRolesAllowed) {
         this.handlerRolesAllowed = handlerRolesAllowed;
     }
 
@@ -214,7 +213,7 @@ public final class IrisContext {
     public String toString() {
         final var handlerRolesJoiner = new StringJoiner(", ", "[", "]");
         if (handlerRolesAllowed != null) {
-            handlerRolesAllowed.forEach(role -> handlerRolesJoiner.add(role.value()));
+            handlerRolesAllowed.forEach(handlerRolesJoiner::add);
         }
         return "IrisContext[" +
                 "name=" + name + ", " +

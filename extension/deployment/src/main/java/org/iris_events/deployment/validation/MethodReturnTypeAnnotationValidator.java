@@ -38,7 +38,7 @@ public class MethodReturnTypeAnnotationValidator implements AnnotationInstanceVa
         }
 
         final var classInfo = index.getClassByName(returnType.name());
-        final var annotation = classInfo.classAnnotation(DOT_NAME_PRODUCED_EVENT);
+        final var annotation = classInfo.declaredAnnotation(DOT_NAME_PRODUCED_EVENT);
         if (annotation == null) {
             throw new MessageHandlerValidationException(
                     String.format(

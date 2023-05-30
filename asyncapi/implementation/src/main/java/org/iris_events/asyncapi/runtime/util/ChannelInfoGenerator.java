@@ -7,7 +7,6 @@ import org.iris_events.asyncapi.runtime.scanner.model.ChannelInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.OperationBindingsInfo;
 import org.jboss.jandex.Type;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.asyncapi.runtime.io.channel.operation.OperationConstant;
 import org.iris_events.annotations.ExchangeType;
 
@@ -18,7 +17,7 @@ public class ChannelInfoGenerator {
             final String bindingKeysCsv,
             final String eventClassSimpleName,
             final ExchangeType exchangeType,
-            final Set<Role> rolesAllowed,
+            final Set<String> rolesAllowed,
             final String deadLetterQueue,
             final Integer ttl,
             final boolean persistent) {
@@ -36,7 +35,7 @@ public class ChannelInfoGenerator {
             final ExchangeType exchangeType,
             final boolean durable,
             final boolean autodelete,
-            final Set<Role> rolesAllowed,
+            final Set<String> rolesAllowed,
             final String deadLetterQueue,
             final Integer ttl,
             final Type responseType,

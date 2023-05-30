@@ -435,7 +435,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
                 .map(Type::name)
                 .map(index::getClassByName)
                 .filter(Objects::nonNull)
-                .map(classInfo -> classInfo.classAnnotation(DOT_NAME_MESSAGE))
+                .map(classInfo -> classInfo.declaredAnnotation(DOT_NAME_MESSAGE))
                 .filter(Objects::nonNull).toList();
 
         if (consumedEventTypes.isEmpty()) {

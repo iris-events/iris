@@ -7,13 +7,13 @@ import static org.iris_events.annotations.ExchangeType.TOPIC;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.iris_events.asyncapi.runtime.scanner.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.asyncapi.spec.annotations.media.Schema;
 import org.iris_events.asyncapi.spec.annotations.media.SchemaProperty;
 import org.iris_events.annotations.IrisGenerated;
@@ -42,7 +42,7 @@ public class EventHandlersApp {
     }
 
     @SuppressWarnings("unused")
-    @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = { Role.ADMIN_REWARD, Role.AUTHENTICATED })
+    @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = @RolesAllowed({"admin.reward", "**"}) )
     public void handleEventV1(TestEventV1 event) {
         LOG.info("Handle event: " + event);
     }
@@ -107,7 +107,7 @@ public class EventHandlersApp {
         LOG.info("Handle snapshot requested event: " + snapshotRequested);
     }
 
-    @SnapshotMessageHandler(resourceType = "inventory", rolesAllowed = { Role.ADMIN_REWARD, Role.ADMIN_MERCHANT })
+    @SnapshotMessageHandler(resourceType = "inventory", rolesAllowed = @RolesAllowed({ "admin.reward", "admin.merchant" }))
     public void handleSnapshotRequestedWithRoles(SnapshotRequested snapshotRequested) {
         LOG.info("Handle snapshot requested event: " + snapshotRequested);
     }
@@ -134,8 +134,8 @@ public class EventHandlersApp {
                                             User user) {
     }
 
-    @Message(name = "namespace/test-event-v1", exchangeType = DIRECT, rolesAllowed = { Role.ADMIN_REWARD,
-            Role.ADMIN_MERCHANT }, persistent = true)
+    @Message(name = "namespace/test-event-v1", exchangeType = DIRECT, rolesAllowed = @RolesAllowed({ "admin.award",
+            "admin.merchant" }), persistent = true)
     public record TestEventV1(int id, String status, User user) {
     }
 

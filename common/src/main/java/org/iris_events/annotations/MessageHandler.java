@@ -1,12 +1,12 @@
 package org.iris_events.annotations;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import id.global.common.auth.jwt.Role;
 
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -51,7 +51,7 @@ public @interface MessageHandler {
     /**
      * Defines allowed roles to use this event handler
      */
-    Role[] rolesAllowed() default {};
+    RolesAllowed rolesAllowed() default @RolesAllowed({});
 
     /**
      * Defines consumer per service instance, in case there are multiple replicas / pods of same service running

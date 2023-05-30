@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 
@@ -24,6 +25,7 @@ public class BaseIndexingTest {
         }
         index(indexer, pathOf(Message.class));
         index(indexer, pathOf(MessageHandler.class));
+        index(indexer, pathOf(RolesAllowed.class));
         index(indexer, pathOf(SnapshotMessageHandler.class));
         index(indexer, pathOf(IrisGenerated.class));
         index(indexer, pathOf(Scope.class));
@@ -42,6 +44,7 @@ public class BaseIndexingTest {
         index(indexer, pathOf(Message.class));
         index(indexer, pathOf(MessageHandler.class));
         index(indexer, pathOf(IrisGenerated.class));
+        index(indexer, pathOf(RolesAllowed.class));
 
         return indexer.complete();
     }

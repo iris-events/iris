@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.iris_events.asyncapi.runtime.scanner.app.EventHandlersApp;
 import org.iris_events.asyncapi.runtime.scanner.app.EventHandlersAppWithMapProperty;
 import org.iris_events.asyncapi.runtime.scanner.app.ParseErrorEventHandlersApp;
@@ -57,7 +58,8 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
         Index index = indexOf(ParseErrorEventHandlersApp.class,
                 ParseErrorEventHandlersApp.EventWithDescribedEnum.class,
                 MessageHandler.class,
-                Message.class);
+                Message.class,
+                RolesAllowed.class);
 
         IrisAnnotationScanner scanner = new IrisAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
                 projectVersion);
@@ -78,7 +80,7 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
         Index index = indexOf(EventHandlersAppWithMapProperty.class,
                 EventHandlersAppWithMapProperty.EventWithMapValue.class,
                 MessageHandler.class,
-                Message.class);
+                Message.class, RolesAllowed.class);
 
         IrisAnnotationScanner scanner = new IrisAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
                 projectVersion);
@@ -107,6 +109,7 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
                 SnapshotRequested.class,
                 MessageHandler.class,
                 SnapshotMessageHandler.class,
-                Message.class);
+                Message.class,
+                RolesAllowed.class);
     }
 }

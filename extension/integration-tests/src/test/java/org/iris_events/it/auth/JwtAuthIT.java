@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -29,7 +30,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
 import org.iris_events.common.constants.Exchanges;
@@ -168,7 +168,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
             jwtSubCompletableFuture.complete(jsonWebToken.getSubject());
         }
 
-        @MessageHandler(rolesAllowed = { Role.GROUP_OWNER })
+        @MessageHandler(rolesAllowed = @RolesAllowed( "group.owner" ))
         public void handle(JwtRoleSecuredHandlerMessage message) {
             jwtSubCompletableFuture.complete(jsonWebToken.getSubject());
         }

@@ -6,13 +6,13 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import id.global.amqp.test.amqpgeneratortest.payload.MapValue;
+import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.Scope;
-import jakarta.annotation.Generated;
-import jakarta.validation.Valid;
+import org.iris_id.global.amqp.test.amqpgeneratortest.payload.MapValue;
 
 @IrisGenerated
 @Generated("jsonschema2pojo")
@@ -27,7 +27,7 @@ public class MapPayloadEvent implements Serializable
     @JsonProperty("userMap")
     @Valid
     private Map<String, MapValue> userMap;
-    private final static long serialVersionUID = 8756106189215751014L;
+    private final static long serialVersionUID = 3470087959575808259L;
 
     /**
      * No args constructor for use in serialization

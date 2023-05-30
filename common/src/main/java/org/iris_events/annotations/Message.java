@@ -5,8 +5,8 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import jakarta.annotation.security.RolesAllowed;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.common.constants.Queues;
 
 /**
@@ -38,9 +38,9 @@ public @interface Message {
     String routingKey() default "";
 
     /**
-     * Defines allowed roles to produce this event
+     * Defines allowed roles to produce this event, by default everything is allowed
      */
-    Role[] rolesAllowed() default {};
+    RolesAllowed rolesAllowed() default @RolesAllowed({});
 
     /**
      * Whether the event is an internal system event or an external communication event

@@ -13,7 +13,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import id.global.common.auth.jwt.Role;
 import org.iris_events.context.EventContext;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
@@ -37,7 +36,7 @@ public class IrisJwtValidator {
         this.parser = parser;
     }
 
-    public SecurityIdentity authenticate(Set<Role> rolesAllowed) {
+    public SecurityIdentity authenticate(Set<String> rolesAllowed) {
         final var optionalToken = getToken();
         if (optionalToken.isPresent()) {
             final var token = optionalToken.get();
@@ -54,13 +53,12 @@ public class IrisJwtValidator {
         throw new UnauthorizedException("Client is not authorized");
     }
 
-    private void checkRolesAllowed(final SecurityIdentity securityIdentity, final Set<Role> rolesAllowed) {
+    private void checkRolesAllowed(final SecurityIdentity securityIdentity, final Set<String> rolesAllowed) {
         if (rolesAllowed.isEmpty()) {
             return;
         }
 
         final var isAnyRoleAllowed = rolesAllowed.stream()
-                .map(Role::value)
                 .anyMatch(role -> securityIdentity.hasRole(role) || "**".equals(role));
 
         if (!isAnyRoleAllowed) {
