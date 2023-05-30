@@ -16,7 +16,7 @@ public class AmqpGeneratorPluginTest extends AbstractMojoTestCase {
     private static final ArtifactSource ARTIFACT_SOURCE = ArtifactSource.FILE;
     private static final String PACKAGE_NAME = "id.global.iris.models";
     private static final String MODEL_VERSION = "2.0.0";
-    private static final String URL = "https://schema.internal.globalid.dev";
+    private static final String URL = "https://schema.tools.global.id";
 
     @Override
     protected void setUp() throws Exception {
