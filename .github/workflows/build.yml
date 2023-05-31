@@ -17,6 +17,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-          overwrite-settings: false
+          #overwrite-settings: false
       - shell: sh
-        run: "mvn -B deploy -ntp"
+        run: mvn --batch-mode deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
