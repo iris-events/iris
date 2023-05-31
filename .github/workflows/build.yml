@@ -19,4 +19,4 @@ jobs:
           cache: maven
           overwrite-settings: false
       - shell: sh
-        run: "mvn -B verify -Dci=${{ github.run_id }} -ntp"
+        run: "mvn -B deploy -ntp"
