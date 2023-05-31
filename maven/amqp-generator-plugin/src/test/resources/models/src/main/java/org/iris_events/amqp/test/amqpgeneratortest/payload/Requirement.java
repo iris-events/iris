@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpgeneratortest.payload;
+package org.iris_events.amqp.test.amqpgeneratortest.payload;
 
 import java.util.HashMap;
 import java.util.Map;

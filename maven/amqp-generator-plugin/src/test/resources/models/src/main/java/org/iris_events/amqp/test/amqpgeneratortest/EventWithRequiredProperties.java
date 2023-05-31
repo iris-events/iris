@@ -1,15 +1,15 @@
 
-package id.global.amqp.test.amqpgeneratortest;
+package org.iris_events.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import id.global.amqp.test.amqpgeneratortest.payload.Requirement;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.iris_events.amqp.test.amqpgeneratortest.payload.Requirement;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
@@ -62,7 +62,7 @@ public class EventWithRequiredProperties implements Serializable
     @JsonPropertyDescription("Value of the requirement.")
     @NotNull
     private String value;
-    private final static long serialVersionUID = 7029086880915866375L;
+    private final static long serialVersionUID = 8080488746801462557L;
 
     /**
      * No args constructor for use in serialization

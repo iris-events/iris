@@ -31,7 +31,7 @@ public class AsyncapiMergeMojo extends AbstractMojo {
     @Parameter(property = "apicurioUrl")
     String apicurioUrl;
 
-    @Parameter(property = "artifactGroup", defaultValue = "id.global.iris.events")
+    @Parameter(property = "artifactGroup", defaultValue = "org.iris_events.events")
     String artifactGroup;
 
     @Parameter(property = "clientArtifactId", defaultValue = "globalid-client-api")

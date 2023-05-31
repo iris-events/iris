@@ -5,7 +5,7 @@
       "type" : "array",
       "items" : {
         "type" : "object",
-        "javaType" : "id.global.amqp.test.amqpgeneratortest.payload.User"
+        "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User"
       }
     }
   },

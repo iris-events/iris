@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpgeneratortest.payload;
+package org.iris_events.amqp.test.amqpgeneratortest.payload;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -27,7 +27,7 @@ public class MapValue implements Serializable
     @JsonIgnore
     @Valid
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
-    private final static long serialVersionUID = -6847946449674788863L;
+    private final static long serialVersionUID = 9137892438800917873L;
 
     /**
      * No args constructor for use in serialization

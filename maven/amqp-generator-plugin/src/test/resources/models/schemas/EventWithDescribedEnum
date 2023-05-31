@@ -4,7 +4,7 @@
     "type" : {
       "description" : "Requirement to verify.",
       "type" : "object",
-      "javaType" : "id.global.iris.directorymodels.payload.TestType"
+      "javaType" : "org.iris_events.testmodels.payload.TestType"
     }
   },
   "x-iris-generated" : false

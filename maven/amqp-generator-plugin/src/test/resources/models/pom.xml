@@ -13,7 +13,7 @@
     </properties>
 
 
-    <groupId>id.global.amqp</groupId>
+    <groupId>org.iris_events.amqp</groupId>
     <artifactId>${appName}-models</artifactId>
     <version>${appVersion}</version>
     <name>Models for ${appName}</name>

@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpgeneratortest;
+package org.iris_events.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,26 +13,26 @@ import org.iris_events.annotations.Scope;
 
 @IrisGenerated
 @Generated("jsonschema2pojo")
-@Message(name = "passthrough-outbound-event", exchangeType = ExchangeType.FANOUT, routingKey = "passthrough-outbound-event", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
+@Message(name = "produced-event", exchangeType = ExchangeType.FANOUT, routingKey = "produced-event", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id"
 })
-public class PassthroughOutboundEvent implements Serializable
+public class ProducedEvent implements Serializable
 {
 
     @JsonProperty("id")
     private int id;
-    private final static long serialVersionUID = -717248270109992202L;
+    private final static long serialVersionUID = 4483030383605280143L;
 
     /**
      * No args constructor for use in serialization
      *
      */
-    public PassthroughOutboundEvent() {
+    public ProducedEvent() {
     }
 
-    public PassthroughOutboundEvent(int id) {
+    public ProducedEvent(int id) {
         super();
         this.id = id;
     }
@@ -50,7 +50,7 @@ public class PassthroughOutboundEvent implements Serializable
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(PassthroughOutboundEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(ProducedEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("id");
         sb.append('=');
         sb.append(this.id);
@@ -75,10 +75,10 @@ public class PassthroughOutboundEvent implements Serializable
         if (other == this) {
             return true;
         }
-        if ((other instanceof PassthroughOutboundEvent) == false) {
+        if ((other instanceof ProducedEvent) == false) {
             return false;
         }
-        PassthroughOutboundEvent rhs = ((PassthroughOutboundEvent) other);
+        ProducedEvent rhs = ((ProducedEvent) other);
         return (this.id == rhs.id);
     }
 

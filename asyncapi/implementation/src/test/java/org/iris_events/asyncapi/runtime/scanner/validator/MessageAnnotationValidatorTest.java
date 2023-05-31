@@ -29,7 +29,7 @@ import org.iris_events.annotations.MessageHandler;
 class MessageAnnotationValidatorTest {
 
     public static final String TEST_PROJECT_NAME = "testProjectName";
-    public static final String TEST_GROUP_ID = "id.global.iris";
+    public static final String TEST_GROUP_ID = "org.iris_events.events";
     public static final List<String> RESERVED_NAMES = ReservedIrisNamesProvider.getReservedNames();
 
     @Test

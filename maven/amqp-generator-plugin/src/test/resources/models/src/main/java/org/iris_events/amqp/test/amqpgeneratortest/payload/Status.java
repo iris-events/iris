@@ -1,25 +1,26 @@
 
-package id.global.amqp.test.amqpgeneratortest.payload;
+package org.iris_events.amqp.test.amqpgeneratortest.payload;
 
 import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum TestType {
+public enum Status {
 
-    FOO("FOO"),
-    BAR("BAR");
+    DORMANT("dormant"),
+    LIVE("live"),
+    DEAD("dead");
     private final String value;
-    private final static Map<String, TestType> CONSTANTS = new HashMap<String, TestType>();
+    private final static Map<String, Status> CONSTANTS = new HashMap<String, Status>();
 
     static {
-        for (TestType c: values()) {
+        for (Status c: values()) {
             CONSTANTS.put(c.value, c);
         }
     }
 
-    TestType(String value) {
+    Status(String value) {
         this.value = value;
     }
 
@@ -34,8 +35,8 @@ public enum TestType {
     }
 
     @JsonCreator
-    public static TestType fromValue(String value) {
-        TestType constant = CONSTANTS.get(value);
+    public static Status fromValue(String value) {
+        Status constant = CONSTANTS.get(value);
         if (constant == null) {
             throw new IllegalArgumentException(value);
         } else {

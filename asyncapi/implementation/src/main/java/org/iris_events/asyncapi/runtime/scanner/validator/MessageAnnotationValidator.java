@@ -1,5 +1,6 @@
 package org.iris_events.asyncapi.runtime.scanner.validator;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -14,8 +15,10 @@ import org.iris_events.asyncapi.parsers.ExchangeParser;
 import org.iris_events.asyncapi.parsers.RoutingKeyParser;
 
 public class MessageAnnotationValidator {
-    private final List<String> SERVICES_TO_IGNORE_RESERVED = List.of("id.global.iris.iris-subscription",
-            "id.global.iris.iris-manager");
+
+    // TODO: opensource - make it configurable
+    private final List<String> SERVICES_TO_IGNORE_RESERVED = List.of("org.iris_events.events.iris-subscription",
+            "org.iris_events.events.iris-manager");
 
     public void validateReservedNames(List<AnnotationInstance> messageAnnotations, String projectName, String projectGroupId) {
         validateIsMessageAnnotations(messageAnnotations);

@@ -98,11 +98,11 @@ class ApicurioClientTest {
     @Test
     void getArtifactsInGroup() {
         when(apicurioClientMock.listArtifactsInGroup(any())).thenReturn(new ArtifactSearchResults());
-        client.getArtifactsInGroup("id.global.test.test");
+        client.getArtifactsInGroup("org.iris_events.test.test");
         final var groupIdCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(apicurioClientMock).listArtifactsInGroup(groupIdCaptor.capture());
-        assertThat(groupIdCaptor.getValue(), is("id.global.test.test"));
+        assertThat(groupIdCaptor.getValue(), is("org.iris_events.test.test"));
     }
 
     @Test
@@ -124,7 +124,7 @@ class ApicurioClientTest {
     void getLatestArtifact() throws IOException {
         String emptyArtifact = "{}";
         when(apicurioClientMock.getLatestArtifact(any(), any())).thenReturn(new ByteArrayInputStream(emptyArtifact.getBytes()));
-        String groupId = "id.global.test";
+        String groupId = "org.iris_events.test";
         String artifactId = "test-artifact-id";
         final var latestClientArtifact = client.getLatestArtifact(groupId, artifactId);
 
@@ -141,7 +141,7 @@ class ApicurioClientTest {
         when(apicurioClientMock.searchArtifacts(any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(
                 new ArtifactSearchResults());
 
-        String groupId = "id.global.test.test";
+        String groupId = "org.iris_events.test.test";
         String artifactName = "artifactName";
         String description = "Description of artifact";
 
@@ -175,7 +175,7 @@ class ApicurioClientTest {
     void listArtifactVersions() {
         when(apicurioClientMock.listArtifactVersions(any(), any(), any(), any())).thenReturn(new VersionSearchResults());
 
-        String groupId = "id.global.test.test";
+        String groupId = "org.iris_events.test.test";
         String artifactName = "artifactName";
 
         client.listArtifactVersions(groupId, artifactName);

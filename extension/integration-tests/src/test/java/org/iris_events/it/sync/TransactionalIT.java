@@ -50,7 +50,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
     }
 
     @Test
-    @DisplayName("id.global.event.messaging.runtime.producer.Message send")
+    @DisplayName("org.iris_events.event.messaging.runtime.producer.Message send")
     void testThroughServiceTransactionSuccessful() {
         service.sendTransactional(false);
 
@@ -68,7 +68,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
     }
 
     @Test
-    @DisplayName("id.global.event.messaging.runtime.producer.Message send in rolled back should not reach handler service")
+    @DisplayName("org.iris_events.event.messaging.runtime.producer.Message send in rolled back should not reach handler service")
     void testTransactionRollback() {
         assertThrows(RuntimeException.class, () -> service.sendTransactional(true));
         assertThat(service.getHandledEventCount(), is(0));

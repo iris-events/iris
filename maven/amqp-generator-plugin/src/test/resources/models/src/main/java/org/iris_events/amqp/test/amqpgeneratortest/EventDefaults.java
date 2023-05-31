@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpgeneratortest;
+package org.iris_events.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,7 +23,7 @@ public class EventDefaults implements Serializable
 
     @JsonProperty("id")
     private int id;
-    private final static long serialVersionUID = -4370213701096544325L;
+    private final static long serialVersionUID = -6843815194443347704L;
 
     /**
      * No args constructor for use in serialization

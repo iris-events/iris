@@ -1,5 +1,5 @@
 
-package id.global.amqp.test.amqpgeneratortest;
+package org.iris_events.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -12,7 +12,7 @@ import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.Scope;
-import org.iris_id.global.amqp.test.amqpgeneratortest.payload.MapValue;
+import org.iris_org.iris_events.amqp.test.amqpgeneratortest.payload.MapValue;
 
 @IrisGenerated
 @Generated("jsonschema2pojo")
@@ -27,7 +27,7 @@ public class MapPayloadEvent implements Serializable
     @JsonProperty("userMap")
     @Valid
     private Map<String, MapValue> userMap;
-    private final static long serialVersionUID = 3470087959575808259L;
+    private final static long serialVersionUID = -2093898666212308889L;
 
     /**
      * No args constructor for use in serialization

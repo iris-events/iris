@@ -14,9 +14,9 @@ public class AmqpGeneratorPluginTest extends AbstractMojoTestCase {
     private static final String ASYNC_API_DIRECTORY = "src,test,resources";
     private static final String MODEL_NAME = "test-models";
     private static final ArtifactSource ARTIFACT_SOURCE = ArtifactSource.FILE;
-    private static final String PACKAGE_NAME = "id.global.iris.models";
+    private static final String PACKAGE_NAME = "org.iris_events.models";
     private static final String MODEL_VERSION = "2.0.0";
-    private static final String URL = "https://schema.tools.global.id";
+    private static final String URL = "https://schema.tools.iris_events.org";
 
     @Override
     protected void setUp() throws Exception {

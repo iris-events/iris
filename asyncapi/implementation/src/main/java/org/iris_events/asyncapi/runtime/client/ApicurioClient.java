@@ -23,9 +23,9 @@ import io.apicurio.registry.types.ArtifactType;
 
 public class ApicurioClient {
     public static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
-    public static final String GROUP_ID = "id.global.iris.events";
-    public static final String GROUP_ID_CLIENT = "id.global.iris.client.events";
-    public static final String GROUP_ID_SNAPSHOTS = "id.global.iris.snapshot.events";
+    public static final String GROUP_ID = "org.iris_events.events";
+    public static final String GROUP_ID_CLIENT = "org.iris_events.client.events";
+    public static final String GROUP_ID_SNAPSHOTS = "org.iris_events.snapshot.events";
 
     private static final String SNAPSHOT = "SNAPSHOT";
     private static final String ALPHA = "-alpha-";

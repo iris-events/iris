@@ -31,7 +31,7 @@ import org.iris_events.plugin.model.generator.utils.SchemaFileGenerator;
 
 class AmqpGeneratorTest {
 
-    private static final String PACKAGE_NAME = "id.global.amqp.test";
+    private static final String PACKAGE_NAME = "org.iris_events.amqp.test";
     private static final String MODEL_VERSION = "0.1";
     private static final String MODEL_NAME = "amqpGeneratorTest";
     private static final String ASYNCAPI_FILENAME = "asyncapi.json";
@@ -42,7 +42,7 @@ class AmqpGeneratorTest {
 
     @SuppressWarnings("unused")
     private static Stream<Arguments> generate() {
-        final var testModelPath = "models/src/main/java/id/global/amqp/test/amqpgeneratortest";
+        final var testModelPath = "models/src/main/java/org/iris_events/amqp/test/amqpgeneratortest";
         return Stream.of(
                 Arguments.of(new GenerateArguments("models", true)),
                 Arguments.of(new GenerateArguments("models/src/main/java", true)),

@@ -4,7 +4,7 @@
     "version": "1.0.0"
   },
   "asyncapi": "2.0.0",
-  "id": "urn:id:global:EventHandlersApp",
+  "id": "urn:org:iris_events:EventHandlersApp",
   "channels": {
     "test-event-v1/default-test-event-v1": {
       "publish": {

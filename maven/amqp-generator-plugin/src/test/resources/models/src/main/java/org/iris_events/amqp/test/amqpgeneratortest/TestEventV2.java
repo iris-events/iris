@@ -1,14 +1,14 @@
 
-package id.global.amqp.test.amqpgeneratortest;
+package org.iris_events.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import id.global.amqp.test.amqpgeneratortest.payload.User;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
+import org.iris_events.amqp.test.amqpgeneratortest.payload.User;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
@@ -43,7 +43,7 @@ public class TestEventV2 implements Serializable
     @JsonProperty("user")
     @Valid
     private User user;
-    private final static long serialVersionUID = -3526316194561439139L;
+    private final static long serialVersionUID = -3159021510011399269L;
 
     /**
      * No args constructor for use in serialization

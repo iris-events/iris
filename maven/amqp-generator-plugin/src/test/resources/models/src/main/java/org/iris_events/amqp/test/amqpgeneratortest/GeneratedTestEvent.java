@@ -1,40 +1,43 @@
 
-package id.global.amqp.test.amqpgeneratortest;
+package org.iris_events.amqp.test.amqpgeneratortest;
 
 import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.annotation.Generated;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.Scope;
 
 @IrisGenerated
-@Generated("jsonschema2pojo")
-@Message(name = "produced-event", exchangeType = ExchangeType.FANOUT, routingKey = "produced-event", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
+@Message(name = "test-generated-exchange", exchangeType = ExchangeType.TOPIC, routingKey = "test-generated-exchange", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "id"
+    "id",
+    "status"
 })
-public class ProducedEvent implements Serializable
+@Generated("jsonschema2pojo")
+public class GeneratedTestEvent implements Serializable
 {
 
     @JsonProperty("id")
     private int id;
-    private final static long serialVersionUID = 2707574487443489734L;
+    @JsonProperty("status")
+    private String status;
+    private final static long serialVersionUID = -6088058124903146385L;
 
     /**
      * No args constructor for use in serialization
      *
      */
-    public ProducedEvent() {
+    public GeneratedTestEvent() {
     }
 
-    public ProducedEvent(int id) {
+    public GeneratedTestEvent(int id, String status) {
         super();
         this.id = id;
+        this.status = status;
     }
 
     @JsonProperty("id")
@@ -47,13 +50,27 @@ public class ProducedEvent implements Serializable
         this.id = id;
     }
 
+    @JsonProperty("status")
+    public String getStatus() {
+        return status;
+    }
+
+    @JsonProperty("status")
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(ProducedEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(GeneratedTestEvent.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("id");
         sb.append('=');
         sb.append(this.id);
+        sb.append(',');
+        sb.append("status");
+        sb.append('=');
+        sb.append(((this.status == null)?"<null>":this.status));
         sb.append(',');
         if (sb.charAt((sb.length()- 1)) == ',') {
             sb.setCharAt((sb.length()- 1), ']');
@@ -67,6 +84,7 @@ public class ProducedEvent implements Serializable
     public int hashCode() {
         int result = 1;
         result = ((result* 31)+ this.id);
+        result = ((result* 31)+((this.status == null)? 0 :this.status.hashCode()));
         return result;
     }
 
@@ -75,11 +93,11 @@ public class ProducedEvent implements Serializable
         if (other == this) {
             return true;
         }
-        if ((other instanceof ProducedEvent) == false) {
+        if ((other instanceof GeneratedTestEvent) == false) {
             return false;
         }
-        ProducedEvent rhs = ((ProducedEvent) other);
-        return (this.id == rhs.id);
+        GeneratedTestEvent rhs = ((GeneratedTestEvent) other);
+        return ((this.id == rhs.id)&&((this.status == rhs.status)||((this.status!= null)&&this.status.equals(rhs.status))));
     }
 
 }

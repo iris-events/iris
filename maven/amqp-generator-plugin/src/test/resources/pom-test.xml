@@ -47,7 +47,7 @@
                     <asyncApiDirectory>target,generated</asyncApiDirectory>
                     <modelVersion>${project.version}</modelVersion>
                     <modelName>${project.artifactId}</modelName>
-                    <packageName>id.global.amqp.models</packageName>
+                    <packageName>org.iris_events.amqp.models</packageName>
                     <skip>false</skip>
                 </configuration>
             </plugin>
