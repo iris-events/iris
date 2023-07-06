@@ -7,22 +7,18 @@ import org.iris_events.producer.Message;
 
 public interface TransactionCallback {
     /**
-     * Executes before the transaction is committed. After this method the IrisProducer executes the publish method for all
-     * messages in the list that were enqueued in the transaction.
+     * Executes before the transaction is committed.
+     * After transaction will be completed Iris executes the publish method for all messages in the list that were enqueued in the transaction.
      *
-     * @param messages List of messages to be published
+     * @param messages List of messages to be published after
      */
-    void beforeTxPublish(List<Message> messages) throws IrisSendException;
-
-    /**
-     * Executes after the IrisProducer executes publish for all messages in a successfully committed transaction.
-     */
-    void afterTxPublish() throws IrisSendException;
+    void beforeCompletion(final List<Message> messages);
 
     /**
      * Executes after a committed OR rolled back transaction.
      *
-     * @param messages List of messages that was either published or ignored
+     * @param messages List of messages that was either published (transaction successfully committed) or ignored
+     * @param messagesPublishedSuccessfully Indicates whether messages produced within this transaction were published successfully or not
      */
-    void afterTxCompletion(List<Message> messages, int status);
+    void afterCompletion(final List<Message> messages, final int transactionStatus, final boolean messagesPublishedSuccessfully) throws IrisSendException;
 }
