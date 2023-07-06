@@ -225,7 +225,7 @@ public class EventProducer {
         this.transactionCallback = callback;
     }
 
-    private void publish(@NotNull Object message, RoutingDetails routingDetails)
+    public void publish(@NotNull Object message, RoutingDetails routingDetails)
             throws IrisSendException {
 
         SendMessageValidator.validate(routingDetails);
