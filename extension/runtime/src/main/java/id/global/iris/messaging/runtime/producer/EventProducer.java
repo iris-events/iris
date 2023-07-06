@@ -15,15 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.Synchronization;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.Transaction;
-import jakarta.transaction.TransactionManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +40,15 @@ import id.global.iris.parsers.ExchangeTypeParser;
 import id.global.iris.parsers.MessageScopeParser;
 import id.global.iris.parsers.PersistentParser;
 import id.global.iris.parsers.RoutingKeyParser;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import jakarta.validation.constraints.NotNull;
 
 @ApplicationScoped
@@ -92,7 +92,7 @@ public class EventProducer {
      * Send message using Iris infrastructure.
      *
      * @param message message
-     * @throws IrisSendException when sending fails
+     * @throws IrisSendException        when sending fails
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message) throws IrisSendException, IrisTransactionException {
@@ -108,8 +108,8 @@ public class EventProducer {
      * Scope of current event will be changed to USER if event is of client scope (SESSION, USER, BROADCAST).
      *
      * @param message message
-     * @param userId user id
-     * @throws IrisSendException when sending fails
+     * @param userId  user id
+     * @throws IrisSendException        when sending fails
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message, final String userId) throws IrisSendException, IrisTransactionException {
@@ -119,10 +119,10 @@ public class EventProducer {
     /**
      * Send message to Iris subscription service.
      *
-     * @param message message
+     * @param message      message
      * @param resourceType resource type
-     * @param resourceId resource id
-     * @throws IrisSendException when sending fails
+     * @param resourceId   resource id
+     * @throws IrisSendException        when sending fails
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void sendToSubscription(final Object message, final String resourceType, final String resourceId)
@@ -263,7 +263,7 @@ public class EventProducer {
 
     private void executeTxPublish(Transaction transaction) throws IOException, IrisSendException {
         LinkedList<Message> messageList = (LinkedList<Message>) transactionDelayedMessages.get(transaction);
-        Message message = messageList.poll();
+        Message message = messageList != null ? messageList.poll() : null;
 
         while (message != null) {
             eventContext.setEnvelope(message.envelope());
@@ -330,29 +330,31 @@ public class EventProducer {
 
         @Override
         public void beforeCompletion() {
-            try {
-                boolean isCallbackPresent = transactionCallback != null;
-                if (isCallbackPresent) {
-                    transactionCallback.beforeTxPublish(transactionDelayedMessages.get(tx));
-                }
-                executeTxPublish(tx);
-
-                if (isCallbackPresent) {
-                    transactionCallback.afterTxPublish();
-                }
-            } catch (IOException | IrisSendException e) {
-                log.error("Exception completing send transaction.", e);
-                throw new IrisTransactionException("Exception completing send transaction");
+            boolean isCallbackPresent = transactionCallback != null;
+            if (isCallbackPresent) {
+                transactionCallback.beforeCompletion(transactionDelayedMessages.get(tx));
             }
+            // TODO: if publishing messages in "beforeCompletion" we introduce 2-PC race condition
         }
 
         @Override
         public void afterCompletion(int status) {
-            // This executes after commit AND rollback, for now just remove the TX messages
-            if (transactionCallback != null) {
-                transactionCallback.afterTxCompletion(transactionDelayedMessages.get(tx), status);
+            boolean messagesPublished = false;
+            try {
+                if (status == Status.STATUS_COMMITTED) {
+                    // TODO: if publishing messages in "afterCompletion" we are unable to rollback the transaction itself - synchronisation improvement required
+                    executeTxPublish(tx);
+                    messagesPublished = true;
+                }
+            } catch (IOException | IrisSendException e) {
+                log.error("Exception completing send transaction.", e);
+                throw new IrisTransactionException("Exception completing send transaction");
+            } finally {
+                if (transactionCallback != null) {
+                    transactionCallback.afterCompletion(transactionDelayedMessages.get(tx), status, messagesPublished);
+                }
+                transactionDelayedMessages.remove(tx);
             }
-            transactionDelayedMessages.remove(tx);
         }
     }
 }

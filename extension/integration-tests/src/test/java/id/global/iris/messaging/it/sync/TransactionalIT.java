@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Status;
 import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +51,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
     }
 
     @Test
-    @DisplayName("id.global.event.messaging.runtime.producer.Message send")
+    @DisplayName("Message send")
     void testThroughServiceTransactionSuccessful() {
         service.sendTransactional(false);
 
@@ -68,7 +69,7 @@ public class TransactionalIT extends IsolatedEventContextTest {
     }
 
     @Test
-    @DisplayName("id.global.event.messaging.runtime.producer.Message send in rolled back should not reach handler service")
+    @DisplayName("Message send in rolled back transaction should not reach handler service")
     void testTransactionRollback() {
         assertThrows(RuntimeException.class, () -> service.sendTransactional(true));
         assertThat(service.getHandledEventCount(), is(0));
@@ -102,11 +103,9 @@ public class TransactionalIT extends IsolatedEventContextTest {
         service.sendTransactionalCustomCallback(false);
 
         Boolean isBeforeTxPublishTriggered = service.getBeforeTxPublishCallback().get(2000, TimeUnit.MILLISECONDS);
-        Boolean isAfterTxPublishTriggered = service.getAfterTxPublishCallback().get(2000, TimeUnit.MILLISECONDS);
         Boolean isAfterTxCompleteTriggered = service.getAfterTxCompletionCallback().get(2000, TimeUnit.MILLISECONDS);
 
         assertThat(isBeforeTxPublishTriggered, is(true));
-        assertThat(isAfterTxPublishTriggered, is(true));
         assertThat(isAfterTxCompleteTriggered, is(true));
     }
 
@@ -119,33 +118,27 @@ public class TransactionalIT extends IsolatedEventContextTest {
         assertThrows(RuntimeException.class, () -> service.sendTransactionalCustomCallback(true));
 
         Boolean isBeforeTxPublishTriggered = service.getBeforeTxPublishCallback().get(1000, TimeUnit.MILLISECONDS);
-        Boolean isAfterTxPublishTriggered = service.getAfterTxPublishCallback().get(1000, TimeUnit.MILLISECONDS);
         Boolean isAfterTxCompleteTriggered = service.getAfterTxCompletionCallback().get(1000, TimeUnit.MILLISECONDS);
         assertThat(isBeforeTxPublishTriggered, is(false));
-        assertThat(isAfterTxPublishTriggered, is(false));
         assertThat(isAfterTxCompleteTriggered, is(true));
         assertThat(service.getHandledEventCount(), is(0));
     }
 
     @Test
-    @DisplayName("Exception during transaction callback should produce AmqpTransactionRuntimeException")
+    @DisplayName("Exception during transaction after completion callback should produce AmqpTransactionRuntimeException")
     void testTransactionRuntimeException() {
 
         service.getProducer().registerTransactionCallback(new TransactionCallback() {
             @Override
-            public void beforeTxPublish(List<id.global.iris.messaging.runtime.producer.Message> messages)
+            public void beforeCompletion(List<id.global.iris.messaging.runtime.producer.Message> messages)
+                    throws IrisSendException {
+            }
+
+            @Override
+            public void afterCompletion(List<id.global.iris.messaging.runtime.producer.Message> messages, int status,
+                    final boolean messagesPublishedSuccessfully)
                     throws IrisSendException {
                 throw new IrisSendException("Test exception");
-            }
-
-            @Override
-            public void afterTxPublish() {
-
-            }
-
-            @Override
-            public void afterTxCompletion(List<id.global.iris.messaging.runtime.producer.Message> messages, int status) {
-
             }
         });
         try {
@@ -179,7 +172,6 @@ public class TransactionalIT extends IsolatedEventContextTest {
 
         private CompletableFuture<Boolean> beforeTxPublishCallback = new CompletableFuture<>();
 
-        private CompletableFuture<Boolean> afterTxPublishCallback = new CompletableFuture<>();
         private CompletableFuture<Boolean> afterTxCompletionCallback = new CompletableFuture<>();
 
         public void reset() {
@@ -189,7 +181,6 @@ public class TransactionalIT extends IsolatedEventContextTest {
             }
 
             beforeTxPublishCallback = new CompletableFuture<>();
-            afterTxPublishCallback = new CompletableFuture<>();
             afterTxCompletionCallback = new CompletableFuture<>();
             producer.registerTransactionCallback(null);
         }
@@ -242,10 +233,6 @@ public class TransactionalIT extends IsolatedEventContextTest {
             return beforeTxPublishCallback;
         }
 
-        public CompletableFuture<Boolean> getAfterTxPublishCallback() {
-            return afterTxPublishCallback;
-        }
-
         public CompletableFuture<Boolean> getAfterTxCompletionCallback() {
             return afterTxCompletionCallback;
         }
@@ -259,21 +246,16 @@ public class TransactionalIT extends IsolatedEventContextTest {
     private class TestCustomTransactionCallback implements TransactionCallback {
 
         @Override
-        public void beforeTxPublish(List<id.global.iris.messaging.runtime.producer.Message> messages) {
+        public void beforeCompletion(List<id.global.iris.messaging.runtime.producer.Message> messages) {
             service.getBeforeTxPublishCallback().complete(true);
         }
 
         @Override
-        public void afterTxPublish() {
-            service.getAfterTxPublishCallback().complete(true);
-        }
-
-        @Override
-        public void afterTxCompletion(List<id.global.iris.messaging.runtime.producer.Message> messages, int status) {
+        public void afterCompletion(List<id.global.iris.messaging.runtime.producer.Message> messages, int transactionStatus,
+                boolean messagesPublishedSuccessfully) {
             service.getAfterTxCompletionCallback().complete(true);
             if (!service.getBeforeTxPublishCallback().isDone()) {
                 service.getBeforeTxPublishCallback().complete(false);
-                service.getAfterTxPublishCallback().complete(false);
             }
         }
 
