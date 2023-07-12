@@ -19,6 +19,7 @@ import id.global.iris.asyncapi.runtime.json.IrisObjectMapper;
 import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersApp;
 import id.global.iris.asyncapi.runtime.scanner.app.EventHandlersAppWithMapProperty;
 import id.global.iris.asyncapi.runtime.scanner.app.ParseErrorEventHandlersApp;
+import id.global.iris.common.annotations.CachedMessage;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
@@ -106,9 +107,11 @@ public class GidAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.MapPayloadEvent.class,
                 EventHandlersApp.ListPayloadEvent.class,
                 EventHandlersApp.MapValue.class,
+                EventHandlersApp.CachedEvent.class,
                 SnapshotRequested.class,
                 MessageHandler.class,
                 SnapshotMessageHandler.class,
-                Message.class);
+                Message.class,
+                CachedMessage.class);
     }
 }

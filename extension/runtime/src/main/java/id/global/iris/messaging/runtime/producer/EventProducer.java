@@ -24,6 +24,7 @@ import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 
+import id.global.iris.common.annotations.CachedMessage;
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.message.ResourceMessage;
@@ -35,6 +36,7 @@ import id.global.iris.messaging.runtime.context.EventContext;
 import id.global.iris.messaging.runtime.exception.IrisSendException;
 import id.global.iris.messaging.runtime.exception.IrisTransactionException;
 import id.global.iris.messaging.runtime.tx.TransactionCallback;
+import id.global.iris.parsers.CacheableTtlParser;
 import id.global.iris.parsers.ExchangeParser;
 import id.global.iris.parsers.ExchangeTypeParser;
 import id.global.iris.parsers.MessageScopeParser;
@@ -137,9 +139,10 @@ public class EventProducer {
         final var routingKey = String.format("%s.%s", eventName, RESOURCE);
         final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
+        final var cacheTtl = getCachedAnnotation(message).map(CacheableTtlParser::getFromAnnotationClass).orElse(null);
 
         final var routingDetails = new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null,
-                null, null, null, persistent);
+                null, null, null, persistent, cacheTtl);
         publish(resourceUpdate, routingDetails);
     }
 
@@ -164,7 +167,7 @@ public class EventProducer {
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null, persistent);
+        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null, persistent, null);
     }
 
     private RoutingDetails getRoutingDetailsForClientScope(final id.global.iris.common.annotations.Message messageAnnotation,
@@ -183,7 +186,8 @@ public class EventProducer {
         final var routingKey = String.format("%s.%s", eventName, exchange);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null, persistent);
+        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null, persistent,
+                null);
     }
 
     private id.global.iris.common.annotations.Message getMessageAnnotation(final Object message) {
@@ -194,6 +198,14 @@ public class EventProducer {
         return Optional
                 .ofNullable(message.getClass().getAnnotation(id.global.iris.common.annotations.Message.class))
                 .orElseThrow(() -> new IrisSendException("Message annotation is required."));
+    }
+
+    private Optional<CachedMessage> getCachedAnnotation(final Object message) {
+        if (message == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(message.getClass().getAnnotation(CachedMessage.class));
     }
 
     public void addReturnListener(@NotNull String channelKey, @NotNull ReturnListener returnListener) throws IOException {

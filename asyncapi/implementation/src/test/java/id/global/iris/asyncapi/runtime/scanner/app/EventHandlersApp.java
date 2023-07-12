@@ -16,6 +16,7 @@ import id.global.common.auth.jwt.Role;
 import id.global.iris.asyncapi.runtime.scanner.model.User;
 import id.global.iris.asyncapi.spec.annotations.media.Schema;
 import id.global.iris.asyncapi.spec.annotations.media.SchemaProperty;
+import id.global.iris.common.annotations.CachedMessage;
 import id.global.iris.common.annotations.IrisGenerated;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
@@ -197,5 +198,10 @@ public class EventHandlersApp {
     @Message(name = "list-payload-event")
     public record ListPayloadEvent(List<User> userList) {
 
+    }
+
+    @CachedMessage(ttl = 100)
+    @Message(name = "cached-message")
+    public record CachedEvent(int id) {
     }
 }

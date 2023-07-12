@@ -63,5 +63,8 @@ public @interface Message {
      */
     Class<?> response() default Void.class;
 
+    /**
+     * Defines whether message delivery mode is persistent.Persistent messages will be written to disk by the broker as soon as they reach the queue.
+     */
     boolean persistent() default false;
 }

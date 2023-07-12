@@ -13,6 +13,7 @@ import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.messaging.deployment.builditem.MessageInfoBuildItem;
 import id.global.iris.messaging.deployment.constants.AnnotationInstanceParams;
+import id.global.iris.parsers.CacheableTtlParser;
 import id.global.iris.parsers.ExchangeParser;
 import id.global.iris.parsers.MessageScopeParser;
 import id.global.iris.parsers.RoutingKeyParser;
@@ -29,19 +30,23 @@ public class MessageAnnotationScanner {
     }
 
     protected MessageInfoBuildItem build(AnnotationInstance annotationInstance, IndexView index) {
-        final var classType = annotationInstance.target().asClass();
         final var exchangeType = ExchangeType.valueOf(
                 annotationInstance.valueWithDefault(index, AnnotationInstanceParams.EXCHANGE_TYPE_PARAM).asString());
         final var exchange = ExchangeParser.getFromAnnotationInstance(annotationInstance);
         final var routingKey = RoutingKeyParser.getFromAnnotationInstance(annotationInstance);
         final var scope = MessageScopeParser.getFromAnnotationInstance(annotationInstance, index);
+        final var classType = annotationInstance.target().asClass();
+        final var optionalCachedAnnotation = ScannerUtils.getCacheableAnnotation(classType);
+        final var cacheTtl = optionalCachedAnnotation
+                .map(cachedAnnotation -> CacheableTtlParser.getFromAnnotationInstance(cachedAnnotation, index))
+                .orElse(null);
 
         return new MessageInfoBuildItem(
                 classType,
                 exchangeType,
                 exchange,
                 routingKey,
-                scope
-        );
+                scope,
+                cacheTtl);
     }
 }

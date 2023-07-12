@@ -910,6 +910,64 @@
           }
         }
       }
+    },
+    "cached-message/cached-message": {
+      "subscribe": {
+        "bindings": {
+          "amqp": {
+            "deliveryMode": 1
+          }
+        },
+        "message": {
+          "headers": {
+            "type": "object",
+            "properties": {
+              "x-scope": {
+                "description": "Message scope. Default is INTERNAL",
+                "type": "string",
+                "value": "INTERNAL"
+              },
+              "x-ttl": {
+                "description": "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type": "integer",
+                "value": -1
+              },
+              "x-roles-allowed": {
+                "description": "Allowed roles for this message. Default is empty",
+                "type": "array",
+                "value": []
+              },
+              "x-dead-letter": {
+                "description": "Dead letter queue definition. Default is dead-letter",
+                "type": "string",
+                "value": "dead.dead-letter"
+              }
+            }
+          },
+          "name": "CachedEvent",
+          "title": "CachedEvent",
+          "payload": {
+            "$ref": "#/components/schemas/CachedEvent"
+          }
+        }
+      },
+      "bindings": {
+        "amqp": {
+          "is": "routingKey",
+          "exchange": {
+            "durable": true,
+            "vhost": "/",
+            "name": "cached-message",
+            "autoDelete": false,
+            "type": "fanout"
+          },
+          "queue": {
+            "vhost": "/",
+            "name": "cached-message",
+            "exclusive": false
+          }
+        }
+      }
     }
   },
   "components": {
@@ -976,6 +1034,16 @@
           }
         },
         "x-iris-generated": false
+      },
+      "CachedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          }
+        },
+        "x-iris-generated": false,
+        "x-cached-message-ttl-seconds": 100
       },
       "FrontendTestEventV1": {
         "type": "object",
