@@ -57,12 +57,14 @@ import id.global.iris.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import id.global.iris.asyncapi.runtime.scanner.validator.MessageAnnotationValidator;
 import id.global.iris.asyncapi.runtime.util.ChannelInfoGenerator;
 import id.global.iris.asyncapi.runtime.util.SchemeIdGenerator;
+import id.global.iris.common.annotations.CachedMessage;
 import id.global.iris.common.annotations.Message;
 import id.global.iris.common.annotations.MessageHandler;
 import id.global.iris.common.annotations.Scope;
 import id.global.iris.common.annotations.SnapshotMessageHandler;
 import id.global.iris.common.constants.HandlerDefaultParameter;
 import id.global.iris.parsers.BindingKeysParser;
+import id.global.iris.parsers.CacheableTtlParser;
 import id.global.iris.parsers.DeadLetterQueueParser;
 import id.global.iris.parsers.ExchangeParser;
 import id.global.iris.parsers.ExchangeTtlParser;
@@ -93,6 +95,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
     private final String projectVersion;
 
     public static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getName());
+    public static final DotName DOT_NAME_CACHED_MESSAGE = DotName.createSimple(CachedMessage.class.getName());
     public static final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getName());
     public static final DotName DOT_NAME_SNAPSHOT_MESSAGE_HANDLER = DotName
             .createSimple(SnapshotMessageHandler.class.getName());
@@ -192,7 +195,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
             final var classSimpleName = classInfo.simpleName();
 
             messageScopes.put(classSimpleName, MessageScopeParser.getFromAnnotationInstance(anno, index));
-            producedMessages.put(classSimpleName, generateProducedMessageSchemaInfo(classInfo));
+            producedMessages.put(classSimpleName, generateProducedMessageSchemaInfo(classInfo, index));
 
             final var routingKey = RoutingKeyParser.getFromAnnotationInstance(anno);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(anno, index);
@@ -260,7 +263,7 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
 
             final var isGeneratedClass = isGeneratedClass(messageClass);
 
-            final var jsonSchemaInfo = generateJsonSchemaInfo(
+            final var jsonSchemaInfo = generateConsumedMessageJsonSchemaInfo(
                     annotationName,
                     messageClass.name().toString(),
                     annotationValues,
@@ -344,11 +347,13 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         }
     }
 
-    private JsonSchemaInfo generateProducedMessageSchemaInfo(ClassInfo classInfo) throws ClassNotFoundException {
+    private JsonSchemaInfo generateProducedMessageSchemaInfo(ClassInfo classInfo, final FilteredIndexView index)
+            throws ClassNotFoundException {
         final var className = classInfo.name().toString();
         final var loadedClass = loadClass(className);
         final var classSimpleName = loadedClass.getSimpleName();
         final var isGeneratedClass = isGeneratedClass(classInfo);
+        final var cacheTtl = getCacheTtl(classInfo, index);
         final var generatedSchema = schemaGenerator.generateSchema(loadedClass);
         fixDocumentedRefProperties(className, generatedSchema);
 
@@ -357,10 +362,11 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 classSimpleName,
                 generatedSchema,
                 null,
-                isGeneratedClass);
+                isGeneratedClass,
+                cacheTtl);
     }
 
-    private JsonSchemaInfo generateJsonSchemaInfo(DotName annotationName, String className,
+    private JsonSchemaInfo generateConsumedMessageJsonSchemaInfo(DotName annotationName, String className,
             List<AnnotationValue> annotationValues, boolean isGeneratedClass) throws ClassNotFoundException {
         final var loadedClass = loadClass(className);
         final var eventSimpleName = loadedClass.getSimpleName();
@@ -372,7 +378,8 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
                 eventSimpleName,
                 generatedSchema,
                 annotationValues,
-                isGeneratedClass);
+                isGeneratedClass,
+                null);
     }
 
     private static void fixDocumentedRefProperties(final String className, final ObjectNode generatedSchema) {
@@ -448,5 +455,14 @@ public class GidAnnotationScanner extends BaseAnnotationScanner {
         }
 
         return consumedEventTypes.get(0);
+    }
+
+    private Integer getCacheTtl(final ClassInfo classInfo, final FilteredIndexView index) {
+        final var annotationInstance = classInfo.declaredAnnotation(DOT_NAME_CACHED_MESSAGE);
+        if (annotationInstance == null) {
+            return null;
+        }
+
+        return CacheableTtlParser.getFromAnnotationInstance(annotationInstance, index);
     }
 }

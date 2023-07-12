@@ -191,6 +191,7 @@ public abstract class BaseAnnotationScanner {
             }
             GidAai20Schema aaiSchema = SchemaReader.readSchema(jsonSchemaInfo.getGeneratedSchema(), true);
             aaiSchema.setIrisGenerated(jsonSchemaInfo.isGeneratedClass());
+            aaiSchema.setCachedMessage(jsonSchemaInfo.getCacheTtl());
 
             asyncApi.components.schemas.put(s, aaiSchema);
         });
