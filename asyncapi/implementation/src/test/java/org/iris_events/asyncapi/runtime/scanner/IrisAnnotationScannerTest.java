@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import jakarta.annotation.security.RolesAllowed;
+import org.iris_events.annotations.CachedMessage;
 import org.iris_events.asyncapi.runtime.scanner.app.EventHandlersApp;
 import org.iris_events.asyncapi.runtime.scanner.app.EventHandlersAppWithMapProperty;
 import org.iris_events.asyncapi.runtime.scanner.app.ParseErrorEventHandlersApp;
@@ -106,10 +107,12 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.MapPayloadEvent.class,
                 EventHandlersApp.ListPayloadEvent.class,
                 EventHandlersApp.MapValue.class,
+                EventHandlersApp.CachedEvent.class,
                 SnapshotRequested.class,
                 MessageHandler.class,
                 SnapshotMessageHandler.class,
                 Message.class,
-                RolesAllowed.class);
+                RolesAllowed.class,
+                CachedMessage.class);
     }
 }

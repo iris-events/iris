@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.iris_events.annotations.*;
+import org.iris_events.asyncapi.parsers.*;
 import org.iris_events.asyncapi.runtime.generator.CustomDefinitionProvider;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.GidOpenApiModule;
@@ -57,24 +59,7 @@ import org.iris_events.asyncapi.api.AsyncApiConfig;
 import org.iris_events.asyncapi.runtime.io.components.ComponentReader;
 import org.iris_events.asyncapi.runtime.util.ChannelInfoGenerator;
 import org.iris_events.asyncapi.runtime.util.SchemeIdGenerator;
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.annotations.Scope;
-import org.iris_events.annotations.SnapshotMessageHandler;
 import org.iris_events.common.HandlerDefaultParameter;
-import org.iris_events.asyncapi.parsers.BindingKeysParser;
-import org.iris_events.asyncapi.parsers.DeadLetterQueueParser;
-import org.iris_events.asyncapi.parsers.ExchangeParser;
-import org.iris_events.asyncapi.parsers.ExchangeTtlParser;
-import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
-import org.iris_events.asyncapi.parsers.MessageScopeParser;
-import org.iris_events.asyncapi.parsers.PersistentParser;
-import org.iris_events.asyncapi.parsers.QueueAutoDeleteParser;
-import org.iris_events.asyncapi.parsers.QueueDurableParser;
-import org.iris_events.asyncapi.parsers.ResourceTypeParser;
-import org.iris_events.asyncapi.parsers.ResponseParser;
-import org.iris_events.asyncapi.parsers.RolesAllowedParser;
-import org.iris_events.asyncapi.parsers.RoutingKeyParser;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Info;
 
@@ -93,6 +78,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
     private final String projectVersion;
 
     public static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getName());
+    public static final DotName DOT_NAME_CACHED_MESSAGE = DotName.createSimple(CachedMessage.class.getName());
     public static final DotName DOT_NAME_MESSAGE_HANDLER = DotName.createSimple(MessageHandler.class.getName());
     public static final DotName DOT_NAME_SNAPSHOT_MESSAGE_HANDLER = DotName
             .createSimple(SnapshotMessageHandler.class.getName());
@@ -192,7 +178,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
             final var classSimpleName = classInfo.simpleName();
 
             messageScopes.put(classSimpleName, MessageScopeParser.getFromAnnotationInstance(anno, index));
-            producedMessages.put(classSimpleName, generateProducedMessageSchemaInfo(classInfo));
+            producedMessages.put(classSimpleName, generateProducedMessageSchemaInfo(classInfo, index));
 
             final var routingKey = RoutingKeyParser.getFromAnnotationInstance(anno);
             final var exchangeType = ExchangeTypeParser.getFromAnnotationInstance(anno, index);
@@ -260,7 +246,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
 
             final var isGeneratedClass = isGeneratedClass(messageClass);
 
-            final var jsonSchemaInfo = generateJsonSchemaInfo(
+            final var jsonSchemaInfo = generateConsumedMessageJsonSchemaInfo(
                     annotationName,
                     messageClass.name().toString(),
                     annotationValues,
@@ -344,11 +330,13 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
         }
     }
 
-    private JsonSchemaInfo generateProducedMessageSchemaInfo(ClassInfo classInfo) throws ClassNotFoundException {
+    private JsonSchemaInfo generateProducedMessageSchemaInfo(ClassInfo classInfo, final FilteredIndexView index)
+            throws ClassNotFoundException {
         final var className = classInfo.name().toString();
         final var loadedClass = loadClass(className);
         final var classSimpleName = loadedClass.getSimpleName();
         final var isGeneratedClass = isGeneratedClass(classInfo);
+        final var cacheTtl = getCacheTtl(classInfo, index);
         final var generatedSchema = schemaGenerator.generateSchema(loadedClass);
         fixDocumentedRefProperties(className, generatedSchema);
 
@@ -357,10 +345,11 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
                 classSimpleName,
                 generatedSchema,
                 null,
-                isGeneratedClass);
+                isGeneratedClass,
+                cacheTtl);
     }
 
-    private JsonSchemaInfo generateJsonSchemaInfo(DotName annotationName, String className,
+    private JsonSchemaInfo generateConsumedMessageJsonSchemaInfo(DotName annotationName, String className,
             List<AnnotationValue> annotationValues, boolean isGeneratedClass) throws ClassNotFoundException {
         final var loadedClass = loadClass(className);
         final var eventSimpleName = loadedClass.getSimpleName();
@@ -372,7 +361,8 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
                 eventSimpleName,
                 generatedSchema,
                 annotationValues,
-                isGeneratedClass);
+                isGeneratedClass,
+                null);
     }
 
     private static void fixDocumentedRefProperties(final String className, final ObjectNode generatedSchema) {
@@ -448,5 +438,14 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
         }
 
         return consumedEventTypes.get(0);
+    }
+
+    private Integer getCacheTtl(final ClassInfo classInfo, final FilteredIndexView index) {
+        final var annotationInstance = classInfo.declaredAnnotation(DOT_NAME_CACHED_MESSAGE);
+        if (annotationInstance == null) {
+            return null;
+        }
+
+        return CacheableTtlParser.getFromAnnotationInstance(annotationInstance, index);
     }
 }

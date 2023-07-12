@@ -12,18 +12,21 @@ public final class MessageInfoBuildItem extends MultiBuildItem {
     private final String name;
     private final String routingKey;
     private final Scope scope;
+    private final Integer cacheTtl;
 
     public MessageInfoBuildItem(
             ClassInfo annotatedClassInfo,
             ExchangeType exchangeType,
             String name,
             String routingKey,
-            Scope scope) {
+            Scope scope,
+            Integer cacheTtl) {
         this.annotatedClassInfo = annotatedClassInfo;
         this.exchangeType = exchangeType;
         this.name = name;
         this.routingKey = routingKey;
         this.scope = scope;
+        this.cacheTtl = cacheTtl;
     }
 
     public MessageInfoBuildItem(final ClassInfo annotatedClassInfo) {
@@ -32,6 +35,7 @@ public final class MessageInfoBuildItem extends MultiBuildItem {
         this.name = null;
         this.routingKey = null;
         this.scope = null;
+        this.cacheTtl = null;
     }
 
     public ClassInfo getAnnotatedClassInfo() {

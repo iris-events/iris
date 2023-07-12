@@ -1,7 +1,9 @@
 package org.iris_events.deployment.scanner;
 
 import java.util.Objects;
+import java.util.Optional;
 
+import org.iris_events.annotations.CachedMessage;
 import org.jboss.jandex.*;
 
 import org.iris_events.annotations.Message;
@@ -9,6 +11,7 @@ import org.iris_events.annotations.Message;
 public class ScannerUtils {
 
     private static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getCanonicalName());
+    private static final DotName DOT_NAME_CACHED_MESSAGE = DotName.createSimple(CachedMessage.class.getCanonicalName());
 
     public static AnnotationInstance getMessageAnnotation(final MethodInfo methodInfo, final IndexView index) {
         final var consumedClassInfo = getConsumedEventClassInfo(methodInfo, index);
@@ -41,5 +44,15 @@ public class ScannerUtils {
         }
 
         return consumedEventTypes.get(0);
+    }
+
+    /**
+     * Returns cacheable annotation if message is annotated as {@link CachedMessage}.
+     *
+     * @param classInfo Message class info
+     * @return Cacheable annotation if present
+     */
+    public static Optional<AnnotationInstance> getCacheableAnnotation(final ClassInfo classInfo) {
+        return Optional.ofNullable(classInfo.declaredAnnotation(DOT_NAME_CACHED_MESSAGE));
     }
 }

@@ -24,6 +24,8 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
+import org.iris_events.annotations.CachedMessage;
+import org.iris_events.asyncapi.parsers.*;
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.iris_events.exception.IrisSendException;
 import org.iris_events.exception.IrisTransactionException;
@@ -44,11 +46,6 @@ import org.iris_events.runtime.BasicPropertiesProvider;
 import org.iris_events.runtime.channel.ChannelKey;
 import org.iris_events.runtime.channel.ChannelService;
 import org.iris_events.context.EventContext;
-import org.iris_events.asyncapi.parsers.ExchangeParser;
-import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
-import org.iris_events.asyncapi.parsers.MessageScopeParser;
-import org.iris_events.asyncapi.parsers.PersistentParser;
-import org.iris_events.asyncapi.parsers.RoutingKeyParser;
 import jakarta.validation.constraints.NotNull;
 import jakarta.transaction.Status;
 
@@ -138,9 +135,10 @@ public class EventProducer {
         final var routingKey = String.format("%s.%s", eventName, RESOURCE);
         final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
+        final var cacheTtl = getCachedAnnotation(message).map(CacheableTtlParser::getFromAnnotationClass).orElse(null);
 
         final var routingDetails = new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null,
-                null, null, null, persistent);
+                null, null, null, persistent, cacheTtl);
         publish(resourceUpdate, routingDetails);
     }
 
@@ -165,7 +163,7 @@ public class EventProducer {
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null, persistent);
+        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null, persistent, null);
     }
 
     private RoutingDetails getRoutingDetailsForClientScope(final org.iris_events.annotations.Message messageAnnotation,
@@ -184,7 +182,8 @@ public class EventProducer {
         final var routingKey = String.format("%s.%s", eventName, exchange);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null, persistent);
+        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null, persistent,
+                null);
     }
 
     private org.iris_events.annotations.Message getMessageAnnotation(final Object message) {
@@ -195,6 +194,14 @@ public class EventProducer {
         return Optional
                 .ofNullable(message.getClass().getAnnotation(org.iris_events.annotations.Message.class))
                 .orElseThrow(() -> new IrisSendException("Message annotation is required."));
+    }
+
+    private Optional<CachedMessage> getCachedAnnotation(final Object message) {
+        if (message == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(message.getClass().getAnnotation(CachedMessage.class));
     }
 
     public void addReturnListener(@NotNull String channelKey, @NotNull ReturnListener returnListener) throws IOException {

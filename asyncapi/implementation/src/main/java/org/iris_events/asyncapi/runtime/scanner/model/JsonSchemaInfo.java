@@ -13,15 +13,17 @@ public class JsonSchemaInfo {
     private final ObjectNode generatedSchema;
     private final List<AnnotationValue> annotationValues;
     private final boolean isGeneratedClass;
+    private final Integer cacheTtl;
 
     public JsonSchemaInfo(DotName annotationName, String eventSimpleName, ObjectNode generatedSchema,
-            List<AnnotationValue> annotationValues, boolean isGeneratedClass) {
+            List<AnnotationValue> annotationValues, boolean isGeneratedClass, final Integer cacheTtl) {
 
         this.annotationName = annotationName;
         this.eventSimpleName = eventSimpleName;
         this.generatedSchema = generatedSchema;
         this.annotationValues = annotationValues;
         this.isGeneratedClass = isGeneratedClass;
+        this.cacheTtl = cacheTtl;
     }
 
     public DotName getAnnotationName() {
@@ -42,5 +44,9 @@ public class JsonSchemaInfo {
 
     public boolean isGeneratedClass() {
         return isGeneratedClass;
+    }
+
+    public Integer getCacheTtl() {
+        return cacheTtl;
     }
 }

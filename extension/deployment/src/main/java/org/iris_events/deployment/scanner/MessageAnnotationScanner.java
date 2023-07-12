@@ -5,6 +5,7 @@ import static java.util.function.Predicate.not;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.iris_events.asyncapi.parsers.CacheableTtlParser;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -29,19 +30,23 @@ public class MessageAnnotationScanner {
     }
 
     protected MessageInfoBuildItem build(AnnotationInstance annotationInstance, IndexView index) {
-        final var classType = annotationInstance.target().asClass();
         final var exchangeType = ExchangeType.valueOf(
                 annotationInstance.valueWithDefault(index, AnnotationInstanceParams.EXCHANGE_TYPE_PARAM).asString());
         final var exchange = ExchangeParser.getFromAnnotationInstance(annotationInstance);
         final var routingKey = RoutingKeyParser.getFromAnnotationInstance(annotationInstance);
         final var scope = MessageScopeParser.getFromAnnotationInstance(annotationInstance, index);
+        final var classType = annotationInstance.target().asClass();
+        final var optionalCachedAnnotation = ScannerUtils.getCacheableAnnotation(classType);
+        final var cacheTtl = optionalCachedAnnotation
+                .map(cachedAnnotation -> CacheableTtlParser.getFromAnnotationInstance(cachedAnnotation, index))
+                .orElse(null);
 
         return new MessageInfoBuildItem(
                 classType,
                 exchangeType,
                 exchange,
                 routingKey,
-                scope
-        );
+                scope,
+                cacheTtl);
     }
 }

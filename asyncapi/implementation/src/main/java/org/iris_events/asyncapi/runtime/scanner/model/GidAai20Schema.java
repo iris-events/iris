@@ -14,6 +14,9 @@ public class GidAai20Schema extends Aai20Schema {
     @JsonProperty("x-iris-generated")
     public Boolean irisGenerated;
 
+    @JsonProperty("x-cached-message-ttl-seconds")
+    public Integer cachedMessage;
+
     public void setExistingJavaType(final String existingJavaType) {
         this.existingJavaType = existingJavaType;
     }
@@ -28,5 +31,9 @@ public class GidAai20Schema extends Aai20Schema {
 
     public void setIrisGenerated(final Boolean irisGenerated) {
         this.irisGenerated = irisGenerated;
+    }
+
+    public void setCachedMessage(final Integer cachedMessage) {
+        this.cachedMessage = cachedMessage;
     }
 }

@@ -20,6 +20,7 @@ import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
 import org.iris_events.annotations.Scope;
+import org.iris_events.annotations.CachedMessage;
 import org.iris_events.annotations.SnapshotMessageHandler;
 import org.iris_events.common.message.SnapshotRequested;
 import jakarta.validation.constraints.Max;
@@ -197,5 +198,10 @@ public class EventHandlersApp {
     @Message(name = "list-payload-event")
     public record ListPayloadEvent(List<User> userList) {
 
+    }
+
+    @CachedMessage(ttl = 100)
+    @Message(name = "cached-message")
+    public record CachedEvent(int id) {
     }
 }

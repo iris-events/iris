@@ -1,5 +1,6 @@
 package org.iris_events.runtime;
 
+import static org.iris_events.common.MessagingHeaders.Message.CACHE_TTL;
 import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
@@ -94,6 +95,10 @@ public class BasicPropertiesProvider {
         final var subscriptionId = routingDetails.subscriptionId();
         if (subscriptionId != null) {
             headers.put(SUBSCRIPTION_ID, subscriptionId);
+        }
+        final var cacheTtl = routingDetails.cacheTtl();
+        if (cacheTtl != null) {
+            headers.put(CACHE_TTL, cacheTtl);
         }
 
         final var builder = basicProperties.builder();
