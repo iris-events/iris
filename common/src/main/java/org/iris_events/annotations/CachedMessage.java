@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 public @interface CachedMessage {
 
     /**
-     * Cached value time to live in seconds.
+     * Cached value time to live in seconds with default value of 5 minutes.
      */
-    int ttl() default 600;
+    int ttl() default 300;
 }
