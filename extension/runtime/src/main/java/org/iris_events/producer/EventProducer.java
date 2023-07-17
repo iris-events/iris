@@ -137,8 +137,15 @@ public class EventProducer {
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
         final var cacheTtl = getCachedAnnotation(message).map(CacheableTtlParser::getFromAnnotationClass).orElse(null);
 
-        final var routingDetails = new RoutingDetails(eventName, SUBSCRIPTION.getValue(), ExchangeType.TOPIC, routingKey, null,
-                null, null, null, persistent, cacheTtl);
+        final var routingDetails = new RoutingDetails.Builder()
+                .eventName(eventName)
+                .exchange(SUBSCRIPTION.getValue())
+                .exchangeType(ExchangeType.TOPIC)
+                .routingKey(routingKey)
+                .scope(null)
+                .persistent(persistent)
+                .cacheTtl(cacheTtl)
+                .build();
         publish(resourceUpdate, routingDetails);
     }
 
@@ -163,7 +170,15 @@ public class EventProducer {
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, eventName, exchangeType, routingKey, scope, userId, null, null, persistent, null);
+        return new RoutingDetails.Builder()
+                .eventName(eventName)
+                .exchange(eventName)
+                .exchangeType(exchangeType)
+                .routingKey(routingKey)
+                .scope(scope)
+                .userId(userId)
+                .persistent(persistent)
+                .build();
     }
 
     private RoutingDetails getRoutingDetailsForClientScope(final org.iris_events.annotations.Message messageAnnotation,
@@ -182,8 +197,15 @@ public class EventProducer {
         final var routingKey = String.format("%s.%s", eventName, exchange);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails(eventName, exchange, ExchangeType.TOPIC, routingKey, scope, userId, null, null, persistent,
-                null);
+        return new RoutingDetails.Builder()
+                .eventName(eventName)
+                .exchange(exchange)
+                .exchangeType(ExchangeType.TOPIC)
+                .routingKey(routingKey)
+                .scope(scope)
+                .userId(userId)
+                .persistent(persistent)
+                .build();
     }
 
     private org.iris_events.annotations.Message getMessageAnnotation(final Object message) {

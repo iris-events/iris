@@ -89,7 +89,7 @@ public class EventContext {
         return getHeaderValue(X_RETRY_COUNT).map(Integer::valueOf).orElse(0);
     }
 
-    private Optional<String> getHeaderValue(final String header) {
+    public Optional<String> getHeaderValue(final String header) {
         return findEventContextHolder()
                 .map(EventContextHolder::getAmqpBasicProperties)
                 .map(AMQP.BasicProperties::getHeaders)
