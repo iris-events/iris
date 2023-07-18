@@ -8,9 +8,9 @@ import id.global.iris.messaging.runtime.exception.IrisSendException;
 
 class SendMessageValidator {
     static void validate(final RoutingDetails routingDetails) throws IrisSendException {
-        final var exchange = routingDetails.exchange();
-        final var exchangeType = routingDetails.exchangeType();
-        final var routingKey = routingDetails.routingKey();
+        final var exchange = routingDetails.getExchange();
+        final var exchangeType = routingDetails.getExchangeType();
+        final var routingKey = routingDetails.getRoutingKey();
 
         validateExchangePresent(exchange);
         validateRoutingKey(routingKey, exchangeType);
