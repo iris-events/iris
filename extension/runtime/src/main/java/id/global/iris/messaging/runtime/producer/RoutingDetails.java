@@ -1,19 +1,21 @@
 package id.global.iris.messaging.runtime.producer;
 
+import java.util.Objects;
+
 import id.global.iris.common.annotations.ExchangeType;
 import id.global.iris.common.annotations.Scope;
 
 public final class RoutingDetails {
-    String eventName;
-    String exchange;
-    ExchangeType exchangeType;
-    String routingKey;
-    Scope scope;
-    String userId;
-    String sessionId;
-    String subscriptionId;
-    boolean persistent;
-    Integer cacheTtl;
+    private final String eventName;
+    private final String exchange;
+    private final ExchangeType exchangeType;
+    private final String routingKey;
+    private final Scope scope;
+    private final String userId;
+    private final String sessionId;
+    private final String subscriptionId;
+    private final boolean persistent;
+    private final Integer cacheTtl;
 
     public RoutingDetails(final String eventName, final String exchange, final ExchangeType exchangeType,
             final String routingKey, final Scope scope,
@@ -31,44 +33,64 @@ public final class RoutingDetails {
         this.cacheTtl = cacheTtl;
     }
 
-    public String eventName() {
+    public String getEventName() {
         return eventName;
     }
 
-    public String exchange() {
+    public String getExchange() {
         return exchange;
     }
 
-    public ExchangeType exchangeType() {
+    public ExchangeType getExchangeType() {
         return exchangeType;
     }
 
-    public String routingKey() {
+    public String getRoutingKey() {
         return routingKey;
     }
 
-    public Scope scope() {
+    public Scope getScope() {
         return scope;
     }
 
-    public String userId() {
+    public String getUserId() {
         return userId;
     }
 
-    public String sessionId() {
+    public String getSessionId() {
         return sessionId;
     }
 
-    public String subscriptionId() {
+    public String getSubscriptionId() {
         return subscriptionId;
     }
 
-    public boolean persistent() {
+    public boolean getPersistent() {
         return persistent;
     }
 
-    public Integer cacheTtl() {
+    public Integer getCacheTtl() {
         return cacheTtl;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        final RoutingDetails that = (RoutingDetails) o;
+        return persistent == that.persistent && Objects.equals(eventName, that.eventName) && Objects.equals(
+                exchange, that.exchange) && exchangeType == that.exchangeType && Objects.equals(routingKey,
+                that.routingKey) && scope == that.scope && Objects.equals(userId, that.userId)
+                && Objects.equals(sessionId, that.sessionId) && Objects.equals(subscriptionId,
+                that.subscriptionId) && Objects.equals(cacheTtl, that.cacheTtl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventName, exchange, exchangeType, routingKey, scope, userId, sessionId, subscriptionId, persistent,
+                cacheTtl);
     }
 
     public static class Builder {
