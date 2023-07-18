@@ -76,10 +76,10 @@ public class BasicPropertiesProvider {
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithCustomHeaders(final AMQP.BasicProperties basicProperties,
             final String serviceId, final RoutingDetails routingDetails) {
 
-        final var eventName = routingDetails.eventName();
-        final var scope = routingDetails.scope();
-        final var userId = routingDetails.userId();
-        final var sessionId = routingDetails.sessionId();
+        final var eventName = routingDetails.getEventName();
+        final var scope = routingDetails.getScope();
+        final var userId = routingDetails.getUserId();
+        final var sessionId = routingDetails.getSessionId();
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
@@ -92,11 +92,11 @@ public class BasicPropertiesProvider {
             headers.remove(JWT);
         }
 
-        final var subscriptionId = routingDetails.subscriptionId();
+        final var subscriptionId = routingDetails.getSubscriptionId();
         if (subscriptionId != null) {
             headers.put(SUBSCRIPTION_ID, subscriptionId);
         }
-        final var cacheTtl = routingDetails.cacheTtl();
+        final var cacheTtl = routingDetails.getCacheTtl();
         if (cacheTtl != null) {
             headers.put(CACHE_TTL, cacheTtl);
         }
@@ -123,6 +123,6 @@ public class BasicPropertiesProvider {
     }
 
     private int getDeliveryMode(final RoutingDetails routingDetails) {
-        return routingDetails.persistent() ? DeliveryMode.PERSISTENT.getValue() : DeliveryMode.NON_PERSISTENT.getValue();
+        return routingDetails.getPersistent() ? DeliveryMode.PERSISTENT.getValue() : DeliveryMode.NON_PERSISTENT.getValue();
     }
 }

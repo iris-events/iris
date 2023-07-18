@@ -304,8 +304,8 @@ public class EventProducer {
     }
 
     private void executePublish(Object message, RoutingDetails routingDetails) throws IrisSendException {
-        final var exchange = routingDetails.exchange();
-        final var routingKey = routingDetails.routingKey();
+        final var exchange = routingDetails.getExchange();
+        final var routingKey = routingDetails.getRoutingKey();
 
         try {
             final byte[] bytes = objectMapper.writeValueAsBytes(message);
