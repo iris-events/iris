@@ -43,7 +43,7 @@
         <version.junit>5.9.2</version.junit>
         <version.maven>3.8.7</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
-        <version.maven-plugin-annotations>3.7.0</version.maven-plugin-annotations>
+        <version.maven-plugin-annotations>3.8.2</version.maven-plugin-annotations>
         <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
         <version.maven-project>2.2.1</version.maven-project>
         <version.maven-resolver-api>1.9.4</version.maven-resolver-api>
@@ -54,7 +54,7 @@
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.0.3.Final</version.quarkus>
+        <version.quarkus>3.2.1.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
         <version.slf4j-api>2.0.6</version.slf4j-api>
@@ -208,16 +208,29 @@
 
         </dependencies>
     </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.13</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/iris-events/iris</url>
-        </repository>
         <snapshotRepository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/iris-events/iris</url>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 </project>
