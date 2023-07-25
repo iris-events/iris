@@ -7,13 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
-import org.jboss.jandex.DotName;
-import org.junit.jupiter.api.Test;
-
+import org.iris_events.AbstractAnnotationInstanceValidatorTest;
 import org.iris_events.annotations.Message;
 import org.iris_events.common.message.SnapshotRequested;
-import org.iris_events.AbstractAnnotationInstanceValidatorTest;
 import org.iris_events.deployment.MessageHandlerValidationException;
+import org.jboss.jandex.DotName;
+import org.junit.jupiter.api.Test;
 
 class AllowedMessageValidatorTest extends AbstractAnnotationInstanceValidatorTest {
 

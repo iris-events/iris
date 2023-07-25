@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.iris_events.consumer.ConsumerContainer;
 import org.iris_events.context.IrisContext;
 import org.iris_events.context.MethodHandleContext;
+
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
 

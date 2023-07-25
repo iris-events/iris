@@ -1,5 +1,10 @@
 package org.iris_events.runtime.channel.mock;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.rabbitmq.client.BlockedCallback;
 import com.rabbitmq.client.BlockedListener;
 import com.rabbitmq.client.Channel;
@@ -8,11 +13,6 @@ import com.rabbitmq.client.ExceptionHandler;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.UnblockedCallback;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MockConnection implements Connection {
     private AtomicInteger closeCount = null;

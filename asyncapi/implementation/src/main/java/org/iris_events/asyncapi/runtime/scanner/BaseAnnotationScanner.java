@@ -7,14 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
+import org.iris_events.annotations.IrisGenerated;
+import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.api.AsyncApiConfig;
 import org.iris_events.asyncapi.api.Headers;
 import org.iris_events.asyncapi.runtime.io.channel.operation.OperationConstant;
@@ -28,9 +22,15 @@ import org.iris_events.asyncapi.runtime.scanner.model.GidAaiAMQPOperationBinding
 import org.iris_events.asyncapi.runtime.scanner.model.GidAaiHeaderItem;
 import org.iris_events.asyncapi.runtime.scanner.model.GidAaiHeaderItems;
 import org.iris_events.asyncapi.runtime.scanner.model.JsonSchemaInfo;
-import org.iris_events.annotations.IrisGenerated;
-import org.iris_events.annotations.Scope;
 import org.iris_events.common.DeliveryMode;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;

@@ -5,15 +5,15 @@ import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.iris_events.exception.IrisConnectionFactoryException;
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.ConnectionFactory;
-
-import org.iris_events.exception.IrisConnectionFactoryException;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class ConnectionFactoryProvider {

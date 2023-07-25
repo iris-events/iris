@@ -5,10 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.iris_events.asyncapi.api.AsyncApiConstants;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import org.iris_events.asyncapi.api.AsyncApiConstants;
 
 /**
  * Some utility methods for working with Jandex objects.

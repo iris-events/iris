@@ -1,27 +1,26 @@
 package org.iris_events.deployment.validation;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.iris_events.annotations.ExchangeType.DIRECT;
 import static org.iris_events.annotations.ExchangeType.TOPIC;
 import static org.iris_events.deployment.constants.AnnotationInstanceParams.DEAD_LETTER_PARAM;
 import static org.iris_events.deployment.constants.AnnotationInstanceParams.NAME_PARAM;
 import static org.iris_events.deployment.constants.AnnotationInstanceParams.ROUTING_KEY_PARAM;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.iris_events.AbstractAnnotationInstanceValidatorTest;
+import org.iris_events.annotations.Message;
+import org.iris_events.common.Queues;
+import org.iris_events.deployment.MessageHandlerValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.common.Queues;
-import org.iris_events.AbstractAnnotationInstanceValidatorTest;
-import org.iris_events.deployment.MessageHandlerValidationException;
 
 class MessageAnnotationValidatorTest extends AbstractAnnotationInstanceValidatorTest {
 

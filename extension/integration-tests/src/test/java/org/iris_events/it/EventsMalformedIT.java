@@ -10,6 +10,12 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.TransactionManager;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.exception.IrisSendException;
+import org.iris_events.producer.EventProducer;
+import org.iris_events.runtime.BasicPropertiesProvider;
+import org.iris_events.runtime.channel.ChannelService;
+import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,12 +25,6 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.runtime.BasicPropertiesProvider;
-import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
-import org.iris_events.exception.IrisSendException;
-import org.iris_events.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest

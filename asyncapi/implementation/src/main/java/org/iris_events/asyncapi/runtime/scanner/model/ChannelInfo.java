@@ -1,8 +1,8 @@
 package org.iris_events.asyncapi.runtime.scanner.model;
 
-import org.jboss.jandex.Type;
-
 import java.util.Set;
+
+import org.jboss.jandex.Type;
 
 public class ChannelInfo {
 
@@ -16,8 +16,8 @@ public class ChannelInfo {
     private final Type responseType;
 
     public ChannelInfo(String eventKey, ChannelBindingsInfo bindingsInfo, OperationBindingsInfo operationBindingsInfo,
-                       String operationType, Set<String> rolesAllowed,
-                       String deadLetterQueue, Integer ttl, Type responseType) {
+            String operationType, Set<String> rolesAllowed,
+            String deadLetterQueue, Integer ttl, Type responseType) {
         this.eventKey = eventKey;
         this.bindingsInfo = bindingsInfo;
         this.operationBindingsInfo = operationBindingsInfo;

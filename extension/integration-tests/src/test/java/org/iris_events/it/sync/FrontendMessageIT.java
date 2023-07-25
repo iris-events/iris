@@ -12,7 +12,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.annotations.Scope;
+import org.iris_events.common.Exchanges;
 import org.iris_events.it.IsolatedEventContextTest;
+import org.iris_events.runtime.channel.ChannelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -22,12 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.annotations.Scope;
-import org.iris_events.common.Exchanges;
-import org.iris_events.runtime.channel.ChannelService;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest

@@ -5,18 +5,17 @@ import static java.util.function.Predicate.not;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.iris_events.asyncapi.parsers.CacheableTtlParser;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Message;
-import org.iris_events.deployment.builditem.MessageInfoBuildItem;
-import org.iris_events.deployment.constants.AnnotationInstanceParams;
+import org.iris_events.asyncapi.parsers.CacheableTtlParser;
 import org.iris_events.asyncapi.parsers.ExchangeParser;
 import org.iris_events.asyncapi.parsers.MessageScopeParser;
 import org.iris_events.asyncapi.parsers.RoutingKeyParser;
+import org.iris_events.deployment.builditem.MessageInfoBuildItem;
+import org.iris_events.deployment.constants.AnnotationInstanceParams;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
 public class MessageAnnotationScanner {
     private static final DotName DOT_NAME_MESSAGE = DotName.createSimple(Message.class.getCanonicalName());

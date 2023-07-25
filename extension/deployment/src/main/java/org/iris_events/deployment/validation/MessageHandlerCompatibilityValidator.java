@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.iris_events.annotations.ExchangeType;
-import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 import org.iris_events.deployment.MessageHandlerValidationException;
+import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 
 public class MessageHandlerCompatibilityValidator {
 

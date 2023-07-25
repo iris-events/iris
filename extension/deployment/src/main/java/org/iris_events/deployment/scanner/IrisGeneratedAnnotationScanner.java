@@ -5,12 +5,11 @@ import static java.util.function.Predicate.not;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.iris_events.annotations.IrisGenerated;
+import org.iris_events.deployment.builditem.MessageInfoBuildItem;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
-
-import org.iris_events.annotations.IrisGenerated;
-import org.iris_events.deployment.builditem.MessageInfoBuildItem;
 
 public class IrisGeneratedAnnotationScanner {
     // TODO this has alot of similarities with MessageAnnotationScanner

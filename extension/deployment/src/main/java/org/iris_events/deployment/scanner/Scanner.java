@@ -3,13 +3,12 @@ package org.iris_events.deployment.scanner;
 import java.util.Collection;
 import java.util.List;
 
-import org.iris_events.deployment.builditem.MessageInfoBuildItem;
-import org.jboss.jandex.IndexView;
-
 import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
+import org.iris_events.deployment.builditem.MessageInfoBuildItem;
 import org.iris_events.deployment.validation.MessageHandlerAnnotationInstanceValidator;
 import org.iris_events.deployment.validation.MessageHandlerCompatibilityValidator;
 import org.iris_events.deployment.validation.SnapshotHandlerAnnotationInstanceValidator;
+import org.jboss.jandex.IndexView;
 
 public class Scanner {
 

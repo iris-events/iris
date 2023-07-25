@@ -1,18 +1,16 @@
 package org.iris_events.asyncapi.runtime.scanner.validator;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.asyncapi.parsers.ExchangeParser;
+import org.iris_events.asyncapi.parsers.RoutingKeyParser;
 import org.iris_events.asyncapi.runtime.exception.AnnotationValidationException;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.asyncapi.parsers.ExchangeParser;
-import org.iris_events.asyncapi.parsers.RoutingKeyParser;
 
 public class MessageAnnotationValidator {
 

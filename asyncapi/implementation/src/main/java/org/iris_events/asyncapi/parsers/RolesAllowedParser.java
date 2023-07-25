@@ -5,12 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.IndexView;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
 
 public class RolesAllowedParser {
     private static final String ROLES_ALLOWED_PARAM = "rolesAllowed";

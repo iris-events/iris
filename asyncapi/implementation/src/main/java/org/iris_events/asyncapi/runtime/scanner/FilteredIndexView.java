@@ -6,14 +6,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.iris_events.asyncapi.api.AsyncApiConfig;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.ModuleInfo;
-
-import org.iris_events.asyncapi.api.AsyncApiConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

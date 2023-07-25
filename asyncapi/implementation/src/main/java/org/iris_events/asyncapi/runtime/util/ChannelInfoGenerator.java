@@ -2,13 +2,12 @@ package org.iris_events.asyncapi.runtime.util;
 
 import java.util.Set;
 
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.asyncapi.runtime.io.channel.operation.OperationConstant;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.OperationBindingsInfo;
 import org.jboss.jandex.Type;
-
-import org.iris_events.asyncapi.runtime.io.channel.operation.OperationConstant;
-import org.iris_events.annotations.ExchangeType;
 
 public class ChannelInfoGenerator {
 

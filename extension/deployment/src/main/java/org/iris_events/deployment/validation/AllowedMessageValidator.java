@@ -3,10 +3,9 @@ package org.iris_events.deployment.validation;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.iris_events.deployment.MessageHandlerValidationException;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
-
-import org.iris_events.deployment.MessageHandlerValidationException;
 
 public class AllowedMessageValidator implements AnnotationInstanceValidator {
 

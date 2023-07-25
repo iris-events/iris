@@ -5,13 +5,12 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
+import org.iris_events.AbstractAnnotationInstanceValidatorTest;
 import org.iris_events.annotations.SnapshotMessageHandler;
 import org.iris_events.common.message.SnapshotRequested;
-import org.iris_events.AbstractAnnotationInstanceValidatorTest;
 import org.iris_events.deployment.MessageHandlerValidationException;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ResourceTypeParamAnnotationValidatorTest extends AbstractAnnotationInstanceValidatorTest {
 

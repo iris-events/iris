@@ -9,8 +9,8 @@ import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ERROR_TYP
 import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_MAX_RETRIES;
 import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_NOTIFY_CLIENT;
 import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ORIGINAL_EXCHANGE;
-import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
 import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ORIGINAL_QUEUE;
+import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_ORIGINAL_ROUTING_KEY;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,18 +20,18 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Delivery;
-
 import org.iris_events.common.Exchanges;
 import org.iris_events.common.Queues;
+import org.iris_events.context.IrisContext;
 import org.iris_events.exception.MessagingException;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.runtime.channel.ChannelService;
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
-import org.iris_events.context.IrisContext;
+
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Delivery;
 
 @ApplicationScoped
 public class MessageRequeueHandler {

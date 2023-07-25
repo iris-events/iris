@@ -6,15 +6,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.List;
 
-import org.jboss.jandex.IndexView;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import org.iris_events.BaseIndexingTest;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
-import org.iris_events.BaseIndexingTest;
 import org.iris_events.deployment.builditem.MessageInfoBuildItem;
+import org.jboss.jandex.IndexView;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class IrisGeneratedAnnotationScannerTest extends BaseIndexingTest {
 
@@ -30,8 +29,7 @@ class IrisGeneratedAnnotationScannerTest extends BaseIndexingTest {
         final var messageHandlerInfoBuildItems = scanService(
                 MessageHandlerService.class,
                 Event.class,
-                IrisGeneratedEvent.class
-        );
+                IrisGeneratedEvent.class);
 
         assertThat(messageHandlerInfoBuildItems, is(notNullValue()));
         assertThat(messageHandlerInfoBuildItems.size(), is(1));

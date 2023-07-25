@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.annotations.Scope;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Type;
 
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.annotations.Scope;
 import io.quarkus.builder.item.MultiBuildItem;
 
 public final class MessageHandlerInfoBuildItem extends MultiBuildItem {

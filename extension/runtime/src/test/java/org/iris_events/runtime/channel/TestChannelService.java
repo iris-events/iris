@@ -1,9 +1,9 @@
 package org.iris_events.runtime.channel;
 
+import jakarta.inject.Inject;
+
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.iris_events.runtime.connection.ConsumerConnectionProvider;
-
-import jakarta.inject.Inject;
 
 public class TestChannelService extends AbstractChannelService {
 

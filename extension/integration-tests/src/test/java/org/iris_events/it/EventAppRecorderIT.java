@@ -1,14 +1,14 @@
 package org.iris_events.it;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 import static org.iris_events.annotations.ExchangeType.DIRECT;
 import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -16,16 +16,16 @@ import java.util.concurrent.TimeUnit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.context.EventContext;
+import org.iris_events.producer.EventProducer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.AMQP;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.context.EventContext;
-import org.iris_events.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest

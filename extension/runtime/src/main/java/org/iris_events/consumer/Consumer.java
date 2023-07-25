@@ -10,21 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.rabbitmq.client.Recoverable;
-import com.rabbitmq.client.RecoveryListener;
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.context.IrisContext;
 import org.iris_events.producer.ExchangeDeclarator;
+import org.iris_events.runtime.QueueNameProvider;
+import org.iris_events.runtime.channel.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.Recoverable;
+import com.rabbitmq.client.RecoveryListener;
 import com.rabbitmq.client.ShutdownSignalException;
-
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.runtime.QueueNameProvider;
-import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.context.IrisContext;
 
 public class Consumer implements RecoveryListener {
     private static final Logger log = LoggerFactory.getLogger(Consumer.class);
@@ -64,7 +63,7 @@ public class Consumer implements RecoveryListener {
         declareTopology(channel, exchangeType);
 
         if (channel instanceof Recoverable) {
-            ((Recoverable)channel).addRecoveryListener(this);
+            ((Recoverable) channel).addRecoveryListener(this);
         }
     }
 

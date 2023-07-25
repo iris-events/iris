@@ -1,11 +1,11 @@
 package org.iris_events.it.auth;
 
-import static org.iris_events.runtime.IrisExceptionHandler.AUTHENTICATION_FAILED_CLIENT_CODE;
-import static org.iris_events.runtime.IrisExceptionHandler.FORBIDDEN_CLIENT_CODE;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.iris_events.runtime.IrisExceptionHandler.AUTHENTICATION_FAILED_CLIENT_CODE;
+import static org.iris_events.runtime.IrisExceptionHandler.FORBIDDEN_CLIENT_CODE;
 
 import java.io.IOException;
 import java.util.Map;
@@ -20,6 +20,12 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.common.Exchanges;
+import org.iris_events.common.MessagingHeaders;
+import org.iris_events.it.AbstractIntegrationTest;
+import org.iris_events.runtime.channel.ChannelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,12 +36,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.common.Exchanges;
-import org.iris_events.common.MessagingHeaders;
-import org.iris_events.it.AbstractIntegrationTest;
-import org.iris_events.runtime.channel.ChannelService;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -168,7 +168,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
             jwtSubCompletableFuture.complete(jsonWebToken.getSubject());
         }
 
-        @MessageHandler(rolesAllowed = @RolesAllowed( "group.owner" ))
+        @MessageHandler(rolesAllowed = @RolesAllowed("group.owner"))
         public void handle(JwtRoleSecuredHandlerMessage message) {
             jwtSubCompletableFuture.complete(jsonWebToken.getSubject());
         }

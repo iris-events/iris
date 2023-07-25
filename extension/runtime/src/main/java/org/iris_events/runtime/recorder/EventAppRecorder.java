@@ -1,10 +1,10 @@
 package org.iris_events.runtime.recorder;
 
+import org.iris_events.context.EventAppContext;
+import org.iris_events.runtime.EventAppInfoProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.iris_events.runtime.EventAppInfoProvider;
-import org.iris_events.context.EventAppContext;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
 

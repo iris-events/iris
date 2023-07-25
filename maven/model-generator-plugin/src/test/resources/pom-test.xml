@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <appName>uuuu</appName>
+        <appVersion>2.0.0</appVersion>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>17</java.version>
+    </properties>
+
+    <groupId>id.vojko</groupId>
+    <artifactId>amqp-models-${appName}</artifactId>
+    <version>${appVersion}</version>
+    <name>Models for ${appName}</name>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.13.4</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.iris-events</groupId>
+                <artifactId>amqp-generator-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate-amqp-models</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactSource>FILE</artifactSource>
+                    <asyncApiFilename>asyncapi.json</asyncApiFilename>
+                    <asyncApiDirectory>target,generated</asyncApiDirectory>
+                    <modelVersion>${project.version}</modelVersion>
+                    <modelName>${project.artifactId}</modelName>
+                    <packageName>org.iris_events.test.models</packageName>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,12 +1,12 @@
 package org.iris_events.asyncapi.runtime.json;
 
+import org.iris_events.asyncapi.runtime.io.MixinResolver;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-
-import org.iris_events.asyncapi.runtime.io.MixinResolver;
 
 public class IrisObjectMapper {
     private static final ObjectMapper MAPPER = new ObjectMapper()

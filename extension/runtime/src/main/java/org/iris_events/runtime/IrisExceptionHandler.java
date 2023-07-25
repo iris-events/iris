@@ -6,8 +6,15 @@ import java.util.HashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.ValidationException;
 
+import org.iris_events.common.ErrorMessageDetailsBuilder;
+import org.iris_events.common.ErrorType;
+import org.iris_events.common.message.ErrorMessage;
+import org.iris_events.context.EventContext;
+import org.iris_events.context.IrisContext;
 import org.iris_events.exception.*;
+import org.iris_events.runtime.requeue.MessageRequeueHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,16 +23,9 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-import org.iris_events.common.ErrorMessageDetailsBuilder;
-import org.iris_events.common.ErrorType;
-import org.iris_events.common.message.ErrorMessage;
-import org.iris_events.context.EventContext;
-import org.iris_events.context.IrisContext;
-import org.iris_events.runtime.requeue.MessageRequeueHandler;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
-import jakarta.validation.ValidationException;
 
 @ApplicationScoped
 public class IrisExceptionHandler {
@@ -83,7 +83,8 @@ public class IrisExceptionHandler {
         }
     }
 
-    private void handleSecurityException(final Delivery message, final Channel channel, final org.iris_events.exception.SecurityException exception)
+    private void handleSecurityException(final Delivery message, final Channel channel,
+            final org.iris_events.exception.SecurityException exception)
             throws IOException {
         final var originalExchange = message.getEnvelope().getExchange();
         final var originalRoutingKey = message.getEnvelope().getRoutingKey();
@@ -161,7 +162,8 @@ public class IrisExceptionHandler {
         }
     }
 
-    public static org.iris_events.exception.SecurityException getSecurityException(java.lang.SecurityException securityException) {
+    public static org.iris_events.exception.SecurityException getSecurityException(
+            java.lang.SecurityException securityException) {
         // TODO: change with switch once available as non-preview
         final var message = securityException.getMessage();
         final var cause = securityException.getCause();

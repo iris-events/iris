@@ -3,7 +3,8 @@ package org.iris_events.asyncapi.runtime.scanner.model;
 /**
  * Flags to enable/disable certain aspects of the {@link GidOpenApiModule}'s processing.
  * Gid Open Api Option inspired by
- * <a href="https://github.com/victools/jsonschema-generator/tree/main/jsonschema-module-swagger-1.5">Java JSON Schema Generator – Module Swagger (1.5)</a>.
+ * <a href="https://github.com/victools/jsonschema-generator/tree/main/jsonschema-module-swagger-1.5">Java JSON Schema Generator
+ * – Module Swagger (1.5)</a>.
  */
 public enum GidOpenApiOption {
     /**

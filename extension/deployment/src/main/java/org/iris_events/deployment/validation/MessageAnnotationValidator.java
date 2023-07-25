@@ -6,17 +6,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
+import org.iris_events.asyncapi.runtime.scanner.validator.ReservedIrisNamesProvider;
+import org.iris_events.common.Queues;
+import org.iris_events.deployment.MessageHandlerValidationException;
+import org.iris_events.deployment.constants.AnnotationInstanceParams;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
-
-import org.iris_events.asyncapi.runtime.scanner.validator.ReservedIrisNamesProvider;
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.common.Queues;
-import org.iris_events.deployment.MessageHandlerValidationException;
-import org.iris_events.deployment.constants.AnnotationInstanceParams;
-import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
 
 public class MessageAnnotationValidator implements AnnotationInstanceValidator {
 

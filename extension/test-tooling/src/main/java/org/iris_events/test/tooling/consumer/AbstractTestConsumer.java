@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import org.iris_events.common.MessagingHeaders;
+import org.iris_events.common.message.ErrorMessage;
+import org.iris_events.runtime.channel.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,10 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
-
-import org.iris_events.common.MessagingHeaders;
-import org.iris_events.common.message.ErrorMessage;
-import org.iris_events.runtime.channel.ChannelService;
 
 public abstract class AbstractTestConsumer {
     private static final Logger log = LoggerFactory.getLogger(AbstractTestConsumer.class);

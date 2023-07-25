@@ -1,8 +1,8 @@
 package org.iris_events.it.sync;
 
-import static org.iris_events.annotations.ExchangeType.TOPIC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.iris_events.annotations.ExchangeType.TOPIC;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
 import org.iris_events.it.IsolatedEventContextTest;
 import org.iris_events.producer.EventProducer;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,8 +21,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest

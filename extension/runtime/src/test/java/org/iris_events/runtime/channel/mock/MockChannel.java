@@ -1,5 +1,11 @@
 package org.iris_events.runtime.channel.mock;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.CancelCallback;
@@ -17,12 +23,6 @@ import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MockChannel implements Channel {
     private final AtomicInteger closeCount;
@@ -132,12 +132,14 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public void basicPublish(String s, String s1, boolean b, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
+    public void basicPublish(String s, String s1, boolean b, AMQP.BasicProperties basicProperties, byte[] bytes)
+            throws IOException {
 
     }
 
     @Override
-    public void basicPublish(String s, String s1, boolean b, boolean b1, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
+    public void basicPublish(String s, String s1, boolean b, boolean b1, AMQP.BasicProperties basicProperties, byte[] bytes)
+            throws IOException {
 
     }
 
@@ -157,37 +159,44 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, BuiltinExchangeType builtinExchangeType, boolean b) throws IOException {
+    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, BuiltinExchangeType builtinExchangeType, boolean b)
+            throws IOException {
         return null;
     }
 
     @Override
-    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, String s1, boolean b, boolean b1, Map<String, Object> map) throws IOException {
+    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, String s1, boolean b, boolean b1, Map<String, Object> map)
+            throws IOException {
         return null;
     }
 
     @Override
-    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, BuiltinExchangeType builtinExchangeType, boolean b, boolean b1, Map<String, Object> map) throws IOException {
+    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, BuiltinExchangeType builtinExchangeType, boolean b, boolean b1,
+            Map<String, Object> map) throws IOException {
         return null;
     }
 
     @Override
-    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, String s1, boolean b, boolean b1, boolean b2, Map<String, Object> map) throws IOException {
+    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, String s1, boolean b, boolean b1, boolean b2,
+            Map<String, Object> map) throws IOException {
         return null;
     }
 
     @Override
-    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, BuiltinExchangeType builtinExchangeType, boolean b, boolean b1, boolean b2, Map<String, Object> map) throws IOException {
+    public AMQP.Exchange.DeclareOk exchangeDeclare(String s, BuiltinExchangeType builtinExchangeType, boolean b, boolean b1,
+            boolean b2, Map<String, Object> map) throws IOException {
         return null;
     }
 
     @Override
-    public void exchangeDeclareNoWait(String s, String s1, boolean b, boolean b1, boolean b2, Map<String, Object> map) throws IOException {
+    public void exchangeDeclareNoWait(String s, String s1, boolean b, boolean b1, boolean b2, Map<String, Object> map)
+            throws IOException {
 
     }
 
     @Override
-    public void exchangeDeclareNoWait(String s, BuiltinExchangeType builtinExchangeType, boolean b, boolean b1, boolean b2, Map<String, Object> map) throws IOException {
+    public void exchangeDeclareNoWait(String s, BuiltinExchangeType builtinExchangeType, boolean b, boolean b1, boolean b2,
+            Map<String, Object> map) throws IOException {
 
     }
 
@@ -247,7 +256,8 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public AMQP.Queue.DeclareOk queueDeclare(String s, boolean b, boolean b1, boolean b2, Map<String, Object> map) throws IOException {
+    public AMQP.Queue.DeclareOk queueDeclare(String s, boolean b, boolean b1, boolean b2, Map<String, Object> map)
+            throws IOException {
         return null;
     }
 
@@ -337,12 +347,14 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public String basicConsume(String s, DeliverCallback deliverCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, DeliverCallback deliverCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, DeliverCallback deliverCallback, CancelCallback cancelCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, DeliverCallback deliverCallback, CancelCallback cancelCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
@@ -352,17 +364,20 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public String basicConsume(String s, boolean b, DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
+    public String basicConsume(String s, boolean b, DeliverCallback deliverCallback, CancelCallback cancelCallback)
+            throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, DeliverCallback deliverCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, DeliverCallback deliverCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, DeliverCallback deliverCallback, CancelCallback cancelCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, DeliverCallback deliverCallback, CancelCallback cancelCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
@@ -372,17 +387,20 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public String basicConsume(String s, boolean b, Map<String, Object> map, DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
+    public String basicConsume(String s, boolean b, Map<String, Object> map, DeliverCallback deliverCallback,
+            CancelCallback cancelCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, Map<String, Object> map, DeliverCallback deliverCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, Map<String, Object> map, DeliverCallback deliverCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, Map<String, Object> map, DeliverCallback deliverCallback, CancelCallback cancelCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, Map<String, Object> map, DeliverCallback deliverCallback,
+            CancelCallback cancelCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
@@ -392,37 +410,45 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public String basicConsume(String s, boolean b, String s1, DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
+    public String basicConsume(String s, boolean b, String s1, DeliverCallback deliverCallback, CancelCallback cancelCallback)
+            throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, String s1, DeliverCallback deliverCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, String s1, DeliverCallback deliverCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, String s1, DeliverCallback deliverCallback, CancelCallback cancelCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, String s1, DeliverCallback deliverCallback, CancelCallback cancelCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map, Consumer consumer) throws IOException {
+    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map,
+            Consumer consumer) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map, DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
+    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map,
+            DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map, DeliverCallback deliverCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map,
+            DeliverCallback deliverCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 
     @Override
-    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map, DeliverCallback deliverCallback, CancelCallback cancelCallback, ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2, Map<String, Object> map,
+            DeliverCallback deliverCallback, CancelCallback cancelCallback,
+            ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
         return null;
     }
 

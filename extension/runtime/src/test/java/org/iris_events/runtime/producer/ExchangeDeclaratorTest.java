@@ -5,7 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 
+import org.iris_events.annotations.ExchangeType;
 import org.iris_events.producer.ExchangeDeclarator;
+import org.iris_events.runtime.channel.ChannelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,9 +16,6 @@ import org.mockito.Mockito;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.impl.AMQImpl;
-
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.runtime.channel.ChannelService;
 
 class ExchangeDeclaratorTest {
 

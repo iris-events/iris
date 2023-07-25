@@ -1,9 +1,8 @@
 package org.iris_events.asyncapi.parsers;
 
+import org.iris_events.annotations.MessageHandler;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
-
-import org.iris_events.annotations.MessageHandler;
 
 @SuppressWarnings("unused")
 public class ConsumerPerInstanceParser {

@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
 
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.IrisGenerated;
@@ -15,6 +13,8 @@ import org.iris_events.annotations.MessageHandler;
 import org.iris_events.annotations.Scope;
 import org.iris_events.annotations.SnapshotMessageHandler;
 import org.iris_events.common.message.SnapshotRequested;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
 
 public class BaseIndexingTest {
     protected Index indexOf(Class<?>... classes) {

@@ -19,16 +19,25 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
+import jakarta.validation.constraints.NotNull;
 
 import org.iris_events.annotations.CachedMessage;
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.parsers.*;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.common.message.ResourceMessage;
+import org.iris_events.context.EventContext;
 import org.iris_events.exception.IrisSendException;
 import org.iris_events.exception.IrisTransactionException;
+import org.iris_events.runtime.BasicPropertiesProvider;
+import org.iris_events.runtime.channel.ChannelKey;
+import org.iris_events.runtime.channel.ChannelService;
+import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.iris_events.tx.TransactionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,16 +47,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
-
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.annotations.Scope;
-import org.iris_events.common.message.ResourceMessage;
-import org.iris_events.runtime.BasicPropertiesProvider;
-import org.iris_events.runtime.channel.ChannelKey;
-import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.context.EventContext;
-import jakarta.validation.constraints.NotNull;
-import jakarta.transaction.Status;
 
 @ApplicationScoped
 public class EventProducer {
@@ -90,7 +89,7 @@ public class EventProducer {
      * Send message using Iris infrastructure.
      *
      * @param message message
-     * @throws IrisSendException        when sending fails
+     * @throws IrisSendException when sending fails
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message) throws IrisSendException, IrisTransactionException {
@@ -106,8 +105,8 @@ public class EventProducer {
      * Scope of current event will be changed to USER if event is of client scope (SESSION, USER, BROADCAST).
      *
      * @param message message
-     * @param userId  user id
-     * @throws IrisSendException        when sending fails
+     * @param userId user id
+     * @throws IrisSendException when sending fails
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message, final String userId) throws IrisSendException, IrisTransactionException {
@@ -117,10 +116,10 @@ public class EventProducer {
     /**
      * Send message to Iris subscription service.
      *
-     * @param message      message
+     * @param message message
      * @param resourceType resource type
-     * @param resourceId   resource id
-     * @throws IrisSendException        when sending fails
+     * @param resourceId resource id
+     * @throws IrisSendException when sending fails
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void sendToSubscription(final Object message, final String resourceType, final String resourceId)
@@ -338,7 +337,7 @@ public class EventProducer {
     }
 
     private String getRoutingKey(org.iris_events.annotations.Message messageAnnotation,
-                                 final ExchangeType exchangeType) {
+            final ExchangeType exchangeType) {
         if (exchangeType == ExchangeType.FANOUT) {
             return "";
         }

@@ -1,8 +1,9 @@
 package org.iris_events.producer;
 
+import java.util.Objects;
+
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
-import java.util.Objects;
 
 public final class RoutingDetails {
     private final String eventName;
@@ -81,9 +82,11 @@ public final class RoutingDetails {
         final RoutingDetails that = (RoutingDetails) o;
         return persistent == that.persistent && Objects.equals(eventName, that.eventName) && Objects.equals(
                 exchange, that.exchange) && exchangeType == that.exchangeType && Objects.equals(routingKey,
-                that.routingKey) && scope == that.scope && Objects.equals(userId, that.userId)
+                        that.routingKey)
+                && scope == that.scope && Objects.equals(userId, that.userId)
                 && Objects.equals(sessionId, that.sessionId) && Objects.equals(subscriptionId,
-                that.subscriptionId) && Objects.equals(cacheTtl, that.cacheTtl);
+                        that.subscriptionId)
+                && Objects.equals(cacheTtl, that.cacheTtl);
     }
 
     @Override

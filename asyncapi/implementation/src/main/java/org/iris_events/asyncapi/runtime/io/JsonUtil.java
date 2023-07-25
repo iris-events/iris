@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
 
 /**
  * Utilities methods for reading information from a Json Tree.

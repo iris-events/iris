@@ -9,12 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Test;
-
+import org.iris_events.annotations.ExchangeType;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.OperationBindingsInfo;
-import org.iris_events.annotations.ExchangeType;
+import org.junit.jupiter.api.Test;
 
 public class ChannelInfoGeneratorTest {
 

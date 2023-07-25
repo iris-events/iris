@@ -10,16 +10,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.iris_events.asyncapi.runtime.io.JsonUtil;
 import org.iris_events.asyncapi.runtime.scanner.model.GidAai20Schema;
 import org.iris_events.asyncapi.runtime.util.JandexUtil;
+import org.iris_events.asyncapi.spec.annotations.enums.SchemaType;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import org.iris_events.asyncapi.runtime.io.JsonUtil;
-import org.iris_events.asyncapi.spec.annotations.enums.SchemaType;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Schema;
 

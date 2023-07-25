@@ -9,13 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
+import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
-import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
-import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
 
 class ClientDefinitionParserTest {
     private static final String ASYNCAPI_FE_FILE = "src/test/resources/asyncapi_fe_test.json";

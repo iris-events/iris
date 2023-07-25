@@ -4,12 +4,12 @@ import jakarta.inject.Inject;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.iris_events.runtime.connection.ConsumerConnectionProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.Connection;
 
-import org.iris_events.runtime.connection.ConsumerConnectionProvider;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest

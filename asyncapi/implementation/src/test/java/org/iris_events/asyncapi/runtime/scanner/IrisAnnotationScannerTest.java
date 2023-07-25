@@ -1,16 +1,20 @@
 package org.iris_events.asyncapi.runtime.scanner;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.iris_events.annotations.CachedMessage;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.annotations.SnapshotMessageHandler;
+import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
 import org.iris_events.asyncapi.runtime.scanner.app.EventHandlersApp;
 import org.iris_events.asyncapi.runtime.scanner.app.EventHandlersAppWithMapProperty;
 import org.iris_events.asyncapi.runtime.scanner.app.ParseErrorEventHandlersApp;
+import org.iris_events.common.message.SnapshotRequested;
 import org.jboss.jandex.Index;
 import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
@@ -18,11 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.annotations.SnapshotMessageHandler;
-import org.iris_events.common.message.SnapshotRequested;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 
 public class IrisAnnotationScannerTest extends IndexScannerTestBase {

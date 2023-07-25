@@ -7,10 +7,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import com.rabbitmq.client.BuiltinExchangeType;
-
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.runtime.channel.ChannelService;
+
+import com.rabbitmq.client.BuiltinExchangeType;
 
 @ApplicationScoped
 public class ExchangeDeclarator {

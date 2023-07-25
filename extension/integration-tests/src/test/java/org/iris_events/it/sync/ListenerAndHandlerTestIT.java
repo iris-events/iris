@@ -1,8 +1,8 @@
 package org.iris_events.it.sync;
 
-import static org.iris_events.annotations.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.iris_events.annotations.ExchangeType.DIRECT;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -15,8 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
 import org.iris_events.it.IsolatedEventContextTest;
 import org.iris_events.producer.EventProducer;
+import org.iris_events.runtime.channel.ChannelKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,9 +27,6 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.ConfirmListener;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.runtime.channel.ChannelKey;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest

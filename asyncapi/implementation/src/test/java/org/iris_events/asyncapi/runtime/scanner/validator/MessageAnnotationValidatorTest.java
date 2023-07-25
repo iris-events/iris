@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.asyncapi.runtime.exception.AnnotationValidationException;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -21,10 +24,6 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.junit.jupiter.api.Test;
-
-import org.iris_events.asyncapi.runtime.exception.AnnotationValidationException;
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
 
 class MessageAnnotationValidatorTest {
 

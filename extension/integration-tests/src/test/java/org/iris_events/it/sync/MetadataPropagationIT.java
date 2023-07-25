@@ -1,8 +1,8 @@
 package org.iris_events.it.sync;
 
-import static org.iris_events.annotations.ExchangeType.DIRECT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.iris_events.annotations.ExchangeType.DIRECT;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -11,11 +11,15 @@ import java.util.concurrent.TimeUnit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.iris_events.it.IsolatedEventContextTest;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.context.EventContext;
 import org.iris_events.exception.IrisSendException;
 import org.iris_events.exception.IrisTransactionException;
+import org.iris_events.it.IsolatedEventContextTest;
 import org.iris_events.producer.CorrelationIdProvider;
 import org.iris_events.producer.EventProducer;
+import org.iris_events.runtime.InstanceInfoProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,12 +28,8 @@ import org.mockito.Mockito;
 
 import com.rabbitmq.client.AMQP;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.runtime.InstanceInfoProvider;
-import org.iris_events.context.EventContext;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

@@ -8,24 +8,24 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.iris_events.asyncapi.runtime.scanner.model.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import org.iris_events.asyncapi.spec.annotations.media.Schema;
-import org.iris_events.asyncapi.spec.annotations.media.SchemaProperty;
+import org.iris_events.annotations.CachedMessage;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
 import org.iris_events.annotations.Scope;
-import org.iris_events.annotations.CachedMessage;
 import org.iris_events.annotations.SnapshotMessageHandler;
+import org.iris_events.asyncapi.runtime.scanner.model.User;
+import org.iris_events.asyncapi.spec.annotations.media.Schema;
+import org.iris_events.asyncapi.spec.annotations.media.SchemaProperty;
 import org.iris_events.common.message.SnapshotRequested;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class EventHandlersApp {
     private static final Logger LOG = LoggerFactory.getLogger(EventHandlersApp.class);
@@ -43,7 +43,7 @@ public class EventHandlersApp {
     }
 
     @SuppressWarnings("unused")
-    @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = @RolesAllowed({"admin.reward", "**"}) )
+    @MessageHandler(bindingKeys = "default-test-event-v1", rolesAllowed = @RolesAllowed({ "admin.reward", "**" }))
     public void handleEventV1(TestEventV1 event) {
         LOG.info("Handle event: " + event);
     }
@@ -116,23 +116,17 @@ public class EventHandlersApp {
     @Message(name = "test-event-with-documentation", exchangeType = DIRECT, persistent = true)
     @Schema(implementation = TestEventWithDocumentation.class, description = "Event with extensive documentation for test purposes")
     public record TestEventWithDocumentation(
-            @SchemaProperty(name = "id", minimum = "5", maximum = "100", exclusiveMaximum = true)
-            int id,
-            @Min(value = 18, message = "Age should not be less than 18")
-            @Max(value = 150, message = "Age should not be greater than 150")
-            @SchemaProperty(description = "Alternative event id")
-            int altId,
-            @SchemaProperty(name = "status",
-                    description = "status of the user entity",
-                    enumeration = { "available", "pending", "sold" })
-            String status,
-            User user) {
+            @SchemaProperty(name = "id", minimum = "5", maximum = "100", exclusiveMaximum = true) int id,
+            @Min(value = 18, message = "Age should not be less than 18") @Max(value = 150, message = "Age should not be greater than 150") @SchemaProperty(description = "Alternative event id") int altId,
+            @SchemaProperty(name = "status", description = "status of the user entity", enumeration = {
+                    "available", "pending", "sold" }) String status,
+            User user){
     }
 
     @Message(name = "test-event-with-requirements", exchangeType = DIRECT, persistent = true)
     public record TestEventWithRequirements(@NotNull int id,
-                                            @NotNull String status,
-                                            User user) {
+            @NotNull String status,
+            User user) {
     }
 
     @Message(name = "namespace/test-event-v1", exchangeType = DIRECT, rolesAllowed = @RolesAllowed({ "admin.award",

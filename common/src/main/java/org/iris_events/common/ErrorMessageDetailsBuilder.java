@@ -3,9 +3,6 @@ package org.iris_events.common;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.iris_events.common.Exchanges;
-import org.iris_events.common.MessagingHeaders;
-
 public class ErrorMessageDetailsBuilder {
 
     public static final String ERROR_ROUTING_KEY_SUFFIX = ".error";

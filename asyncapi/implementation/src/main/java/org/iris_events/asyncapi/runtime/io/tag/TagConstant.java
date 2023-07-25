@@ -1,9 +1,8 @@
 package org.iris_events.asyncapi.runtime.io.tag;
 
-import org.jboss.jandex.DotName;
-
 import org.iris_events.asyncapi.spec.annotations.tags.Tag;
 import org.iris_events.asyncapi.spec.annotations.tags.Tags;
+import org.jboss.jandex.DotName;
 
 /**
  * Constants related to Server

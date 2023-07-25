@@ -3,7 +3,7 @@ package org.iris_events.asyncapi.runtime.scanner.model;
 import org.iris_events.asyncapi.spec.annotations.media.Schema;
 import org.iris_events.asyncapi.spec.annotations.media.SchemaProperty;
 
-@Schema(description="This is a User schema component")
+@Schema(description = "This is a User schema component")
 public class User {
     @SchemaProperty(description = "Name of the user")
     private String name;

@@ -1,29 +1,30 @@
 package org.iris_events.consumer;
 
+import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
+import org.iris_events.common.Exchanges;
+import org.iris_events.exception.IrisConnectionException;
+import org.iris_events.runtime.InstanceInfoProvider;
+import org.iris_events.runtime.QueueNameProvider;
+import org.iris_events.runtime.channel.ChannelService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.rabbitmq.client.CancelCallback;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Recoverable;
 import com.rabbitmq.client.RecoveryListener;
-import org.iris_events.common.Exchanges;
-import org.iris_events.runtime.InstanceInfoProvider;
-import org.iris_events.runtime.QueueNameProvider;
-import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.exception.IrisConnectionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.iris_events.common.MessagingHeaders.QueueDeclaration.X_MESSAGE_TTL;
 
 @ApplicationScoped
 public class FrontendEventConsumer implements RecoveryListener {

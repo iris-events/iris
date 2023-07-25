@@ -9,20 +9,20 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.List;
 
 import jakarta.annotation.security.RolesAllowed;
+
+import org.iris_events.BaseIndexingTest;
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.annotations.Scope;
+import org.iris_events.annotations.SnapshotMessageHandler;
+import org.iris_events.common.message.SnapshotRequested;
+import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
+import org.iris_events.deployment.validation.AnnotationInstanceValidator;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.annotations.Scope;
-import org.iris_events.annotations.SnapshotMessageHandler;
-import org.iris_events.common.message.SnapshotRequested;
-import org.iris_events.BaseIndexingTest;
-import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
-import org.iris_events.deployment.validation.AnnotationInstanceValidator;
 
 class SnapshotMessageHandlerAnnotationScannerTest extends BaseIndexingTest {
 
@@ -93,7 +93,7 @@ class SnapshotMessageHandlerAnnotationScannerTest extends BaseIndexingTest {
     @SuppressWarnings("unused")
     public static class SnapshotMessageHandlerService {
 
-        @SnapshotMessageHandler(resourceType = "apple-resource", rolesAllowed = @RolesAllowed( "**" ), prefetchCount = 3)
+        @SnapshotMessageHandler(resourceType = "apple-resource", rolesAllowed = @RolesAllowed("**"), prefetchCount = 3)
         public void handleSnapshotApple(SnapshotRequested snapshotRequested) {
             System.out.println("Handling snapshotRequested");
         }

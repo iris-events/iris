@@ -11,20 +11,19 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import org.iris_events.auth.IrisJwtValidator;
+import org.iris_events.context.EventContext;
+import org.iris_events.context.IrisContext;
+import org.iris_events.context.MethodHandleContext;
 import org.iris_events.exception.IrisConnectionException;
-import org.iris_events.runtime.IrisExceptionHandler;
 import org.iris_events.producer.EventProducer;
 import org.iris_events.producer.ExchangeDeclarator;
+import org.iris_events.runtime.IrisExceptionHandler;
+import org.iris_events.runtime.QueueNameProvider;
+import org.iris_events.runtime.channel.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.iris_events.runtime.QueueNameProvider;
-import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.context.EventContext;
-import org.iris_events.context.IrisContext;
-import org.iris_events.context.MethodHandleContext;
 
 @ApplicationScoped
 public class ConsumerContainer {

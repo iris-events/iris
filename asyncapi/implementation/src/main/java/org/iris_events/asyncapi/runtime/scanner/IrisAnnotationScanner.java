@@ -27,13 +27,18 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.iris_events.annotations.*;
+import org.iris_events.asyncapi.api.AsyncApiConfig;
 import org.iris_events.asyncapi.parsers.*;
 import org.iris_events.asyncapi.runtime.generator.CustomDefinitionProvider;
+import org.iris_events.asyncapi.runtime.io.components.ComponentReader;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.GidOpenApiModule;
 import org.iris_events.asyncapi.runtime.scanner.model.GidOpenApiOption;
 import org.iris_events.asyncapi.runtime.scanner.model.JsonSchemaInfo;
 import org.iris_events.asyncapi.runtime.scanner.validator.MessageAnnotationValidator;
+import org.iris_events.asyncapi.runtime.util.ChannelInfoGenerator;
+import org.iris_events.asyncapi.runtime.util.SchemeIdGenerator;
+import org.iris_events.common.HandlerDefaultParameter;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -55,11 +60,6 @@ import com.github.victools.jsonschema.module.jackson.JacksonOption;
 import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationModule;
 import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationOption;
 
-import org.iris_events.asyncapi.api.AsyncApiConfig;
-import org.iris_events.asyncapi.runtime.io.components.ComponentReader;
-import org.iris_events.asyncapi.runtime.util.ChannelInfoGenerator;
-import org.iris_events.asyncapi.runtime.util.SchemeIdGenerator;
-import org.iris_events.common.HandlerDefaultParameter;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
 import io.apicurio.datamodels.asyncapi.v2.models.Aai20Info;
 
@@ -86,12 +86,12 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
     /**
      * Constructor.
      *
-     * @param config      AsyncApiConfig instance
-     * @param index       IndexView of deployment
+     * @param config AsyncApiConfig instance
+     * @param index IndexView of deployment
      * @param projectName Name of project
      */
     public IrisAnnotationScanner(AsyncApiConfig config, IndexView index, String projectName, String projectGroupId,
-                                 String projectVersion) {
+            String projectVersion) {
         super(config, index);
         this.schemaGenerator = initSchemaGenerator(config);
         this.projectName = projectName;
@@ -100,8 +100,8 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
     }
 
     public IrisAnnotationScanner(AsyncApiConfig config, IndexView index, ClassLoader classLoader, String projectName,
-                                 String projectGroupId,
-                                 String projectVersion) {
+            String projectGroupId,
+            String projectVersion) {
         super(config, index, classLoader);
         this.schemaGenerator = initSchemaGenerator(config);
         this.projectName = projectName;
@@ -373,9 +373,8 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
                     .forEach(jsonNode -> {
                         final var objectNode = (ObjectNode) jsonNode;
                         var allOf = jsonNode.get("allOf");
-                        allOf.forEach(allOfItem ->
-                                allOfItem.fields().forEachRemaining(stringJsonNodeEntry ->
-                                        objectNode.set(stringJsonNodeEntry.getKey(), stringJsonNodeEntry.getValue())));
+                        allOf.forEach(allOfItem -> allOfItem.fields().forEachRemaining(stringJsonNodeEntry -> objectNode
+                                .set(stringJsonNodeEntry.getKey(), stringJsonNodeEntry.getValue())));
                         objectNode.remove("allOf");
                     });
         }

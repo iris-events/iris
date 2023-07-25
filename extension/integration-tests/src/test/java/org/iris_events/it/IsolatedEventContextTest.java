@@ -2,9 +2,9 @@ package org.iris_events.it;
 
 import jakarta.inject.Inject;
 
+import org.iris_events.context.EventContext;
 import org.junit.jupiter.api.BeforeEach;
 
-import org.iris_events.context.EventContext;
 import io.quarkus.test.junit.QuarkusMock;
 
 public abstract class IsolatedEventContextTest {

@@ -2,10 +2,11 @@ package org.iris_events.asyncapi.runtime.io;
 
 import java.io.IOException;
 
+import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 
 /**

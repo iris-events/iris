@@ -19,6 +19,7 @@ package org.iris_events.asyncapi.api.util;
 import java.util.Set;
 
 import org.iris_events.asyncapi.api.AsyncApiConfig;
+
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import io.apicurio.datamodels.core.models.Document;
 

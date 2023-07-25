@@ -10,16 +10,15 @@ import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.iris_events.AbstractAnnotationInstanceValidatorTest;
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.deployment.MessageHandlerValidationException;
+import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Type;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.AbstractAnnotationInstanceValidatorTest;
-import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
-import org.iris_events.deployment.MessageHandlerValidationException;
 
 class MessageHandlerCompatibilityValidatorTest extends AbstractAnnotationInstanceValidatorTest {
 

@@ -4,7 +4,6 @@ import org.iris_events.annotations.CachedMessage;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
-
 public class CacheableTtlParser {
 
     private static final String MESSAGE_TTL_PARAM = "ttl";

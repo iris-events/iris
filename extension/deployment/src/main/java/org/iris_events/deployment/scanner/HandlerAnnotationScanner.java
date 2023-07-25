@@ -5,11 +5,10 @@ import static java.util.function.Predicate.not;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
-
-import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 
 public abstract class HandlerAnnotationScanner {
 

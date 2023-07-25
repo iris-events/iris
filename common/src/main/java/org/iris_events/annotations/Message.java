@@ -5,6 +5,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 import jakarta.annotation.security.RolesAllowed;
 
 import org.iris_events.common.Queues;
@@ -64,7 +65,8 @@ public @interface Message {
     Class<?> response() default Void.class;
 
     /**
-     * Defines whether message delivery mode is persistent.Persistent messages will be written to disk by the broker as soon as they reach the queue.
+     * Defines whether message delivery mode is persistent.Persistent messages will be written to disk by the broker as soon as
+     * they reach the queue.
      */
     boolean persistent() default false;
 }

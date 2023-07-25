@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
+import org.iris_events.asyncapi.runtime.io.schema.SchemaReader;
+import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.iris_events.asyncapi.runtime.io.schema.SchemaReader;
-import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
 import io.apicurio.datamodels.asyncapi.models.AaiSchema;
 
 public class SchemaReaderTest extends IndexScannerTestBase {

@@ -1,15 +1,14 @@
 package org.iris_events.deployment.validation;
 
+import org.iris_events.annotations.Scope;
+import org.iris_events.asyncapi.parsers.MessageScopeParser;
+import org.iris_events.deployment.MessageHandlerValidationException;
+import org.iris_events.deployment.constants.AnnotationInstanceParams;
+import org.iris_events.deployment.scanner.ScannerUtils;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
-
-import org.iris_events.annotations.Scope;
-import org.iris_events.deployment.MessageHandlerValidationException;
-import org.iris_events.deployment.constants.AnnotationInstanceParams;
-import org.iris_events.deployment.scanner.ScannerUtils;
-import org.iris_events.asyncapi.parsers.MessageScopeParser;
 
 public class PerInstanceParamAnnotationValidator implements AnnotationInstanceValidator {
 

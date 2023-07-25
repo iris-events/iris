@@ -1,9 +1,9 @@
 package org.iris_events.deployment.builditem;
 
-import org.jboss.jandex.ClassInfo;
-
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
+import org.jboss.jandex.ClassInfo;
+
 import io.quarkus.builder.item.MultiBuildItem;
 
 public final class MessageInfoBuildItem extends MultiBuildItem {

@@ -2,22 +2,21 @@ package org.iris_events.deployment.scanner;
 
 import java.util.List;
 
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.SnapshotMessageHandler;
-import org.iris_events.common.HandlerDefaultParameter;
-import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
-import org.iris_events.deployment.constants.AnnotationInstanceParams;
-import org.iris_events.deployment.validation.AnnotationInstanceValidator;
 import org.iris_events.asyncapi.parsers.ConsumerPrefetchCountParser;
 import org.iris_events.asyncapi.parsers.DeadLetterQueueParser;
 import org.iris_events.asyncapi.parsers.ExchangeParser;
 import org.iris_events.asyncapi.parsers.ExchangeTtlParser;
 import org.iris_events.asyncapi.parsers.MessageScopeParser;
 import org.iris_events.asyncapi.parsers.RolesAllowedParser;
+import org.iris_events.common.HandlerDefaultParameter;
+import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
+import org.iris_events.deployment.constants.AnnotationInstanceParams;
+import org.iris_events.deployment.validation.AnnotationInstanceValidator;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
 public class SnapshotMessageHandlerAnnotationScanner extends HandlerAnnotationScanner {
 

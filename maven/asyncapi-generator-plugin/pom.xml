@@ -8,7 +8,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>asyncapi-schema-generator-maven-plugin</artifactId>
+    <artifactId>asyncapi-schema-generator-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>Iris Maven - AsyncAPI schema generator</name>
     <description>Maven plugin for generating AsyncAPI schema within maven build phase.</description>

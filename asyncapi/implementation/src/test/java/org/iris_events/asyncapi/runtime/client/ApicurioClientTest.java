@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.iris_events.asyncapi.runtime.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +25,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import org.iris_events.asyncapi.runtime.util.StreamUtil;
 import io.apicurio.registry.rest.client.impl.RegistryClientImpl;
 import io.apicurio.registry.rest.v2.beans.ArtifactSearchResults;
 import io.apicurio.registry.rest.v2.beans.IfExists;
@@ -150,8 +150,8 @@ class ApicurioClientTest {
         final var groupIdCaptor = ArgumentCaptor.forClass(String.class);
         final var nameCaptor = ArgumentCaptor.forClass(String.class);
         final var descriptionCaptor = ArgumentCaptor.forClass(String.class);
-        final var labelsCaptor = ArgumentCaptor.forClass((Class<ArrayList<String>>) (Class) ArrayList.class);
-        final var propertiesCaptor = ArgumentCaptor.forClass((Class<ArrayList<String>>) (Class) ArrayList.class);
+        final var labelsCaptor = ArgumentCaptor.forClass((Class<ArrayList<String>>) (Class<?>) ArrayList.class);
+        final var propertiesCaptor = ArgumentCaptor.forClass((Class<ArrayList<String>>) (Class<?>) ArrayList.class);
         final var sortByCaptor = ArgumentCaptor.forClass(SortBy.class);
         final var sortOrderCaptor = ArgumentCaptor.forClass(SortOrder.class);
         final var offsetCaptor = ArgumentCaptor.forClass(Integer.class);

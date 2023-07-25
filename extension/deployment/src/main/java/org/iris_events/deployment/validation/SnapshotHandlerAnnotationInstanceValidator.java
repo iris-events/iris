@@ -2,11 +2,10 @@ package org.iris_events.deployment.validation;
 
 import java.util.List;
 
+import org.iris_events.common.message.SnapshotRequested;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
-
-import org.iris_events.common.message.SnapshotRequested;
 
 public class SnapshotHandlerAnnotationInstanceValidator implements AnnotationInstanceValidator {
 

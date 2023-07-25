@@ -2,11 +2,10 @@ package org.iris_events.asyncapi.runtime.scanner.app;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventHandlersAppWithMapProperty {
     private static final Logger LOG = LoggerFactory.getLogger(EventHandlersAppWithMapProperty.class);

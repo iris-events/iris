@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 
 import org.iris_events.asyncapi.api.AsyncApiConfig;
 import org.iris_events.asyncapi.api.AsyncApiConstants;
-import org.iris_events.asyncapi.spec.AAIConfig;
 import org.iris_events.asyncapi.api.util.ConfigUtil;
+import org.iris_events.asyncapi.spec.AAIConfig;
 
 /**
  * Implementation of the {@link AsyncApiConfig} interface that gets config information from maven

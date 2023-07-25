@@ -1,8 +1,7 @@
 package org.iris_events.asyncapi.parsers;
 
-import org.jboss.jandex.AnnotationInstance;
-
 import org.iris_events.annotations.Message;
+import org.jboss.jandex.AnnotationInstance;
 
 public class ExchangeParser {
 

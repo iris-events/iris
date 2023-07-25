@@ -1,7 +1,7 @@
 package org.iris_events.auth;
 
-import static org.iris_events.common.MessagingHeaders.Message.JWT;
 import static io.quarkus.security.identity.SecurityIdentity.USER_ATTRIBUTE;
+import static org.iris_events.common.MessagingHeaders.Message.JWT;
 
 import java.util.Optional;
 import java.util.Set;
@@ -10,10 +10,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.iris_events.context.EventContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.iris_events.context.EventContext;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;

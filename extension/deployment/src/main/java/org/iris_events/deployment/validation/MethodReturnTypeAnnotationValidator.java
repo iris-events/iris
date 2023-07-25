@@ -1,12 +1,11 @@
 package org.iris_events.deployment.validation;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.deployment.MessageHandlerValidationException;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.deployment.MessageHandlerValidationException;
 
 public class MethodReturnTypeAnnotationValidator implements AnnotationInstanceValidator {
 

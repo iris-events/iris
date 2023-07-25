@@ -5,20 +5,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
-import org.jboss.jandex.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.iris_events.annotations.Scope;
+import org.iris_events.auth.IrisJwtValidator;
+import org.iris_events.consumer.ConsumerContainer;
+import org.iris_events.consumer.FrontendEventConsumer;
+import org.iris_events.context.EventAppContext;
+import org.iris_events.context.EventContext;
+import org.iris_events.context.IrisContext;
+import org.iris_events.context.MethodHandleContext;
 import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 import org.iris_events.deployment.builditem.MessageInfoBuildItem;
 import org.iris_events.deployment.scanner.Scanner;
+import org.iris_events.health.IrisLivenessCheck;
+import org.iris_events.health.IrisReadinessCheck;
+import org.iris_events.producer.CorrelationIdProvider;
+import org.iris_events.producer.EventProducer;
+import org.iris_events.producer.ProducedEventExchangeInitializer;
 import org.iris_events.runtime.BasicPropertiesProvider;
 import org.iris_events.runtime.EventAppInfoProvider;
 import org.iris_events.runtime.InstanceInfoProvider;
+import org.iris_events.runtime.IrisExceptionHandler;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.TimestampProvider;
-import org.iris_events.auth.IrisJwtValidator;
 import org.iris_events.runtime.channel.ConsumerChannelService;
 import org.iris_events.runtime.channel.ProducerChannelService;
 import org.iris_events.runtime.configuration.IrisBuildConfiguration;
@@ -26,23 +34,15 @@ import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.iris_events.runtime.connection.ConnectionFactoryProvider;
 import org.iris_events.runtime.connection.ConsumerConnectionProvider;
 import org.iris_events.runtime.connection.ProducerConnectionProvider;
-import org.iris_events.consumer.ConsumerContainer;
-import org.iris_events.consumer.FrontendEventConsumer;
-import org.iris_events.context.EventAppContext;
-import org.iris_events.context.EventContext;
-import org.iris_events.context.IrisContext;
-import org.iris_events.context.MethodHandleContext;
-import org.iris_events.runtime.IrisExceptionHandler;
-import org.iris_events.health.IrisLivenessCheck;
-import org.iris_events.health.IrisReadinessCheck;
-import org.iris_events.producer.CorrelationIdProvider;
-import org.iris_events.producer.EventProducer;
-import org.iris_events.producer.ProducedEventExchangeInitializer;
 import org.iris_events.runtime.recorder.ConsumerInitRecorder;
 import org.iris_events.runtime.recorder.EventAppRecorder;
 import org.iris_events.runtime.recorder.MethodHandleRecorder;
 import org.iris_events.runtime.recorder.ProducerDefinedExchangesRecorder;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
+import org.jboss.jandex.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
@@ -156,8 +156,7 @@ class EventMessagingProcessor {
                         beanContainer.getValue(),
                         buildItem.getName(),
                         buildItem.getExchangeType(),
-                        buildItem.getScope()
-                ));
+                        buildItem.getScope()));
     }
 
     @SuppressWarnings("unused")

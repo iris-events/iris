@@ -1,19 +1,21 @@
 package org.iris_events.runtime.connection;
 
-import com.rabbitmq.client.Connection;
-import org.iris_events.runtime.InstanceInfoProvider;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
-import org.iris_events.exception.IrisConnectionException;
-import org.iris_events.health.IrisLivenessCheck;
-import org.iris_events.health.IrisReadinessCheck;
-import io.github.resilience4j.core.IntervalFunction;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
-import org.slf4j.Logger;
-
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.iris_events.exception.IrisConnectionException;
+import org.iris_events.health.IrisLivenessCheck;
+import org.iris_events.health.IrisReadinessCheck;
+import org.iris_events.runtime.InstanceInfoProvider;
+import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.slf4j.Logger;
+
+import com.rabbitmq.client.Connection;
+
+import io.github.resilience4j.core.IntervalFunction;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 
 public abstract class AbstractConnectionProvider {
     private ConnectionFactoryProvider connectionFactoryProvider;
@@ -30,8 +32,8 @@ public abstract class AbstractConnectionProvider {
     }
 
     public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-                                      InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
-                                      IrisLivenessCheck livenessCheck, Logger log) {
+            InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
+            IrisLivenessCheck livenessCheck, Logger log) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;
         this.config = config;
@@ -104,7 +106,7 @@ public abstract class AbstractConnectionProvider {
 
         eventPublisher.onIgnoredError(onIgnoredEvent -> {
             log.error(String.format("Ignored exception encountered while establishing AMQP connection."
-                            + " attempt: %d/%d, last exception: %s",
+                    + " attempt: %d/%d, last exception: %s",
                     onIgnoredEvent.getNumberOfRetryAttempts(),
                     config.getMaxRetries(),
                     onIgnoredEvent.getLastThrowable()));

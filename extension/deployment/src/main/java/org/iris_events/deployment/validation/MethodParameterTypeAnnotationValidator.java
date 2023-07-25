@@ -2,10 +2,9 @@ package org.iris_events.deployment.validation;
 
 import java.util.List;
 
+import org.iris_events.deployment.scanner.ScannerUtils;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
-
-import org.iris_events.deployment.scanner.ScannerUtils;
 
 public class MethodParameterTypeAnnotationValidator implements AnnotationInstanceValidator {
 

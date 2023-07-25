@@ -14,8 +14,12 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.CDI;
 
 import org.iris_events.auth.IrisJwtValidator;
-import org.iris_events.runtime.IrisExceptionHandler;
+import org.iris_events.common.MDCProperties;
+import org.iris_events.context.EventContext;
+import org.iris_events.context.IrisContext;
+import org.iris_events.context.MethodHandleContext;
 import org.iris_events.producer.EventProducer;
+import org.iris_events.runtime.IrisExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -27,10 +31,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
 
-import org.iris_events.common.MDCProperties;
-import org.iris_events.context.EventContext;
-import org.iris_events.context.IrisContext;
-import org.iris_events.context.MethodHandleContext;
 import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;

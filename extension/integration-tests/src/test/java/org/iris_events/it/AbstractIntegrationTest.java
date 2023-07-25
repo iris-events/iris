@@ -2,10 +2,10 @@ package org.iris_events.it;
 
 import jakarta.inject.Inject;
 
+import org.iris_events.common.message.ErrorMessage;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
-
-import org.iris_events.common.message.ErrorMessage;
 
 public abstract class AbstractIntegrationTest extends IsolatedEventContextTest {
 

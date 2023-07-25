@@ -86,7 +86,8 @@ public abstract class AbstractChannelService implements ChannelService, Shutdown
         return channelMap;
     }
 
-    @Override public void shutdownCompleted(final ShutdownSignalException cause) {
+    @Override
+    public void shutdownCompleted(final ShutdownSignalException cause) {
         this.closeAndRemoveAllChannels();
     }
 }

@@ -4,9 +4,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.iris_events.annotations.CachedMessage;
-import org.jboss.jandex.*;
-
 import org.iris_events.annotations.Message;
+import org.jboss.jandex.*;
 
 public class ScannerUtils {
 

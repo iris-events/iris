@@ -5,9 +5,12 @@ import static org.mockito.ArgumentMatchers.any;
 import java.util.Collections;
 import java.util.UUID;
 
+import jakarta.validation.ConstraintViolationException;
+
+import org.iris_events.context.EventContext;
+import org.iris_events.context.IrisContext;
 import org.iris_events.runtime.IrisExceptionHandler;
 import org.iris_events.runtime.TimestampProvider;
-import org.iris_events.context.IrisContext;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,9 +23,6 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
-
-import org.iris_events.context.EventContext;
-import jakarta.validation.ConstraintViolationException;
 
 class IrisExceptionHandlerTest {
 

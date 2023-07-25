@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.api.AsyncApiConstants;
 import org.iris_events.asyncapi.runtime.io.channel.operation.OperationConstant;
 import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
-import org.iris_events.annotations.Scope;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class ClientDefinitionParser {
 

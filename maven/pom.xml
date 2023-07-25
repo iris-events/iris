@@ -14,7 +14,7 @@
 
     <name>Iris Maven - parent</name>
     <modules>
-        <module>amqp-generator-plugin</module>
+        <module>model-generator-plugin</module>
         <module>asyncapi-generator-plugin</module>
         <module>asyncapi-merge-plugin</module>
     </modules>

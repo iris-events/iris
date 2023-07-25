@@ -3,12 +3,11 @@ package org.iris_events.asyncapi.parsers;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.IndexView;
-
-import org.iris_events.asyncapi.IrisAnnotationRuntimeException;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.Scope;
+import org.iris_events.asyncapi.IrisAnnotationRuntimeException;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 
 public class MessageScopeParser {
     private static final String MESSAGE_SCOPE_PARAM = "scope";

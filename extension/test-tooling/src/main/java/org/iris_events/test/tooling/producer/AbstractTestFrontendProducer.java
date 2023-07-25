@@ -6,16 +6,15 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.common.DeliveryMode;
+import org.iris_events.common.Exchanges;
+import org.iris_events.runtime.channel.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.common.DeliveryMode;
-import org.iris_events.common.Exchanges;
-import org.iris_events.runtime.channel.ChannelService;
 
 public abstract class AbstractTestFrontendProducer {
     private static final Logger log = LoggerFactory.getLogger(AbstractTestFrontendProducer.class);

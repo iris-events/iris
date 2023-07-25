@@ -9,6 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import org.iris_events.BaseIndexingTest;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
+import org.iris_events.deployment.validation.AnnotationInstanceValidator;
+import org.iris_events.test.Event;
+import org.iris_events.test.PriorityQueueEvent;
+import org.iris_events.test.TestHandlerService;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Type;
@@ -16,15 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.BaseIndexingTest;
-import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
-import org.iris_events.deployment.validation.AnnotationInstanceValidator;
-import org.iris_events.test.Event;
-import org.iris_events.test.PriorityQueueEvent;
-import org.iris_events.test.TestHandlerService;
 
 class MessageHandlerAnnotationScannerTest extends BaseIndexingTest {
 

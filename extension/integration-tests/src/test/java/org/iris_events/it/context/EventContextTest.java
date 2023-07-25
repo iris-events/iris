@@ -1,9 +1,9 @@
 package org.iris_events.it.context;
 
-import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -12,17 +12,17 @@ import java.util.concurrent.TimeUnit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.context.EventContext;
 import org.iris_events.it.IsolatedEventContextTest;
+import org.iris_events.producer.EventProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.context.EventContext;
-import org.iris_events.producer.EventProducer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest

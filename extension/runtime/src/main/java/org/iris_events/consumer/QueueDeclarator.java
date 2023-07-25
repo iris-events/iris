@@ -8,12 +8,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
+import org.iris_events.runtime.channel.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Channel;
-
-import org.iris_events.runtime.channel.ChannelService;
 
 @ApplicationScoped
 public class QueueDeclarator {
@@ -64,7 +63,7 @@ public class QueueDeclarator {
     }
 
     public record QueueDeclarationDetails(String queueName, boolean durable, boolean exclusive, boolean autoDelete,
-                                          Map<String, Object> arguments) {
+            Map<String, Object> arguments) {
 
     }
 }

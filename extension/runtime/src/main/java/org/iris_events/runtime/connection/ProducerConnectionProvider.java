@@ -4,13 +4,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
+import org.iris_events.health.IrisLivenessCheck;
+import org.iris_events.health.IrisReadinessCheck;
+import org.iris_events.runtime.InstanceInfoProvider;
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.iris_events.runtime.InstanceInfoProvider;
-import org.iris_events.health.IrisLivenessCheck;
-import org.iris_events.health.IrisReadinessCheck;
 import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
@@ -21,8 +21,8 @@ public class ProducerConnectionProvider extends AbstractConnectionProvider {
 
     @Inject
     public ProducerConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-                                      InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
-                                      IrisLivenessCheck livenessCheck) {
+            InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
+            IrisLivenessCheck livenessCheck) {
         super(connectionFactoryProvider, instanceInfoProvider, config, readinessCheck, livenessCheck, log);
     }
 

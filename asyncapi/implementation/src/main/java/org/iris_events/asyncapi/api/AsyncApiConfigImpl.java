@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.eclipse.microprofile.config.Config;
-
 import org.iris_events.asyncapi.api.util.ConfigUtil;
 import org.iris_events.asyncapi.spec.AAIConfig;
 

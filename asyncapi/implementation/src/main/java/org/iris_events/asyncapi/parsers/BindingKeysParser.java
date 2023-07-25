@@ -3,11 +3,10 @@ package org.iris_events.asyncapi.parsers;
 import java.util.List;
 import java.util.Objects;
 
-import org.iris_events.asyncapi.runtime.util.JandexUtil;
-import org.jboss.jandex.AnnotationInstance;
-
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
+import org.iris_events.asyncapi.runtime.util.JandexUtil;
+import org.jboss.jandex.AnnotationInstance;
 
 public class BindingKeysParser {
     private static final String MESSAGE_HANDLER_BINDING_KEYS_PARAM = "bindingKeys";

@@ -8,13 +8,12 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
+import org.iris_events.AbstractAnnotationInstanceValidatorTest;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
 import org.jboss.jandex.AnnotationInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.AbstractAnnotationInstanceValidatorTest;
 
 class MethodParameterTypeAnnotationValidatorTest extends AbstractAnnotationInstanceValidatorTest {
 

@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.iris_events.asyncapi.runtime.io.schema.SchemaConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +17,6 @@ import com.github.victools.jsonschema.generator.CustomPropertyDefinitionProvider
 import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
-
-import org.iris_events.asyncapi.runtime.io.schema.SchemaConstant;
 
 public class CustomDefinitionProvider {
     private static final Logger LOG = LoggerFactory.getLogger(CustomDefinitionProvider.class);

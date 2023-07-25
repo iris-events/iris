@@ -19,14 +19,14 @@ import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import com.rabbitmq.client.AMQP;
-
 import org.iris_events.annotations.Scope;
 import org.iris_events.common.DeliveryMode;
 import org.iris_events.context.EventAppContext;
 import org.iris_events.context.EventContext;
 import org.iris_events.producer.CorrelationIdProvider;
 import org.iris_events.producer.RoutingDetails;
+
+import com.rabbitmq.client.AMQP;
 
 @ApplicationScoped
 public class BasicPropertiesProvider {

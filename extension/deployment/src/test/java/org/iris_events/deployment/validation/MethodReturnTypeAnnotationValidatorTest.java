@@ -1,8 +1,8 @@
 package org.iris_events.deployment.validation;
 
-import static org.iris_events.annotations.ExchangeType.TOPIC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.iris_events.annotations.ExchangeType.TOPIC;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,15 +12,14 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.List;
 
+import org.iris_events.AbstractAnnotationInstanceValidatorTest;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.deployment.MessageHandlerValidationException;
 import org.jboss.jandex.AnnotationInstance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.AbstractAnnotationInstanceValidatorTest;
-import org.iris_events.deployment.MessageHandlerValidationException;
 
 class MethodReturnTypeAnnotationValidatorTest extends AbstractAnnotationInstanceValidatorTest {
 

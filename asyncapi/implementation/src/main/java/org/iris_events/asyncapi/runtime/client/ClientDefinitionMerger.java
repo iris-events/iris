@@ -4,14 +4,14 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
+import org.iris_events.asyncapi.api.AsyncApiConstants;
+import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
+import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-
-import org.iris_events.asyncapi.api.AsyncApiConstants;
-import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
-import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
 
 public class ClientDefinitionMerger {
 

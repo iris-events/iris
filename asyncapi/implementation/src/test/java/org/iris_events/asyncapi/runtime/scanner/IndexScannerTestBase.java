@@ -12,13 +12,12 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
-
 import org.iris_events.asyncapi.api.AsyncApiConfig;
 import org.iris_events.asyncapi.api.AsyncApiConfigImpl;
 import org.iris_events.asyncapi.api.AsyncApiConstants;
 import org.iris_events.asyncapi.runtime.util.IndexUtil;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
 
 public class IndexScannerTestBase {
 

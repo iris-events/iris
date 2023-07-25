@@ -21,6 +21,18 @@ import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.Scope;
+import org.iris_events.common.DeliveryMode;
+import org.iris_events.common.Exchanges;
+import org.iris_events.common.message.ResourceMessage;
+import org.iris_events.context.EventContext;
+import org.iris_events.producer.CorrelationIdProvider;
+import org.iris_events.producer.EventProducer;
+import org.iris_events.runtime.EventAppInfoProvider;
+import org.iris_events.runtime.InstanceInfoProvider;
+import org.iris_events.runtime.TimestampProvider;
+import org.iris_events.runtime.channel.ChannelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -33,20 +45,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.Scope;
-import org.iris_events.common.DeliveryMode;
-import org.iris_events.common.Exchanges;
-import org.iris_events.common.message.ResourceMessage;
-import org.iris_events.runtime.EventAppInfoProvider;
-import org.iris_events.runtime.InstanceInfoProvider;
-import org.iris_events.runtime.TimestampProvider;
-import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.context.EventContext;
-import org.iris_events.producer.CorrelationIdProvider;
-import org.iris_events.producer.EventProducer;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

@@ -1,9 +1,9 @@
 package org.iris_events.it.sync;
 
-import static org.iris_events.annotations.ExchangeType.DIRECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.iris_events.annotations.ExchangeType.DIRECT;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,11 +20,17 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.hamcrest.CoreMatchers;
-import org.iris_events.it.IsolatedEventContextTest;
-import org.iris_events.runtime.TimestampProvider;
-import org.iris_events.runtime.IrisExceptionHandler;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.common.ErrorType;
+import org.iris_events.common.MessagingHeaders;
+import org.iris_events.context.EventContext;
 import org.iris_events.exception.IrisSendException;
+import org.iris_events.exception.MessagingException;
+import org.iris_events.it.IsolatedEventContextTest;
 import org.iris_events.producer.EventProducer;
+import org.iris_events.runtime.IrisExceptionHandler;
+import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,14 +39,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import org.iris_events.annotations.Message;
-import org.iris_events.annotations.MessageHandler;
-import org.iris_events.common.MessagingHeaders;
-import org.iris_events.common.ErrorType;
-import org.iris_events.exception.MessagingException;
-import org.iris_events.context.EventContext;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

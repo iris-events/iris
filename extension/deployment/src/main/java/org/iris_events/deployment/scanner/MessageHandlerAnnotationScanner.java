@@ -2,15 +2,8 @@ package org.iris_events.deployment.scanner;
 
 import static org.iris_events.annotations.ExchangeType.FANOUT;
 
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.MessageHandler;
-import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
-import org.iris_events.deployment.constants.AnnotationInstanceParams;
-import org.iris_events.deployment.validation.AnnotationInstanceValidator;
 import org.iris_events.asyncapi.parsers.BindingKeysParser;
 import org.iris_events.asyncapi.parsers.ConsumerPerInstanceParser;
 import org.iris_events.asyncapi.parsers.ConsumerPrefetchCountParser;
@@ -21,6 +14,12 @@ import org.iris_events.asyncapi.parsers.MessageScopeParser;
 import org.iris_events.asyncapi.parsers.QueueAutoDeleteParser;
 import org.iris_events.asyncapi.parsers.QueueDurableParser;
 import org.iris_events.asyncapi.parsers.RolesAllowedParser;
+import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
+import org.iris_events.deployment.constants.AnnotationInstanceParams;
+import org.iris_events.deployment.validation.AnnotationInstanceValidator;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
 public class MessageHandlerAnnotationScanner extends HandlerAnnotationScanner {
 

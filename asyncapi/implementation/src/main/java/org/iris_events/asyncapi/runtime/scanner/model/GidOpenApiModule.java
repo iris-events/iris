@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.iris_events.asyncapi.spec.annotations.media.Schema;
+import org.iris_events.asyncapi.spec.annotations.media.SchemaProperty;
+
 import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.MemberScope;
 import com.github.victools.jsonschema.generator.Module;
@@ -30,12 +33,10 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigPart;
 import com.github.victools.jsonschema.generator.TypeScope;
 
-import org.iris_events.asyncapi.spec.annotations.media.Schema;
-import org.iris_events.asyncapi.spec.annotations.media.SchemaProperty;
-
 /**
  * Gid Open Api Schema Generator Module inspired by
- * <a href="https://github.com/victools/jsonschema-generator/tree/main/jsonschema-module-swagger-1.5">Java JSON Schema Generator – Module Swagger (1.5)</a>.
+ * <a href="https://github.com/victools/jsonschema-generator/tree/main/jsonschema-module-swagger-1.5">Java JSON Schema Generator
+ * – Module Swagger (1.5)</a>.
  */
 public class GidOpenApiModule implements Module {
 
@@ -72,7 +73,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Apply configurations that are part of this module to the given configuration part – expectation being that fields and methods get the same.
+     * Apply configurations that are part of this module to the given configuration part – expectation being that fields and
+     * methods get the same.
      *
      * @param configPart configuration instance to add configurations too
      */
@@ -100,7 +102,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Look-up name override for a given field or its associated getter method from the {@link SchemaProperty} annotation's {@code name}.
+     * Look-up name override for a given field or its associated getter method from the {@link SchemaProperty} annotation's
+     * {@code name}.
      *
      * @param field targeted field
      * @return applicable name override (or {@code null})
@@ -113,7 +116,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Look-up a "description" for the given member or its associated getter/field from the {@link SchemaProperty} annotation's {@code value}.
+     * Look-up a "description" for the given member or its associated getter/field from the {@link SchemaProperty} annotation's
+     * {@code value}.
      *
      * @param member targeted field/method
      * @return description (or {@code null})
@@ -140,7 +144,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Look-up a "title" for the given member or its associated getter/field from the member type's {@link Schema} annotation's {@code value}.
+     * Look-up a "title" for the given member or its associated getter/field from the member type's {@link Schema} annotation's
+     * {@code value}.
      *
      * @param scope targeted type
      * @return title (or {@code null})
@@ -154,7 +159,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Retrieve the given member's (or its associated getter/field's) {@link SchemaProperty} annotation and extract its {@code minimum}.
+     * Retrieve the given member's (or its associated getter/field's) {@link SchemaProperty} annotation and extract its
+     * {@code minimum}.
      *
      * @param member targeted field/method
      * @return {@link SchemaProperty} annotation's non-empty {@code minimum} (or {@code null})
@@ -192,7 +198,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Determine (inclusive) numeric minimum for the given member or its associated getter/field from the {@link SchemaProperty} annotation's
+     * Determine (inclusive) numeric minimum for the given member or its associated getter/field from the {@link SchemaProperty}
+     * annotation's
      * {@code allowedValues}.
      *
      * @param member targeted field/method
@@ -210,7 +217,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Determine (exclusive) numeric minimum for the given member or its associated getter/field from the {@link SchemaProperty} annotation's
+     * Determine (exclusive) numeric minimum for the given member or its associated getter/field from the {@link SchemaProperty}
+     * annotation's
      * {@code allowedValues}.
      *
      * @param member targeted field/method
@@ -228,7 +236,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Determine (inclusive) numeric maximum for the given member or its associated getter/field from the {@link SchemaProperty}'s annotation's
+     * Determine (inclusive) numeric maximum for the given member or its associated getter/field from the
+     * {@link SchemaProperty}'s annotation's
      * {@code allowedValues}.
      *
      * @param member targeted field/method
@@ -246,7 +255,8 @@ public class GidOpenApiModule implements Module {
     }
 
     /**
-     * Determine (exclusive) numeric maximum for the given member or its associated getter/field from the {@link SchemaProperty}'s annotation's
+     * Determine (exclusive) numeric maximum for the given member or its associated getter/field from the
+     * {@link SchemaProperty}'s annotation's
      * {@code allowedValues}.
      *
      * @param member targeted field/method

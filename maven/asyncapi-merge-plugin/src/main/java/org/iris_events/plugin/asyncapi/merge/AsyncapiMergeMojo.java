@@ -12,15 +12,15 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import org.iris_events.asyncapi.runtime.client.ApicurioClient;
 import org.iris_events.asyncapi.runtime.client.ClientDefinitionMerger;
 import org.iris_events.asyncapi.runtime.client.ClientDefinitionParser;
 import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
 import org.iris_events.asyncapi.runtime.util.VersionUtil;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import io.apicurio.registry.rest.client.RegistryClientFactory;
 
 @Mojo(name = "generate-client-asyncapi", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)

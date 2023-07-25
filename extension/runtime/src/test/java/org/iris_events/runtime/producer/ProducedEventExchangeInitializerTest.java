@@ -9,16 +9,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.IOException;
 
+import org.iris_events.annotations.ExchangeType;
+import org.iris_events.annotations.Scope;
 import org.iris_events.producer.ExchangeDeclarator;
 import org.iris_events.producer.ProducedEventExchangeInitializer;
+import org.iris_events.runtime.channel.ChannelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import org.iris_events.annotations.ExchangeType;
-import org.iris_events.annotations.Scope;
-import org.iris_events.runtime.channel.ChannelService;
 
 class ProducedEventExchangeInitializerTest {
 

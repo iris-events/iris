@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
+import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -11,9 +13,6 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
-import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
 
 class ClientDefinitionMergerTest {
 

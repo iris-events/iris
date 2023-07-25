@@ -2,10 +2,9 @@ package org.iris_events.asyncapi.parsers;
 
 import java.util.Objects;
 
+import org.iris_events.annotations.Message;
 import org.iris_events.asyncapi.runtime.util.JandexUtil;
 import org.jboss.jandex.AnnotationInstance;
-
-import org.iris_events.annotations.Message;
 
 public class RoutingKeyParser {
     private static final String MESSAGE_ROUTING_KEY_PARAM = "routingKey";
