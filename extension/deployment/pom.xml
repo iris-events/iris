@@ -39,10 +39,10 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-reactive-messaging-rabbitmq-deployment</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>io.apicurio</groupId>
             <artifactId>apicurio-codegen-quarkus-extension-deployment</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5-internal</artifactId>

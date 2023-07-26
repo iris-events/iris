@@ -32,15 +32,15 @@
     <properties>
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>1.1.27</version.apicurio-data-models>
-        <version.apicurio-registry-client>2.4.1.Final</version.apicurio-registry-client>
-        <version.commons-logging>1.2</version.commons-logging>
+        <version.apicurio-registry-client>2.4.3.Final</version.apicurio-registry-client>
+        <version.commons-logging>1.13.0</version.commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.14</version.httpclient>
-        <version.jackson>2.14.2</version.jackson>
+        <version.jackson>2.15.2</version.jackson>
         <version.jakarta.annotations>2.1.1</version.jakarta.annotations>
-        <version.jandex>3.1.1</version.jandex>
+        <version.jandex>3.1.2</version.jandex>
         <version.jsonschema2pojo-core>1.2.1</version.jsonschema2pojo-core>
-        <version.junit>5.9.2</version.junit>
+        <version.junit>5.10.0</version.junit>
         <version.maven>3.8.7</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
         <version.maven-plugin-annotations>3.8.2</version.maven-plugin-annotations>
@@ -49,17 +49,16 @@
         <version.maven-resolver-api>1.9.4</version.maven-resolver-api>
         <version.maven-surefire-plugin>3.0.0</version.maven-surefire-plugin>
         <version.plugin.plugin>3.8.2</version.plugin.plugin>
-        <version.microprofile-config-api>3.0.2</version.microprofile-config-api>
-        <version.mockito-core>5.3.0</version.mockito-core>
+        <version.microprofile-config-api>3.0.3</version.microprofile-config-api>
+        <version.mockito-core>5.4.0</version.mockito-core>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.2.1.Final</version.quarkus>
-        <version.rabbit.amqp-client>5.16.0</version.rabbit.amqp-client>
-        <version.resilience4j-retry>2.0.2</version.resilience4j-retry>
-        <version.slf4j-api>2.0.6</version.slf4j-api>
-        <version.victools>4.29.0</version.victools>
-        <version.apicurio-codegen-quarkus-extension-deployment>1.0.14.Final</version.apicurio-codegen-quarkus-extension-deployment>
+        <version.quarkus>3.2.2.Final</version.quarkus>
+        <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
+        <version.resilience4j-retry>2.1.0</version.resilience4j-retry>
+        <version.slf4j-api>2.0.7</version.slf4j-api>
+        <version.victools>4.31.1</version.victools>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
         <version.impsort.plugin>1.9.0</version.impsort.plugin>
@@ -149,11 +148,7 @@
                 <artifactId>apicurio-registry-client</artifactId>
                 <version>${version.apicurio-registry-client}</version>
             </dependency>
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-codegen-quarkus-extension-deployment</artifactId>
-                <version>${version.apicurio-codegen-quarkus-extension-deployment}</version>
-            </dependency>
+
             <!-- Dependencies provided by the project -->
             <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
