@@ -9,7 +9,7 @@
     </parent>
     <groupId>org.iris-events</groupId>
     <artifactId>iris-parent</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.0.0</version>
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
@@ -21,7 +21,7 @@
     <scm>
         <connection>scm:git:git@github.com:iris-events/iris.git</connection>
         <developerConnection>scm:git:git@github.com:iris-events/iris.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v5.0.0</tag>
         <url>https://github.com/iris-events/iris</url>
     </scm>
     <!--
@@ -393,10 +393,7 @@
                         <id>release</id>
                         <properties>
                             <gpg.useagent>false</gpg.useagent>
-                            <gpg.executable>/usr/local/Cellar/gnupg@1.4/1.4.23_1/bin/gpg1</gpg.executable> <- use gpg1 on Mac OS X
-                            <gpg.homedir>~/.gnupg</gpg.homedir>  <- Update to your own directory
-                            <gpg.passphrase>******</gpg.passphrase> <- Add your passphrase
-                        </properties>
+                            <gpg.executable>/usr/local/Cellar/gnupg@1.4/1.4.23_1/bin/gpg1</gpg.executable> <- use gpg1 on Mac OS X <gpg.homedir>~/.gnupg</gpg.homedir>  <- Update to your own directory <gpg.passphrase>******</gpg.passphrase> <- Add your passphrase </properties>
                     </profile>
                      -->
                     <groupId>org.apache.maven.plugins</groupId>
