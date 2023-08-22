@@ -32,7 +32,7 @@
     <properties>
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>1.1.27</version.apicurio-data-models>
-        <version.apicurio-registry-client>2.4.3.Final</version.apicurio-registry-client>
+        <version.apicurio-registry-client>2.4.4.Final</version.apicurio-registry-client>
         <version.commons-logging>1.13.0</version.commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.14</version.httpclient>
@@ -54,7 +54,7 @@
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.2.3.Final</version.quarkus>
+        <version.quarkus>3.2.4.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.1.0</version.resilience4j-retry>
         <version.slf4j-api>2.0.7</version.slf4j-api>
