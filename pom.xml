@@ -55,7 +55,7 @@
         <!-- plugin dependencies -->
 
         <version.quarkus>3.2.3.Final</version.quarkus>
-        <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
+        <version.rabbit.amqp-client>5.18.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.1.0</version.resilience4j-retry>
         <version.slf4j-api>2.0.7</version.slf4j-api>
         <version.victools>4.31.1</version.victools>
