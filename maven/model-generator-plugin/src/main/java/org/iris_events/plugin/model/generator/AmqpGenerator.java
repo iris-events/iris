@@ -486,9 +486,9 @@ public class AmqpGenerator {
     private String preparePomTemplate() {
         var pomTemplate = fileInteractor.readResourceFileContent(StringConstants.POM_TEMPLATE_XML);
         return pomTemplate
-                .replace("APPLICATION_NAME", AmqpStringUtils.getPomArtifactId(modelName))
-                .replace("APPLICATION_VERSION", modelVersion)
-                .replace("PACKAGE_NAME", packageName);
+                .replace("@@ARTIFACT_ID@@", AmqpStringUtils.getPomArtifactId(modelName))
+                .replace("@@APPLICATION_VERSION@@", modelVersion)
+                .replace("@@GROUP_ID@@", packageName);
 
     }
 

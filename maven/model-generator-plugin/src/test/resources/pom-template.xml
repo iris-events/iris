@@ -5,22 +5,21 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <appName>APPLICATION_NAME</appName>
-        <appVersion>APPLICATION_VERSION</appVersion>
-        <groupId>PACKAGE_NAME</groupId>
         <version.iris-common>5.0.0</version.iris-common>
         <version.jandex-maven-plugin>3.1.1</version.jandex-maven-plugin>
         <version.jackson-annotations>2.14.2</version.jackson-annotations>
         <version.jackson-databind>2.14.2</version.jackson-databind>
         <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
         <version.jakarta-annotation-api>2.1.1</version.jakarta-annotation-api>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
     </properties>
 
 
-    <groupId>${groupId}</groupId>
-    <artifactId>${appName}-models</artifactId>
-    <version>${appVersion}</version>
-    <name>Models for ${appName}</name>
+    <groupId>@@GROUP_ID@@</groupId>
+    <artifactId>@@ARTIFACT_ID@@-models</artifactId>
+    <version>@@APPLICATION_VERSION@@</version>
+    <name>Models for @@ARTIFACT_ID@@</name>
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

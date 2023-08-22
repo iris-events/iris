@@ -29,7 +29,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "asyncApiDirectory", defaultValue = "target,generated")
     String asyncApiDirectory;
 
-    @Parameter(property = "packageName", defaultValue = "org.iris_events.iris")
+    // TODO: default to project group id where plugin is executed
+    @Parameter(property = "packageName", required = true)
     String packageName;
 
     @Parameter(property = "modelVersion", required = true)
