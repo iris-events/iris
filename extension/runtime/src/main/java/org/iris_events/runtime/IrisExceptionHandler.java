@@ -89,8 +89,8 @@ public class IrisExceptionHandler {
         final var originalExchange = message.getEnvelope().getExchange();
         final var originalRoutingKey = message.getEnvelope().getRoutingKey();
         log.error(String.format(
-                "Authentication failed, message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s'",
-                exception.getClientCode(), originalExchange, originalRoutingKey), exception);
+                "Security exception thrown. Message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s', errorType: '%s'",
+                exception.getClientCode(), originalExchange, originalRoutingKey, exception.getClass().getName()), exception);
 
         acknowledgeMessageAndSendError(message, channel, exception);
     }
