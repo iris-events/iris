@@ -89,12 +89,19 @@ public class DeliverCallbackProvider {
             enrichMDC(properties);
 
             authorizeMessage();
+            //todo we only do security association aka jwt token mapping to identity in iris.
+            //todo we would need to better handle case where handler method requires auth / or specific roles
+
             final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
             final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
             final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
             final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
             optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+        } catch (java.lang.SecurityException securityException) {
+            var t = IrisExceptionHandler.getSecurityException(securityException);
+            log.warn("Security exception processing message", t);
+            errorHandler.handleException(irisContext, message, channel, t);
         } catch (Throwable throwable) {
             log.error("Exception handling message", throwable);
             errorHandler.handleException(irisContext, message, channel, throwable);
