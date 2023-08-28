@@ -13,7 +13,12 @@ import org.iris_events.common.ErrorType;
 import org.iris_events.common.message.ErrorMessage;
 import org.iris_events.context.EventContext;
 import org.iris_events.context.IrisContext;
-import org.iris_events.exception.*;
+import org.iris_events.exception.BadPayloadException;
+import org.iris_events.exception.ClientException;
+import org.iris_events.exception.IrisSendException;
+import org.iris_events.exception.IrisTransactionException;
+import org.iris_events.exception.MessagingException;
+import org.iris_events.exception.ServerException;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +71,8 @@ public class IrisExceptionHandler {
                 throw (IrisSendException) throwable;
             } else if (throwable instanceof org.iris_events.exception.SecurityException) {
                 handleSecurityException(message, channel, (org.iris_events.exception.SecurityException) throwable);
+            } else if (throwable instanceof java.lang.SecurityException) {
+                handleSecurityException(message, channel, (java.lang.SecurityException) throwable);
             } else if (throwable instanceof InvalidFormatException) {
                 var clientException = new BadPayloadException(ErrorType.BAD_PAYLOAD.name(), throwable.getMessage());
                 handleBadMessageException(message, channel, clientException);
@@ -81,6 +88,11 @@ public class IrisExceptionHandler {
             log.error("IOException encountered while handling error. Handled message will be requeued.", exception);
             throw new UncheckedIOException(exception);
         }
+    }
+
+    private void handleSecurityException(final Delivery message, final Channel channel,
+            final SecurityException securityException) throws IOException {
+        handleSecurityException(message, channel, getSecurityException(securityException));
     }
 
     private void handleSecurityException(final Delivery message, final Channel channel,

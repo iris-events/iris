@@ -4,9 +4,11 @@ import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.iris_events.common.ErrorType.AUTHENTICATION_FAILED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -45,9 +47,11 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
     private static final String ERROR_QUEUE_BAD_REQUEST = "error-queue-bad-request";
     private static final String ERROR_QUEUE_SERVER_ERROR = "error-queue-server-error";
     private static final String ERROR_QUEUE_RUNTIME_EXCEPTION = "error-queue-runtime-exception";
+    private static final String ERROR_QUEUE_SECURITY_EXCEPTION = "error-queue-security-exception";
     private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
     private static final String INTERNAL_SERVICE_ERROR = "Internal service error.";
     private static final String RUNTIME_EXCEPTION_ERROR = "Runtime exception.";
+    private static final String SECURITY_EXCEPTION_ERROR = "Security exception.";
     private static final String BAD_PAYLOAD_CLIENT_CODE = "BAD_MESSAGE_PAYLOAD";
     private static final String SERVER_ERROR_CLIENT_CODE = "SERVER_ERROR";
     private static final String INTERNAL_SERVER_ERROR_CLIENT_CODE = "INTERNAL_SERVER_ERROR";
@@ -75,6 +79,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         channel.queueDeclare(errorMessageQueue, false, false, false, emptyMap());
         channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, ERROR_QUEUE_BAD_REQUEST + ".error");
         channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, ERROR_QUEUE_SERVER_ERROR + ".error");
+        channel.queueBind(errorMessageQueue, ERROR_EXCHANGE, ERROR_QUEUE_SECURITY_EXCEPTION + ".error");
     }
 
     @DisplayName("Send bad request error message on corrupted message")
@@ -142,6 +147,20 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         assertThat(notifyFrontend, CoreMatchers.is(false));
     }
 
+    @DisplayName("Return security error message on security exception")
+    @Test
+    void securityException() throws Exception {
+        final var message = new SecurityExceptionMessage(UUID.randomUUID().toString());
+
+        producer.send(message);
+
+        final var errorMessage = getErrorResponse(5);
+        assertThat(errorMessage, is(notNullValue()));
+        assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED.name()));
+        assertThat(errorMessage.message(), is("Security exception."));
+        verifyNoInteractions(requeueHandler);
+    }
+
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class ErrorQueueService {
@@ -164,6 +183,11 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
         public void handle(RuntimeExceptionMessage message) {
             throw new RuntimeException(RUNTIME_EXCEPTION_ERROR);
         }
+
+        @MessageHandler
+        public void handle(SecurityExceptionMessage message) {
+            throw new java.lang.SecurityException(SECURITY_EXCEPTION_ERROR);
+        }
     }
 
     @Message(name = ERROR_QUEUE_BAD_REQUEST)
@@ -176,5 +200,9 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
     @Message(name = ERROR_QUEUE_RUNTIME_EXCEPTION)
     public record RuntimeExceptionMessage(String name) {
+    }
+
+    @Message(name = ERROR_QUEUE_SECURITY_EXCEPTION)
+    public record SecurityExceptionMessage(String name) {
     }
 }
