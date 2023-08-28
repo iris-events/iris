@@ -98,10 +98,6 @@ public class DeliverCallbackProvider {
             final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
             optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-        } catch (java.lang.SecurityException securityException) {
-            var t = IrisExceptionHandler.getSecurityException(securityException);
-            log.warn("Security exception processing message", t);
-            errorHandler.handleException(irisContext, message, channel, t);
         } catch (Throwable throwable) {
             log.error("Exception handling message", throwable);
             errorHandler.handleException(irisContext, message, channel, throwable);
