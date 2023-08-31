@@ -4,7 +4,7 @@ import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.iris_events.common.ErrorType.AUTHENTICATION_FAILED;
+import static org.iris_events.runtime.IrisExceptionHandler.UNAUTHORIZED_CLIENT_CODE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -156,7 +156,7 @@ public class ErrorQueueIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED.name()));
+        assertThat(errorMessage.code(), is(UNAUTHORIZED_CLIENT_CODE));
         assertThat(errorMessage.message(), is("Security exception."));
         verifyNoInteractions(requeueHandler);
     }
