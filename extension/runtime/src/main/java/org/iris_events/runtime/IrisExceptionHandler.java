@@ -36,11 +36,10 @@ import io.quarkus.security.UnauthorizedException;
 public class IrisExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(IrisExceptionHandler.class);
-    public static final String ERROR_ROUTING_KEY_SUFFIX = ".error";
-    public static final String AUTHENTICATION_FAILED_CLIENT_CODE = ErrorType.AUTHENTICATION_FAILED.name();
-    public static final String FORBIDDEN_CLIENT_CODE = ErrorType.FORBIDDEN.name();
-    public static final String UNAUTHORIZED_CLIENT_CODE = ErrorType.UNAUTHORIZED.name();
-    public static final String SERVER_ERROR_CLIENT_CODE = ErrorType.INTERNAL_SERVER_ERROR.name();
+    public static final String AUTHENTICATION_FAILED_CLIENT_CODE = "AUTHENTICATION_FAILED";
+    public static final String FORBIDDEN_CLIENT_CODE = "FORBIDDEN";
+    public static final String UNAUTHORIZED_CLIENT_CODE = "UNAUTHORIZED";
+    public static final String SERVER_ERROR_CLIENT_CODE = "INTERNAL_SERVER_ERROR";
 
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
@@ -176,22 +175,18 @@ public class IrisExceptionHandler {
 
     public static org.iris_events.exception.SecurityException getSecurityException(
             java.lang.SecurityException securityException) {
-        // TODO: change with switch once available as non-preview
         final var message = securityException.getMessage();
         final var cause = securityException.getCause();
 
+        // TODO: use switch with patterns once available
         if (securityException instanceof AuthenticationFailedException) {
-            return new org.iris_events.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
-                    message,
-                    cause);
+            return new org.iris_events.exception.UnauthorizedException(AUTHENTICATION_FAILED_CLIENT_CODE, message, cause);
         } else if (securityException instanceof ForbiddenException) {
             return new org.iris_events.exception.ForbiddenException(FORBIDDEN_CLIENT_CODE, message, cause);
         } else if (securityException instanceof UnauthorizedException) {
             return new org.iris_events.exception.UnauthorizedException(UNAUTHORIZED_CLIENT_CODE, message, cause);
         }
 
-        return new org.iris_events.exception.AuthenticationFailedException(AUTHENTICATION_FAILED_CLIENT_CODE,
-                message,
-                cause);
+        return new org.iris_events.exception.UnauthorizedException(UNAUTHORIZED_CLIENT_CODE, message, cause);
     }
 }
