@@ -54,7 +54,7 @@
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.2.4.Final</version.quarkus>
+        <version.quarkus>3.3.1</version.quarkus>
         <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.1.0</version.resilience4j-retry>
         <version.slf4j-api>2.0.7</version.slf4j-api>
