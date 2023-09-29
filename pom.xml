@@ -32,7 +32,7 @@
     <properties>
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>1.1.27</version.apicurio-data-models>
-        <version.apicurio-registry-client>2.4.4.Final</version.apicurio-registry-client>
+        <version.apicurio-registry-client>2.4.10.Final</version.apicurio-registry-client>
         <version.commons-logging>1.13.0</version.commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.14</version.httpclient>
