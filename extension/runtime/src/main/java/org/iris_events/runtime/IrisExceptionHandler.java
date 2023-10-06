@@ -2,6 +2,7 @@ package org.iris_events.runtime;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.SecurityException;
 import java.util.HashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,12 +14,7 @@ import org.iris_events.common.ErrorType;
 import org.iris_events.common.message.ErrorMessage;
 import org.iris_events.context.EventContext;
 import org.iris_events.context.IrisContext;
-import org.iris_events.exception.BadPayloadException;
-import org.iris_events.exception.ClientException;
-import org.iris_events.exception.IrisSendException;
-import org.iris_events.exception.IrisTransactionException;
-import org.iris_events.exception.MessagingException;
-import org.iris_events.exception.ServerException;
+import org.iris_events.exception.*;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,9 +126,17 @@ public class IrisExceptionHandler {
             exception = new ServerException(SERVER_ERROR_CLIENT_CODE, throwable.getMessage(), false, throwable.getCause());
         }
 
-        log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
-        acknowledgeMessage(channel, message);
-        retryEnqueuer.enqueueWithBackoff(irisContext, message, exception, exception.shouldNotifyFrontend());
+        if (exception.shouldRetry()) {
+            log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
+            acknowledgeMessage(channel, message);
+            retryEnqueuer.enqueueWithBackoff(irisContext, message, exception, exception.shouldNotifyFrontend());
+        } else if (exception.shouldNotifyFrontend()) {
+            log.error("Encountered server exception while processing message. Notifying client with no retries.", throwable);
+            acknowledgeMessageAndSendError(message, channel, exception);
+        } else {
+            log.error("Encountered server exception while processing message.", throwable);
+            acknowledgeMessage(channel, message);
+        }
     }
 
     private void acknowledgeMessageAndSendError(
