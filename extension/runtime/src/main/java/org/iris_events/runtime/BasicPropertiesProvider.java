@@ -115,6 +115,9 @@ public class BasicPropertiesProvider {
             headers.remove(ROUTER);
             headers.remove(USER_ID);
             headers.put(SESSION_ID, sessionId);
+        } else if (routingDetails.getCorrelationId() != null) {
+            // Custom correlationId for inter-service RPC support
+            builder.correlationId(routingDetails.getCorrelationId());
         }
 
         builder.deliveryMode(getDeliveryMode(routingDetails));

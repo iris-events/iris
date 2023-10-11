@@ -93,7 +93,7 @@ public class EventProducer {
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message) throws IrisSendException, IrisTransactionException {
-        doSend(message, null);
+        doSend(message, null, null);
     }
 
     /**
@@ -110,7 +110,20 @@ public class EventProducer {
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message, final String userId) throws IrisSendException, IrisTransactionException {
-        doSend(message, userId);
+        doSend(message, userId, null);
+    }
+
+    /**
+     * Send message using Iris infrastructure and override headers defined in sendOptions.
+     * <p>
+     *
+     * @param message message
+     * @param sendOptions object containing properties to override in a IRIS message
+     * @throws IrisSendException when sending fails
+     * @throws IrisTransactionException when sending fails within transactional context
+     */
+    public void send(final Object message, final SendOptions sendOptions) throws IrisSendException, IrisTransactionException {
+        doSend(message, sendOptions.userId(), sendOptions.correlationId());
     }
 
     /**
@@ -148,13 +161,13 @@ public class EventProducer {
         publish(resourceUpdate, routingDetails);
     }
 
-    private void doSend(final Object message, final String userId) throws IrisSendException {
+    private void doSend(final Object message, final String userId, final String correlationId) throws IrisSendException {
         final var messageAnnotation = getMessageAnnotation(message);
 
         final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
 
         switch (scope) {
-            case INTERNAL -> publish(message, getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId));
+            case INTERNAL -> publish(message, getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId, correlationId));
             case USER, SESSION, BROADCAST -> publish(message,
                     getRoutingDetailsForClientScope(messageAnnotation, scope, userId));
             default -> throw new IrisSendException("Message scope " + scope + " not supported!");
@@ -162,7 +175,7 @@ public class EventProducer {
     }
 
     private RoutingDetails getRoutingDetailsFromAnnotation(final org.iris_events.annotations.Message messageAnnotation,
-            final Scope scope, final String userId) {
+            final Scope scope, final String userId, final String correlationId) {
 
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
@@ -177,6 +190,7 @@ public class EventProducer {
                 .scope(scope)
                 .userId(userId)
                 .persistent(persistent)
+                .correlationId(correlationId)
                 .build();
     }
 

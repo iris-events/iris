@@ -16,11 +16,12 @@ public final class RoutingDetails {
     private final String subscriptionId;
     private final boolean persistent;
     private final Integer cacheTtl;
+    private final String correlationId;
 
     public RoutingDetails(final String eventName, final String exchange, final ExchangeType exchangeType,
             final String routingKey, final Scope scope,
             final String userId, final String sessionId, final String subscriptionId, final boolean persistent,
-            final Integer cacheTtl) {
+            final Integer cacheTtl, final String correlationId) {
         this.eventName = eventName;
         this.exchange = exchange;
         this.exchangeType = exchangeType;
@@ -31,6 +32,7 @@ public final class RoutingDetails {
         this.subscriptionId = subscriptionId;
         this.persistent = persistent;
         this.cacheTtl = cacheTtl;
+        this.correlationId = correlationId;
     }
 
     public String getEventName() {
@@ -71,6 +73,14 @@ public final class RoutingDetails {
 
     public Integer getCacheTtl() {
         return cacheTtl;
+    }
+
+    public boolean isPersistent() {
+        return persistent;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
     }
 
     @Override
@@ -166,7 +176,7 @@ public final class RoutingDetails {
         }
 
         public MiscRoutingDetailsBuilder scope(final Scope scope) {
-            return new MiscRoutingDetailsBuilder(eventName, exchange, exchangeType, routingKey, scope);
+            return new MiscRoutingDetailsBuilder(eventName, exchange, exchangeType, routingKey, scope, null);
         }
     }
 
@@ -183,14 +193,17 @@ public final class RoutingDetails {
         private boolean persistent;
         private Integer cacheTtl;
 
+        private String correlationId;
+
         public MiscRoutingDetailsBuilder(final String eventName, final String exchange, final ExchangeType exchangeType,
-                final String routingKey, final Scope scope) {
+                final String routingKey, final Scope scope, final String correlationId) {
 
             this.eventName = eventName;
             this.exchange = exchange;
             this.exchangeType = exchangeType;
             this.routingKey = routingKey;
             this.scope = scope;
+            this.correlationId = correlationId;
         }
 
         public MiscRoutingDetailsBuilder userId(final String userId) {
@@ -218,9 +231,14 @@ public final class RoutingDetails {
             return this;
         }
 
+        public MiscRoutingDetailsBuilder correlationId(final String correlationId) {
+            this.correlationId = correlationId;
+            return this;
+        }
+
         public RoutingDetails build() {
             return new RoutingDetails(eventName, exchange, exchangeType, routingKey, scope, userId, sessionId, subscriptionId,
-                    persistent, cacheTtl);
+                    persistent, cacheTtl, correlationId);
         }
     }
 }

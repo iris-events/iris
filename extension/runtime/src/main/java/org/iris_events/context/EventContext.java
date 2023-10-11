@@ -102,7 +102,7 @@ public class EventContext {
         setHeader(SUBSCRIPTION_ID, subscriptionId);
     }
 
-    private void setHeader(final String key, final Object value) {
+    public void setHeader(final String key, final Object value) {
         final var basicProperties = findEventContextHolder()
                 .map(EventContextHolder::getAmqpBasicProperties)
                 .orElseThrow(() -> new IllegalStateException("AMQP.BasicProperties not set for the message context."));

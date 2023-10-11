@@ -29,6 +29,7 @@ import org.iris_events.common.message.ResourceMessage;
 import org.iris_events.context.EventContext;
 import org.iris_events.producer.CorrelationIdProvider;
 import org.iris_events.producer.EventProducer;
+import org.iris_events.producer.SendOptions;
 import org.iris_events.runtime.EventAppInfoProvider;
 import org.iris_events.runtime.InstanceInfoProvider;
 import org.iris_events.runtime.TimestampProvider;
@@ -56,6 +57,8 @@ public class EventProducerTest {
     private static final String AMQP_PRODUCER_TEST_SESSION_EVENT = "amqp-producer-test-session-event";
     private static final String AMQP_PRODUCER_TEST_USER_EVENT = "amqp_producer_test_user_event";
     private static final String AMQP_PRODUCER_TEST_INTERNAL_EVENT = "amqp-producer-test-internal-event";
+    private static final String AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT = "amqp-producer-test-correlation-id-event";
+    private static final String TEST_CORRELATION_ID = "correlationIdOverride";
     private static final String INSTANCE_NAME = "AmqpProducerTestInstance";
 
     @Inject
@@ -96,7 +99,7 @@ public class EventProducerTest {
         producer.send(event);
 
         final byte[] bytes = objectMapper.writeValueAsBytes(event);
-        final var basicProperties = getBasicPropertiesBuilder(eventName, null, deliveryMode).build();
+        final var basicProperties = getBasicPropertiesBuilder(eventName, null, null, deliveryMode).build();
         Mockito.verify(channel)
                 .basicPublish(expectedExchange,
                         expectedRoutingKey,
@@ -117,13 +120,32 @@ public class EventProducerTest {
     }
 
     @Test
+    void sendOverrideCorrelationId() throws IOException {
+        mockBasicProperties(AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT);
+        var event = getInternalCorrelationIdEvent();
+
+        SendOptions sendOptions = new SendOptions(null, TEST_CORRELATION_ID);
+        producer.send(event, sendOptions);
+
+        final byte[] bytes = objectMapper.writeValueAsBytes(event);
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT, null,
+                TEST_CORRELATION_ID, DeliveryMode.PERSISTENT).build();
+        Mockito.verify(channel)
+                .basicPublish(AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT,
+                        "",
+                        true,
+                        basicProperties,
+                        bytes);
+    }
+
+    @Test
     void sendToSubscription() throws Exception {
         mockBasicProperties(AMQP_PRODUCER_TEST_SESSION_EVENT);
 
         final var resourceType = "amqpProducerTestEventResource";
         final var resourceId = UUID.randomUUID().toString();
         final var event = new SessionEvent(resourceId);
-        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, null,
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, null, null,
                 DeliveryMode.NON_PERSISTENT).build();
 
         producer.sendToSubscription(event, resourceType, resourceId);
@@ -147,7 +169,7 @@ public class EventProducerTest {
         producer.send(event, userId);
 
         final byte[] bytes = objectMapper.writeValueAsBytes(event);
-        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, userId,
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, userId, null,
                 DeliveryMode.NON_PERSISTENT).build();
         Mockito.verify(channel)
                 .basicPublish(Exchanges.USER.getValue(),
@@ -159,12 +181,13 @@ public class EventProducerTest {
 
     private void mockBasicProperties(final String eventName) {
         final var basicPropertiesMock = mock(AMQP.BasicProperties.class);
-        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName, null, DeliveryMode.NON_PERSISTENT);
+        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName, null, null, DeliveryMode.NON_PERSISTENT);
         when(basicPropertiesMock.builder()).thenReturn(basicPropertiesBuilder);
         when(eventContext.getAmqpBasicProperties()).thenReturn(basicPropertiesMock);
     }
 
     private AMQP.BasicProperties.Builder getBasicPropertiesBuilder(final String eventName, final String userId,
+            final String correlationId,
             final DeliveryMode deliveryMode) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(CURRENT_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK);
@@ -176,7 +199,12 @@ public class EventProducerTest {
             headers.put(ORIGIN_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK);
             headers.put(USER_ID, userId);
         }
-        return new AMQP.BasicProperties().builder()
+
+        AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties().builder();
+        if (correlationId != null) {
+            builder.correlationId(correlationId);
+        }
+        return builder
                 .deliveryMode(deliveryMode.getValue())
                 .headers(headers);
     }
@@ -194,6 +222,11 @@ public class EventProducerTest {
     private static InternalEvent getInternalEvent() {
         final var resourceId = UUID.randomUUID().toString();
         return new InternalEvent(resourceId);
+    }
+
+    private static InternalCorrelationIdEvent getInternalCorrelationIdEvent() {
+        final var resourceId = UUID.randomUUID().toString();
+        return new InternalCorrelationIdEvent(resourceId);
     }
 
     @Message(name = AMQP_PRODUCER_TEST_SESSION_EVENT, scope = Scope.SESSION)
@@ -227,6 +260,19 @@ public class EventProducerTest {
         private final String id;
 
         InternalEvent(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+    }
+
+    @Message(name = AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT, persistent = true)
+    static final class InternalCorrelationIdEvent {
+        private final String id;
+
+        InternalCorrelationIdEvent(String id) {
             this.id = id;
         }
 
