@@ -1,9 +1,12 @@
 package org.iris_events.producer;
 
-import static org.iris_events.common.Exchanges.*;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,13 +14,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.transaction.*;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import jakarta.validation.constraints.NotNull;
 
 import org.iris_events.annotations.CachedMessage;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
-import org.iris_events.asyncapi.parsers.*;
+import org.iris_events.asyncapi.parsers.CacheableTtlParser;
+import org.iris_events.asyncapi.parsers.ExchangeParser;
+import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
+import org.iris_events.asyncapi.parsers.MessageScopeParser;
+import org.iris_events.asyncapi.parsers.PersistentParser;
+import org.iris_events.asyncapi.parsers.RoutingKeyParser;
 import org.iris_events.common.message.ResourceMessage;
 import org.iris_events.context.EventContext;
 import org.iris_events.exception.IrisSendException;
@@ -35,6 +48,11 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
+
+import static org.iris_events.common.Exchanges.BROADCAST;
+import static org.iris_events.common.Exchanges.SESSION;
+import static org.iris_events.common.Exchanges.SUBSCRIPTION;
+import static org.iris_events.common.Exchanges.USER;
 
 @ApplicationScoped
 public class EventProducer {
