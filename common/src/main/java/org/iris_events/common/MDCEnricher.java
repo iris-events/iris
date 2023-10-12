@@ -6,6 +6,7 @@ import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 import static org.iris_events.common.MessagingHeaders.Message.SESSION_ID;
 import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.MDC;
@@ -20,6 +21,10 @@ public class MDCEnricher {
         getStringHeader(properties, CLIENT_TRACE_ID).ifPresent(s -> MDC.put(MDCProperties.CLIENT_TRACE_ID, s));
         getStringHeader(properties, CORRELATION_ID).ifPresent(s -> MDC.put(MDCProperties.CORRELATION_ID, s));
         getStringHeader(properties, EVENT_TYPE).ifPresent(s -> MDC.put(MDCProperties.EVENT_TYPE, s));
+    }
+
+    public static void enrichMDC(final Map<String, String> propertyValueMap) {
+        propertyValueMap.forEach(MDC::put);
     }
 
     private static Optional<String> getStringHeader(BasicProperties props, String name) {
