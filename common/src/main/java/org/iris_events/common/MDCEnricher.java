@@ -27,6 +27,10 @@ public class MDCEnricher {
         propertyValueMap.forEach(MDC::put);
     }
 
+    public static void put(final String property, final String value) {
+        MDC.put(property, value);
+    }
+
     private static Optional<String> getStringHeader(BasicProperties props, String name) {
         return Optional.ofNullable(props.getHeaders())
                 .map(headers -> headers.get(name))
