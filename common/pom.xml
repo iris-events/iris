@@ -24,6 +24,10 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

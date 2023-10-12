@@ -1,5 +1,9 @@
 package org.iris_events.producer;
 
+import static org.iris_events.common.Exchanges.BROADCAST;
+import static org.iris_events.common.Exchanges.SESSION;
+import static org.iris_events.common.Exchanges.SUBSCRIPTION;
+import static org.iris_events.common.Exchanges.USER;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -48,11 +52,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
-
-import static org.iris_events.common.Exchanges.BROADCAST;
-import static org.iris_events.common.Exchanges.SESSION;
-import static org.iris_events.common.Exchanges.SUBSCRIPTION;
-import static org.iris_events.common.Exchanges.USER;
 
 @ApplicationScoped
 public class EventProducer {
