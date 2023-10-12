@@ -29,7 +29,6 @@ import org.iris_events.common.message.ResourceMessage;
 import org.iris_events.context.EventContext;
 import org.iris_events.producer.CorrelationIdProvider;
 import org.iris_events.producer.EventProducer;
-import org.iris_events.producer.SendOptions;
 import org.iris_events.runtime.EventAppInfoProvider;
 import org.iris_events.runtime.InstanceInfoProvider;
 import org.iris_events.runtime.TimestampProvider;
@@ -57,8 +56,7 @@ public class EventProducerTest {
     private static final String AMQP_PRODUCER_TEST_SESSION_EVENT = "amqp-producer-test-session-event";
     private static final String AMQP_PRODUCER_TEST_USER_EVENT = "amqp_producer_test_user_event";
     private static final String AMQP_PRODUCER_TEST_INTERNAL_EVENT = "amqp-producer-test-internal-event";
-    private static final String AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT = "amqp-producer-test-correlation-id-event";
-    private static final String TEST_CORRELATION_ID = "correlationIdOverride";
+    private static final String AMQP_PRODUCER_TEST_NO_PROPAGATE_EVENT = "amqp-producer-test-no-propagate-event";
     private static final String INSTANCE_NAME = "AmqpProducerTestInstance";
 
     @Inject
@@ -99,7 +97,7 @@ public class EventProducerTest {
         producer.send(event);
 
         final byte[] bytes = objectMapper.writeValueAsBytes(event);
-        final var basicProperties = getBasicPropertiesBuilder(eventName, null, null, deliveryMode).build();
+        final var basicProperties = getBasicPropertiesBuilder(eventName, null, true, deliveryMode).build();
         Mockito.verify(channel)
                 .basicPublish(expectedExchange,
                         expectedRoutingKey,
@@ -120,18 +118,19 @@ public class EventProducerTest {
     }
 
     @Test
-    void sendOverrideCorrelationId() throws IOException {
-        mockBasicProperties(AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT);
-        var event = getInternalCorrelationIdEvent();
+    void sendDoNotPropagate() throws IOException {
+        final var correlationIdMock = UUID.randomUUID().toString();
+        mockCorrelationIdProvider(correlationIdMock);
+        mockBasicProperties(AMQP_PRODUCER_TEST_NO_PROPAGATE_EVENT);
+        var event = getInternalNoPropagateEvent();
 
-        SendOptions sendOptions = new SendOptions(null, TEST_CORRELATION_ID);
-        producer.send(event, sendOptions);
+        producer.send(event, false);
 
         final byte[] bytes = objectMapper.writeValueAsBytes(event);
-        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT, null,
-                TEST_CORRELATION_ID, DeliveryMode.PERSISTENT).build();
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_NO_PROPAGATE_EVENT, null,
+                false, DeliveryMode.PERSISTENT).build();
         Mockito.verify(channel)
-                .basicPublish(AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT,
+                .basicPublish(AMQP_PRODUCER_TEST_NO_PROPAGATE_EVENT,
                         "",
                         true,
                         basicProperties,
@@ -145,7 +144,7 @@ public class EventProducerTest {
         final var resourceType = "amqpProducerTestEventResource";
         final var resourceId = UUID.randomUUID().toString();
         final var event = new SessionEvent(resourceId);
-        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, null, null,
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, null, true,
                 DeliveryMode.NON_PERSISTENT).build();
 
         producer.sendToSubscription(event, resourceType, resourceId);
@@ -169,7 +168,7 @@ public class EventProducerTest {
         producer.send(event, userId);
 
         final byte[] bytes = objectMapper.writeValueAsBytes(event);
-        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, userId, null,
+        final var basicProperties = getBasicPropertiesBuilder(AMQP_PRODUCER_TEST_SESSION_EVENT, userId, true,
                 DeliveryMode.NON_PERSISTENT).build();
         Mockito.verify(channel)
                 .basicPublish(Exchanges.USER.getValue(),
@@ -181,13 +180,17 @@ public class EventProducerTest {
 
     private void mockBasicProperties(final String eventName) {
         final var basicPropertiesMock = mock(AMQP.BasicProperties.class);
-        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName, null, null, DeliveryMode.NON_PERSISTENT);
+        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName, null, true, DeliveryMode.NON_PERSISTENT);
         when(basicPropertiesMock.builder()).thenReturn(basicPropertiesBuilder);
         when(eventContext.getAmqpBasicProperties()).thenReturn(basicPropertiesMock);
     }
 
+    private void mockCorrelationIdProvider(final String correlationIdMock) {
+        when(correlationIdProvider.getCorrelationId()).thenReturn(correlationIdMock);
+    }
+
     private AMQP.BasicProperties.Builder getBasicPropertiesBuilder(final String eventName, final String userId,
-            final String correlationId,
+            final boolean propagate,
             final DeliveryMode deliveryMode) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(CURRENT_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK);
@@ -200,9 +203,9 @@ public class EventProducerTest {
             headers.put(USER_ID, userId);
         }
 
-        AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties().builder();
-        if (correlationId != null) {
-            builder.correlationId(correlationId);
+        var builder = new AMQP.BasicProperties().builder();
+        if (!propagate) {
+            builder.correlationId(correlationIdProvider.getCorrelationId());
         }
         return builder
                 .deliveryMode(deliveryMode.getValue())
@@ -224,9 +227,9 @@ public class EventProducerTest {
         return new InternalEvent(resourceId);
     }
 
-    private static InternalCorrelationIdEvent getInternalCorrelationIdEvent() {
+    private static InternalNoPropagateEvent getInternalNoPropagateEvent() {
         final var resourceId = UUID.randomUUID().toString();
-        return new InternalCorrelationIdEvent(resourceId);
+        return new InternalNoPropagateEvent(resourceId);
     }
 
     @Message(name = AMQP_PRODUCER_TEST_SESSION_EVENT, scope = Scope.SESSION)
@@ -268,11 +271,11 @@ public class EventProducerTest {
         }
     }
 
-    @Message(name = AMQP_PRODUCER_TEST_CORRELATION_ID_EVENT, persistent = true)
-    static final class InternalCorrelationIdEvent {
+    @Message(name = AMQP_PRODUCER_TEST_NO_PROPAGATE_EVENT, persistent = true)
+    static final class InternalNoPropagateEvent {
         private final String id;
 
-        InternalCorrelationIdEvent(String id) {
+        InternalNoPropagateEvent(String id) {
             this.id = id;
         }
 

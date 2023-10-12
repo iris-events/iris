@@ -80,6 +80,7 @@ public class BasicPropertiesProvider {
         final var scope = routingDetails.getScope();
         final var userId = routingDetails.getUserId();
         final var sessionId = routingDetails.getSessionId();
+        final var propagate = routingDetails.getPropagate();
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(basicProperties.getHeaders());
@@ -116,9 +117,8 @@ public class BasicPropertiesProvider {
             headers.remove(USER_ID);
             headers.put(SESSION_ID, sessionId);
         }
-        if (routingDetails.getCorrelationId() != null) {
-            // Custom correlationId for inter-service RPC support
-            builder.correlationId(routingDetails.getCorrelationId());
+        if (!propagate) {
+            builder.correlationId(correlationIdProvider.getCorrelationId());
         }
 
         builder.deliveryMode(getDeliveryMode(routingDetails));
