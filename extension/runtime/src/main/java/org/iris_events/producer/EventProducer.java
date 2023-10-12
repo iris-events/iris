@@ -1,16 +1,9 @@
 package org.iris_events.producer;
 
-import static org.iris_events.common.Exchanges.BROADCAST;
-import static org.iris_events.common.Exchanges.SESSION;
-import static org.iris_events.common.Exchanges.SUBSCRIPTION;
-import static org.iris_events.common.Exchanges.USER;
+import static org.iris_events.common.Exchanges.*;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,12 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.Status;
-import jakarta.transaction.Synchronization;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.Transaction;
-import jakarta.transaction.TransactionManager;
+import jakarta.transaction.*;
 import jakarta.validation.constraints.NotNull;
 
 import org.iris_events.annotations.CachedMessage;
@@ -93,7 +81,7 @@ public class EventProducer {
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message) throws IrisSendException, IrisTransactionException {
-        doSend(message, null, null);
+        doSend(message, null, true);
     }
 
     /**
@@ -110,20 +98,35 @@ public class EventProducer {
      * @throws IrisTransactionException when sending fails within transactional context
      */
     public void send(final Object message, final String userId) throws IrisSendException, IrisTransactionException {
-        doSend(message, userId, null);
+        doSend(message, userId, true);
     }
 
     /**
-     * Send message using Iris infrastructure and override headers defined in sendOptions.
+     * Send message using Iris infrastructure and define if correlationId should propagate further or not
      * <p>
      *
      * @param message message
-     * @param sendOptions object containing properties to override in a IRIS message
+     * @param propagate if the correlationId chain should propagate or not
      * @throws IrisSendException when sending fails
      * @throws IrisTransactionException when sending fails within transactional context
      */
-    public void send(final Object message, final SendOptions sendOptions) throws IrisSendException, IrisTransactionException {
-        doSend(message, sendOptions.userId(), sendOptions.correlationId());
+    public void send(final Object message, final boolean propagate) {
+        doSend(message, null, propagate);
+    }
+
+    /**
+     * Send message using Iris infrastructure and define if correlationId should propagate further or not and override userId
+     * header of the message
+     * <p>
+     *
+     * @param message message
+     * @param userId user id
+     * @param propagate if the correlationId chain should propagate or not
+     * @throws IrisSendException when sending fails
+     * @throws IrisTransactionException when sending fails within transactional context
+     */
+    public void send(final Object message, final String userId, final boolean propagate) {
+        doSend(message, userId, propagate);
     }
 
     /**
@@ -161,13 +164,14 @@ public class EventProducer {
         publish(resourceUpdate, routingDetails);
     }
 
-    private void doSend(final Object message, final String userId, final String correlationId) throws IrisSendException {
+    private void doSend(final Object message, final String userId, final boolean propagate) throws IrisSendException {
         final var messageAnnotation = getMessageAnnotation(message);
 
         final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
 
         switch (scope) {
-            case INTERNAL -> publish(message, getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId, correlationId));
+            case INTERNAL ->
+                publish(message, getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId, propagate));
             case USER, SESSION, BROADCAST -> publish(message,
                     getRoutingDetailsForClientScope(messageAnnotation, scope, userId));
             default -> throw new IrisSendException("Message scope " + scope + " not supported!");
@@ -175,14 +179,14 @@ public class EventProducer {
     }
 
     private RoutingDetails getRoutingDetailsFromAnnotation(final org.iris_events.annotations.Message messageAnnotation,
-            final Scope scope, final String userId, final String correlationId) {
+            final Scope scope, final String userId, final boolean propagate) {
 
         final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
         final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
         final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails.Builder()
+        RoutingDetails.MiscRoutingDetailsBuilder routingDetailsBuilder = new RoutingDetails.Builder()
                 .eventName(eventName)
                 .exchange(eventName)
                 .exchangeType(exchangeType)
@@ -190,8 +194,8 @@ public class EventProducer {
                 .scope(scope)
                 .userId(userId)
                 .persistent(persistent)
-                .correlationId(correlationId)
-                .build();
+                .propagate(propagate);
+        return routingDetailsBuilder.build();
     }
 
     private RoutingDetails getRoutingDetailsForClientScope(final org.iris_events.annotations.Message messageAnnotation,

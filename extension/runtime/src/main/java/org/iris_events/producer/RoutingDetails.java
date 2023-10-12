@@ -16,12 +16,12 @@ public final class RoutingDetails {
     private final String subscriptionId;
     private final boolean persistent;
     private final Integer cacheTtl;
-    private final String correlationId;
+    private final boolean propagate;
 
     public RoutingDetails(final String eventName, final String exchange, final ExchangeType exchangeType,
             final String routingKey, final Scope scope,
             final String userId, final String sessionId, final String subscriptionId, final boolean persistent,
-            final Integer cacheTtl, final String correlationId) {
+            final Integer cacheTtl, final boolean propagate) {
         this.eventName = eventName;
         this.exchange = exchange;
         this.exchangeType = exchangeType;
@@ -32,7 +32,7 @@ public final class RoutingDetails {
         this.subscriptionId = subscriptionId;
         this.persistent = persistent;
         this.cacheTtl = cacheTtl;
-        this.correlationId = correlationId;
+        this.propagate = propagate;
     }
 
     public String getEventName() {
@@ -79,8 +79,8 @@ public final class RoutingDetails {
         return persistent;
     }
 
-    public String getCorrelationId() {
-        return correlationId;
+    public boolean getPropagate() {
+        return propagate;
     }
 
     @Override
@@ -176,7 +176,7 @@ public final class RoutingDetails {
         }
 
         public MiscRoutingDetailsBuilder scope(final Scope scope) {
-            return new MiscRoutingDetailsBuilder(eventName, exchange, exchangeType, routingKey, scope, null);
+            return new MiscRoutingDetailsBuilder(eventName, exchange, exchangeType, routingKey, scope, true);
         }
     }
 
@@ -193,17 +193,17 @@ public final class RoutingDetails {
         private boolean persistent;
         private Integer cacheTtl;
 
-        private String correlationId;
+        private boolean propagate;
 
         public MiscRoutingDetailsBuilder(final String eventName, final String exchange, final ExchangeType exchangeType,
-                final String routingKey, final Scope scope, final String correlationId) {
+                final String routingKey, final Scope scope, final boolean propagate) {
 
             this.eventName = eventName;
             this.exchange = exchange;
             this.exchangeType = exchangeType;
             this.routingKey = routingKey;
             this.scope = scope;
-            this.correlationId = correlationId;
+            this.propagate = propagate;
         }
 
         public MiscRoutingDetailsBuilder userId(final String userId) {
@@ -231,14 +231,14 @@ public final class RoutingDetails {
             return this;
         }
 
-        public MiscRoutingDetailsBuilder correlationId(final String correlationId) {
-            this.correlationId = correlationId;
+        public MiscRoutingDetailsBuilder propagate(final boolean propagate) {
+            this.propagate = propagate;
             return this;
         }
 
         public RoutingDetails build() {
             return new RoutingDetails(eventName, exchange, exchangeType, routingKey, scope, userId, sessionId, subscriptionId,
-                    persistent, cacheTtl, correlationId);
+                    persistent, cacheTtl, propagate);
         }
     }
 }
