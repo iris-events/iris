@@ -17,7 +17,6 @@ import org.iris_events.producer.EventProducer;
 import org.iris_events.runtime.IrisExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
@@ -111,7 +110,7 @@ public class DeliverCallbackProvider {
             Optional.ofNullable(securityIdentity)
                     .map(SecurityIdentity::getPrincipal)
                     .map(Principal::getName)
-                    .ifPresent(subject -> MDC.put(MDCProperties.GID_UUID, subject));
+                    .ifPresent(subject -> MDCEnricher.put(MDCProperties.GID_UUID, subject));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
             throw IrisExceptionHandler.getSecurityException(securityException);
