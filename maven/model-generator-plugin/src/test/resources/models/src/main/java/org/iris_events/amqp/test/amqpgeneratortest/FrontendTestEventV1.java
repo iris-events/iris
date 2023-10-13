@@ -36,7 +36,7 @@ public class FrontendTestEventV1 implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public FrontendTestEventV1() {
     }

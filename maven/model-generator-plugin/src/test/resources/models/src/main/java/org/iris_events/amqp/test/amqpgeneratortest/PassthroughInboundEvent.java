@@ -27,7 +27,7 @@ public class PassthroughInboundEvent implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public PassthroughInboundEvent() {
     }

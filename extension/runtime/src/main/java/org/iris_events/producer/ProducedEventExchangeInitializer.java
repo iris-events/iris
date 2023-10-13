@@ -9,6 +9,7 @@ import jakarta.inject.Inject;
 
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
+import org.iris_events.consumer.ExchangeDeclarator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ public class ProducedEventExchangeInitializer {
     }
 
     public void addProducerDefinedExchange(String exchange, ExchangeType exchangeType, Scope scope) {
-        if (log.isTraceEnabled()){
+        if (log.isTraceEnabled()) {
             log.trace("Adding producer defined exchange {}", exchange);
         }
         producerDefinedExchanges.add(new ProducerDefinedExchange(exchange, exchangeType, scope));

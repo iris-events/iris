@@ -43,6 +43,12 @@ public class IrisRabbitMQConfig {
     int retryMaxCount;
 
     /**
+     * Iris RPC request timeout
+     */
+    @ConfigProperty(name = "iris.rpc.timeout", defaultValue = "2000")
+    int rpcTimeout;
+
+    /**
      * RabbitMQ broker host
      */
     @ConfigProperty(name = "rabbitmq-host", defaultValue = "localhost")
@@ -198,5 +204,13 @@ public class IrisRabbitMQConfig {
     public IrisRabbitMQConfig setVirtualHost(final String virtualHost) {
         this.virtualHost = virtualHost;
         return this;
+    }
+
+    public int getRpcTimeout() {
+        return rpcTimeout;
+    }
+
+    public void setRpcTimeout(final int rpcTimeout) {
+        this.rpcTimeout = rpcTimeout;
     }
 }

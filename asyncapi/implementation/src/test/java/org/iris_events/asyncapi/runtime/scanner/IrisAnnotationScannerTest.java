@@ -107,6 +107,8 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
                 EventHandlersApp.ListPayloadEvent.class,
                 EventHandlersApp.MapValue.class,
                 EventHandlersApp.CachedEvent.class,
+                EventHandlersApp.RpcRequestEvent.class,
+                EventHandlersApp.RpcResponseEvent.class,
                 SnapshotRequested.class,
                 MessageHandler.class,
                 SnapshotMessageHandler.class,

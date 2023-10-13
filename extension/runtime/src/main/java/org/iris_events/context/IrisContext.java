@@ -25,6 +25,7 @@ public final class IrisContext {
     private long ttl;
     private String deadLetterQueue;
     private Set<String> handlerRolesAllowed;
+    private String rpcResponseEventName;
 
     public IrisContext() {
     }
@@ -39,7 +40,8 @@ public final class IrisContext {
             int prefetch,
             long ttl,
             String deadLetterQueue,
-            Set<String> handlerRolesAllowed) {
+            Set<String> handlerRolesAllowed,
+            String rpcResponseEventName) {
         this.name = name;
         this.bindingKeys = bindingKeys;
         this.exchangeType = exchangeType;
@@ -51,6 +53,7 @@ public final class IrisContext {
         this.ttl = ttl;
         this.deadLetterQueue = deadLetterQueue;
         this.handlerRolesAllowed = handlerRolesAllowed;
+        this.rpcResponseEventName = rpcResponseEventName;
     }
 
     public ExchangeType exchangeType() {
@@ -183,6 +186,18 @@ public final class IrisContext {
         this.handlerRolesAllowed = handlerRolesAllowed;
     }
 
+    public String getRpcResponseEventName() {
+        return rpcResponseEventName;
+    }
+
+    public void setRpcResponseEventName(final String rpcResponseEventName) {
+        this.rpcResponseEventName = rpcResponseEventName;
+    }
+
+    public boolean isRpc() {
+        return rpcResponseEventName != null && !rpcResponseEventName.isEmpty();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this)
@@ -200,13 +215,14 @@ public final class IrisContext {
                 this.prefetch == that.prefetch &&
                 this.ttl == that.ttl &&
                 Objects.equals(this.deadLetterQueue, that.deadLetterQueue) &&
-                Objects.equals(this.handlerRolesAllowed, that.handlerRolesAllowed);
+                Objects.equals(this.handlerRolesAllowed, that.handlerRolesAllowed) &&
+                Objects.equals(this.rpcResponseEventName, that.rpcResponseEventName);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(name, bindingKeys, exchangeType, scope, durable, autoDelete, consumerOnEveryInstance, prefetch, ttl,
-                deadLetterQueue, handlerRolesAllowed);
+                deadLetterQueue, handlerRolesAllowed, rpcResponseEventName);
     }
 
     @Override
@@ -226,7 +242,8 @@ public final class IrisContext {
                 "prefetch=" + prefetch + ", " +
                 "ttl=" + ttl + ", " +
                 "deadLetterQueue=" + deadLetterQueue + ", " +
-                "handlerRolesAllowed=" + handlerRolesJoiner + ']';
+                "handlerRolesAllowed=" + handlerRolesJoiner + ", " +
+                "rpcResponseEventName=" + rpcResponseEventName + ']';
     }
 
 }

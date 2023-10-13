@@ -36,7 +36,7 @@ public class TopicTestEventV1 implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public TopicTestEventV1() {
     }

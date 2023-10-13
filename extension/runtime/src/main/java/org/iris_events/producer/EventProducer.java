@@ -11,7 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,17 +33,22 @@ import jakarta.validation.constraints.NotNull;
 import org.iris_events.annotations.CachedMessage;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
+import org.iris_events.asyncapi.api.Headers;
 import org.iris_events.asyncapi.parsers.CacheableTtlParser;
 import org.iris_events.asyncapi.parsers.ExchangeParser;
 import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
 import org.iris_events.asyncapi.parsers.MessageScopeParser;
 import org.iris_events.asyncapi.parsers.PersistentParser;
 import org.iris_events.asyncapi.parsers.RoutingKeyParser;
+import org.iris_events.asyncapi.parsers.RpcResponseClassParser;
 import org.iris_events.common.message.ResourceMessage;
 import org.iris_events.context.EventContext;
 import org.iris_events.exception.IrisSendException;
 import org.iris_events.exception.IrisTransactionException;
 import org.iris_events.runtime.BasicPropertiesProvider;
+import org.iris_events.runtime.ExchangeNameProvider;
+import org.iris_events.runtime.QueueNameProvider;
+import org.iris_events.runtime.RpcMappingProvider;
 import org.iris_events.runtime.channel.ChannelKey;
 import org.iris_events.runtime.channel.ChannelService;
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
@@ -48,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
@@ -67,6 +77,9 @@ public class EventProducer {
     private final IrisRabbitMQConfig config;
     private final TransactionManager transactionManager;
     private final BasicPropertiesProvider basicPropertiesProvider;
+    private final QueueNameProvider queueNameProvider;
+    private final ExchangeNameProvider exchangeNameProvider;
+    private final RpcMappingProvider rpcMappingProvider;
 
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
@@ -81,13 +94,19 @@ public class EventProducer {
             EventContext eventContext,
             IrisRabbitMQConfig config,
             TransactionManager transactionManager,
-            BasicPropertiesProvider basicPropertiesProvider) {
+            BasicPropertiesProvider basicPropertiesProvider,
+            ExchangeNameProvider exchangeNameProvider,
+            QueueNameProvider queueNameProvider,
+            RpcMappingProvider rpcMappingProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.config = config;
         this.transactionManager = transactionManager;
         this.basicPropertiesProvider = basicPropertiesProvider;
+        this.exchangeNameProvider = exchangeNameProvider;
+        this.queueNameProvider = queueNameProvider;
+        this.rpcMappingProvider = rpcMappingProvider;
     }
 
     /**
@@ -146,6 +165,60 @@ public class EventProducer {
         doSend(message, userId, propagate);
     }
 
+    public <T> T sendRpcRequest(final Object message, Class<T> responseType) {
+
+        final var requestId = UUID.randomUUID();
+        final var messageAnnotation = getMessageAnnotation(message);
+        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+
+        final var replyToType = RpcResponseClassParser.getFromAnnotationClass(messageAnnotation).name();
+
+        final var replyTo = rpcMappingProvider.getReplyTo(replyToType);
+        if (replyTo == null) {
+            throw new IrisSendException("Can not send RPC request message with missing replyTo parameter.");
+        }
+
+        try (Channel channel = channelService.createChannel()) {
+            final var requestExchange = exchangeNameProvider.getRpcRequestExchangeName(eventName);
+            final var responseExchange = exchangeNameProvider.getRpcResponseExchangeName(replyTo);
+            final var requestQueueName = queueNameProvider.getRpcRequestQueueName(eventName);
+            final var responseQueue = queueNameProvider.getRpcResponseQueueName(replyTo);
+
+            channel.queueDeclare(responseQueue, false, false, true, null);
+            channel.queueBind(responseQueue, responseExchange, responseQueue);
+
+            final CompletableFuture<T> response = new CompletableFuture<>();
+            String ctag = channel.basicConsume(responseQueue, false, (consumerTag, delivery) -> {
+                final var messageObject = objectMapper.readValue(delivery.getBody(), responseType);
+                final var answerRequestId = delivery.getProperties().getHeaders().get(Headers.HEADER_REQUEST_ID).toString();
+
+                if (requestId.toString().equals(answerRequestId)) {
+                    response.complete(messageObject);
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                } else {
+                    channel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
+                }
+            }, consumerTag -> {
+            });
+
+            final var headers = Map.of(Headers.HEADER_REQUEST_ID, (Object) requestId.toString());
+            channel.basicPublish(
+                    requestExchange,
+                    requestQueueName,
+                    new AMQP.BasicProperties.Builder()
+                            .headers(headers)
+                            .replyTo(responseQueue)
+                            .build(),
+                    objectMapper.writeValueAsBytes(message));
+
+            final var result = response.get(config.getRpcTimeout(), TimeUnit.MILLISECONDS);
+            channel.basicCancel(ctag);
+            return result;
+        } catch (IOException | TimeoutException | InterruptedException | ExecutionException e) {
+            throw new IrisSendException("Could not process rpc send", e);
+        }
+    }
+
     /**
      * Send message to Iris subscription service.
      *
@@ -168,7 +241,6 @@ public class EventProducer {
         final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
         final var cacheTtl = getCachedAnnotation(message).map(CacheableTtlParser::getFromAnnotationClass).orElse(null);
-
         final var routingDetails = new RoutingDetails.Builder()
                 .eventName(eventName)
                 .exchange(SUBSCRIPTION.getValue())
@@ -193,6 +265,30 @@ public class EventProducer {
                     getRoutingDetailsForClientScope(messageAnnotation, scope, userId));
             default -> throw new IrisSendException("Message scope " + scope + " not supported!");
         }
+    }
+
+    public void sendRpcResponse(final Object message, final String replyTo) {
+        log.info("Sending RPC response");
+        final var messageAnnotation = getMessageAnnotation(message);
+        executePublish(message, getRpcRoutingDetails(messageAnnotation, replyTo));
+    }
+
+    private RoutingDetails getRpcRoutingDetails(final org.iris_events.annotations.Message messageAnnotation,
+            final String replyTo) {
+        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+        final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
+
+        RoutingDetails.MiscRoutingDetailsBuilder routingDetailsBuilder = new RoutingDetails.Builder()
+                .eventName(eventName)
+                .exchange(exchangeNameProvider.getRpcResponseExchangeName(eventName))
+                .exchangeType(ExchangeType.FANOUT) //TODO maybe try with topic, but i would go with fanout, and per service exchange, or maybe even DIRECT??
+                .routingKey(replyTo)
+                .scope(Scope.INTERNAL)
+                .persistent(persistent)
+                .propagate(true);
+        final var routingDetails = routingDetailsBuilder.build();
+        log.info(String.format("Built RPC routing details: %s", routingDetails.toString()));
+        return routingDetails;
     }
 
     private RoutingDetails getRoutingDetailsFromAnnotation(final org.iris_events.annotations.Message messageAnnotation,
@@ -348,8 +444,7 @@ public class EventProducer {
                 final var channelKey = ChannelKey.create(exchange, routingKey);
                 final var channel = channelService.getOrCreateChannelById(channelKey);
                 if (log.isTraceEnabled()) {
-                    log.trace("publishing event to exchange: {}, routing key: {}, props: {}"
-                            , exchange, routingKey, properties);
+                    log.trace("publishing event to exchange: {}, routing key: {}, props: {}", exchange, routingKey, properties);
                 }
                 channel.basicPublish(exchange, routingKey, true, properties, bytes);
 

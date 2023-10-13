@@ -69,4 +69,15 @@ public @interface Message {
      * they reach the queue.
      */
     boolean persistent() default false;
+
+    /**
+     * Defines the type of RPC response for this message.
+     * For messages with this property defined {@link org.iris_events.producer.EventProducer#sendRpcRequest(Object, Class)} can
+     * be used.
+     * The first parameter of the sendRpcRequest should be of type annotated with this instance of {@link Message} annotation,
+     * the
+     * second parameter should be same as the value of {@link #rpcResponse()} property, so the result is cast to the correct
+     * class.
+     */
+    Class<?> rpcResponse() default Void.class;
 }

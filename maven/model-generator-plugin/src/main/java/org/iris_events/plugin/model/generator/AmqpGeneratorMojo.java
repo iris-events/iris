@@ -6,6 +6,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.iris_events.plugin.model.generator.exception.AmqpGeneratorException;
 import org.iris_events.plugin.model.generator.models.ArtifactSource;
 import org.iris_events.plugin.model.generator.utils.FileInteractor;
@@ -14,7 +15,7 @@ import org.iris_events.plugin.model.generator.utils.SchemaFileGenerator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false)
+@Mojo(name = "generate-amqp-models", defaultPhase = LifecyclePhase.COMPILE, requiresProject = false, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class AmqpGeneratorMojo extends AbstractMojo {
 
     @Parameter(property = "artifactSource", required = true)

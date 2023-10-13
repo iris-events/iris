@@ -4,7 +4,7 @@
     "version" : "1.0.0"
   },
   "asyncapi" : "2.0.0",
-  "id" : "urn:id:global:EventHandlersAppWithMapProperty",
+  "id" : "urn:org:iris_events:EventHandlersAppWithMapProperty",
   "channels" : {
     "event-with-map-value/event-with-map-value" : {
       "publish" : {

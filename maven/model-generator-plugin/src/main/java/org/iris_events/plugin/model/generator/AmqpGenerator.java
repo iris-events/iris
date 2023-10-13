@@ -511,7 +511,8 @@ public class AmqpGenerator {
                             .orElseThrow()
                             .getValue());
 
-            annotator = new MetadataAnnotator(ch.orElseThrow().node(), EventSchemaGeneratorConfig.eventConfig);
+            annotator = new MetadataAnnotator(ch.orElseThrow().node(), EventSchemaGeneratorConfig.eventConfig,
+                    packageName, AmqpStringUtils.getPackageName(modelName));
         }
         return annotator;
     }

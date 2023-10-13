@@ -88,7 +88,22 @@ public class DeliverCallbackProvider {
             final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
             final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
             final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
-            optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
+
+            if (irisContext.isRpc()) {
+                log.info(String.format("DeliverCallbackProvider handling RPC message!"));
+                Optional<String> requestId = eventContext.getRequestId();
+                if (requestId.isEmpty()) {
+                    throw new RuntimeException("RPC event without requestId can not be processed");
+                }
+                if (optionalReturnEventClass.isEmpty()) {
+                    throw new RuntimeException("RPC message handler without non-void return class can not be processed");
+                }
+
+                replyMessage(invocationResult, optionalReturnEventClass.get(),
+                        eventContext.getAmqpBasicProperties().getReplyTo());
+            } else {
+                optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
+            }
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
         } catch (Throwable throwable) {
             log.error("Exception handling message", throwable);
@@ -120,5 +135,10 @@ public class DeliverCallbackProvider {
     private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
         final var returnClassInstance = returnEventClass.cast(invocationResult);
         producer.send(returnClassInstance);
+    }
+
+    private void replyMessage(Object invocationResult, Class<?> returnEventClass, String replyTo) {
+        final var returnClassInstance = returnEventClass.cast(invocationResult);
+        producer.sendRpcResponse(returnClassInstance, replyTo);
     }
 }

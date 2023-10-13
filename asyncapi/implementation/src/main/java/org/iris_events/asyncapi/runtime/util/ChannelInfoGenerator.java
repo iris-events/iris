@@ -24,7 +24,7 @@ public class ChannelInfoGenerator {
         final var operationBindingsInfo = new OperationBindingsInfo(persistent);
         final var channelBindingsInfo = new ChannelBindingsInfo(exchange, bindingKeysCsv, exchangeType);
         return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, operationBindingsInfo,
-                OperationConstant.PROP_SUBSCRIBE, rolesAllowed, deadLetterQueue, ttl, null);
+                OperationConstant.PROP_SUBSCRIBE, rolesAllowed, deadLetterQueue, ttl, null, null);
     }
 
     public static ChannelInfo generatePublishChannelInfo(
@@ -38,11 +38,12 @@ public class ChannelInfoGenerator {
             final String deadLetterQueue,
             final Integer ttl,
             final Type responseType,
-            final boolean persistent) {
+            final boolean persistent,
+            final Type rpcResponseType) {
 
         final var operationBindingsInfo = new OperationBindingsInfo(persistent);
         final var channelBindingsInfo = new ChannelBindingsInfo(exchange, routingKey, exchangeType, durable, autodelete);
         return new ChannelInfo(eventClassSimpleName, channelBindingsInfo, operationBindingsInfo, OperationConstant.PROP_PUBLISH,
-                rolesAllowed, deadLetterQueue, ttl, responseType);
+                rolesAllowed, deadLetterQueue, ttl, responseType, rpcResponseType);
     }
 }

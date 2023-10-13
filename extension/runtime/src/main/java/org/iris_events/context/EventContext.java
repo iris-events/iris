@@ -1,5 +1,6 @@
 package org.iris_events.context;
 
+import static org.iris_events.common.MessagingHeaders.Message.REQUEST_ID;
 import static org.iris_events.common.MessagingHeaders.Message.SESSION_ID;
 import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
@@ -79,6 +80,10 @@ public class EventContext {
 
     public Optional<String> getUserId() {
         return getHeaderValue(USER_ID);
+    }
+
+    public Optional<String> getRequestId() {
+        return getHeaderValue(REQUEST_ID);
     }
 
     public Optional<String> getSessionId() {

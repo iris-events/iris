@@ -24,6 +24,8 @@ public class MessagingHeaders {
         public static final String SUBSCRIPTION_ID = "x-subscription-id";
         public static final String CORRELATION_ID = "x-correlation-id";
         public static final String CACHE_TTL = "x-cache-ttl";
+
+        public static final String REQUEST_ID = "x-request-id";
     }
 
     public static class RequeueMessage {

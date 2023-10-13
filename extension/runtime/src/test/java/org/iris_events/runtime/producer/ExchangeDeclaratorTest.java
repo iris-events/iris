@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.io.IOException;
 
 import org.iris_events.annotations.ExchangeType;
-import org.iris_events.producer.ExchangeDeclarator;
+import org.iris_events.consumer.ExchangeDeclarator;
 import org.iris_events.runtime.channel.ChannelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

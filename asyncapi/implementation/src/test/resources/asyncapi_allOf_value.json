@@ -4,7 +4,7 @@
     "version" : "1.0.0"
   },
   "asyncapi" : "2.0.0",
-  "id" : "urn:id:global:ParseErrorEventHandlersApp",
+  "id" : "urn:org:iris_events:ParseErrorEventHandlersApp",
   "channels" : {
     "event-with-described-enum/event-with-described-enum" : {
       "publish" : {

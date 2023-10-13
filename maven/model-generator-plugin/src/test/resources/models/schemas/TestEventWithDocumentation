@@ -1,0 +1,27 @@
+{
+  "description" : "Event with extensive documentation for test purposes",
+  "type" : "object",
+  "properties" : {
+    "altId" : {
+      "description" : "Alternative event id",
+      "maximum" : 150,
+      "minimum" : 18,
+      "type" : "integer"
+    },
+    "id" : {
+      "exclusiveMaximum" : 100,
+      "minimum" : 5,
+      "type" : "integer"
+    },
+    "status" : {
+      "description" : "status of the user entity",
+      "type" : "string",
+      "enum" : [ "available", "pending", "sold" ]
+    },
+    "user" : {
+      "type" : "object",
+      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User"
+    }
+  },
+  "x-iris-generated" : false
+}

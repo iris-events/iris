@@ -11,7 +11,7 @@ import io.quarkus.runtime.annotations.Recorder;
 @Recorder
 public class EventAppRecorder {
 
-    private static final Logger log = LoggerFactory.getLogger(EventAppRecorder.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(EventAppRecorder.class);
 
     public void registerEventAppContext(final BeanContainer beanContainer, final EventAppContext eventAppContext) {
         log.info("Registering Iris for application with id '{}'", eventAppContext.getId());
