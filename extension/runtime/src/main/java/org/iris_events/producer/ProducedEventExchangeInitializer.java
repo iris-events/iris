@@ -9,6 +9,7 @@ import jakarta.inject.Inject;
 
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.Scope;
+import org.iris_events.consumer.ExchangeDeclarator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

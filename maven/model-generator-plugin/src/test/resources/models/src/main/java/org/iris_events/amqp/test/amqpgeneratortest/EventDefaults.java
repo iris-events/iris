@@ -27,7 +27,7 @@ public class EventDefaults implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public EventDefaults() {
     }

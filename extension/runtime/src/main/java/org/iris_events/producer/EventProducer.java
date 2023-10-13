@@ -1,9 +1,6 @@
 package org.iris_events.producer;
 
-import static org.iris_events.common.Exchanges.BROADCAST;
-import static org.iris_events.common.Exchanges.SESSION;
 import static org.iris_events.common.Exchanges.SUBSCRIPTION;
-import static org.iris_events.common.Exchanges.USER;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -11,7 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,18 +29,22 @@ import jakarta.validation.constraints.NotNull;
 
 import org.iris_events.annotations.CachedMessage;
 import org.iris_events.annotations.ExchangeType;
-import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.parsers.CacheableTtlParser;
 import org.iris_events.asyncapi.parsers.ExchangeParser;
-import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
 import org.iris_events.asyncapi.parsers.MessageScopeParser;
 import org.iris_events.asyncapi.parsers.PersistentParser;
 import org.iris_events.asyncapi.parsers.RoutingKeyParser;
+import org.iris_events.asyncapi.parsers.RpcResponseClassParser;
 import org.iris_events.common.message.ResourceMessage;
 import org.iris_events.context.EventContext;
 import org.iris_events.exception.IrisSendException;
 import org.iris_events.exception.IrisTransactionException;
+import org.iris_events.routing.RoutingDetailsProvider;
+import org.iris_events.runtime.AnnotationValueExtractor;
 import org.iris_events.runtime.BasicPropertiesProvider;
+import org.iris_events.runtime.ExchangeNameProvider;
+import org.iris_events.runtime.QueueNameProvider;
+import org.iris_events.runtime.RpcMappingProvider;
 import org.iris_events.runtime.channel.ChannelKey;
 import org.iris_events.runtime.channel.ChannelService;
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
@@ -48,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.ReturnCallback;
@@ -67,6 +73,10 @@ public class EventProducer {
     private final IrisRabbitMQConfig config;
     private final TransactionManager transactionManager;
     private final BasicPropertiesProvider basicPropertiesProvider;
+    private final QueueNameProvider queueNameProvider;
+    private final ExchangeNameProvider exchangeNameProvider;
+    private final RpcMappingProvider rpcMappingProvider;
+    private final RoutingDetailsProvider routingDetailsProvider;
 
     private final AtomicInteger count = new AtomicInteger(0);
     private final Object lock = new Object();
@@ -81,13 +91,21 @@ public class EventProducer {
             EventContext eventContext,
             IrisRabbitMQConfig config,
             TransactionManager transactionManager,
-            BasicPropertiesProvider basicPropertiesProvider) {
+            BasicPropertiesProvider basicPropertiesProvider,
+            ExchangeNameProvider exchangeNameProvider,
+            QueueNameProvider queueNameProvider,
+            RpcMappingProvider rpcMappingProvider,
+            RoutingDetailsProvider routingDetailsProvider) {
         this.channelService = channelService;
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.config = config;
         this.transactionManager = transactionManager;
         this.basicPropertiesProvider = basicPropertiesProvider;
+        this.exchangeNameProvider = exchangeNameProvider;
+        this.queueNameProvider = queueNameProvider;
+        this.rpcMappingProvider = rpcMappingProvider;
+        this.routingDetailsProvider = routingDetailsProvider;
     }
 
     /**
@@ -147,6 +165,69 @@ public class EventProducer {
     }
 
     /**
+     *
+     */
+    public <T> T sendAndReceive(final Object message, Class<T> responseType) {
+        return sendAndReceive(message, responseType, config.getRpcTimeout());
+    }
+
+    /**
+     *
+     */
+    public <T> T sendAndReceive(final Object message, Class<T> responseType, int timeout) {
+
+        final var messageId = UUID.randomUUID();
+        final var messageAnnotation = AnnotationValueExtractor.getMessageAnnotation(message);
+        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
+
+        final var replyToType = RpcResponseClassParser.getFromAnnotationClass(messageAnnotation).name();
+
+        final var replyTo = rpcMappingProvider.getReplyTo(replyToType);
+        if (replyTo == null) {
+            throw new IrisSendException("Can not send RPC request message with missing replyTo parameter.");
+        }
+
+        try (Channel channel = channelService.createChannel()) {
+            final var requestExchange = exchangeNameProvider.getRpcRequestExchangeName(eventName);
+            final var responseExchange = exchangeNameProvider.getRpcResponseExchangeName(replyTo);
+            final var requestQueueName = queueNameProvider.getRpcRequestQueueName(eventName);
+            final var responseQueue = queueNameProvider.getRpcResponseQueueName(replyTo);
+
+            channel.queueDeclare(responseQueue, false, false, true, null);
+            channel.queueBind(responseQueue, responseExchange, responseQueue);
+
+            final CompletableFuture<T> response = new CompletableFuture<>();
+            String ctag = channel.basicConsume(responseQueue, false, (consumerTag, delivery) -> {
+                final var messageObject = objectMapper.readValue(delivery.getBody(), responseType);
+                final var answerMessageId = delivery.getProperties().getMessageId();
+
+                if (messageId.toString().equals(answerMessageId)) {
+                    response.complete(messageObject);
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                } else {
+                    channel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
+                }
+            }, consumerTag -> {
+            });
+
+            channel.basicPublish(
+                    requestExchange,
+                    requestQueueName,
+                    new AMQP.BasicProperties.Builder()
+                            .messageId(messageId.toString())
+                            .replyTo(responseQueue)
+                            .build(),
+                    objectMapper.writeValueAsBytes(message));
+
+            final var result = response.get(timeout, TimeUnit.MILLISECONDS);
+            channel.basicCancel(ctag);
+            return result;
+        } catch (IOException | TimeoutException | InterruptedException | ExecutionException e) {
+            throw new IrisSendException("Could not process rpc send", e);
+        }
+    }
+
+    /**
      * Send message to Iris subscription service.
      *
      * @param message message
@@ -157,7 +238,7 @@ public class EventProducer {
      */
     public void sendToSubscription(final Object message, final String resourceType, final String resourceId)
             throws IrisSendException, IrisTransactionException {
-        final var messageAnnotation = getMessageAnnotation(message);
+        final var messageAnnotation = AnnotationValueExtractor.getMessageAnnotation(message);
 
         if (resourceType == null || resourceType.isBlank()) {
             throw new IrisSendException("Resource type is required for subscription event!");
@@ -168,7 +249,6 @@ public class EventProducer {
         final var resourceUpdate = new ResourceMessage(resourceType, resourceId, message);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
         final var cacheTtl = getCachedAnnotation(message).map(CacheableTtlParser::getFromAnnotationClass).orElse(null);
-
         final var routingDetails = new RoutingDetails.Builder()
                 .eventName(eventName)
                 .exchange(SUBSCRIPTION.getValue())
@@ -182,83 +262,26 @@ public class EventProducer {
     }
 
     private void doSend(final Object message, final String userId, final boolean propagate) throws IrisSendException {
-        final var messageAnnotation = getMessageAnnotation(message);
+        final var messageAnnotation = AnnotationValueExtractor.getMessageAnnotation(message);
 
         final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
 
         switch (scope) {
             case INTERNAL ->
-                publish(message, getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId, propagate));
+                publish(message,
+                        routingDetailsProvider.getRoutingDetailsFromAnnotation(messageAnnotation, scope, userId, propagate));
             case USER, SESSION, BROADCAST -> publish(message,
-                    getRoutingDetailsForClientScope(messageAnnotation, scope, userId));
+                    routingDetailsProvider.getRoutingDetailsForClientScope(messageAnnotation, scope, userId));
             default -> throw new IrisSendException("Message scope " + scope + " not supported!");
         }
     }
 
-    private RoutingDetails getRoutingDetailsFromAnnotation(final org.iris_events.annotations.Message messageAnnotation,
-            final Scope scope, final String userId, final boolean propagate) {
-
-        final var exchangeType = ExchangeTypeParser.getFromAnnotationClass(messageAnnotation);
-        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
-        final var routingKey = getRoutingKey(messageAnnotation, exchangeType);
-        final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
-
-        RoutingDetails.MiscRoutingDetailsBuilder routingDetailsBuilder = new RoutingDetails.Builder()
-                .eventName(eventName)
-                .exchange(eventName)
-                .exchangeType(exchangeType)
-                .routingKey(routingKey)
-                .scope(scope)
-                .userId(userId)
-                .persistent(persistent)
-                .propagate(propagate);
-        return routingDetailsBuilder.build();
-    }
-
-    private RoutingDetails getRoutingDetailsForClientScope(final org.iris_events.annotations.Message messageAnnotation,
-            final Scope scope, final String userId) {
-
-        final var exchange = Optional.ofNullable(userId)
-                .map(u -> USER.getValue())
-                .orElseGet(() -> switch (scope) {
-                    case USER -> USER.getValue();
-                    case SESSION -> SESSION.getValue();
-                    case BROADCAST -> BROADCAST.getValue();
-                    default -> throw new IrisSendException("Message scope " + scope + " not supported!");
-                });
-
-        final var eventName = ExchangeParser.getFromAnnotationClass(messageAnnotation);
-        final var routingKey = String.format("%s.%s", eventName, exchange);
-        final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
-
-        final var builder = new RoutingDetails.Builder()
-                .eventName(eventName)
-                .exchange(exchange)
-                .exchangeType(ExchangeType.TOPIC)
-                .routingKey(routingKey)
-                .scope(scope)
-                .userId(userId)
-                .persistent(persistent);
-
-        final var optionalSessionId = eventContext.getSessionId();
-        final var optionalUserId = eventContext.getUserId();
-
-        optionalSessionId.ifPresent(builder::sessionId);
-        optionalUserId.ifPresent(builder::userId);
-
-        return builder
-                .build();
-    }
-
-    private org.iris_events.annotations.Message getMessageAnnotation(final Object message) {
-        if (message == null) {
-            throw new IrisSendException("Null message can not be published!");
-        }
-
-        return Optional
-                .ofNullable(message.getClass().getAnnotation(org.iris_events.annotations.Message.class))
-                .orElseThrow(() -> new IrisSendException("Message annotation is required."));
-    }
+    // TODO make it not public
+    //    public void sendRpcResponse(final Object message, final String replyTo) {
+    //        log.info("Sending RPC response");
+    //        final var messageAnnotation = AnnotationValueExtractor.getMessageAnnotation(message);
+    //        executePublish(message, routingDetailsProvider.getRpcRoutingDetails(messageAnnotation, replyTo));
+    //    }
 
     private Optional<CachedMessage> getCachedAnnotation(final Object message) {
         if (message == null) {

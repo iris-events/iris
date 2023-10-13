@@ -1,22 +1,25 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <appName>amqpgeneratortest</appName>
-        <appVersion>0.1</appVersion>
+        <version.iris-common>5.0.0</version.iris-common>
         <version.jandex-maven-plugin>3.1.1</version.jandex-maven-plugin>
-        <version.jakarta.annotations>2.1.1</version.jakarta.annotations>
-        <version.jackson-annotations>2.12.3</version.jackson-annotations>
-        <version.jackson-databind>2.13.4.2</version.jackson-databind>
+        <version.jackson-annotations>2.14.2</version.jackson-annotations>
+        <version.jackson-databind>2.14.2</version.jackson-databind>
+        <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
+        <version.jakarta-annotation-api>2.1.1</version.jakarta-annotation-api>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
     </properties>
 
 
-    <groupId>org.iris_events.test.models</groupId>
-    <artifactId>${appName}-models</artifactId>
-    <version>${appVersion}</version>
-    <name>Models for ${appName}</name>
+    <groupId>org.iris_events.amqp.test</groupId>
+    <artifactId>amqpgeneratortest-models</artifactId>
+    <version>0.1</version>
+    <name>Models for amqpgeneratortest</name>
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -29,9 +32,19 @@
             <version>${version.jackson-annotations}</version>
         </dependency>
         <dependency>
+            <groupId>org.iris-events</groupId>
+            <artifactId>iris-common</artifactId>
+            <version>${version.iris-common}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${version.jakarta-validation-api}</version>
+        </dependency>
+        <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-            <version>${version.jakarta.annotations}</version>
+            <version>${version.jakarta-annotation-api}</version>
         </dependency>
     </dependencies>
 

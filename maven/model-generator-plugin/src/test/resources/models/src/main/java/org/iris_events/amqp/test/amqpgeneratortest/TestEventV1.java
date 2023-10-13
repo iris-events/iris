@@ -15,7 +15,7 @@ import org.iris_events.annotations.Scope;
 
 @IrisGenerated
 @Generated("jsonschema2pojo")
-@Message(name = "test-event-v1", exchangeType = ExchangeType.DIRECT, routingKey = "default-test-event-v1", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
+@Message(name = "namespace/test-event-v1", exchangeType = ExchangeType.DIRECT, routingKey = "default-test-event-v1", scope = Scope.INTERNAL, deadLetter = "dead.dead-letter", ttl = -1)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id",
@@ -36,7 +36,7 @@ public class TestEventV1 implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public TestEventV1() {
     }

@@ -72,7 +72,7 @@ public class AnnotatedEventsTestIT extends IsolatedEventContextTest {
         final var amqpSendException = assertThrows(IrisSendException.class, () -> {
             testProducer.send(new Event("name", 1L));
         });
-        MatcherAssert.assertThat(amqpSendException.getMessage(), is("Message annotation is required."));
+        MatcherAssert.assertThat(amqpSendException.getMessage(), is("Message object not annotated with Message annotation"));
     }
 
     public record Event(String name, Long age) {

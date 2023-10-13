@@ -83,7 +83,7 @@ public class BasicPropertiesProvider {
         final var propagate = routingDetails.getPropagate();
 
         final var hostName = instanceInfoProvider.getInstanceName();
-        final var headers = new HashMap<>(basicProperties.getHeaders());
+        final var headers = new HashMap<>(Optional.ofNullable(basicProperties.getHeaders()).orElse(new HashMap<>()));
         headers.put(CURRENT_SERVICE_ID, serviceId);
         headers.put(INSTANCE_ID, hostName);
         headers.put(EVENT_TYPE, eventName);

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 import org.iris_events.annotations.Scope;
 import org.iris_events.auth.IrisJwtValidator;
@@ -15,6 +16,7 @@ import org.iris_events.context.IrisContext;
 import org.iris_events.context.MethodHandleContext;
 import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 import org.iris_events.deployment.builditem.MessageInfoBuildItem;
+import org.iris_events.deployment.builditem.RpcMappingBuildItem;
 import org.iris_events.deployment.scanner.Scanner;
 import org.iris_events.health.IrisLivenessCheck;
 import org.iris_events.health.IrisReadinessCheck;
@@ -38,8 +40,11 @@ import org.iris_events.runtime.recorder.ConsumerInitRecorder;
 import org.iris_events.runtime.recorder.EventAppRecorder;
 import org.iris_events.runtime.recorder.MethodHandleRecorder;
 import org.iris_events.runtime.recorder.ProducerDefinedExchangesRecorder;
+import org.iris_events.runtime.recorder.RpcMappingRecorder;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.Type;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,6 +145,52 @@ class EventMessagingProcessor {
     }
 
     @SuppressWarnings("unused")
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void scanForRpcMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
+            List<MessageInfoBuildItem> messageInfoBuildItems,
+            BuildProducer<RpcMappingBuildItem> rpcMappingBuildItemBuildProducer) {
+        final var scanner = new Scanner(combinedIndexBuildItem.getIndex(), appInfo.getName());
+        final var generatedMessageAnnotations = scanner.scanIrisGeneratedAnnotations();
+
+        final var rpcAnnotationCandidates = new ArrayList<MessageInfoBuildItem>();
+        rpcAnnotationCandidates.addAll(messageInfoBuildItems);
+        rpcAnnotationCandidates.addAll(generatedMessageAnnotations);
+
+        final var rpcReplyToMapping = rpcAnnotationCandidates.stream()
+                .filter(messageInfoBuildItem -> messageInfoBuildItem.getRpcResponseType() != null
+                        && !messageInfoBuildItem.getRpcResponseType()
+                                .equals(Type.create(DotName.createSimple(java.lang.Void.class), Type.Kind.CLASS)))
+                .collect(Collectors.toMap(
+                        messageInfoBuildItem -> messageInfoBuildItem.getRpcResponseType().name().toString(),
+                        messageInfoBuildItem -> {
+                            final var matchingMessageInfoBuildItem = rpcAnnotationCandidates.stream()
+                                    .filter(matchMessageInfoBuildItem -> matchMessageInfoBuildItem.getAnnotatedClassInfo()
+                                            .name()
+                                            .equals(messageInfoBuildItem.getRpcResponseType().name()))
+                                    .findFirst();
+                            if (matchingMessageInfoBuildItem.isEmpty()) {
+                                throw new IllegalArgumentException(
+                                        "Rpc request message should always have its response counterpart defined. Message class: "
+                                                + messageInfoBuildItem.getAnnotatedClassInfo().name().toString()
+                                                + " messageInfoBuildItem rpcResponseType: "
+                                                + messageInfoBuildItem.getRpcResponseType());
+                            }
+                            return matchingMessageInfoBuildItem.get().getName();
+                        }));
+        rpcMappingBuildItemBuildProducer.produce(new RpcMappingBuildItem(rpcReplyToMapping));
+    }
+
+    @Record(ExecutionTime.STATIC_INIT)
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void initRpcReplyToMappingBean(BeanContainerBuildItem beanContainer, List<RpcMappingBuildItem> rpcMappingBuildItems,
+            RpcMappingRecorder rpcMappingRecorder) {
+
+        rpcMappingBuildItems.stream().forEach(rpcMappingBuildItem -> rpcMappingRecorder
+                .registerRpcMappings(beanContainer.getValue(), rpcMappingBuildItem.getRpcReplyToMapping()));
+
+    }
+
+    @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void initProducerDefinedExchangeRequests(BeanContainerBuildItem beanContainer,
@@ -190,40 +241,46 @@ class EventMessagingProcessor {
     @BuildStep(onlyIf = EventMessagingEnabled.class)
     void declareMessageHandlers(final BeanContainerBuildItem beanContainer,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
+            List<MessageInfoBuildItem> messageInfoBuildItems,
             MethodHandleRecorder methodHandleRecorder) {
         QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
         List<String> handlers = new ArrayList<>();
-        messageHandlerInfoBuildItems.forEach(col -> {
+        messageHandlerInfoBuildItems.forEach(mhBuildItem -> {
             try {
-                Class<?> handlerClass = cl.loadClass(col.getDeclaringClass().name().toString());
-                Class<?> eventClass = cl.loadClass(col.getParameterType().asClassType().name().toString());
-                Class<?> returnEventClass = col.getReturnType().kind() == Type.Kind.CLASS
-                        ? cl.loadClass(col.getReturnType().asClassType().name().toString())
-                        : null;
+                final var handlerClass = cl.loadClass(mhBuildItem.getDeclaringClass().name().toString());
+                final var eventClass = cl.loadClass(mhBuildItem.getParameterType().asClassType().name().toString());
+                final var returnEventClass = getMessageHandlerReturnEventClass(cl, mhBuildItem);
 
-                MethodHandleContext methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
-                        returnEventClass, col.getMethodName());
-                IrisContext irisContext = new IrisContext(col.getName(),
-                        col.getBindingKeys(),
-                        col.getExchangeType(),
-                        col.getScope(),
-                        col.isDurable(),
-                        col.isAutoDelete(),
-                        col.isQueuePerInstance(),
-                        col.getPrefetchCount(),
-                        col.getTtl(),
-                        col.getDeadLetterQueue(),
-                        col.getRolesAllowed());
+                final var rpcReturnEventName = getMessageRpcReturnName(mhBuildItem, messageInfoBuildItems);
+                log.info("Message handler build item for " + mhBuildItem.getName() + " eventClass: " + eventClass
+                        + " returnEventClass: " + returnEventClass + " rpcReturnEventClass: " + rpcReturnEventName
+                        + " bindingKeys: " + mhBuildItem.getBindingKeys());
 
-                if (col.getScope() != Scope.FRONTEND) {
+                final var methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
+                        returnEventClass, mhBuildItem.getMethodName());
+                final var irisContext = new IrisContext(mhBuildItem.getName(),
+                        mhBuildItem.getBindingKeys(),
+                        mhBuildItem.getExchangeType(),
+                        mhBuildItem.getScope(),
+                        mhBuildItem.isDurable(),
+                        mhBuildItem.isAutoDelete(),
+                        mhBuildItem.isQueuePerInstance(),
+                        mhBuildItem.getPrefetchCount(),
+                        mhBuildItem.getTtl(),
+                        mhBuildItem.getDeadLetterQueue(),
+                        mhBuildItem.getRolesAllowed(),
+                        rpcReturnEventName);
+
+                if (mhBuildItem.getScope() != Scope.FRONTEND) {
                     methodHandleRecorder.registerConsumer(beanContainer.getValue(), methodHandleContext, irisContext);
                 } else {
                     methodHandleRecorder.registerFrontendCallback(beanContainer.getValue(), methodHandleContext, irisContext);
                 }
 
-                StringBuilder sb = new StringBuilder();
-                sb.append(handlerClass.getSimpleName()).append("#").append(col.getMethodName());
-                sb.append(" (").append(eventClass.getSimpleName());
+                final var sb = new StringBuilder();
+                sb.append(handlerClass.getSimpleName())
+                        .append("#").append(mhBuildItem.getMethodName())
+                        .append(" (").append(eventClass.getSimpleName());
                 if (returnEventClass != null) {
                     sb.append(" -> ").append(returnEventClass.getSimpleName());
                 }
@@ -232,10 +289,36 @@ class EventMessagingProcessor {
                 handlers.add(sb.toString());
 
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IOException e) {
-                log.error("Could not record method handle. methodName: " + col.getMethodName(), e);
+                log.error("Could not record method handle. methodName: " + mhBuildItem.getMethodName(), e);
             }
         });
         log.info("Registered method handlers: " + String.join(", ", handlers));
+    }
+
+    private String getMessageRpcReturnName(final MessageHandlerInfoBuildItem mhBuildItem,
+            final List<MessageInfoBuildItem> messageInfoBuildItems) {
+        // handler build item
+        final var messageHandlerParameterType = mhBuildItem.getParameterType();
+        // related messageInfo build item
+        final var messageHandlerParameterMessageInfoBuildItem = messageInfoBuildItems.stream()
+                .filter(messageInfoBuildItem -> messageInfoBuildItem.getAnnotatedClassInfo().name()
+                        .equals(messageHandlerParameterType.name()))
+                .findFirst().orElse(null);
+        if (messageHandlerParameterMessageInfoBuildItem == null) {
+            return null;
+        }
+
+        // RPC type of that messageInfo, might be null!
+        final var messageRpcType = messageHandlerParameterMessageInfoBuildItem.getRpcResponseType();
+        if (messageRpcType == null) {
+            return null;
+        }
+        // message has RPC type defined, find that event name
+        return messageInfoBuildItems.stream()
+                .filter(messageInfoBuildItem -> messageInfoBuildItem.getAnnotatedClassInfo().name()
+                        .equals(messageRpcType.name()))
+                .findFirst()
+                .map(MessageInfoBuildItem::getName).orElse(null);
     }
 
     @SuppressWarnings("unused")
@@ -274,5 +357,13 @@ class EventMessagingProcessor {
         } else {
             return null;
         }
+    }
+
+    @Nullable
+    private static Class<?> getMessageHandlerReturnEventClass(final QuarkusClassLoader cl,
+            final MessageHandlerInfoBuildItem col) throws ClassNotFoundException {
+        return col.getReturnType().kind() == Type.Kind.CLASS
+                ? cl.loadClass(col.getReturnType().asClassType().name().toString())
+                : null;
     }
 }

@@ -13,7 +13,11 @@ import jakarta.transaction.TransactionManager;
 import org.iris_events.annotations.Message;
 import org.iris_events.exception.IrisSendException;
 import org.iris_events.producer.EventProducer;
+import org.iris_events.routing.RoutingDetailsProvider;
 import org.iris_events.runtime.BasicPropertiesProvider;
+import org.iris_events.runtime.ExchangeNameProvider;
+import org.iris_events.runtime.QueueNameProvider;
+import org.iris_events.runtime.RpcMappingProvider;
 import org.iris_events.runtime.channel.ChannelService;
 import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
 import org.junit.jupiter.api.Assertions;
@@ -50,6 +54,18 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
     @Inject
     BasicPropertiesProvider basicPropertiesProvider;
 
+    @Inject
+    ExchangeNameProvider exchangeNameProvider;
+
+    @Inject
+    QueueNameProvider queueNameProvider;
+
+    @Inject
+    RpcMappingProvider rpcMappingProvider;
+
+    @Inject
+    RoutingDetailsProvider routingDetailsProvider;
+
     @Test
     @DisplayName("Exception while serializing events should fail publishing.")
     public void exceptionWhenPublish() throws JsonProcessingException {
@@ -61,7 +77,8 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
                 });
 
         EventProducer producer = new EventProducer(producerChannelService, objectMapper, eventContext, resilienceConfig,
-                transactionManager, basicPropertiesProvider);
+                transactionManager, basicPropertiesProvider, exchangeNameProvider, queueNameProvider, rpcMappingProvider,
+                routingDetailsProvider);
 
         Assertions.assertThrows(IrisSendException.class, () -> {
             producer.send(new TopicEventTmp("topic", 1L));

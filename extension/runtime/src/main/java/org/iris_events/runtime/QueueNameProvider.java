@@ -23,6 +23,10 @@ public class QueueNameProvider {
 
     public String getQueueName(final IrisContext context) {
         final var name = context.getName();
+        if (context.isRpc()) {
+            return getRpcRequestQueueName(name);
+        }
+
         final var exchangeType = context.getExchangeType();
 
         StringBuilder stringBuffer = new StringBuilder()
@@ -44,5 +48,13 @@ public class QueueNameProvider {
 
     public String getFrontendQueueName() {
         return String.format("%s.%s", applicationName, Queues.FRONTEND_SUFFIX.getValue());
+    }
+
+    public String getRpcRequestQueueName(String eventName) {
+        return String.format("%s-%s.rpc.req", eventName, instanceName);
+    }
+
+    public String getRpcResponseQueueName(String eventName) {
+        return String.format("%s-%s.rpc.res", eventName, instanceName);
     }
 }

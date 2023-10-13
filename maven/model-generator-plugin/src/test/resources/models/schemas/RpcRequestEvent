@@ -1,0 +1,9 @@
+{
+  "type" : "object",
+  "properties" : {
+    "rpcId" : {
+      "type" : "string"
+    }
+  },
+  "x-iris-generated" : false
+}

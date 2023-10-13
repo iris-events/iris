@@ -15,4 +15,5 @@ public class AnnotationInstanceParams {
     public static final String EVENT_APP_INFO_PARAM = "info";
     public static final String EVENT_APP_INFO_TITLE_PARAM = "title";
     public static final String EVENT_APP_INFO_DESCRIPTION_PARAM = "description";
+    public static final String RPC_RESPONSE_PARAM = "rpcResponse";
 }
