@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.context.IrisContext;
-import org.iris_events.producer.ExchangeDeclarator;
+import org.iris_events.runtime.ExchangeNameProvider;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.channel.ChannelService;
 import org.slf4j.Logger;
@@ -27,11 +27,13 @@ import com.rabbitmq.client.ShutdownSignalException;
 
 public class Consumer implements RecoveryListener {
     private static final Logger log = LoggerFactory.getLogger(Consumer.class);
+    private static final String RPC_EXCHANGE_SUFFIX = "rpc";
 
     private final IrisContext context;
     private final ChannelService channelService;
     private final DeliverCallbackProvider deliverCallbackProvider;
     private final QueueNameProvider queueNameProvider;
+    private final ExchangeNameProvider exchangeNameProvider;
     private final QueueDeclarator queueDeclarator;
     private final ExchangeDeclarator exchangeDeclarator;
 
@@ -43,6 +45,7 @@ public class Consumer implements RecoveryListener {
             final ChannelService channelService,
             final DeliverCallbackProvider deliverCallbackProvider,
             final QueueNameProvider queueNameProvider,
+            final ExchangeNameProvider exchangeNameProvider,
             final QueueDeclarator queueDeclarator,
             final ExchangeDeclarator exchangeDeclarator) {
 
@@ -50,6 +53,7 @@ public class Consumer implements RecoveryListener {
         this.channelService = channelService;
         this.deliverCallbackProvider = deliverCallbackProvider;
         this.queueNameProvider = queueNameProvider;
+        this.exchangeNameProvider = exchangeNameProvider;
         this.queueDeclarator = queueDeclarator;
         this.exchangeDeclarator = exchangeDeclarator;
         this.channelId = UUID.randomUUID().toString();
@@ -77,45 +81,80 @@ public class Consumer implements RecoveryListener {
 
     private void declareTopology(Channel channel, final ExchangeType exchangeType) throws IOException {
         final var queueDeclarationArgs = new HashMap<String, Object>();
-        final var exchange = context.getName();
-        final var consumerOnEveryInstance = context.isConsumerOnEveryInstance();
+
+        final var exchange = getExchangeName();
         final var queueName = queueNameProvider.getQueueName(context);
+
+        // TODO not sure about this yet regarding RPC
+        final var consumerOnEveryInstance = context.isConsumerOnEveryInstance();
 
         // set prefetch count "quality of service"
         final int prefetchCount = context.getPrefetch();
         channel.basicQos(prefetchCount);
 
-        // time to leave of queue
+        // time to live of queue
         final long ttl = context.getTtl();
         if (ttl >= 0) {
             queueDeclarationArgs.put(X_MESSAGE_TTL, ttl);
         }
 
-        // setup dead letter queue
-        final var optionalPrefixedDeadLetterQueue = context.getDeadLetterQueueName();
-        if (optionalPrefixedDeadLetterQueue.isPresent()) {
-            declareAndBindDeadLetterQueue(channel, optionalPrefixedDeadLetterQueue.get());
-            queueDeclarationArgs.put(X_DEAD_LETTER_ROUTING_KEY, context.getDeadLetterRoutingKey(queueName));
-            queueDeclarationArgs.put(X_DEAD_LETTER_EXCHANGE, context.getDeadLetterExchangeName().orElseThrow());
+        if (context.isRpc()) {
+            // TODO define TTL in config
+            final var rpcTtl = 2000;
+            queueDeclarationArgs.put(X_MESSAGE_TTL, rpcTtl);
+
+            // Declare incoming / request queue and exchange and bind them
+            final var rpcRequestExchange = exchangeNameProvider.getRpcRequestExchangeName(context.getName());
+            final var rpcResponseExchange = exchangeNameProvider.getRpcResponseExchangeName(context.getRpcResponseEventName());
+
+            log.info(String.format(
+                    "Declaring topology for RPC consumer.\nrequestExchange: %s\nresponseExchange: %s\nrequestQueue: %s\n",
+                    rpcRequestExchange, rpcResponseExchange, queueName));
+
+            declareQueue(channel, consumerOnEveryInstance, queueName, queueDeclarationArgs);
+            exchangeDeclarator.declareExchange(rpcRequestExchange, ExchangeType.FANOUT, false);
+            channel.queueBind(queueName, rpcRequestExchange, queueName);
+
+            // Also declare outgoing / response exchange. Event producers / clients should bind their queues here
+            exchangeDeclarator.declareExchange(rpcResponseExchange, ExchangeType.DIRECT, false);
+
+            // start consuming
+            channel.basicConsume(queueName, false, this.callback,
+                    consumerTag -> log.warn("Channel canceled for {}", queueName),
+                    (consumerTag, sig) -> reInitChannel(sig, queueName, consumerTag));
+
+            log.info("consumer (RPC) started on queue '{}' --> {} binding key(s): {}", queueName, exchange, queueName);
+        } else {
+            // setup dead letter queue
+            final var optionalPrefixedDeadLetterQueue = context.getDeadLetterQueueName();
+            if (optionalPrefixedDeadLetterQueue.isPresent()) {
+                declareAndBindDeadLetterQueue(channel, optionalPrefixedDeadLetterQueue.get());
+                queueDeclarationArgs.put(X_DEAD_LETTER_ROUTING_KEY, context.getDeadLetterRoutingKey(queueName));
+                queueDeclarationArgs.put(X_DEAD_LETTER_EXCHANGE, context.getDeadLetterExchangeName().orElseThrow());
+            }
+
+            // declare queue & exchange
+            declareQueue(channel, consumerOnEveryInstance, queueName, queueDeclarationArgs);
+            exchangeDeclarator.declareExchange(exchange, exchangeType, context.isFrontendMessage());
+
+            // bind queues
+            final var bindingKeys = getBindingKeys(exchangeType);
+            for (String bindingKey : bindingKeys) {
+                channel.queueBind(queueName, exchange, bindingKey);
+            }
+
+            // start consuming
+            channel.basicConsume(queueName, false, this.callback,
+                    consumerTag -> log.warn("Channel canceled for {}", queueName),
+                    (consumerTag, sig) -> reInitChannel(sig, queueName, consumerTag));
+
+            log.info("consumer started on queue '{}' --> {} binding key(s): {}", queueName, exchange,
+                    String.join(", ", bindingKeys));
         }
+    }
 
-        // declare queue & exchange
-        declareQueue(channel, consumerOnEveryInstance, queueName, queueDeclarationArgs);
-        exchangeDeclarator.declareExchange(exchange, exchangeType, context.isFrontendMessage());
-
-        // bind queues
-        final var bindingKeys = getBindingKeys(exchangeType);
-        for (String bindingKey : bindingKeys) {
-            channel.queueBind(queueName, exchange, bindingKey);
-        }
-
-        // start consuming
-        channel.basicConsume(queueName, false, this.callback,
-                consumerTag -> log.warn("Channel canceled for {}", queueName),
-                (consumerTag, sig) -> reInitChannel(sig, queueName, consumerTag));
-
-        log.info("consumer started on queue '{}' --> {} binding key(s): {}", queueName, exchange,
-                String.join(", ", bindingKeys));
+    private String getExchangeName() {
+        return context.getName();
     }
 
     private void reInitChannel(ShutdownSignalException sig, String queueName, String consumerTag) {

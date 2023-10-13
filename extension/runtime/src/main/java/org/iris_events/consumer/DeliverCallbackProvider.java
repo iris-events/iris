@@ -14,6 +14,8 @@ import org.iris_events.context.EventContext;
 import org.iris_events.context.IrisContext;
 import org.iris_events.context.MethodHandleContext;
 import org.iris_events.producer.EventProducer;
+import org.iris_events.routing.RoutingDetailsProvider;
+import org.iris_events.runtime.AnnotationValueExtractor;
 import org.iris_events.runtime.IrisExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,7 @@ public class DeliverCallbackProvider {
     private final MethodHandleContext methodHandleContext;
     private final IrisJwtValidator jwtValidator;
     private final IrisExceptionHandler errorHandler;
+    private final RoutingDetailsProvider routingDetailsProvider;
 
     private final static Logger log = LoggerFactory.getLogger(DeliverCallbackProvider.class);
 
@@ -51,7 +54,8 @@ public class DeliverCallbackProvider {
             final MethodHandle methodHandle,
             final MethodHandleContext methodHandleContext,
             final IrisJwtValidator jwtValidator,
-            final IrisExceptionHandler errorHandler) {
+            final IrisExceptionHandler errorHandler,
+            final RoutingDetailsProvider routingDetailsProvider) {
 
         this.objectMapper = objectMapper;
         this.producer = producer;
@@ -62,6 +66,7 @@ public class DeliverCallbackProvider {
         this.jwtValidator = jwtValidator;
         this.eventContext = eventContext;
         this.errorHandler = errorHandler;
+        this.routingDetailsProvider = routingDetailsProvider;
     }
 
     public DeliverCallback createDeliverCallback(final Channel channel) {
@@ -88,7 +93,22 @@ public class DeliverCallbackProvider {
             final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
             final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
             final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
-            optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
+
+            if (irisContext.isRpc()) {
+                log.info(String.format("DeliverCallbackProvider handling RPC message!"));
+                Optional<String> requestId = eventContext.getMessageId();
+                if (requestId.isEmpty()) {
+                    throw new RuntimeException("RPC event without requestId can not be processed");
+                }
+                if (optionalReturnEventClass.isEmpty()) {
+                    throw new RuntimeException("RPC message handler without non-void return class can not be processed");
+                }
+
+                replyMessage(invocationResult, optionalReturnEventClass.get(),
+                        eventContext.getAmqpBasicProperties().getReplyTo());
+            } else {
+                optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
+            }
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
         } catch (Throwable throwable) {
             log.error("Exception handling message", throwable);
@@ -120,5 +140,17 @@ public class DeliverCallbackProvider {
     private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
         final var returnClassInstance = returnEventClass.cast(invocationResult);
         producer.send(returnClassInstance);
+    }
+
+    private void replyMessage(Object invocationResult, Class<?> returnEventClass, String replyTo) {
+        final var returnClassInstance = returnEventClass.cast(invocationResult);
+        sendRpcResponse(returnClassInstance, replyTo);
+        //        producer.sendRpcResponse(returnClassInstance, replyTo);
+    }
+
+    private void sendRpcResponse(final Object message, final String replyTo) {
+        log.info("Sending RPC response");
+        final var messageAnnotation = AnnotationValueExtractor.getMessageAnnotation(message);
+        producer.publish(message, routingDetailsProvider.getRpcRoutingDetails(messageAnnotation, replyTo));
     }
 }

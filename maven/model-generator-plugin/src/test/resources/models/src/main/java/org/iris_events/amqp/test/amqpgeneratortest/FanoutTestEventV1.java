@@ -36,7 +36,7 @@ public class FanoutTestEventV1 implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public FanoutTestEventV1() {
     }

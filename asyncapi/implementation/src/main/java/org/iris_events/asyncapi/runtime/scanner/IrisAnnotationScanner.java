@@ -241,8 +241,9 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
             final var deadLetterQueue = DeadLetterQueueParser.getFromAnnotationInstance(messageAnnotation, index);
             final var ttl = ExchangeTtlParser.getFromAnnotationInstance(messageAnnotation, index);
             final var persistent = PersistentParser.getFromAnnotationInstance(messageAnnotation, index);
-
             final var responseType = ResponseParser.getFromAnnotationInstance(messageAnnotation, index);
+
+            final var rpcResponseType = RpcResponseClassParser.getFromAnnotationInstance(messageAnnotation, index);
 
             final var isGeneratedClass = isGeneratedClass(messageClass);
 
@@ -263,7 +264,8 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
                     deadLetterQueue,
                     ttl,
                     responseType,
-                    persistent);
+                    persistent,
+                    rpcResponseType);
 
             messageTypes.put(messageClassSimpleName, scope);
             incomingMessages.put(messageClassSimpleName, jsonSchemaInfo);
@@ -428,7 +430,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
                 .filter(Objects::nonNull).toList();
 
         if (consumedEventTypes.isEmpty()) {
-            throw new IllegalArgumentException("Consumed Event not found");
+            throw new IllegalArgumentException(String.format("Consumed Event not found for parameters %s", parameters));
         }
 
         if (consumedEventTypes.size() > 1) {

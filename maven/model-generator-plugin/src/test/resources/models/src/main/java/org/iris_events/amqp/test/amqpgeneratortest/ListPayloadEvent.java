@@ -7,9 +7,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.iris_events.amqp.test.amqpgeneratortest.payload.User;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
+import org.iris_events.amqp.test.amqpgeneratortest.payload.User;
 import org.iris_events.annotations.ExchangeType;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
@@ -28,11 +28,11 @@ public class ListPayloadEvent implements Serializable
     @JsonProperty("userList")
     @Valid
     private List<User> userList = new ArrayList<User>();
-    private final static long serialVersionUID = -4750990094447391276L;
+    private final static long serialVersionUID = 5913382515852230783L;
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public ListPayloadEvent() {
     }

@@ -1,4 +1,4 @@
-package org.iris_events.producer;
+package org.iris_events.consumer;
 
 import java.io.IOException;
 import java.util.UUID;

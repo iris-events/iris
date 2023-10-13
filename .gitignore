@@ -38,3 +38,6 @@ swagger.json
 swagger.yaml
 exposed_src
 target
+
+# ASDF
+.tool-versions

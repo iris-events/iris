@@ -81,6 +81,10 @@ public class EventContext {
         return getHeaderValue(USER_ID);
     }
 
+    public Optional<String> getMessageId() {
+        return Optional.ofNullable(getAmqpBasicProperties().getMessageId());
+    }
+
     public Optional<String> getSessionId() {
         return getHeaderValue(SESSION_ID);
     }

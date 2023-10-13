@@ -4,7 +4,7 @@
     "version": "1.0.0"
   },
   "asyncapi": "2.0.0",
-  "id": "urn:id:global:MergedApp1",
+  "id": "urn:org:iris_events:MergedApp1",
   "channels": {
     "event/merge-event-1": {
       "publish": {

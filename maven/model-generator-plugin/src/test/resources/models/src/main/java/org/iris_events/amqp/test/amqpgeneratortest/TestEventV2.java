@@ -47,7 +47,7 @@ public class TestEventV2 implements Serializable
 
     /**
      * No args constructor for use in serialization
-     *
+     * 
      */
     public TestEventV2() {
     }

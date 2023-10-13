@@ -19,9 +19,8 @@ public final class RoutingDetails {
     private final boolean propagate;
 
     public RoutingDetails(final String eventName, final String exchange, final ExchangeType exchangeType,
-            final String routingKey, final Scope scope,
-            final String userId, final String sessionId, final String subscriptionId, final boolean persistent,
-            final Integer cacheTtl, final boolean propagate) {
+            final String routingKey, final Scope scope, final String userId, final String sessionId,
+            final String subscriptionId, final boolean persistent, final Integer cacheTtl, final boolean propagate) {
         this.eventName = eventName;
         this.exchange = exchange;
         this.exchangeType = exchangeType;

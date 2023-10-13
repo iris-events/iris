@@ -1,17 +1,25 @@
 {
+  "description" : "This is a User schema component",
   "type" : "object",
   "properties" : {
     "age" : {
+      "description" : "Age of the user",
       "type" : "integer"
     },
     "name" : {
+      "description" : "Name of the user",
       "type" : "string"
     },
     "status" : {
-      "type" : "object",
-      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.Status"
+      "allOf" : [ {
+        "type" : "object",
+        "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.Status"
+      }, {
+        "description" : "Status of the user"
+      } ]
     },
     "surname" : {
+      "description" : "Surname of the user",
       "type" : "string"
     }
   }

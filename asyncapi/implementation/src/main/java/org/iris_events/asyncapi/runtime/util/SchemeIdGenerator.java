@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 public class SchemeIdGenerator {
-    private static final String HOST = "id:global:";
+    private static final String HOST = "org:iris_events:";
     private static final String PROTOCOL = "urn";
 
     public static String buildId(String annotationValue) throws URISyntaxException {

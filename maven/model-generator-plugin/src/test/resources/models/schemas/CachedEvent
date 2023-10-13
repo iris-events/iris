@@ -1,0 +1,10 @@
+{
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : "integer"
+    }
+  },
+  "x-iris-generated" : false,
+  "x-cached-message-ttl-seconds" : 100
+}

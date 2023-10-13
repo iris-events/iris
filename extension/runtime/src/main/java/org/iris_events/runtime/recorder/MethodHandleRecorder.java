@@ -9,12 +9,15 @@ import java.util.Optional;
 import org.iris_events.consumer.ConsumerContainer;
 import org.iris_events.context.IrisContext;
 import org.iris_events.context.MethodHandleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class MethodHandleRecorder {
+    private final static Logger log = LoggerFactory.getLogger(MethodHandleRecorder.class);
 
     public void registerConsumer(final BeanContainer beanContainer, MethodHandleContext methodHandleContext,
             IrisContext irisContext)

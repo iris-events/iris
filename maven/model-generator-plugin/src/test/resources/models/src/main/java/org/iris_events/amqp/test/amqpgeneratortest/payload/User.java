@@ -9,9 +9,15 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.validation.Valid;
 
+
+/**
+ * This is a User schema component
+ * 
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "age",
@@ -22,19 +28,33 @@ import jakarta.validation.Valid;
 public class User implements Serializable
 {
 
+    /**
+     * Age of the user
+     * 
+     */
     @JsonProperty("age")
+    @JsonPropertyDescription("Age of the user")
     private int age;
+    /**
+     * Name of the user
+     * 
+     */
     @JsonProperty("name")
+    @JsonPropertyDescription("Name of the user")
     private String name;
     @JsonProperty("status")
-    @Valid
-    private Status status;
+    private Object status;
+    /**
+     * Surname of the user
+     * 
+     */
     @JsonProperty("surname")
+    @JsonPropertyDescription("Surname of the user")
     private String surname;
     @JsonIgnore
     @Valid
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
-    private final static long serialVersionUID = -1689284405658303358L;
+    private final static long serialVersionUID = -5906912075466638929L;
 
     /**
      * No args constructor for use in serialization
@@ -43,7 +63,16 @@ public class User implements Serializable
     public User() {
     }
 
-    public User(int age, String name, Status status, String surname) {
+    /**
+     * 
+     * @param surname
+     *     Surname of the user.
+     * @param name
+     *     Name of the user.
+     * @param age
+     *     Age of the user.
+     */
+    public User(int age, String name, Object status, String surname) {
         super();
         this.age = age;
         this.name = name;
@@ -51,41 +80,65 @@ public class User implements Serializable
         this.surname = surname;
     }
 
+    /**
+     * Age of the user
+     * 
+     */
     @JsonProperty("age")
     public int getAge() {
         return age;
     }
 
+    /**
+     * Age of the user
+     * 
+     */
     @JsonProperty("age")
     public void setAge(int age) {
         this.age = age;
     }
 
+    /**
+     * Name of the user
+     * 
+     */
     @JsonProperty("name")
     public String getName() {
         return name;
     }
 
+    /**
+     * Name of the user
+     * 
+     */
     @JsonProperty("name")
     public void setName(String name) {
         this.name = name;
     }
 
     @JsonProperty("status")
-    public Status getStatus() {
+    public Object getStatus() {
         return status;
     }
 
     @JsonProperty("status")
-    public void setStatus(Status status) {
+    public void setStatus(Object status) {
         this.status = status;
     }
 
+    /**
+     * Surname of the user
+     * 
+     */
     @JsonProperty("surname")
     public String getSurname() {
         return surname;
     }
 
+    /**
+     * Surname of the user
+     * 
+     */
     @JsonProperty("surname")
     public void setSurname(String surname) {
         this.surname = surname;

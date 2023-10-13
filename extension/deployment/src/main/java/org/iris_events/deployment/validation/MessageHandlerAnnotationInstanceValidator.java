@@ -19,12 +19,18 @@ public class MessageHandlerAnnotationInstanceValidator implements AnnotationInst
         final var bindingKeyParamAnnotationValidator = new BindingKeyParamAnnotationValidator(indexView);
 
         final var perInstanceParamAnnotationValidator = new PerInstanceParamAnnotationValidator(indexView);
-        this.validators = List.of(methodParameterTypeAnnotationValidator,
-                methodReturnTypeAnnotationValidator, bindingKeyParamAnnotationValidator, perInstanceParamAnnotationValidator);
+        final var rpcMessageHandlerAnnotationValidator = new RPCMessageHandlerValidator(indexView);
+        this.validators = List.of(
+                methodParameterTypeAnnotationValidator,
+                methodReturnTypeAnnotationValidator,
+                bindingKeyParamAnnotationValidator,
+                perInstanceParamAnnotationValidator,
+                rpcMessageHandlerAnnotationValidator);
     }
 
     @Override
     public void validate(AnnotationInstance annotationInstance) {
         validators.forEach(validator -> validator.validate(annotationInstance));
     }
+
 }

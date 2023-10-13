@@ -7,11 +7,8 @@
         "type" : "object",
         "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.MapValue"
       },
-      "existingJavaType" : "java.util.Map<java.lang.String, app.scanner.runtime.asyncapi.org.iris_events.EventHandlersApp$MapValue>"
+      "existingJavaType" : "java.util.Map<java.lang.String, org.iris_events.asyncapi.runtime.scanner.app.EventHandlersApp$MapValue>"
     }
   },
-  "additionalProperties" : {
-    "isGeneratedClass" : false,
-    "generatedClass" : false
-  }
+  "x-iris-generated" : false
 }

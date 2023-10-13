@@ -12,8 +12,5 @@
       "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User"
     }
   },
-  "additionalProperties" : {
-    "isGeneratedClass" : false,
-    "generatedClass" : false
-  }
+  "x-iris-generated" : false
 }

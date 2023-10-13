@@ -103,6 +103,13 @@ public class EventHandlersApp {
         LOG.info("Handling event with list payload");
     }
 
+    @SuppressWarnings("unused")
+    @MessageHandler
+    public RpcResponseEvent handleRpcRequest(RpcRequestEvent rpcReq) {
+        LOG.info("Got rpc request. Returning response");
+        return new RpcResponseEvent(rpcReq.rpcId);
+    }
+
     @SnapshotMessageHandler(resourceType = "inventory")
     public void handleSnapshotRequested(SnapshotRequested snapshotRequested) {
         LOG.info("Handle snapshot requested event: " + snapshotRequested);
@@ -197,5 +204,15 @@ public class EventHandlersApp {
     @CachedMessage(ttl = 100)
     @Message(name = "cached-message")
     public record CachedEvent(int id) {
+    }
+
+    @Message(name = "rpc-request", rpcResponse = RpcResponseEvent.class)
+    public record RpcRequestEvent(String rpcId) {
+
+    }
+
+    @Message(name = "rpc-response")
+    public record RpcResponseEvent(String rpcId) {
+
     }
 }

@@ -14,6 +14,7 @@
         <module>deployment</module>
         <module>runtime</module>
         <module>integration-tests</module>
+        <module>integration-test-quarkus</module>
         <module>test-tooling</module>
     </modules>
     <dependencyManagement>

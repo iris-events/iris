@@ -14,10 +14,11 @@ public class ChannelInfo {
     private final String deadLetterQueue;
     private final Integer ttl;
     private final Type responseType;
+    private final Type rpcResponseType;
 
     public ChannelInfo(String eventKey, ChannelBindingsInfo bindingsInfo, OperationBindingsInfo operationBindingsInfo,
-            String operationType, Set<String> rolesAllowed,
-            String deadLetterQueue, Integer ttl, Type responseType) {
+            String operationType, Set<String> rolesAllowed, String deadLetterQueue, Integer ttl,
+            Type responseType, final Type rpcResponseType) {
         this.eventKey = eventKey;
         this.bindingsInfo = bindingsInfo;
         this.operationBindingsInfo = operationBindingsInfo;
@@ -26,6 +27,7 @@ public class ChannelInfo {
         this.deadLetterQueue = deadLetterQueue;
         this.ttl = ttl;
         this.responseType = responseType;
+        this.rpcResponseType = rpcResponseType;
     }
 
     public String getEventKey() {
@@ -58,5 +60,9 @@ public class ChannelInfo {
 
     public Type getResponseType() {
         return responseType;
+    }
+
+    public Type getRpcResponseType() {
+        return rpcResponseType;
     }
 }

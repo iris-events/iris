@@ -14,11 +14,15 @@ import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.api.Headers;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Type;
 import org.jsonschema2pojo.GenerationConfig;
 import org.jsonschema2pojo.Jackson2Annotator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 
 public class MetadataAnnotator extends Jackson2Annotator {
@@ -41,13 +45,20 @@ public class MetadataAnnotator extends Jackson2Annotator {
     private static final String TTL = "ttl";
     public static final String VALUE = "value";
 
+    public static final String RPC_RESPONSE = "rpcResponse";
+
     private final Log log;
     private final JsonNode channel;
+    private final String packageName;
+    private final String modelName;
 
-    public MetadataAnnotator(JsonNode node, GenerationConfig generationConfig) {
+    public MetadataAnnotator(JsonNode node, GenerationConfig generationConfig, final String packageName,
+            final String modelName) {
         super(generationConfig);
         this.channel = node;
         this.log = new DefaultLog(new ConsoleLogger());
+        this.packageName = packageName;
+        this.modelName = modelName;
     }
 
     // NOTE: 3. 10. 21 https://github.com/asyncapi/bindings/tree/master/amqp
@@ -78,6 +89,7 @@ public class MetadataAnnotator extends Jackson2Annotator {
         Optional<Scope> scope = getScope(headers);
         Optional<String> deadLetter = getDeadLetter(headers);
         Optional<Integer> ttl = getTtl(headers);
+        final var rpcResponseEventName = getRpcResponseEventName(headers);
 
         //EXCHANGE
         String exchangeName = Optional.ofNullable(bindingsExchange.path(NAME).textValue()).orElseThrow();
@@ -96,6 +108,21 @@ public class MetadataAnnotator extends Jackson2Annotator {
         scope.ifPresent(s -> annotatedClazz.param(SCOPE, s));
         deadLetter.ifPresent(s -> annotatedClazz.param(DEAD_LETTER, s));
         ttl.ifPresent(s -> annotatedClazz.param(TTL, s));
+        rpcResponseEventName.ifPresent(rpcResponseEvent -> {
+            JCodeModel codeModel = new JCodeModel();
+            String referencedClassName = String.format("%s.%s.%s", packageName, modelName,
+                    formatModelName(rpcResponseEvent.name().withoutPackagePrefix()));
+            JClass referenceClass = codeModel.ref(referencedClassName);
+            annotatedClazz.param(RPC_RESPONSE, referenceClass);
+        });
+    }
+
+    private String formatModelName(String modelName) {
+        if (!modelName.contains("$")) {
+            return modelName;
+        }
+        final var split = modelName.split("\\$");
+        return split[split.length - 1];
     }
 
     private Optional<ExchangeType> getExchangeType(JsonNode typeNode) {
@@ -129,6 +156,16 @@ public class MetadataAnnotator extends Jackson2Annotator {
             return Optional.empty();
         }
         return Optional.ofNullable(properties.path(Headers.HEADER_SCOPE).path(VALUE).textValue()).map(Scope::valueOf);
+    }
+
+    private Optional<Type> getRpcResponseEventName(JsonNode headers) {
+        final var extensions = getProperties(headers);
+        final var rpcResponseType = extensions.path(Headers.RPC_RESPONSE_TYPE).path(VALUE);
+        if (rpcResponseType.isMissingNode()) {
+            return Optional.empty();
+        }
+        final var className = DotName.createSimple(rpcResponseType.textValue());
+        return Optional.of(Type.create(className, Type.Kind.CLASS));
     }
 
     private JsonNode getProperties(JsonNode headers) {

@@ -6,8 +6,13 @@
   "asyncapi" : "2.0.0",
   "id" : "urn:org:iris_events:EventHandlersApp",
   "channels" : {
-    "test-event-v1/default-test-event-v1" : {
+    "test-event-with-documentation/test-event-with-documentation" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 2
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -25,7 +30,127 @@
               "x-roles-allowed" : {
                 "description" : "Allowed roles for this message. Default is empty",
                 "type" : "array",
-                "value" : [ "AUTHENTICATED", "admin.reward" ]
+                "value" : [ ]
+              },
+              "x-dead-letter" : {
+                "description" : "Dead letter queue definition. Default is dead-letter",
+                "type" : "string",
+                "value" : "dead.dead-letter"
+              }
+            }
+          },
+          "name" : "TestEventWithDocumentation",
+          "title" : "TestEventWithDocumentation",
+          "payload" : {
+            "$ref" : "#/components/schemas/TestEventWithDocumentation"
+          }
+        }
+      },
+      "bindings" : {
+        "amqp" : {
+          "is" : "routingKey",
+          "exchange" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "test-event-with-documentation",
+            "autoDelete" : false,
+            "type" : "direct"
+          },
+          "queue" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "test-event-with-documentation",
+            "autoDelete" : false,
+            "exclusive" : false
+          }
+        }
+      }
+    },
+    "test-event-with-requirements/test-event-with-requirements" : {
+      "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 2
+          }
+        },
+        "message" : {
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "x-scope" : {
+                "description" : "Message scope. Default is INTERNAL",
+                "type" : "string",
+                "value" : "INTERNAL"
+              },
+              "x-ttl" : {
+                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type" : "integer",
+                "value" : -1
+              },
+              "x-roles-allowed" : {
+                "description" : "Allowed roles for this message. Default is empty",
+                "type" : "array",
+                "value" : [ ]
+              },
+              "x-dead-letter" : {
+                "description" : "Dead letter queue definition. Default is dead-letter",
+                "type" : "string",
+                "value" : "dead.dead-letter"
+              }
+            }
+          },
+          "name" : "TestEventWithRequirements",
+          "title" : "TestEventWithRequirements",
+          "payload" : {
+            "$ref" : "#/components/schemas/TestEventWithRequirements"
+          }
+        }
+      },
+      "bindings" : {
+        "amqp" : {
+          "is" : "routingKey",
+          "exchange" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "test-event-with-requirements",
+            "autoDelete" : false,
+            "type" : "direct"
+          },
+          "queue" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "test-event-with-requirements",
+            "autoDelete" : false,
+            "exclusive" : false
+          }
+        }
+      }
+    },
+    "namespace/test-event-v1/default-test-event-v1" : {
+      "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 2
+          }
+        },
+        "message" : {
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "x-scope" : {
+                "description" : "Message scope. Default is INTERNAL",
+                "type" : "string",
+                "value" : "INTERNAL"
+              },
+              "x-ttl" : {
+                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type" : "integer",
+                "value" : -1
+              },
+              "x-roles-allowed" : {
+                "description" : "Allowed roles for this message. Default is empty",
+                "type" : "array",
+                "value" : [ "**", "admin.reward" ]
               },
               "x-dead-letter" : {
                 "description" : "Dead letter queue definition. Default is dead-letter",
@@ -47,7 +172,7 @@
           "exchange" : {
             "durable" : true,
             "vhost" : "/",
-            "name" : "test-event-v1",
+            "name" : "namespace/test-event-v1",
             "autoDelete" : false,
             "type" : "direct"
           },
@@ -63,6 +188,11 @@
     },
     "test-event-v2/test-event-v2" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -118,6 +248,11 @@
     },
     "frontend-test-event-v1/fe-test-event-v1" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -173,6 +308,11 @@
     },
     "test-topic-exchange/*.*.rabbit,fast.orange.*" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -228,6 +368,11 @@
     },
     "test-fanout-exchange/test-fanout-exchange" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -283,6 +428,11 @@
     },
     "test-generated-exchange/test-generated-exchange" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -338,6 +488,11 @@
     },
     "event-defaults/event-defaults" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -393,6 +548,11 @@
     },
     "passthrough-inbound-event/passthrough-inbound-event" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -451,6 +611,11 @@
     },
     "map-payload-event/map-payload-event" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -506,6 +671,11 @@
     },
     "list-payload-event/list-payload-event" : {
       "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -559,8 +729,138 @@
         }
       }
     },
+    "rpc-request/rpc-request" : {
+      "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
+        "message" : {
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "x-scope" : {
+                "description" : "Message scope. Default is INTERNAL",
+                "type" : "string",
+                "value" : "INTERNAL"
+              },
+              "x-ttl" : {
+                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type" : "integer",
+                "value" : -1
+              },
+              "x-roles-allowed" : {
+                "description" : "Allowed roles for this message. Default is empty",
+                "type" : "array",
+                "value" : [ ]
+              },
+              "x-rpc-response-type" : {
+                "description" : "RPC response type property.",
+                "type" : "string",
+                "value" : "org.iris_events.asyncapi.runtime.scanner.app.EventHandlersApp$RpcResponseEvent"
+              },
+              "x-dead-letter" : {
+                "description" : "Dead letter queue definition. Default is dead-letter",
+                "type" : "string",
+                "value" : "dead.dead-letter"
+              }
+            }
+          },
+          "name" : "RpcRequestEvent",
+          "title" : "RpcRequestEvent",
+          "payload" : {
+            "$ref" : "#/components/schemas/RpcRequestEvent"
+          }
+        }
+      },
+      "bindings" : {
+        "amqp" : {
+          "is" : "routingKey",
+          "exchange" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "rpc-request",
+            "autoDelete" : false,
+            "type" : "fanout"
+          },
+          "queue" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "rpc-request",
+            "autoDelete" : false,
+            "exclusive" : false
+          }
+        }
+      }
+    },
+    "snapshot-requested/inventory" : {
+      "publish" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
+        "message" : {
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "x-scope" : {
+                "description" : "Message scope. Default is INTERNAL",
+                "type" : "string",
+                "value" : "INTERNAL"
+              },
+              "x-ttl" : {
+                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type" : "integer",
+                "value" : -1
+              },
+              "x-roles-allowed" : {
+                "description" : "Allowed roles for this message. Default is empty",
+                "type" : "array",
+                "value" : [ "admin.merchant", "admin.reward" ]
+              },
+              "x-dead-letter" : {
+                "description" : "Dead letter queue definition. Default is dead-letter",
+                "type" : "string",
+                "value" : "dead.dead-letter"
+              }
+            }
+          },
+          "name" : "SnapshotRequested",
+          "title" : "SnapshotRequested",
+          "payload" : {
+            "$ref" : "#/components/schemas/SnapshotRequested"
+          }
+        }
+      },
+      "bindings" : {
+        "amqp" : {
+          "is" : "routingKey",
+          "exchange" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "snapshot-requested",
+            "autoDelete" : false,
+            "type" : "topic"
+          },
+          "queue" : {
+            "durable" : false,
+            "vhost" : "/",
+            "name" : "inventory",
+            "autoDelete" : true,
+            "exclusive" : false
+          }
+        }
+      }
+    },
     "produced-event/produced-event" : {
       "subscribe" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -614,6 +914,11 @@
     },
     "passthrough-outbound-event/passthrough-outbound-event" : {
       "subscribe" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
         "message" : {
           "headers" : {
             "type" : "object",
@@ -665,68 +970,8 @@
         }
       }
     },
-    "event-with-required-properties/event-with-required-properties" : {
-      "publish" : {
-        "bindings" : {
-          "amqp" : {
-            "deliveryMode" : 1
-          }
-        },
-        "message" : {
-          "headers" : {
-            "type" : "object",
-            "properties" : {
-              "x-scope" : {
-                "description" : "Message scope. Default is INTERNAL",
-                "type" : "string",
-                "value" : "FRONTEND"
-              },
-              "x-ttl" : {
-                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
-                "type" : "integer",
-                "value" : -1
-              },
-              "x-roles-allowed" : {
-                "description" : "Allowed roles for this message. Default is empty",
-                "type" : "array",
-                "value" : [ ]
-              },
-              "x-dead-letter" : {
-                "description" : "Dead letter queue definition. Default is dead-letter",
-                "type" : "string",
-                "value" : "dead.dead-letter"
-              }
-            }
-          },
-          "name" : "EventWithRequiredProperties",
-          "title" : "EventWithRequiredProperties",
-          "payload" : {
-            "$ref" : "#/components/schemas/EventWithRequiredProperties"
-          }
-        }
-      },
-      "bindings" : {
-        "amqp" : {
-          "is" : "routingKey",
-          "exchange" : {
-            "durable" : true,
-            "vhost" : "/",
-            "name" : "event-with-required-properties",
-            "autoDelete" : false,
-            "type" : "fanout"
-          },
-          "queue" : {
-            "durable" : true,
-            "vhost" : "/",
-            "name" : "event-with-required-properties",
-            "autoDelete" : false,
-            "exclusive" : false
-          }
-        }
-      }
-    },
-    "event-with-described-enum/event-with-described-enum" : {
-      "publish" : {
+    "cached-message/cached-message" : {
+      "subscribe" : {
         "bindings" : {
           "amqp" : {
             "deliveryMode" : 1
@@ -758,10 +1003,10 @@
               }
             }
           },
-          "name" : "EventWithDescribedEnum",
-          "title" : "EventWithDescribedEnum",
+          "name" : "CachedEvent",
+          "title" : "CachedEvent",
           "payload" : {
-            "$ref" : "#/components/schemas/EventWithDescribedEnum"
+            "$ref" : "#/components/schemas/CachedEvent"
           }
         }
       },
@@ -771,15 +1016,71 @@
           "exchange" : {
             "durable" : true,
             "vhost" : "/",
-            "name" : "event-with-described-enum",
+            "name" : "cached-message",
             "autoDelete" : false,
             "type" : "fanout"
           },
           "queue" : {
+            "vhost" : "/",
+            "name" : "cached-message",
+            "exclusive" : false
+          }
+        }
+      }
+    },
+    "rpc-response/rpc-response" : {
+      "subscribe" : {
+        "bindings" : {
+          "amqp" : {
+            "deliveryMode" : 1
+          }
+        },
+        "message" : {
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "x-scope" : {
+                "description" : "Message scope. Default is INTERNAL",
+                "type" : "string",
+                "value" : "INTERNAL"
+              },
+              "x-ttl" : {
+                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
+                "type" : "integer",
+                "value" : -1
+              },
+              "x-roles-allowed" : {
+                "description" : "Allowed roles for this message. Default is empty",
+                "type" : "array",
+                "value" : [ ]
+              },
+              "x-dead-letter" : {
+                "description" : "Dead letter queue definition. Default is dead-letter",
+                "type" : "string",
+                "value" : "dead.dead-letter"
+              }
+            }
+          },
+          "name" : "RpcResponseEvent",
+          "title" : "RpcResponseEvent",
+          "payload" : {
+            "$ref" : "#/components/schemas/RpcResponseEvent"
+          }
+        }
+      },
+      "bindings" : {
+        "amqp" : {
+          "is" : "routingKey",
+          "exchange" : {
             "durable" : true,
             "vhost" : "/",
-            "name" : "event-with-described-enum",
+            "name" : "rpc-response",
             "autoDelete" : false,
+            "type" : "fanout"
+          },
+          "queue" : {
+            "vhost" : "/",
+            "name" : "rpc-response",
             "exclusive" : false
           }
         }
@@ -805,18 +1106,26 @@
         "x-iris-generated" : true
       },
       "User" : {
+        "description" : "This is a User schema component",
         "type" : "object",
         "properties" : {
           "age" : {
+            "description" : "Age of the user",
             "type" : "integer"
           },
           "name" : {
+            "description" : "Name of the user",
             "type" : "string"
           },
           "status" : {
-            "$ref" : "#/components/schemas/Status"
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Status"
+            }, {
+              "description" : "Status of the user"
+            } ]
           },
           "surname" : {
+            "description" : "Surname of the user",
             "type" : "string"
           }
         }
@@ -834,10 +1143,17 @@
             "$ref" : "#/components/schemas/User"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
+      },
+      "CachedEvent" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer"
+          }
+        },
+        "x-iris-generated" : false,
+        "x-cached-message-ttl-seconds" : 100
       },
       "FrontendTestEventV1" : {
         "type" : "object",
@@ -852,10 +1168,7 @@
             "$ref" : "#/components/schemas/User"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "PassthroughOutboundEvent" : {
         "type" : "object",
@@ -864,10 +1177,7 @@
             "type" : "integer"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "ProducedEvent" : {
         "type" : "object",
@@ -876,10 +1186,7 @@
             "type" : "integer"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "FanoutTestEventV1" : {
         "type" : "object",
@@ -894,10 +1201,7 @@
             "$ref" : "#/components/schemas/User"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "MapPayloadEvent" : {
         "type" : "object",
@@ -910,10 +1214,7 @@
             "existingJavaType" : "java.util.Map<java.lang.String, org.iris_events.asyncapi.runtime.scanner.app.EventHandlersApp$MapValue>"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "MapValue" : {
         "type" : "object",
@@ -926,6 +1227,31 @@
           }
         }
       },
+      "RpcResponseEvent" : {
+        "type" : "object",
+        "properties" : {
+          "rpcId" : {
+            "type" : "string"
+          }
+        },
+        "x-iris-generated" : false
+      },
+      "TestEventWithRequirements" : {
+        "required" : [ "id", "status" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          }
+        },
+        "x-iris-generated" : false
+      },
       "PassthroughInboundEvent" : {
         "type" : "object",
         "properties" : {
@@ -933,10 +1259,7 @@
             "type" : "integer"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "TestEventV2" : {
         "type" : "object",
@@ -964,10 +1287,7 @@
             "$ref" : "#/components/schemas/User"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "EventDefaults" : {
         "type" : "object",
@@ -976,10 +1296,7 @@
             "type" : "integer"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
       },
       "TestEventV1" : {
         "type" : "object",
@@ -994,10 +1311,54 @@
             "$ref" : "#/components/schemas/User"
           }
         },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
+        "x-iris-generated" : false
+      },
+      "RpcRequestEvent" : {
+        "type" : "object",
+        "properties" : {
+          "rpcId" : {
+            "type" : "string"
+          }
+        },
+        "x-iris-generated" : false
+      },
+      "SnapshotRequested" : {
+        "type" : "object",
+        "properties" : {
+          "resource_id" : {
+            "type" : "string"
+          },
+          "resource_type" : {
+            "type" : "string"
+          }
+        },
+        "x-iris-generated" : true
+      },
+      "TestEventWithDocumentation" : {
+        "description" : "Event with extensive documentation for test purposes",
+        "type" : "object",
+        "properties" : {
+          "altId" : {
+            "description" : "Alternative event id",
+            "maximum" : 150,
+            "minimum" : 18,
+            "type" : "integer"
+          },
+          "id" : {
+            "exclusiveMaximum" : 100,
+            "minimum" : 5,
+            "type" : "integer"
+          },
+          "status" : {
+            "description" : "status of the user entity",
+            "type" : "string",
+            "enum" : [ "available", "pending", "sold" ]
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          }
+        },
+        "x-iris-generated" : false
       },
       "ListPayloadEvent" : {
         "type" : "object",
@@ -1007,51 +1368,6 @@
             "items" : {
               "$ref" : "#/components/schemas/User"
             }
-          }
-        },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
-      },
-      "EventWithRequiredProperties" : {
-        "title" : "Event With Required Properties",
-        "description" : "Required properties event.",
-        "required" : [ "requirement", "state_id", "value" ],
-        "type" : "object",
-        "properties" : {
-          "requirement" : {
-            "description" : "Requirement to verify.",
-            "$ref" : "#/components/schemas/Requirement"
-          },
-          "state_id" : {
-            "description" : "Id of the state returned by Onboard Started event.",
-            "type" : "string"
-          },
-          "value" : {
-            "description" : "Value of the requirement.",
-            "type" : "string"
-          }
-        },
-        "additionalProperties" : {
-          "isGeneratedClass" : false,
-          "generatedClass" : false
-        }
-      },
-      "Requirement" : {
-        "type" : "string",
-        "enum" : [ "PHONE", "EMAIL", "GID_NAME" ]
-      },
-      "TestType" : {
-        "type" : "string",
-        "enum" : [ "FOO", "BAR" ]
-      },
-      "EventWithDescribedEnum" : {
-        "type" : "object",
-        "properties" : {
-          "type" : {
-            "description" : "Requirement to verify.",
-            "$ref" : "#/components/schemas/TestType"
           }
         },
         "x-iris-generated" : false

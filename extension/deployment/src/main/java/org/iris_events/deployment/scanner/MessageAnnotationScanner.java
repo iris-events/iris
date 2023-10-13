@@ -11,6 +11,7 @@ import org.iris_events.asyncapi.parsers.CacheableTtlParser;
 import org.iris_events.asyncapi.parsers.ExchangeParser;
 import org.iris_events.asyncapi.parsers.MessageScopeParser;
 import org.iris_events.asyncapi.parsers.RoutingKeyParser;
+import org.iris_events.asyncapi.parsers.RpcResponseClassParser;
 import org.iris_events.deployment.builditem.MessageInfoBuildItem;
 import org.iris_events.deployment.constants.AnnotationInstanceParams;
 import org.jboss.jandex.AnnotationInstance;
@@ -39,6 +40,7 @@ public class MessageAnnotationScanner {
         final var cacheTtl = optionalCachedAnnotation
                 .map(cachedAnnotation -> CacheableTtlParser.getFromAnnotationInstance(cachedAnnotation, index))
                 .orElse(null);
+        final var rpcResponseType = RpcResponseClassParser.getFromAnnotationInstance(annotationInstance, index);
 
         return new MessageInfoBuildItem(
                 classType,
@@ -46,6 +48,7 @@ public class MessageAnnotationScanner {
                 exchange,
                 routingKey,
                 scope,
-                cacheTtl);
+                cacheTtl,
+                rpcResponseType);
     }
 }

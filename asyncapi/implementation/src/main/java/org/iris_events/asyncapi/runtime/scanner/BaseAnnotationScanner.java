@@ -218,6 +218,11 @@ public abstract class BaseAnnotationScanner {
         ttl.ifPresent(ttlInt -> headerProps.put(Headers.HEADER_TTL,
                 new GidAaiHeaderItem("TTL of the message. If set to -1 (default) will use brokers default.", "integer",
                         ttlInt)));
+        if (channelInfo.getRpcResponseType() != null) {
+            headerProps.put(Headers.RPC_RESPONSE_TYPE,
+                    new GidAaiHeaderItem("RPC response type property.", "string",
+                            channelInfo.getRpcResponseType().asClassType().name().toString()));
+        }
 
         return new GidAaiHeaderItems("object", headerProps);
     }

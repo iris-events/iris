@@ -16,7 +16,9 @@ import org.iris_events.context.IrisContext;
 import org.iris_events.context.MethodHandleContext;
 import org.iris_events.exception.IrisConnectionException;
 import org.iris_events.producer.EventProducer;
-import org.iris_events.producer.ExchangeDeclarator;
+import org.iris_events.routing.RoutingDetailsProvider;
+import org.iris_events.runtime.ExchangeNameProvider;
+import org.iris_events.runtime.InstanceInfoProvider;
 import org.iris_events.runtime.IrisExceptionHandler;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.channel.ChannelService;
@@ -35,11 +37,14 @@ public class ConsumerContainer {
     private final ChannelService consumerChannelService;
     private final EventProducer producer;
     private final QueueNameProvider queueNameProvider;
+    private final ExchangeNameProvider exchangeNameProvider;
     private final IrisJwtValidator jwtValidator;
     private final FrontendEventConsumer frontendEventConsumer;
     private final IrisExceptionHandler errorHandler;
     private final QueueDeclarator queueDeclarator;
     private final ExchangeDeclarator exchangeDeclarator;
+    private final InstanceInfoProvider instanceInfoProvider;
+    private final RoutingDetailsProvider routingDetailsProvider;
 
     @Inject
     public ConsumerContainer(
@@ -48,14 +53,18 @@ public class ConsumerContainer {
             @Named("consumerChannelService") final ChannelService consumerChannelService,
             final EventProducer producer,
             final QueueNameProvider queueNameProvider,
+            final ExchangeNameProvider exchangeNameProvider,
             final IrisJwtValidator jwtValidator,
             final FrontendEventConsumer frontendEventConsumer,
             final IrisExceptionHandler errorHandler,
             final QueueDeclarator queueDeclarator,
-            final ExchangeDeclarator exchangeDeclarator) {
+            final ExchangeDeclarator exchangeDeclarator,
+            final InstanceInfoProvider instanceInfoProvider,
+            final RoutingDetailsProvider routingDetailsProvider) {
 
         this.consumerChannelService = consumerChannelService;
         this.queueNameProvider = queueNameProvider;
+        this.exchangeNameProvider = exchangeNameProvider;
         this.jwtValidator = jwtValidator;
         this.errorHandler = errorHandler;
         this.queueDeclarator = queueDeclarator;
@@ -65,6 +74,8 @@ public class ConsumerContainer {
         this.eventContext = eventContext;
         this.producer = producer;
         this.frontendEventConsumer = frontendEventConsumer;
+        this.instanceInfoProvider = instanceInfoProvider;
+        this.routingDetailsProvider = routingDetailsProvider;
     }
 
     public void initConsumers() {
@@ -82,7 +93,6 @@ public class ConsumerContainer {
 
     public void addConsumer(MethodHandle methodHandle, MethodHandleContext methodHandleContext, IrisContext irisContext,
             Object eventHandlerInstance) {
-
         final var deliverCallbackProvider = new DeliverCallbackProvider(objectMapper,
                 producer,
                 irisContext,
@@ -91,13 +101,15 @@ public class ConsumerContainer {
                 methodHandle,
                 methodHandleContext,
                 jwtValidator,
-                errorHandler);
+                errorHandler,
+                routingDetailsProvider);
 
         consumerMap.put(UUID.randomUUID().toString(), new Consumer(
                 irisContext,
                 consumerChannelService,
                 deliverCallbackProvider,
                 queueNameProvider,
+                exchangeNameProvider,
                 queueDeclarator,
                 exchangeDeclarator));
     }
@@ -114,7 +126,8 @@ public class ConsumerContainer {
                 methodHandle,
                 methodHandleContext,
                 jwtValidator,
-                errorHandler);
+                errorHandler,
+                routingDetailsProvider);
 
         frontendEventConsumer.addDeliverCallbackProvider(getFrontendRoutingKey(irisContext), deliverCallbackProvider);
     }
