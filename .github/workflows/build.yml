@@ -5,16 +5,22 @@ name: Build & test
       - '**'
     tags:
       - v*
+  pull_request_target:
+    branches:
+      - 'main'
   workflow_dispatch: null
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
           cache: maven
           #overwrite-settings: false
