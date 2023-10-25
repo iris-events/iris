@@ -37,7 +37,7 @@
         <version.httpclient>4.5.14</version.httpclient>
         <version.jackson>2.15.2</version.jackson>
         <version.jakarta.annotations>2.1.1</version.jakarta.annotations>
-        <version.jandex>3.1.2</version.jandex>
+        <version.jandex>3.1.5</version.jandex>
         <version.jsonschema2pojo-core>1.2.1</version.jsonschema2pojo-core>
         <version.junit>5.10.0</version.junit>
         <version.maven>3.9.4</version.maven>
