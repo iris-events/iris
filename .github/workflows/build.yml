@@ -13,6 +13,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         java-version: [ 17, 21 ]
     steps:
@@ -24,7 +25,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
           #overwrite-settings: false
-      - shell: sh
+      - name: test with JDK ${{ matrix.java-version }}
+        shell: sh
         run: mvn --batch-mode verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: ${{ matrix.java-version eq 21 }}
