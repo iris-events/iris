@@ -30,4 +30,4 @@ jobs:
         run: mvn --batch-mode verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: ${{ matrix.java-version eq 21 }}
+        continue-on-error: ${{ matrix.java-version == '21' }}
