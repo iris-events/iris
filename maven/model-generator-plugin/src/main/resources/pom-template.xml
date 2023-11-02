@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <version.iris-common>5.0.0</version.iris-common>
-        <version.jandex-maven-plugin>3.1.1</version.jandex-maven-plugin>
+        <version.iris-common>5.0.9</version.iris-common>
+        <version.jandex-maven-plugin>3.1.5</version.jandex-maven-plugin>
         <version.jackson-annotations>2.14.2</version.jackson-annotations>
-        <version.jackson-databind>2.14.2</version.jackson-databind>
+        <version.jackson-databind>2.15.3</version.jackson-databind>
         <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
         <version.jakarta-annotation-api>2.1.1</version.jakarta-annotation-api>
         <maven.compiler.target>17</maven.compiler.target>
