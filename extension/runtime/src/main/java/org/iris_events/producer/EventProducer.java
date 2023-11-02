@@ -347,8 +347,10 @@ public class EventProducer {
                 final var properties = basicPropertiesProvider.getOrCreateAmqpBasicProperties(routingDetails);
                 final var channelKey = ChannelKey.create(exchange, routingKey);
                 final var channel = channelService.getOrCreateChannelById(channelKey);
-                log.info("publishing event to exchange: {}, routing key: {}, props: {}"
-                        + "", exchange, routingKey, properties);
+                if (log.isTraceEnabled()) {
+                    log.trace("publishing event to exchange: {}, routing key: {}, props: {}"
+                            , exchange, routingKey, properties);
+                }
                 channel.basicPublish(exchange, routingKey, true, properties, bytes);
 
                 if (shouldWaitForConfirmations()) {

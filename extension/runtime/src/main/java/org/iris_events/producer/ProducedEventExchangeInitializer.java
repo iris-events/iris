@@ -26,7 +26,9 @@ public class ProducedEventExchangeInitializer {
     }
 
     public void addProducerDefinedExchange(String exchange, ExchangeType exchangeType, Scope scope) {
-        log.info("Adding producer defined exchange {}", exchange);
+        if (log.isTraceEnabled()){
+            log.trace("Adding producer defined exchange {}", exchange);
+        }
         producerDefinedExchanges.add(new ProducerDefinedExchange(exchange, exchangeType, scope));
     }
 
