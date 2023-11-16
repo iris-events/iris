@@ -45,12 +45,36 @@ public abstract class AbstractTestConsumer {
                 final var jsonNode = getJsonNode(body);
                 final var eventType = getEventType(properties);
                 final var payload = getPayload(jsonNode);
-                log.info("TestConsumer received SESSION event.\nevent: {}\nexchange: {}\nrouting key: {}\npayload:\n{}",
-                        eventType, envelope.getExchange(), envelope.getRoutingKey(), payload);
+                log.info(
+                        "TestConsumer received SESSION event.\nevent: {}\nexchange: {}\nrouting key: {}\npayload:\n{}\nheaders:\n{}",
+                        eventType, envelope.getExchange(), envelope.getRoutingKey(), payload, properties.getHeaders());
                 tryExtractValue(body, messageClass, action);
             }
         });
+    }
 
+    public void startUserConsumer(final Class<?> messageClass, String eventName, Consumer<Object> action)
+            throws IOException {
+        final var channel = channelService.getOrCreateChannelById(UUID.randomUUID().toString());
+        final var queueName = UUID.randomUUID().toString();
+
+        channel.queueDeclare(queueName, false, true, true, Collections.emptyMap());
+        channel.queueBind(queueName, "user", eventName + ".*");
+
+        channel.basicConsume(queueName, false, "testUserConsumer", new DefaultConsumer(channel) {
+            @Override
+            public void handleDelivery(final String consumerTag, final Envelope envelope,
+                    final AMQP.BasicProperties properties,
+                    final byte[] body) throws IOException {
+                final var jsonNode = getJsonNode(body);
+                final var eventType = getEventType(properties);
+                final var payload = getPayload(jsonNode);
+                log.info(
+                        "TestConsumer received USER event.\nevent: {}\nexchange: {}\nrouting key: {}\npayload:\n{}\nheaders:\n{}",
+                        eventType, envelope.getExchange(), envelope.getRoutingKey(), payload, properties.getHeaders());
+                tryExtractValue(body, messageClass, action);
+            }
+        });
     }
 
     public void startErrorConsumer(Consumer<Object> action) throws IOException {
