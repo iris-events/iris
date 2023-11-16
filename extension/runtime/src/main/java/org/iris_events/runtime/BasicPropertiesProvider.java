@@ -103,20 +103,20 @@ public class BasicPropertiesProvider {
         }
 
         final var builder = basicProperties.builder();
-        if (userId != null) {
-            // when overriding user header, make sure, to clean possible existing event context properties
+        if (userId != null || sessionId != null) {
             builder.correlationId(correlationIdProvider.getCorrelationId());
             headers.put(ORIGIN_SERVICE_ID, serviceId);
             headers.remove(ROUTER);
-            headers.remove(SESSION_ID);
-            headers.put(USER_ID, userId);
-        } else if (sessionId != null) {
-            builder.correlationId(correlationIdProvider.getCorrelationId());
-            headers.put(ORIGIN_SERVICE_ID, serviceId);
-            headers.remove(ROUTER);
-            headers.remove(USER_ID);
-            headers.put(SESSION_ID, sessionId);
+
+            if (userId != null) {
+                headers.put(USER_ID, userId);
+            }
+
+            if (sessionId != null) {
+                headers.put(SESSION_ID, sessionId);
+            }
         }
+
         if (!propagate) {
             builder.correlationId(correlationIdProvider.getCorrelationId());
         }

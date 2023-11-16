@@ -133,6 +133,8 @@ public class DeliverCallbackProvider {
     }
 
     private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
+        System.out.println("FORWARDING MESSAGE!! of class: " + returnEventClass.getName() + " with eventContext headers: "
+                + eventContext.getHeaders());
         final var returnClassInstance = returnEventClass.cast(invocationResult);
         producer.send(returnClassInstance);
     }

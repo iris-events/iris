@@ -327,14 +327,22 @@ public class EventProducer {
         final var routingKey = String.format("%s.%s", eventName, exchange);
         final var persistent = PersistentParser.getFromAnnotationClass(messageAnnotation);
 
-        return new RoutingDetails.Builder()
+        final var builder = new RoutingDetails.Builder()
                 .eventName(eventName)
                 .exchange(exchange)
                 .exchangeType(ExchangeType.TOPIC)
                 .routingKey(routingKey)
                 .scope(scope)
                 .userId(userId)
-                .persistent(persistent)
+                .persistent(persistent);
+
+        final var optionalSessionId = eventContext.getSessionId();
+        final var optionalUserId = eventContext.getUserId();
+
+        optionalSessionId.ifPresent(builder::sessionId);
+        optionalUserId.ifPresent(builder::userId);
+
+        return builder
                 .build();
     }
 
@@ -401,8 +409,12 @@ public class EventProducer {
 
     private void enqueueDelayedMessage(Object message, RoutingDetails routingDetails, Transaction tx) {
         final var properties = basicPropertiesProvider.getOrCreateAmqpBasicProperties(routingDetails);
+        final var envelope = eventContext.getEnvelope();
+        log.info("Enqueuing delayed message with routing details: {}\nproperties: {}\nenvelope: {}", routingDetails, properties,
+                envelope);
+
         transactionDelayedMessages.computeIfAbsent(tx, k -> new LinkedList<>())
-                .add(new Message(message, routingDetails, properties, eventContext.getEnvelope()));
+                .add(new Message(message, routingDetails, properties, envelope));
     }
 
     private Optional<Transaction> getOptionalTransaction() throws IrisTransactionException {
@@ -426,9 +438,15 @@ public class EventProducer {
         Message message = messageList != null ? messageList.poll() : null;
 
         while (message != null) {
-            eventContext.setEnvelope(message.envelope());
-            eventContext.setBasicProperties(message.properties());
-            executePublish(message.message(), message.routingDetails());
+            final var envelope = message.envelope();
+            final var properties = message.properties();
+            final var routingDetails = message.routingDetails();
+
+            log.info("Executing tx publish. Message envelope: {}\nproperties: {}\nroutingDetails: {}", envelope, properties,
+                    routingDetails);
+            eventContext.setEnvelope(envelope);
+            eventContext.setBasicProperties(properties);
+            executePublish(message.message(), routingDetails);
             message = messageList.poll();
         }
     }
