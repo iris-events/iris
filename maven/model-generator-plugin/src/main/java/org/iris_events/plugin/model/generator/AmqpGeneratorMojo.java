@@ -2,12 +2,12 @@ package org.iris_events.plugin.model.generator;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.iris_events.plugin.model.generator.exception.AmqpGeneratorException;
 import org.iris_events.plugin.model.generator.models.ArtifactSource;
+import org.iris_events.plugin.model.generator.utils.CustomDependencies;
 import org.iris_events.plugin.model.generator.utils.FileInteractor;
 import org.iris_events.plugin.model.generator.utils.PathResolver;
 import org.iris_events.plugin.model.generator.utils.SchemaFileGenerator;
@@ -43,24 +43,33 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "skip", defaultValue = "false")
     boolean skip;
 
+    /**
+     * Define custom dependencies injected into the models pom.xml file. Dependencies should be separated by a comma (,) and in
+     * the
+     * following format: groupId:artifactId:version
+     */
+    @Parameter(property = "customDependency", defaultValue = "")
+    String customDependency;
+
     public void execute() throws MojoExecutionException {
-        Log log = getLog();
+        final var log = getLog();
 
         if (skip) {
             log.info("Skipping model generation as skip flag is set to [true]");
             return;
         }
 
-        PathResolver pathResolver = new PathResolver();
-        ObjectMapper objectMapper = new ObjectMapper();
-        FileInteractor fileInteractor = new FileInteractor(pathResolver);
+        final var pathResolver = new PathResolver();
+        final var objectMapper = new ObjectMapper();
+        final var fileInteractor = new FileInteractor(pathResolver);
+        final var customDependencies = new CustomDependencies(customDependency);
 
-        SchemaFileGenerator schemaFileGenerator = new SchemaFileGenerator(log, pathResolver, fileInteractor,
+        final var schemaFileGenerator = new SchemaFileGenerator(log, pathResolver, fileInteractor,
                 objectMapper);
         fileInteractor.cleanUpDirectories(pathResolver.getWorkingDirectory());
 
-        AmqpGenerator generator = new AmqpGenerator(schemaFileGenerator, objectMapper, pathResolver, fileInteractor, log,
-                packageName, modelVersion, modelName, asyncApiFilename, asyncApiDirectory, apicurioUrl);
+        final var generator = new AmqpGenerator(schemaFileGenerator, objectMapper, pathResolver, fileInteractor, log,
+                packageName, modelVersion, modelName, asyncApiFilename, asyncApiDirectory, apicurioUrl, customDependencies);
 
         try {
             generator.generate(artifactSource);
