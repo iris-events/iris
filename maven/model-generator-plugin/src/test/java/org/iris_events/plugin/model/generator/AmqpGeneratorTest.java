@@ -17,6 +17,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.iris_events.plugin.model.generator.exception.AmqpGeneratorException;
 import org.iris_events.plugin.model.generator.models.ArtifactSource;
+import org.iris_events.plugin.model.generator.utils.CustomDependencies;
 import org.iris_events.plugin.model.generator.utils.FileInteractor;
 import org.iris_events.plugin.model.generator.utils.PathResolver;
 import org.iris_events.plugin.model.generator.utils.SchemaFileGenerator;
@@ -98,7 +99,8 @@ class AmqpGeneratorTest {
                 MODEL_NAME,
                 ASYNCAPI_FILENAME,
                 TEST_RESOURCES_DIR,
-                APICURIO_URL);
+                APICURIO_URL,
+                new CustomDependencies(""));
 
         generator.generate(ArtifactSource.FILE);
     }

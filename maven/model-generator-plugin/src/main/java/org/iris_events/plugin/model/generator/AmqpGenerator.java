@@ -77,10 +77,12 @@ public class AmqpGenerator {
     private final BinaryOperator<String> first = (first, second) -> first;
     private final BinaryOperator<String> last = (first, second) -> second;
     private final ExistingJavaTypeProcessor existingJavaTypeProcessor;
+    private final CustomDependencies customDependencies;
 
     public AmqpGenerator(SchemaFileGenerator schemaFileGenerator, ObjectMapper objectMapper, PathResolver pathResolver,
             FileInteractor fileInteractor, Log log, String packageName, String modelVersion, String modelName,
-            String asyncApiFilename, String asyncApiDirectory, String apicurioUrl) {
+            String asyncApiFilename, String asyncApiDirectory, String apicurioUrl,
+            final CustomDependencies customDependencies) {
         this.schemaFileGenerator = schemaFileGenerator;
         this.log = log;
         this.packageName = packageName;
@@ -99,6 +101,8 @@ public class AmqpGenerator {
 
         this.jsonUtils = new JsonUtils(this.objectMapper, this.log);
         this.existingJavaTypeProcessor = new ExistingJavaTypeProcessor(objectMapper);
+
+        this.customDependencies = customDependencies;
     }
 
     public void generate(ArtifactSource artifactSource) throws AmqpGeneratorException {
@@ -485,11 +489,14 @@ public class AmqpGenerator {
 
     private String preparePomTemplate() {
         var pomTemplate = fileInteractor.readResourceFileContent(StringConstants.POM_TEMPLATE_XML);
+
+        customDependencies.getDependenciesValue();
+
         return pomTemplate
                 .replace("@@ARTIFACT_ID@@", AmqpStringUtils.getPomArtifactId(modelName))
                 .replace("@@APPLICATION_VERSION@@", modelVersion)
-                .replace("@@GROUP_ID@@", packageName);
-
+                .replace("@@GROUP_ID@@", packageName)
+                .replace("@@CUSTOM_DEPENDENCIES@@", customDependencies.getDependenciesValue());
     }
 
     private String generatePackageName(String locationForGeneratedClass) {
