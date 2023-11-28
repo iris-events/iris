@@ -58,11 +58,13 @@ import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Produce;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
 
 class EventMessagingProcessor {
@@ -188,6 +190,13 @@ class EventMessagingProcessor {
         rpcMappingBuildItems.stream().forEach(rpcMappingBuildItem -> rpcMappingRecorder
                 .registerRpcMappings(beanContainer.getValue(), rpcMappingBuildItem.getRpcReplyToMapping()));
 
+    }
+
+    @Produce(ArtifactResultBuildItem.class)
+    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    void testRpcExecutionScan(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo) {
+        final var scanner = new Scanner(combinedIndexBuildItem.getIndex(), appInfo.getName());
+        scanner.scanRpcInvocations();
     }
 
     @SuppressWarnings("unused")
