@@ -321,21 +321,21 @@ public final class JsonUtil {
      * Reads an object array.
      *
      * @param node the json node
-     * @return list of objects
+     * @return list of JsonNodes
      */
-    public static Optional<List<Object>> readObjectArray(final JsonNode node) {
+    public static List<JsonNode> readNodeArray(final JsonNode node) {
         if (node != null && node.isArray()) {
 
-            List<Object> rval = new ArrayList<>(node.size());
+            List<JsonNode> rval = new ArrayList<>(node.size());
             ArrayNode arrayNode = (ArrayNode) node;
             for (JsonNode arrayItem : arrayNode) {
                 if (arrayItem != null) {
-                    rval.add(readObject(arrayItem));
+                    rval.add(arrayItem);
                 }
             }
-            return Optional.of(rval);
+            return rval;
         }
-        return Optional.empty();
+        return List.of();
     }
 
     /**

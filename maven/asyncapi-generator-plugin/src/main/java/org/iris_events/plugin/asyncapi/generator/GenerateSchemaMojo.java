@@ -33,7 +33,7 @@ import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.apicurio.datamodels.asyncapi.models.AaiDocument;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Document;
 import io.apicurio.registry.rest.client.RegistryClientFactory;
 
 @SuppressWarnings("unused")
@@ -166,10 +166,10 @@ public class GenerateSchemaMojo extends AbstractMojo {
                     annotationsArtifacts);
 
             IndexView index = indexCreator.createIndex();
-            AaiDocument schema = generateSchema(index);
+            AsyncApi26Document schema = generateSchema(index);
 
-            int schemaComponentsSize = schema.components.schemas.size();
-            int channelsSize = schema.channels.size();
+            int schemaComponentsSize = schema.getComponents().getSchemas().size();
+            int channelsSize = schema.getChannels().getItems().size();
 
             getLog().info("Generated schema info:\n\t- # of component schemas: " + schemaComponentsSize
                     + "\n\t- # of channels: " + channelsSize);
@@ -186,7 +186,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
         }
     }
 
-    private void uploadToApicurio(AaiDocument schema) throws IOException {
+    private void uploadToApicurio(AsyncApi26Document schema) throws IOException {
         String schemaOutput = "";
         if (uploadType.equalsIgnoreCase("json")) {
             schemaOutput = AsyncApiSerializer.serialize(schema, Format.JSON);
@@ -198,12 +198,12 @@ public class GenerateSchemaMojo extends AbstractMojo {
         client.upload(apicurioArtifactId, mavenProject.getVersion(), schemaOutput);
     }
 
-    private AaiDocument generateSchema(IndexView index) throws IOException, ClassNotFoundException, MojoExecutionException {
+    private AsyncApi26Document generateSchema(IndexView index)
+            throws IOException, ClassNotFoundException, MojoExecutionException {
         AsyncApiConfig asyncApiConfig = new MavenConfig(getProperties());
         ClassLoader classLoader = getClassLoader(mavenProject);
         IrisAnnotationScanner scanner = new IrisAnnotationScanner(asyncApiConfig, index, classLoader, mavenProject.getName(),
-                mavenProject.getGroupId(),
-                mavenProject.getVersion());
+                mavenProject.getGroupId(), mavenProject.getVersion(), IrisObjectMapper.getObjectMapper());
         return scanner.scan();
     }
 
@@ -240,7 +240,7 @@ public class GenerateSchemaMojo extends AbstractMojo {
         return propertyMap.getMap();
     }
 
-    private void write(AaiDocument schema) throws MojoExecutionException {
+    private void write(AsyncApi26Document schema) throws MojoExecutionException {
         try {
             if (outputDirectory == null) {
                 // no destination file specified => print to stdout
@@ -261,7 +261,8 @@ public class GenerateSchemaMojo extends AbstractMojo {
         }
     }
 
-    private void writeSchemaFile(Path directory, String filename, AaiDocument schema, ObjectMapper mapper) throws IOException {
+    private void writeSchemaFile(Path directory, String filename, AsyncApi26Document schema, ObjectMapper mapper)
+            throws IOException {
         Path file = Paths.get(directory.toString(), filename);
         if (!Files.exists(file)) {
             Files.createFile(file);

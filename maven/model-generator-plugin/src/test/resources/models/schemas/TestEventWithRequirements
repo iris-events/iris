@@ -1,16 +1,20 @@
 {
-  "required" : [ "id", "status" ],
   "type" : "object",
+  "required" : [ "id", "status" ],
+  "examples" : [ ],
   "properties" : {
     "id" : {
-      "type" : "integer"
+      "type" : "integer",
+      "examples" : [ ]
     },
     "status" : {
-      "type" : "string"
+      "type" : "string",
+      "examples" : [ ]
     },
     "user" : {
       "type" : "object",
-      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User"
+      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User",
+      "examples" : [ ]
     }
   },
   "x-iris-generated" : false

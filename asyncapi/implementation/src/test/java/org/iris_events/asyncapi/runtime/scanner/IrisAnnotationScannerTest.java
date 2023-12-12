@@ -22,7 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
+import io.apicurio.datamodels.Library;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Document;
 
 public class IrisAnnotationScannerTest extends IndexScannerTestBase {
     private static final String EXPECTED_JSON_RESULT_FILE = "src/test/resources/asyncapi.json";
@@ -40,9 +41,13 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
         var projectVersion = "1.0.0";
         Index index = getEventHandlersAppIndex();
         IrisAnnotationScanner scanner = new IrisAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
-                projectVersion);
-        Aai20Document document = scanner.scan();
-        String schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
+                projectVersion, IrisObjectMapper.getObjectMapper());
+        AsyncApi26Document document = scanner.scan();
+
+        final var documentJsonNode = Library.writeDocument(document);
+        final var schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(documentJsonNode);
+        System.out.println("Generated schema:\n" + schemaString);
         JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
     }
 
@@ -62,9 +67,12 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
                 RolesAllowed.class);
 
         IrisAnnotationScanner scanner = new IrisAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
-                projectVersion);
-        Aai20Document document = scanner.scan();
-        String schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
+                projectVersion, IrisObjectMapper.getObjectMapper());
+        AsyncApi26Document document = scanner.scan();
+
+        final var documentJsonNode = Library.writeDocument(document);
+        final var schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(documentJsonNode);
         JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
     }
 
@@ -83,9 +91,11 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
                 Message.class, RolesAllowed.class);
 
         IrisAnnotationScanner scanner = new IrisAnnotationScanner(emptyConfig(), index, projectName, projectGroupId,
-                projectVersion);
-        Aai20Document document = scanner.scan();
-        String schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(document);
+                projectVersion, IrisObjectMapper.getObjectMapper());
+        AsyncApi26Document document = scanner.scan();
+        final var documentJsonNode = Library.writeDocument(document);
+        final var schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(documentJsonNode);
         JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
     }
 

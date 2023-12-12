@@ -2,7 +2,9 @@ package org.iris_events.asyncapi.runtime.scanner.model;
 
 import java.util.Map;
 
-public class GidAai20AmqpChannelBindings {
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26BindingImpl;
+
+public class GidAai20AmqpChannelBindings extends AsyncApi26BindingImpl {
 
     // is = queue or is = routingKey
     private String is;

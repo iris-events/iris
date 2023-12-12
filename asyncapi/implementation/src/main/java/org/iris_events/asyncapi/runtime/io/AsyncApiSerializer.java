@@ -7,7 +7,7 @@ import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.apicurio.datamodels.asyncapi.models.AaiDocument;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Document;
 
 /**
  * Class used to serialize an OpenAPI
@@ -28,7 +28,7 @@ public class AsyncApiSerializer {
      * @return OpenAPI object as a String
      * @throws IOException Errors in processing the JSON
      */
-    public static String serialize(AaiDocument asyncApi, Format format) throws IOException {
+    public static String serialize(AsyncApi26Document asyncApi, Format format) throws IOException {
         try {
             ObjectMapper mapper;
             if (format == Format.JSON) {

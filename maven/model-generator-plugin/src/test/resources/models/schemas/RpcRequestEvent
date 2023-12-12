@@ -1,8 +1,10 @@
 {
   "type" : "object",
+  "examples" : [ ],
   "properties" : {
     "rpcId" : {
-      "type" : "string"
+      "type" : "string",
+      "examples" : [ ]
     }
   },
   "x-iris-generated" : false

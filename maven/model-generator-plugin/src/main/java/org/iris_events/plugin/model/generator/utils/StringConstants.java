@@ -19,7 +19,7 @@ public class StringConstants {
     public static final String MODELS = "models";
 
     public static final String REF_REGEX = """
-            ("\\$ref"\\s*:\\s*"(.*?)"\\s*(?=}))(?!\\w)
+            ("\\$ref"\\s*:\\s*"(.*?)"\\s*)(?!\\w)
             """
             .trim();
 

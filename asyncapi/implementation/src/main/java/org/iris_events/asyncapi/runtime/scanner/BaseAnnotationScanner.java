@@ -10,18 +10,14 @@ import java.util.Optional;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.api.AsyncApiConfig;
-import org.iris_events.asyncapi.api.Headers;
 import org.iris_events.asyncapi.runtime.io.channel.operation.OperationConstant;
 import org.iris_events.asyncapi.runtime.io.schema.SchemaReader;
-import org.iris_events.asyncapi.runtime.scanner.model.ChannelBindingsInfo;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelInfo;
-import org.iris_events.asyncapi.runtime.scanner.model.GidAai20AmqpChannelBindings;
-import org.iris_events.asyncapi.runtime.scanner.model.GidAai20Message;
-import org.iris_events.asyncapi.runtime.scanner.model.GidAai20Schema;
 import org.iris_events.asyncapi.runtime.scanner.model.GidAaiAMQPOperationBinding;
-import org.iris_events.asyncapi.runtime.scanner.model.GidAaiHeaderItem;
-import org.iris_events.asyncapi.runtime.scanner.model.GidAaiHeaderItems;
+import org.iris_events.asyncapi.runtime.scanner.model.GidAsyncApi26MessageImpl;
+import org.iris_events.asyncapi.runtime.scanner.model.GidAsyncApi26Schema;
 import org.iris_events.asyncapi.runtime.scanner.model.JsonSchemaInfo;
+import org.iris_events.asyncapi.runtime.util.HeaderSchemaBuilder;
 import org.iris_events.common.DeliveryMode;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -29,18 +25,27 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
-import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
-import io.apicurio.datamodels.asyncapi.models.AaiOperation;
-import io.apicurio.datamodels.asyncapi.models.AaiSchema;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelBindings;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelItem;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Components;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Operation;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20OperationBindings;
-import io.apicurio.datamodels.core.models.common.Schema;
+import io.apicurio.datamodels.Library;
+import io.apicurio.datamodels.models.ModelType;
+import io.apicurio.datamodels.models.asyncapi.AsyncApiChannelItem;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26BindingImpl;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ChannelBindingsImpl;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ChannelItemImpl;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ChannelsImpl;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ComponentsImpl;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Document;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Operation;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26OperationBindingsImpl;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26OperationImpl;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Schema;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26SchemaImpl;
 
 public abstract class BaseAnnotationScanner {
 
@@ -48,13 +53,15 @@ public abstract class BaseAnnotationScanner {
 
     protected final AnnotationScannerContext annotationScannerContext;
     protected ClassLoader classLoader = null;
+    protected ObjectMapper objectMapper;
+    protected final HeaderSchemaBuilder headerSchemaBuilder;
 
-    public BaseAnnotationScanner(AsyncApiConfig config, IndexView index, ClassLoader classLoader) {
-        this(config, index);
+    public BaseAnnotationScanner(AsyncApiConfig config, IndexView index, ClassLoader classLoader, ObjectMapper objectMapper) {
+        this(config, index, objectMapper);
         this.classLoader = classLoader;
     }
 
-    public BaseAnnotationScanner(AsyncApiConfig config, IndexView index) {
+    public BaseAnnotationScanner(AsyncApiConfig config, IndexView index, ObjectMapper objectMapper) {
         FilteredIndexView filteredIndexView;
         if (index instanceof FilteredIndexView) {
             filteredIndexView = (FilteredIndexView) index;
@@ -64,12 +71,21 @@ public abstract class BaseAnnotationScanner {
 
         final var generatedClassAnnotations = filteredIndexView.getAnnotations(
                 DotName.createSimple(IrisGenerated.class.getName()));
+        this.objectMapper = objectMapper;
 
-        this.annotationScannerContext = new AnnotationScannerContext(filteredIndexView, new Aai20Document(),
+        this.annotationScannerContext = new AnnotationScannerContext(filteredIndexView, getDocument(),
                 generatedClassAnnotations);
+        this.headerSchemaBuilder = new HeaderSchemaBuilder(objectMapper);
     }
 
-    public abstract Aai20Document scan();
+    private static AsyncApi26Document getDocument() {
+        final var document = (AsyncApi26Document) Library.createDocument(ModelType.ASYNCAPI26);
+        document.setAsyncapi("2.6.0");
+        document.setDefaultContentType("application/json");
+        return document;
+    }
+
+    public abstract AsyncApi26Document scan();
 
     protected boolean annotatedMethods(AnnotationInstance annotation) {
         return Objects.equals(annotation.target().kind(), AnnotationTarget.Kind.METHOD);
@@ -79,81 +95,107 @@ public abstract class BaseAnnotationScanner {
         return Objects.equals(annotation.target().kind(), AnnotationTarget.Kind.CLASS);
     }
 
-    protected void createChannels(List<ChannelInfo> channelInfos, Map<String, Scope> messageScopes, Aai20Document asyncApi) {
-        if (asyncApi.channels == null) {
-            asyncApi.channels = new HashMap<>();
-        }
+    protected void createChannels(List<ChannelInfo> channelInfos, Map<String, Scope> messageScopes,
+            AsyncApi26Document asyncApi) {
+        final var channels = new AsyncApi26ChannelsImpl();
 
         channelInfos.forEach(channelInfo -> {
             String messageKey = channelInfo.getEventKey();
-            AaiChannelItem channelItem = new Aai20ChannelItem(messageKey);
-            AaiOperation operation;
-            if (channelInfo.getOperationType().equals(OperationConstant.PROP_SUBSCRIBE)) {
-                channelItem.subscribe = new Aai20Operation(OperationConstant.PROP_SUBSCRIBE);
-                operation = channelItem.subscribe;
-            } else if (channelInfo.getOperationType().equals(OperationConstant.PROP_PUBLISH)) {
-                channelItem.publish = new Aai20Operation(OperationConstant.PROP_PUBLISH);
-                operation = channelItem.publish;
-            } else {
-                throw new IllegalArgumentException("opType argument should be one of [publish, subscribe]");
-            }
+            AsyncApiChannelItem channelItem = new AsyncApi26ChannelItemImpl();
+
+            AsyncApi26Operation operation = new AsyncApi26OperationImpl();
 
             final var persistent = channelInfo.getOperationBindingsInfo().persistent();
             final var deliveryMode = getDeliveryMode(persistent);
             final var aaiAMQPOperationBinding = new GidAaiAMQPOperationBinding();
             aaiAMQPOperationBinding.setDeliveryMode(deliveryMode);
 
-            operation.bindings = new Aai20OperationBindings();
-            operation.bindings.amqp = aaiAMQPOperationBinding;
-            operation.message = new GidAai20Message(messageKey);
+            final var operationBindings = new AsyncApi26OperationBindingsImpl();
+            operationBindings.setAmqp(aaiAMQPOperationBinding);
+            operation.setBindings(operationBindings);
 
-            operation.message.headers = buildHeaders(channelInfo, messageScopes);
+            final var message = new GidAsyncApi26MessageImpl();
+            message.setHeaders(headerSchemaBuilder.buildHeaders(channelInfo, messageScopes));
+            message.setName(messageKey);
+            message.setTitle(messageKey);
+            message.setPayload(getRefJsonNode(messageKey));
 
-            operation.message._name = messageKey;
-            operation.message.name = messageKey;
-            operation.message.title = messageKey;
-
-            Schema payloadSchema = new Schema();
-            payloadSchema.setReference(COMPONENTS_SCHEMAS_PREFIX + messageKey);
-            operation.message.payload = payloadSchema;
-
+            operation.setMessage(message);
             setResponseType(channelInfo, operation);
 
-            channelItem.bindings = new Aai20ChannelBindings();
-            channelItem.bindings.amqp = new GidAai20AmqpChannelBindings();
-            GidAai20AmqpChannelBindings amqp = (GidAai20AmqpChannelBindings) channelItem.bindings.amqp;
-            amqp.setIs("routingKey"); // We probably won't ever use "queue" ?
+            if (channelInfo.getOperationType().equals(OperationConstant.PROP_SUBSCRIBE)) {
+                channelItem.setSubscribe(operation);
+            } else if (channelInfo.getOperationType().equals(OperationConstant.PROP_PUBLISH)) {
+                channelItem.setPublish(operation);
+            } else {
+                throw new IllegalArgumentException("opType argument should be one of [publish, subscribe]");
+            }
 
-            Map<String, Object> queue = new HashMap<>();
-            ChannelBindingsInfo bindingsInfo = channelInfo.getBindingsInfo();
-            String queueName = bindingsInfo.getQueue();
-            queue.put("name", queueName);
-            queue.put("durable", bindingsInfo.isQueueDurable());
-            queue.put("exclusive", bindingsInfo.isQueueExclusive());
-            queue.put("autoDelete", bindingsInfo.isQueueAutoDelete());
-            queue.put("vhost", bindingsInfo.getQueueVhost());
-            amqp.setQueue(queue);
+            final var amqpChannelBindings = new AsyncApi26BindingImpl();
 
-            Map<String, Object> exchange = new HashMap<>();
-            String exchangeName = bindingsInfo.getExchange();
-            exchange.put("name", exchangeName);
-            exchange.put("type", bindingsInfo.getExchangeType().getType());
-            exchange.put("durable", bindingsInfo.isExchangeDurable());
-            exchange.put("autoDelete", bindingsInfo.isExchangeAutoDelete());
-            exchange.put("vhost", bindingsInfo.getExchangeVhost());
-            amqp.setExchange(exchange);
+            String queueName = channelInfo.getBindingsInfo().getQueue();
+            String exchangeName = channelInfo.getBindingsInfo().getExchange();
+
+            amqpChannelBindings.addExtension("is", TextNode.valueOf("routingKey"));
+            amqpChannelBindings.addExtension("queue", getQueueBindings(queueName, channelInfo));
+            amqpChannelBindings.addExtension("exchange", getExchangeBindings(exchangeName, channelInfo));
+
+            final var channelBindings = new AsyncApi26ChannelBindingsImpl();
+            channelBindings.setAmqp(amqpChannelBindings);
+            channelItem.setBindings(channelBindings);
 
             String channelKey = String.format("%s/%s", exchangeName, queueName);
-
-            asyncApi.channels.put(channelKey, channelItem);
+            channels.addItem(channelKey, channelItem);
         });
+
+        final var existingChannels = asyncApi.getChannels();
+        if (existingChannels != null) {
+            existingChannels.getItemNames().forEach(channelName -> {
+                final var existingChannel = existingChannels.getItem(channelName);
+                channels.addItem(channelName, existingChannel);
+            });
+        }
+
+        asyncApi.setChannels(channels);
+    }
+
+    private <T extends JsonNode> T getExchangeBindings(final String exchangeName, final ChannelInfo channelInfo) {
+        final var bindingsInfo = channelInfo.getBindingsInfo();
+
+        Map<String, Object> exchange = new HashMap<>();
+        exchange.put("name", exchangeName);
+        exchange.put("type", bindingsInfo.getExchangeType().getType());
+        exchange.put("durable", bindingsInfo.isExchangeDurable());
+        exchange.put("autoDelete", bindingsInfo.isExchangeAutoDelete());
+        exchange.put("vhost", bindingsInfo.getExchangeVhost());
+        return objectMapper.valueToTree(exchange);
+    }
+
+    private <T extends JsonNode> T getQueueBindings(final String queueName, final ChannelInfo channelInfo) {
+        final var bindingsInfo = channelInfo.getBindingsInfo();
+
+        Map<String, Object> queue = new HashMap<>();
+        queue.put("name", queueName);
+        queue.put("durable", bindingsInfo.isQueueDurable());
+        queue.put("exclusive", bindingsInfo.isQueueExclusive());
+        queue.put("autoDelete", bindingsInfo.isQueueAutoDelete());
+        queue.put("vhost", bindingsInfo.getQueueVhost());
+        return objectMapper.valueToTree(queue);
+    }
+
+    private JsonNode getRefJsonNode(String eventName) {
+        try {
+            return objectMapper.readTree(String.format("{\"$ref\" : \"#/components/schemas/%s\"}", eventName));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not read ref json node", e);
+        }
     }
 
     private int getDeliveryMode(final boolean persistent) {
         return persistent ? DeliveryMode.PERSISTENT.getValue() : DeliveryMode.NON_PERSISTENT.getValue();
     }
 
-    private void setResponseType(final ChannelInfo channelInfo, final AaiOperation operation) {
+    private void setResponseType(final ChannelInfo channelInfo, final AsyncApi26Operation operation) {
         final var responseType = channelInfo.getResponseType();
         if (responseType == null) {
             return;
@@ -164,15 +206,15 @@ public abstract class BaseAnnotationScanner {
             return;
         }
 
-        Schema responseSchema = new Schema();
-        responseSchema.setReference(COMPONENTS_SCHEMAS_PREFIX + responseTypeName.local());
-        ((GidAai20Message) operation.message).response = responseSchema;
+        AsyncApi26Schema responseSchema = new AsyncApi26SchemaImpl();
+        responseSchema.set$ref(COMPONENTS_SCHEMAS_PREFIX + responseTypeName.local());
+        ((GidAsyncApi26MessageImpl) operation.getMessage()).response = responseSchema;
     }
 
     protected void insertComponentSchemas(final AnnotationScannerContext context, Map<String, JsonSchemaInfo> collectedNodes,
-            Aai20Document asyncApi) {
-        if (asyncApi.components == null) {
-            asyncApi.components = new Aai20Components();
+            AsyncApi26Document asyncApi) {
+        if (asyncApi.getComponents() == null) {
+            asyncApi.setComponents(new AsyncApi26ComponentsImpl());
         }
         collectedNodes.forEach((s, jsonSchemaInfo) -> {
             // Read and save definitions of each scanned schema node, if any
@@ -185,15 +227,18 @@ public abstract class BaseAnnotationScanner {
                     Map.Entry<String, JsonNode> definition = defFieldsIterator.next();
 
                     String key = definition.getKey();
-                    AaiSchema definitionAaiSchema = SchemaReader.readSchema(definition.getValue(), true);
+                    GidAsyncApi26Schema definitionAaiSchema = SchemaReader.readSchema(definition.getValue(), true);
                     context.addDefinitionSchema(key, definitionAaiSchema);
                 }
             }
-            GidAai20Schema aaiSchema = SchemaReader.readSchema(jsonSchemaInfo.getGeneratedSchema(), true);
-            aaiSchema.setIrisGenerated(jsonSchemaInfo.isGeneratedClass());
-            aaiSchema.setCachedMessage(jsonSchemaInfo.getCacheTtl());
+            GidAsyncApi26Schema aaiSchema = SchemaReader.readSchema(jsonSchemaInfo.getGeneratedSchema(), true);
+            aaiSchema.addExtension("x-iris-generated", BooleanNode.valueOf(jsonSchemaInfo.isGeneratedClass()));
 
-            asyncApi.components.schemas.put(s, aaiSchema);
+            Optional.ofNullable(jsonSchemaInfo.getCacheTtl()).ifPresent(cacheTtl -> {
+                aaiSchema.addExtension("x-cached-message-ttl-seconds", IntNode.valueOf(cacheTtl));
+            });
+
+            asyncApi.getComponents().addSchema(s, aaiSchema);
         });
     }
 
@@ -202,33 +247,4 @@ public abstract class BaseAnnotationScanner {
                 .filter(annotationInstance -> annotationInstance.target().kind().equals(AnnotationTarget.Kind.CLASS))
                 .anyMatch(annotationInstance -> annotationInstance.target().asClass().name().equals(eventClass.name()));
     }
-
-    private GidAaiHeaderItems buildHeaders(ChannelInfo channelInfo, Map<String, Scope> messageScopes) {
-        Map<String, GidAaiHeaderItem> headerProps = new HashMap<>();
-        headerProps.put(Headers.HEADER_ROLES_ALLOWED,
-                new GidAaiHeaderItem("Allowed roles for this message. Default is empty", "array",
-                        channelInfo.getRolesAllowed()));
-        headerProps.put(Headers.HEADER_SCOPE,
-                new GidAaiHeaderItem("Message scope. Default is INTERNAL", "string",
-                        getScope(messageScopes, channelInfo.getEventKey())));
-        headerProps.put(Headers.HEADER_DEAD_LETTER,
-                new GidAaiHeaderItem("Dead letter queue definition. Default is dead-letter", "string",
-                        channelInfo.getDeadLetterQueue()));
-        Optional<Integer> ttl = Optional.ofNullable(channelInfo.getTtl());
-        ttl.ifPresent(ttlInt -> headerProps.put(Headers.HEADER_TTL,
-                new GidAaiHeaderItem("TTL of the message. If set to -1 (default) will use brokers default.", "integer",
-                        ttlInt)));
-        if (channelInfo.getRpcResponseType() != null) {
-            headerProps.put(Headers.RPC_RESPONSE_TYPE,
-                    new GidAaiHeaderItem("RPC response type property.", "string",
-                            channelInfo.getRpcResponseType().asClassType().name().toString()));
-        }
-
-        return new GidAaiHeaderItems("object", headerProps);
-    }
-
-    private Scope getScope(Map<String, Scope> messageScopes, String messageKey) {
-        return messageScopes.get(messageKey);
-    }
-
 }
