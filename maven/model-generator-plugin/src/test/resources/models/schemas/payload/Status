@@ -1,4 +1,5 @@
 {
   "type" : "string",
-  "enum" : [ "dormant", "live", "dead" ]
+  "enum" : [ "dormant", "live", "dead" ],
+  "examples" : [ ]
 }

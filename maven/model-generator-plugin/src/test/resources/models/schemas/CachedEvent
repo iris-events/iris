@@ -1,8 +1,10 @@
 {
   "type" : "object",
+  "examples" : [ ],
   "properties" : {
     "id" : {
-      "type" : "integer"
+      "type" : "integer",
+      "examples" : [ ]
     }
   },
   "x-iris-generated" : false,

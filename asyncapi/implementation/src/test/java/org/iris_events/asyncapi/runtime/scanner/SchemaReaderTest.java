@@ -9,12 +9,14 @@ import java.util.Optional;
 
 import org.iris_events.asyncapi.runtime.io.schema.SchemaReader;
 import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
+import org.iris_events.asyncapi.runtime.scanner.model.GidAsyncApi26Schema;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.apicurio.datamodels.asyncapi.models.AaiSchema;
+import io.apicurio.datamodels.models.Schema;
+import io.apicurio.datamodels.models.asyncapi.AsyncApiSchema;
 
 public class SchemaReaderTest extends IndexScannerTestBase {
 
@@ -28,14 +30,14 @@ public class SchemaReaderTest extends IndexScannerTestBase {
         JsonNode schemaNode = mapper.readTree(schemaString);
         JsonNode propertiesNode = mapper.readTree(propertiesString);
 
-        Optional<Map<String, AaiSchema>> propertiesOpt = SchemaReader.readSchemas(propertiesNode);
+        Optional<Map<String, GidAsyncApi26Schema>> propertiesOpt = SchemaReader.readSchemas(propertiesNode);
 
         assertThat(propertiesOpt.isPresent(), is(true));
-        Map<String, AaiSchema> stringAaiSchemaMap = propertiesOpt.get();
+        Map<String, GidAsyncApi26Schema> stringAaiSchemaMap = propertiesOpt.get();
         assertThat(stringAaiSchemaMap.size(), is(6));
 
-        AaiSchema aaiSchema = SchemaReader.readSchema(schemaNode);
-        Map<String, AaiSchema> properties = aaiSchema.properties;
+        AsyncApiSchema aaiSchema = SchemaReader.readSchema(schemaNode);
+        Map<String, Schema> properties = aaiSchema.getProperties();
         assertThat(properties.size(), is(6));
     }
 }

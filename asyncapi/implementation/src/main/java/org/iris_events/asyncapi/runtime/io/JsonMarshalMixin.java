@@ -5,18 +5,19 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.apicurio.datamodels.core.models.Document;
-import io.apicurio.datamodels.core.models.Node;
+import io.apicurio.datamodels.models.asyncapi.AsyncApiDocument;
 
 public abstract class JsonMarshalMixin {
     @JsonIgnore
     public int _modelId;
 
+    // TODO this mapping was fixed blindly
     @JsonIgnore
-    public Document _ownerDocument;
+    public AsyncApiDocument _ownerDocument;
 
-    @JsonIgnore
-    public Node _parent;
+    // TODO not sure what to map this to?
+    //    @JsonIgnore
+    //    public Node _parent;
 
     @JsonIgnore
     public String _name;

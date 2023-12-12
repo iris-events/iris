@@ -227,7 +227,7 @@ public class AmqpGenerator {
     }
 
     private void rewriteRefsInSchemaFiles(Path schemasPath) {
-
+        log.info("Rewriting refs in schema files...");
         try {
             HashMap<String, String> schemaNamesToLocation = new HashMap<>();
 
@@ -240,6 +240,7 @@ public class AmqpGenerator {
             try (var schemas = Files.list(schemasPath)) {
                 schemas.map(Path::toFile)
                         .forEach(file -> {
+                            log.info("Iterating to file " + file.getName());
                             if (file.isFile()) {
                                 String fileContent = fileInteractor.readFile(Path.of(file.toURI()));
                                 schemaNamesToLocation.entrySet().stream()
@@ -250,10 +251,12 @@ public class AmqpGenerator {
             }
 
             //rewrite base schemas
+            log.info("Rewriting base schemas");
             Stream.concat(Files.list(schemasPath), Files.list(schemasPath.resolve(StringConstants.PAYLOAD)))
                     .map(Path::toFile)
                     .filter(File::isFile)
                     .forEach(this::replaceAllRefs);
+            log.info("Done rewriting base schemas");
         } catch (IOException e) {
             log.error("Problem rewriting refs in schema files!");
             throw new RuntimeException(e);
@@ -377,6 +380,7 @@ public class AmqpGenerator {
     }
 
     private void replaceAllRefs(File file) {
+        log.info("Replacing all refs in file " + file.getAbsolutePath());
         String fileContent = fileInteractor.readFile(Path.of(file.toURI()));
         while (fileContent.contains(StringConstants.REF)) {
             Matcher matcher = REF_PATTERN.matcher(fileContent);
@@ -385,8 +389,16 @@ public class AmqpGenerator {
                 var toReplace = matcher.group(0);
                 var name = Arrays.stream(matcher.group(2).split(StringConstants.FORWARD_SLASH))
                         .reduce((first, second) -> second).orElse(StringConstants.EMPTY_STRING);
+                final var replacementForRef = AmqpStringUtils.getReplacementForRef(name, packageName,
+                        AmqpStringUtils.getPackageName(modelName));
+                log.info("Replacing. To replace = " + toReplace + " replacement for ref = " + replacementForRef);
                 fileContent = fileContent.replace(toReplace,
-                        AmqpStringUtils.getReplacementForRef(name, packageName, AmqpStringUtils.getPackageName(modelName)));
+                        replacementForRef);
+            } else {
+                log.info("File contains " + StringConstants.REF + " but matcher did not match any");
+                log.info("Matcher = " + matcher);
+                log.info("File content = " + fileContent);
+                break;
             }
         }
         fileInteractor.writeFile(Path.of(file.toURI()), jsonUtils.getFormattedJson(fileContent));

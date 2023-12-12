@@ -1,67 +1,66 @@
 {
+  "asyncapi" : "2.6.0",
+  "id" : "urn:org:iris_events:EventHandlersAppWithMapProperty",
   "info" : {
     "title" : "EventHandlersAppWithMapProperty",
     "version" : "1.0.0"
   },
-  "asyncapi" : "2.0.0",
-  "id" : "urn:org:iris_events:EventHandlersAppWithMapProperty",
+  "defaultContentType" : "application/json",
   "channels" : {
     "event-with-map-value/event-with-map-value" : {
       "publish" : {
         "bindings" : {
-          "amqp" : {
-            "deliveryMode" : 1
-          }
+          "amqp" : { }
         },
         "message" : {
           "headers" : {
             "type" : "object",
             "properties" : {
               "x-scope" : {
-                "description" : "Message scope. Default is INTERNAL",
                 "type" : "string",
+                "description" : "Message scope. Default is INTERNAL",
                 "value" : "INTERNAL"
               },
               "x-ttl" : {
-                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
                 "type" : "integer",
+                "description" : "TTL of the message. If set to -1 (default) will use brokers default.",
                 "value" : -1
               },
               "x-roles-allowed" : {
-                "description" : "Allowed roles for this message. Default is empty",
                 "type" : "array",
+                "description" : "Allowed roles for this message. Default is empty",
                 "value" : [ ]
               },
               "x-dead-letter" : {
-                "description" : "Dead letter queue definition. Default is dead-letter",
                 "type" : "string",
+                "description" : "Dead letter queue definition. Default is dead-letter",
                 "value" : "dead.dead-letter"
               }
             }
           },
-          "name" : "EventWithMapValue",
-          "title" : "EventWithMapValue",
           "payload" : {
             "$ref" : "#/components/schemas/EventWithMapValue"
-          }
+          },
+          "name" : "EventWithMapValue",
+          "title" : "EventWithMapValue"
         }
       },
       "bindings" : {
         "amqp" : {
           "is" : "routingKey",
-          "exchange" : {
-            "durable" : true,
-            "vhost" : "/",
-            "name" : "event-with-map-value",
-            "autoDelete" : false,
-            "type" : "fanout"
-          },
           "queue" : {
             "durable" : true,
             "vhost" : "/",
             "name" : "event-with-map-value",
             "autoDelete" : false,
             "exclusive" : false
+          },
+          "exchange" : {
+            "durable" : true,
+            "vhost" : "/",
+            "name" : "event-with-map-value",
+            "autoDelete" : false,
+            "type" : "fanout"
           }
         }
       }
@@ -71,9 +70,11 @@
     "schemas" : {
       "EventWithMapValue" : {
         "type" : "object",
+        "examples" : [ ],
         "properties" : {
           "fooMap" : {
             "type" : "object",
+            "examples" : [ ],
             "additionalProperties" : {
               "$ref" : "#/components/schemas/Foo"
             },
@@ -84,12 +85,15 @@
       },
       "Foo" : {
         "type" : "object",
+        "examples" : [ ],
         "properties" : {
           "bar" : {
-            "type" : "string"
+            "type" : "string",
+            "examples" : [ ]
           },
           "id" : {
-            "type" : "integer"
+            "type" : "integer",
+            "examples" : [ ]
           }
         }
       }

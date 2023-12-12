@@ -26,9 +26,27 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.iris_events.annotations.*;
+import org.iris_events.annotations.CachedMessage;
+import org.iris_events.annotations.Message;
+import org.iris_events.annotations.MessageHandler;
+import org.iris_events.annotations.Scope;
+import org.iris_events.annotations.SnapshotMessageHandler;
 import org.iris_events.asyncapi.api.AsyncApiConfig;
-import org.iris_events.asyncapi.parsers.*;
+import org.iris_events.asyncapi.parsers.BindingKeysParser;
+import org.iris_events.asyncapi.parsers.CacheableTtlParser;
+import org.iris_events.asyncapi.parsers.DeadLetterQueueParser;
+import org.iris_events.asyncapi.parsers.ExchangeParser;
+import org.iris_events.asyncapi.parsers.ExchangeTtlParser;
+import org.iris_events.asyncapi.parsers.ExchangeTypeParser;
+import org.iris_events.asyncapi.parsers.MessageScopeParser;
+import org.iris_events.asyncapi.parsers.PersistentParser;
+import org.iris_events.asyncapi.parsers.QueueAutoDeleteParser;
+import org.iris_events.asyncapi.parsers.QueueDurableParser;
+import org.iris_events.asyncapi.parsers.ResourceTypeParser;
+import org.iris_events.asyncapi.parsers.ResponseParser;
+import org.iris_events.asyncapi.parsers.RolesAllowedParser;
+import org.iris_events.asyncapi.parsers.RoutingKeyParser;
+import org.iris_events.asyncapi.parsers.RpcResponseClassParser;
 import org.iris_events.asyncapi.runtime.generator.CustomDefinitionProvider;
 import org.iris_events.asyncapi.runtime.io.components.ComponentReader;
 import org.iris_events.asyncapi.runtime.scanner.model.ChannelInfo;
@@ -49,6 +67,7 @@ import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
@@ -60,8 +79,8 @@ import com.github.victools.jsonschema.module.jackson.JacksonOption;
 import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationModule;
 import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationOption;
 
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Info;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Document;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26InfoImpl;
 
 /**
  * Scans a deployment (using the archive and jandex annotation index) for relevant annotations. These
@@ -91,8 +110,8 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
      * @param projectName Name of project
      */
     public IrisAnnotationScanner(AsyncApiConfig config, IndexView index, String projectName, String projectGroupId,
-            String projectVersion) {
-        super(config, index);
+            String projectVersion, ObjectMapper objectMapper) {
+        super(config, index, objectMapper);
         this.schemaGenerator = initSchemaGenerator(config);
         this.projectName = projectName;
         this.projectGroupId = projectGroupId;
@@ -100,9 +119,8 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
     }
 
     public IrisAnnotationScanner(AsyncApiConfig config, IndexView index, ClassLoader classLoader, String projectName,
-            String projectGroupId,
-            String projectVersion) {
-        super(config, index, classLoader);
+            String projectGroupId, String projectVersion, ObjectMapper objectMapper) {
+        super(config, index, classLoader, objectMapper);
         this.schemaGenerator = initSchemaGenerator(config);
         this.projectName = projectName;
         this.projectGroupId = projectGroupId;
@@ -115,7 +133,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
      *
      * @return Document generated from scanning annotations
      */
-    public Aai20Document scan() {
+    public AsyncApi26Document scan() {
         LOG.debug("Scanning deployment for Async Annotations.");
         try {
             return scanIrisAnnotations();
@@ -125,7 +143,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
         }
     }
 
-    private Aai20Document scanIrisAnnotations() throws ClassNotFoundException {
+    private AsyncApi26Document scanIrisAnnotations() throws ClassNotFoundException {
         final var asyncApi = this.annotationScannerContext.getAsyncApi();
         setDocumentInfo(asyncApi);
         // Process @Message
@@ -163,7 +181,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
     }
 
     private void processProducedMessages(AnnotationScannerContext context,
-            Aai20Document asyncApi,
+            AsyncApi26Document asyncApi,
             List<AnnotationInstance> messageAnnotations,
             List<AnnotationInstance> consumedMessageAnnotations)
             throws ClassNotFoundException {
@@ -209,7 +227,7 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
     }
 
     private List<AnnotationInstance> processMessageHandlerAnnotations(List<AnnotationInstance> methodAnnotationInstances,
-            AnnotationScannerContext context, Aai20Document asyncApi)
+            AnnotationScannerContext context, AsyncApi26Document asyncApi)
             throws ClassNotFoundException {
 
         final var consumedMessages = new ArrayList<AnnotationInstance>();
@@ -308,23 +326,23 @@ public class IrisAnnotationScanner extends BaseAnnotationScanner {
         throw new IllegalArgumentException("Unsupported annotation instance " + dotName);
     }
 
-    private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, Aai20Document asyncApi) {
+    private void processContextDefinitionReferencedSchemas(AnnotationScannerContext context, AsyncApi26Document asyncApi) {
         final var definitionSchemaMap = context.getDefinitionSchemaMap();
-        asyncApi.components.schemas.putAll(definitionSchemaMap);
+        asyncApi.getComponents().getSchemas().putAll(definitionSchemaMap);
         context.clearDefinitionSchemaMap();
     }
 
-    private Aai20Document setDocumentInfo(Aai20Document document) {
+    private AsyncApi26Document setDocumentInfo(AsyncApi26Document document) {
         try {
             final var projectSchemaId = SchemeIdGenerator.buildId(projectName);
 
-            final var info = new Aai20Info();
-            info.title = projectName;
-            info.version = this.projectVersion;
+            final var info = new AsyncApi26InfoImpl();
+            info.setTitle(projectName);
+            info.setVersion(this.projectVersion);
 
-            document.id = projectSchemaId;
-            document.info = info;
-            document.components = ComponentReader.create();
+            document.setId(projectSchemaId);
+            document.setInfo(info);
+            document.setComponents(ComponentReader.create());
             return document;
         } catch (URISyntaxException e) {
             LOG.error("Could not generate schema ID", e);

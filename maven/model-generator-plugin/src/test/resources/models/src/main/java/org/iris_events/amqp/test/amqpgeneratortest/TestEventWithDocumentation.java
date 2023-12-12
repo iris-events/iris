@@ -45,7 +45,7 @@ public class TestEventWithDocumentation implements Serializable
     @JsonProperty("altId")
     @JsonPropertyDescription("Alternative event id")
     @DecimalMin("18")
-    @DecimalMax("150")
+    @DecimalMax("1.5E+2")
     private int altId;
     @JsonProperty("id")
     @DecimalMin("5")

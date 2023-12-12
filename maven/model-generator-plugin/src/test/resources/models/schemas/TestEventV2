@@ -1,28 +1,35 @@
 {
   "type" : "object",
+  "examples" : [ ],
   "properties" : {
     "id" : {
-      "type" : "integer"
+      "type" : "integer",
+      "examples" : [ ]
     },
     "name" : {
-      "type" : "string"
+      "type" : "string",
+      "examples" : [ ]
     },
     "payload" : {
-      "type" : "null"
+      "type" : "null",
+      "examples" : [ ]
     },
     "someMap" : {
       "type" : "object",
+      "examples" : [ ],
       "additionalProperties" : {
         "type" : "string"
       },
       "existingJavaType" : "java.util.Map<java.lang.String, java.lang.String>"
     },
     "surname" : {
-      "type" : "string"
+      "type" : "string",
+      "examples" : [ ]
     },
     "user" : {
       "type" : "object",
-      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User"
+      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User",
+      "examples" : [ ]
     }
   },
   "x-iris-generated" : false

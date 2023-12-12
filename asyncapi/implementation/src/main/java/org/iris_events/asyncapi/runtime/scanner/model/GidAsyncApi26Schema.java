@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.apicurio.datamodels.asyncapi.v2.models.Aai20Schema;
+import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26SchemaImpl;
 
-public class GidAai20Schema extends Aai20Schema {
+public class GidAsyncApi26Schema extends AsyncApi26SchemaImpl {
     public String existingJavaType;
     public BigDecimal exclusiveMaximum;
     public BigDecimal exclusiveMinimum;
@@ -35,5 +35,15 @@ public class GidAai20Schema extends Aai20Schema {
 
     public void setCachedMessage(final Integer cachedMessage) {
         this.cachedMessage = cachedMessage;
+    }
+
+    @Override
+    public String getType() {
+        return super.getType();
+    }
+
+    @Override
+    public void setType(final String value) {
+        super.setType(value);
     }
 }

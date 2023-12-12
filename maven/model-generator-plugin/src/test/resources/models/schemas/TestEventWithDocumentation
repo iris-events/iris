@@ -1,27 +1,31 @@
 {
-  "description" : "Event with extensive documentation for test purposes",
   "type" : "object",
+  "examples" : [ ],
   "properties" : {
     "altId" : {
-      "description" : "Alternative event id",
-      "maximum" : 150,
-      "minimum" : 18,
-      "type" : "integer"
+      "type" : "integer",
+      "maximum" : 150.0,
+      "minimum" : 18.0,
+      "examples" : [ ],
+      "description" : "Alternative event id"
     },
     "id" : {
-      "exclusiveMaximum" : 100,
-      "minimum" : 5,
-      "type" : "integer"
+      "type" : "integer",
+      "minimum" : 5.0,
+      "examples" : [ ]
     },
     "status" : {
-      "description" : "status of the user entity",
       "type" : "string",
-      "enum" : [ "available", "pending", "sold" ]
+      "enum" : [ "available", "pending", "sold" ],
+      "examples" : [ ],
+      "description" : "status of the user entity"
     },
     "user" : {
       "type" : "object",
-      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User"
+      "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User",
+      "examples" : [ ]
     }
   },
+  "description" : "Event with extensive documentation for test purposes",
   "x-iris-generated" : false
 }

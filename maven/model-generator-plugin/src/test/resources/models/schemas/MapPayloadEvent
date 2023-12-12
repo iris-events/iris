@@ -1,8 +1,10 @@
 {
   "type" : "object",
+  "examples" : [ ],
   "properties" : {
     "userMap" : {
       "type" : "object",
+      "examples" : [ ],
       "additionalProperties" : {
         "type" : "object",
         "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.MapValue"

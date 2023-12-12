@@ -1,11 +1,14 @@
 {
   "type" : "object",
+  "examples" : [ ],
   "properties" : {
     "id" : {
-      "type" : "string"
+      "type" : "string",
+      "examples" : [ ]
     },
     "value" : {
-      "type" : "string"
+      "type" : "string",
+      "examples" : [ ]
     }
   }
 }

@@ -1,11 +1,14 @@
 {
   "type" : "object",
+  "examples" : [ ],
   "properties" : {
     "userList" : {
       "type" : "array",
+      "examples" : [ ],
       "items" : {
         "type" : "object",
-        "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User"
+        "javaType" : "org.iris_events.amqp.test.amqpgeneratortest.payload.User",
+        "examples" : [ ]
       }
     }
   },
