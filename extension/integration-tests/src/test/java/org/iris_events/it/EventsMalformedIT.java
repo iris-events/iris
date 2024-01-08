@@ -19,7 +19,7 @@ import org.iris_events.runtime.ExchangeNameProvider;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.RpcMappingProvider;
 import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ public class EventsMalformedIT extends IsolatedEventContextTest {
     ChannelService producerChannelService;
 
     @Inject
-    IrisRabbitMQConfig resilienceConfig;
+    IrisConfig resilienceConfig;
 
     @Inject
     TransactionManager transactionManager;

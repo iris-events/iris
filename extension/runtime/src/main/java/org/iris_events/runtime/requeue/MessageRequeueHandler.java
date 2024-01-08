@@ -27,7 +27,7 @@ import org.iris_events.exception.MessagingException;
 import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -37,13 +37,13 @@ import com.rabbitmq.client.Delivery;
 public class MessageRequeueHandler {
 
     private final Channel channel;
-    private final IrisRabbitMQConfig config;
+    private final IrisConfig config;
     private final QueueNameProvider queueNameProvider;
     private final TimestampProvider timestampProvider;
 
     @Inject
     public MessageRequeueHandler(@Named("producerChannelService") ChannelService channelService,
-            IrisRabbitMQConfig config,
+            IrisConfig config,
             QueueNameProvider queueNameProvider, TimestampProvider timestampProvider) throws IOException {
         this.config = config;
         this.queueNameProvider = queueNameProvider;

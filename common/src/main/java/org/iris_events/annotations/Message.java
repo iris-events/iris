@@ -74,7 +74,8 @@ public @interface Message {
      * Defines the type of RPC response for this message.
      *
      * This is used only in RPC style messages and is redundant otherwise.
-     * This *needs* to be defined in the "request" message that will be used to call {@link org.iris_events.producer.EventProducer#sendAndReceive(Object, Class)}
+     * This *needs* to be defined in the "request" message that will be used to call
+     * {@link org.iris_events.producer.EventProducer#sendAndReceive(Object, Class)}
      * Value of {@link Message#rpcResponse()} must also be a class annotated with the {@link Message} annotation
      */
     Class<?> rpcResponse() default Void.class;

@@ -3,7 +3,6 @@ package org.iris_events.deployment;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import org.iris_events.annotations.Scope;
@@ -31,8 +30,7 @@ import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.runtime.channel.ConsumerChannelService;
 import org.iris_events.runtime.channel.ProducerChannelService;
-import org.iris_events.runtime.configuration.IrisBuildConfiguration;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisBuildTimeConfig;
 import org.iris_events.runtime.connection.ConnectionFactoryProvider;
 import org.iris_events.runtime.connection.ConsumerConnectionProvider;
 import org.iris_events.runtime.connection.ProducerConnectionProvider;
@@ -55,9 +53,7 @@ import io.quarkus.arc.processor.DotNames;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
-import io.quarkus.deployment.annotations.BuildProducer;
-import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.*;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -65,29 +61,20 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
 
-class EventMessagingProcessor {
-
-    public static class EventMessagingEnabled implements BooleanSupplier {
-
-        IrisBuildConfiguration config;
-
-        @Override
-        public boolean getAsBoolean() {
-            return config.enabled;
-        }
-    }
+@BuildSteps(onlyIf = IrisEnabled.class)
+class IrisProcessor {
 
     private static final String FEATURE = "iris";
-    private static final Logger log = LoggerFactory.getLogger(EventMessagingProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(IrisProcessor.class);
 
     @SuppressWarnings("unused")
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
 
     @SuppressWarnings("unused")
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void declareIrisBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
         additionalBeanBuildItemBuildProducer.produce(
                 new AdditionalBeanBuildItem.Builder()
@@ -112,7 +99,6 @@ class EventMessagingProcessor {
                                 IrisLivenessCheck.class,
                                 TimestampProvider.class,
                                 BasicPropertiesProvider.class,
-                                IrisRabbitMQConfig.class,
                                 ProducedEventExchangeInitializer.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
@@ -120,7 +106,7 @@ class EventMessagingProcessor {
     }
 
     @SuppressWarnings("unused")
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void scanForMessageHandlers(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
             BuildProducer<MessageHandlerInfoBuildItem> messageHandlerProducer) {
 
@@ -131,7 +117,7 @@ class EventMessagingProcessor {
     }
 
     @SuppressWarnings("unused")
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void scanForMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
             BuildProducer<MessageInfoBuildItem> messageInfoProducer) {
         final var scanner = new Scanner(combinedIndexBuildItem.getIndex(), appInfo.getName());
@@ -145,7 +131,7 @@ class EventMessagingProcessor {
     }
 
     @SuppressWarnings("unused")
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void scanForRpcMessages(CombinedIndexBuildItem combinedIndexBuildItem, ApplicationInfoBuildItem appInfo,
             List<MessageInfoBuildItem> messageInfoBuildItems,
             BuildProducer<RpcMappingBuildItem> rpcMappingBuildItemBuildProducer) {
@@ -181,7 +167,7 @@ class EventMessagingProcessor {
     }
 
     @Record(ExecutionTime.STATIC_INIT)
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void initRpcReplyToMappingBean(BeanContainerBuildItem beanContainer, List<RpcMappingBuildItem> rpcMappingBuildItems,
             RpcMappingRecorder rpcMappingRecorder) {
 
@@ -192,7 +178,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void initProducerDefinedExchangeRequests(BeanContainerBuildItem beanContainer,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
             List<MessageInfoBuildItem> messageInfoBuildItems,
@@ -212,7 +198,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @Record(ExecutionTime.RUNTIME_INIT)
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void declareProducerDefinedExchanges(final BeanContainerBuildItem beanContainer,
             ProducerDefinedExchangesRecorder producerDefinedExchangesRecorder) {
         producerDefinedExchangesRecorder.init(beanContainer.getValue());
@@ -228,7 +214,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @Record(ExecutionTime.RUNTIME_INIT)
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void configureConsumer(final BeanContainerBuildItem beanContainer, ConsumerInitRecorder consumerInitRecorder,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems) {
         if (!messageHandlerInfoBuildItems.isEmpty()) {
@@ -238,7 +224,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void declareMessageHandlers(final BeanContainerBuildItem beanContainer,
             List<MessageHandlerInfoBuildItem> messageHandlerInfoBuildItems,
             List<MessageInfoBuildItem> messageInfoBuildItems,
@@ -252,9 +238,11 @@ class EventMessagingProcessor {
                 final var returnEventClass = getMessageHandlerReturnEventClass(cl, mhBuildItem);
 
                 final var rpcReturnEventName = getMessageRpcReturnName(mhBuildItem, messageInfoBuildItems);
-                log.info("Message handler build item for " + mhBuildItem.getName() + " eventClass: " + eventClass
-                        + " returnEventClass: " + returnEventClass + " rpcReturnEventClass: " + rpcReturnEventName
-                        + " bindingKeys: " + mhBuildItem.getBindingKeys());
+                if (log.isInfoEnabled()) {
+                    log.trace("Message handler build item for " + mhBuildItem.getName() + " eventClass: " + eventClass
+                            + " returnEventClass: " + returnEventClass + " rpcReturnEventClass: " + rpcReturnEventName
+                            + " bindingKeys: " + mhBuildItem.getBindingKeys());
+                }
 
                 final var methodHandleContext = new MethodHandleContext(handlerClass, eventClass,
                         returnEventClass, mhBuildItem.getMethodName());
@@ -323,7 +311,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @Record(ExecutionTime.STATIC_INIT)
-    @BuildStep(onlyIf = EventMessagingEnabled.class)
+    @BuildStep
     void provideEventAppContext(final BeanContainerBuildItem beanContainer, ApplicationInfoBuildItem applicationInfoBuildItem,
             EventAppRecorder eventAppRecorder) {
         eventAppRecorder.registerEventAppContext(beanContainer.getValue(), new EventAppContext(
@@ -339,7 +327,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep
-    HealthBuildItem addReadinessCheck(Capabilities capabilities, IrisBuildConfiguration configuration) {
+    HealthBuildItem addReadinessCheck(Capabilities capabilities, IrisBuildTimeConfig configuration) {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
             return new HealthBuildItem(IrisReadinessCheck.class.getName(),
                     configuration.readinessCheckEnabled);
@@ -350,7 +338,7 @@ class EventMessagingProcessor {
 
     @SuppressWarnings("unused")
     @BuildStep
-    HealthBuildItem addLivenessCheck(Capabilities capabilities, IrisBuildConfiguration configuration) {
+    HealthBuildItem addLivenessCheck(Capabilities capabilities, IrisBuildTimeConfig configuration) {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
             return new HealthBuildItem(IrisLivenessCheck.class.getName(),
                     configuration.livenessCheckEnabled);

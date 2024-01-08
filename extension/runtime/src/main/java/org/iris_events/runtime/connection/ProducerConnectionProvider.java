@@ -7,7 +7,7 @@ import jakarta.inject.Inject;
 import org.iris_events.health.IrisLivenessCheck;
 import org.iris_events.health.IrisReadinessCheck;
 import org.iris_events.runtime.InstanceInfoProvider;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ public class ProducerConnectionProvider extends AbstractConnectionProvider {
 
     @Inject
     public ProducerConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
+            InstanceInfoProvider instanceInfoProvider, IrisConfig config, IrisReadinessCheck readinessCheck,
             IrisLivenessCheck livenessCheck) {
         super(connectionFactoryProvider, instanceInfoProvider, config, readinessCheck, livenessCheck, log);
     }

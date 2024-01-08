@@ -2,29 +2,29 @@ package org.iris_events.runtime.configuration;
 
 import java.util.Optional;
 
-import jakarta.inject.Singleton;
+import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigPhase;
+import io.quarkus.runtime.annotations.ConfigRoot;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-@Singleton
-public class IrisRabbitMQConfig {
+@ConfigRoot(phase = ConfigPhase.RUN_TIME)
+public class IrisConfig {
 
     /**
      * Connection retry initial backoff interval
      */
-    @ConfigProperty(name = "iris.backoff-interval-millis", defaultValue = "1000")
+    @ConfigItem(name = "backoff-interval-millis", defaultValue = "1000")
     long backoffIntervalMillis;
 
     /**
      * Connection retry backoff multiplier
      */
-    @ConfigProperty(name = "iris.backoff-multiplier", defaultValue = "1.5")
+    @ConfigItem(name = "backoff-multiplier", defaultValue = "1.5")
     double backoffMultiplier;
 
     /**
      * Connection max retries
      */
-    @ConfigProperty(name = "iris.max-retries", defaultValue = "10")
+    @ConfigItem(name = "max-retries", defaultValue = "10")
     int maxRetries;
 
     /**
@@ -33,68 +33,68 @@ public class IrisRabbitMQConfig {
      * Set to 1 for immediate confirmation of each message.
      * Set to 0 for no confirmations.
      */
-    @ConfigProperty(name = "iris.confirmation-batch-size", defaultValue = "1")
+    @ConfigItem(name = "confirmation-batch-size", defaultValue = "1")
     long confirmationBatchSize;
 
     /**
      * Number of retries for Iris messages
      */
-    @ConfigProperty(name = "iris.retry-max-count", defaultValue = "3")
+    @ConfigItem(name = "retry-max-count", defaultValue = "3")
     int retryMaxCount;
 
     /**
      * Iris RPC request timeout
      */
-    @ConfigProperty(name = "iris.rpc.timeout", defaultValue = "2000")
+    @ConfigItem(name = "rpc.timeout", defaultValue = "2000")
     int rpcTimeout;
 
     /**
      * RabbitMQ broker host
      */
-    @ConfigProperty(name = "rabbitmq-host", defaultValue = "localhost")
+    @ConfigItem(name = "rabbitmq-host", defaultValue = "${rabbitmq-host:localhost}")
     String host;
 
     /**
      * RabbitMQ protocol (amqp/amqps)
      */
-    @ConfigProperty(name = "rabbitmq-protocol")
+    @ConfigItem(name = "rabbitmq-protocol", defaultValue = "${rabbitmq-protocol}")
     Optional<String> protocol;
 
     /**
      * RabbitMQ port
      */
-    @ConfigProperty(name = "rabbitmq-port")
+    @ConfigItem(name = "rabbitmq-port", defaultValue = "${rabbitmq-port}")
     Optional<Integer> port;
 
     /**
      * Use ssl for RabbitMQ broker connection
      */
-    @ConfigProperty(name = "rabbitmq-ssl")
+    @ConfigItem(name = "rabbitmq-ssl", defaultValue = "${rabbitmq-ssl}")
     Optional<Boolean> ssl;
 
     /**
      * RabbitMQ broker username
      */
-    @ConfigProperty(name = "rabbitmq-username", defaultValue = "guest")
+    @ConfigItem(name = "rabbitmq-username", defaultValue = "${rabbitmq-username:guest}")
     String username;
 
     /**
      * RabbitMQ broker password
      */
-    @ConfigProperty(name = "rabbitmq-password", defaultValue = "guest")
+    @ConfigItem(name = "rabbitmq-password", defaultValue = "${rabbitmq-password:guest}")
     String password;
 
     /**
      * RabbitMQ broker virtual host
      */
-    @ConfigProperty(name = "rabbitmq-virtual-host", defaultValue = "/")
+    @ConfigItem(name = "rabbitmq-virtual-host", defaultValue = "${rabbitmq-virtual-host:/}")
     String virtualHost;
 
     public long getBackoffIntervalMillis() {
         return backoffIntervalMillis;
     }
 
-    public IrisRabbitMQConfig setBackoffIntervalMillis(final long backoffIntervalMillis) {
+    public IrisConfig setBackoffIntervalMillis(final long backoffIntervalMillis) {
         this.backoffIntervalMillis = backoffIntervalMillis;
         return this;
     }
@@ -103,7 +103,7 @@ public class IrisRabbitMQConfig {
         return backoffMultiplier;
     }
 
-    public IrisRabbitMQConfig setBackoffMultiplier(final double backoffMultiplier) {
+    public IrisConfig setBackoffMultiplier(final double backoffMultiplier) {
         this.backoffMultiplier = backoffMultiplier;
         return this;
     }
@@ -112,7 +112,7 @@ public class IrisRabbitMQConfig {
         return maxRetries;
     }
 
-    public IrisRabbitMQConfig setMaxRetries(final int maxRetries) {
+    public IrisConfig setMaxRetries(final int maxRetries) {
         this.maxRetries = maxRetries;
         return this;
     }
@@ -121,7 +121,7 @@ public class IrisRabbitMQConfig {
         return confirmationBatchSize;
     }
 
-    public IrisRabbitMQConfig setConfirmationBatchSize(final long confirmationBatchSize) {
+    public IrisConfig setConfirmationBatchSize(final long confirmationBatchSize) {
         this.confirmationBatchSize = confirmationBatchSize;
         return this;
     }
@@ -130,7 +130,7 @@ public class IrisRabbitMQConfig {
         return retryMaxCount;
     }
 
-    public IrisRabbitMQConfig setRetryMaxCount(final int retryMaxCount) {
+    public IrisConfig setRetryMaxCount(final int retryMaxCount) {
         this.retryMaxCount = retryMaxCount;
         return this;
     }
@@ -139,7 +139,7 @@ public class IrisRabbitMQConfig {
         return host;
     }
 
-    public IrisRabbitMQConfig setHost(final String host) {
+    public IrisConfig setHost(final String host) {
         this.host = host;
         return this;
     }
@@ -148,7 +148,7 @@ public class IrisRabbitMQConfig {
         return protocol;
     }
 
-    public IrisRabbitMQConfig setProtocol(final String protocol) {
+    public IrisConfig setProtocol(final String protocol) {
         this.protocol = Optional.ofNullable(protocol);
         return this;
     }
@@ -161,7 +161,7 @@ public class IrisRabbitMQConfig {
         }).orElseGet(() -> port.orElse(5672));
     }
 
-    public IrisRabbitMQConfig setPort(final int port) {
+    public IrisConfig setPort(final int port) {
         this.port = Optional.of(port);
         return this;
     }
@@ -174,7 +174,7 @@ public class IrisRabbitMQConfig {
         }).orElseGet(() -> ssl.orElse(false));
     }
 
-    public IrisRabbitMQConfig setSsl(final boolean ssl) {
+    public IrisConfig setSsl(final boolean ssl) {
         this.ssl = Optional.of(ssl);
         return this;
     }
@@ -183,7 +183,7 @@ public class IrisRabbitMQConfig {
         return username;
     }
 
-    public IrisRabbitMQConfig setUsername(final String username) {
+    public IrisConfig setUsername(final String username) {
         this.username = username;
         return this;
     }
@@ -192,7 +192,7 @@ public class IrisRabbitMQConfig {
         return password;
     }
 
-    public IrisRabbitMQConfig setPassword(final String password) {
+    public IrisConfig setPassword(final String password) {
         this.password = password;
         return this;
     }
@@ -201,7 +201,7 @@ public class IrisRabbitMQConfig {
         return virtualHost;
     }
 
-    public IrisRabbitMQConfig setVirtualHost(final String virtualHost) {
+    public IrisConfig setVirtualHost(final String virtualHost) {
         this.virtualHost = virtualHost;
         return this;
     }

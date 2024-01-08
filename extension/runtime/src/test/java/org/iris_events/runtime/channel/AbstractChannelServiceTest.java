@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.iris_events.runtime.channel.mock.MockConnection;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.iris_events.runtime.connection.ConsumerConnectionProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,16 +17,16 @@ import org.mockito.Mockito;
 class AbstractChannelServiceTest {
 
     private ChannelService channelService;
-    private IrisRabbitMQConfig irisRabbitMQConfigMock;
+    private IrisConfig irisConfigMock;
     private ConsumerConnectionProvider connectionProviderMock;
     private AtomicInteger closeCount;
 
     @BeforeEach
     public void setup() {
-        this.irisRabbitMQConfigMock = Mockito.mock(IrisRabbitMQConfig.class);
+        this.irisConfigMock = Mockito.mock(IrisConfig.class);
         this.connectionProviderMock = Mockito.mock(ConsumerConnectionProvider.class);
 
-        this.channelService = new TestChannelService(connectionProviderMock, irisRabbitMQConfigMock);
+        this.channelService = new TestChannelService(connectionProviderMock, irisConfigMock);
         this.closeCount = new AtomicInteger();
     }
 

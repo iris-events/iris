@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.iris_events.runtime.connection.AbstractConnectionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +19,13 @@ public abstract class AbstractChannelService implements ChannelService, Shutdown
     private final static Logger log = LoggerFactory.getLogger(AbstractChannelService.class);
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private AbstractConnectionProvider connectionProvider;
-    private IrisRabbitMQConfig config;
+    private IrisConfig config;
 
     @SuppressWarnings("unused")
     protected AbstractChannelService() {
     }
 
-    protected AbstractChannelService(AbstractConnectionProvider connectionProvider, IrisRabbitMQConfig config) {
+    protected AbstractChannelService(AbstractConnectionProvider connectionProvider, IrisConfig config) {
         this.connectionProvider = connectionProvider;
         this.config = config;
     }

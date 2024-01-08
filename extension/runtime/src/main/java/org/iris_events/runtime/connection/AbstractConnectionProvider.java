@@ -8,7 +8,7 @@ import org.iris_events.exception.IrisConnectionException;
 import org.iris_events.health.IrisLivenessCheck;
 import org.iris_events.health.IrisReadinessCheck;
 import org.iris_events.runtime.InstanceInfoProvider;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.slf4j.Logger;
 
 import com.rabbitmq.client.Connection;
@@ -20,7 +20,7 @@ import io.github.resilience4j.retry.RetryConfig;
 public abstract class AbstractConnectionProvider {
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
-    private IrisRabbitMQConfig config;
+    private IrisConfig config;
     private IrisReadinessCheck readinessCheck;
     private IrisLivenessCheck livenessCheck;
     private Logger log;
@@ -32,7 +32,7 @@ public abstract class AbstractConnectionProvider {
     }
 
     public AbstractConnectionProvider(ConnectionFactoryProvider connectionFactoryProvider,
-            InstanceInfoProvider instanceInfoProvider, IrisRabbitMQConfig config, IrisReadinessCheck readinessCheck,
+            InstanceInfoProvider instanceInfoProvider, IrisConfig config, IrisReadinessCheck readinessCheck,
             IrisLivenessCheck livenessCheck, Logger log) {
         this.connectionFactoryProvider = connectionFactoryProvider;
         this.instanceInfoProvider = instanceInfoProvider;

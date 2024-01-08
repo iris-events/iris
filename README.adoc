@@ -1,19 +1,290 @@
-= globalID IRIS
+= IRIS Quarkus Extension
 
 Iris is a framework for enabling event driven architecture for microservices.
 
-== Instructions
 
-Compile and test the project:
+:summaryTableId: quarkus-iris
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time - All other configuration properties are overridable at runtime
+[.configuration-reference.searchable, cols="80,.^10,.^10"]
+|===
 
-[source,bash]
-----
-mvn verify
-----
+h|[[quarkus-iris_configuration]]link:#quarkus-iris_configuration[Configuration property]
 
-=== Project structure
+h|Type
+h|Default
 
-* link:extension/[] - Quarkus Extension
-* link:maven/[] - Maven plugins
-* link:asyncapi/[] - Asyncapi tooling
+a|icon:lock[title=Fixed at build time] [[quarkus-iris_quarkus.iris.enabled]]`link:#quarkus-iris_quarkus.iris.enabled[quarkus.iris.enabled]`
 
+
+[.description]
+--
+disable initialization of consumers
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_ENABLED+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_ENABLED+++`
+endif::add-copy-button-to-env-var[]
+--|boolean
+|`true`
+
+
+a|icon:lock[title=Fixed at build time] [[quarkus-iris_quarkus.iris.liveness-check-enabled]]`link:#quarkus-iris_quarkus.iris.liveness-check-enabled[quarkus.iris.liveness-check-enabled]`
+
+
+[.description]
+--
+Enable or disable extension liveness health check
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_LIVENESS_CHECK_ENABLED+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_LIVENESS_CHECK_ENABLED+++`
+endif::add-copy-button-to-env-var[]
+--|boolean
+|`true`
+
+
+a|icon:lock[title=Fixed at build time] [[quarkus-iris_quarkus.iris.readiness-check-enabled]]`link:#quarkus-iris_quarkus.iris.readiness-check-enabled[quarkus.iris.readiness-check-enabled]`
+
+
+[.description]
+--
+Enable or disable extension readiness helath check
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_READINESS_CHECK_ENABLED+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_READINESS_CHECK_ENABLED+++`
+endif::add-copy-button-to-env-var[]
+--|boolean
+|`true`
+
+
+a| [[quarkus-iris_quarkus.iris.backoff-interval-millis]]`link:#quarkus-iris_quarkus.iris.backoff-interval-millis[quarkus.iris.backoff-interval-millis]`
+
+
+[.description]
+--
+Connection retry initial backoff interval
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_BACKOFF_INTERVAL_MILLIS+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_BACKOFF_INTERVAL_MILLIS+++`
+endif::add-copy-button-to-env-var[]
+--|long
+|`1000`
+
+
+a| [[quarkus-iris_quarkus.iris.backoff-multiplier]]`link:#quarkus-iris_quarkus.iris.backoff-multiplier[quarkus.iris.backoff-multiplier]`
+
+
+[.description]
+--
+Connection retry backoff multiplier
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_BACKOFF_MULTIPLIER+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_BACKOFF_MULTIPLIER+++`
+endif::add-copy-button-to-env-var[]
+--|double
+|`1.5`
+
+
+a| [[quarkus-iris_quarkus.iris.max-retries]]`link:#quarkus-iris_quarkus.iris.max-retries[quarkus.iris.max-retries]`
+
+
+[.description]
+--
+Connection max retries
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_MAX_RETRIES+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_MAX_RETRIES+++`
+endif::add-copy-button-to-env-var[]
+--|int
+|`10`
+
+
+a| [[quarkus-iris_quarkus.iris.confirmation-batch-size]]`link:#quarkus-iris_quarkus.iris.confirmation-batch-size[quarkus.iris.confirmation-batch-size]`
+
+
+[.description]
+--
+Number of messages to batch for delivery confirmation
+
+Set to 1 for immediate confirmation of each message. Set to 0 for no confirmations.
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_CONFIRMATION_BATCH_SIZE+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_CONFIRMATION_BATCH_SIZE+++`
+endif::add-copy-button-to-env-var[]
+--|long
+|`1`
+
+
+a| [[quarkus-iris_quarkus.iris.retry-max-count]]`link:#quarkus-iris_quarkus.iris.retry-max-count[quarkus.iris.retry-max-count]`
+
+
+[.description]
+--
+Number of retries for Iris messages
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RETRY_MAX_COUNT+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RETRY_MAX_COUNT+++`
+endif::add-copy-button-to-env-var[]
+--|int
+|`3`
+
+
+a| [[quarkus-iris_quarkus.iris.rpc.timeout]]`link:#quarkus-iris_quarkus.iris.rpc.timeout[quarkus.iris.rpc.timeout]`
+
+
+[.description]
+--
+Iris RPC request timeout
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RPC_TIMEOUT+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RPC_TIMEOUT+++`
+endif::add-copy-button-to-env-var[]
+--|int
+|`2000`
+
+
+a| [[quarkus-iris_quarkus.iris.rabbitmq-host]]`link:#quarkus-iris_quarkus.iris.rabbitmq-host[quarkus.iris.rabbitmq-host]`
+
+
+[.description]
+--
+RabbitMQ broker host
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RABBITMQ_HOST+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RABBITMQ_HOST+++`
+endif::add-copy-button-to-env-var[]
+--|string
+|`${rabbitmq-host:localhost}`
+
+
+a| [[quarkus-iris_quarkus.iris.rabbitmq-protocol]]`link:#quarkus-iris_quarkus.iris.rabbitmq-protocol[quarkus.iris.rabbitmq-protocol]`
+
+
+[.description]
+--
+RabbitMQ protocol (amqp/amqps)
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RABBITMQ_PROTOCOL+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RABBITMQ_PROTOCOL+++`
+endif::add-copy-button-to-env-var[]
+--|string
+|`${rabbitmq-protocol}`
+
+
+a| [[quarkus-iris_quarkus.iris.rabbitmq-port]]`link:#quarkus-iris_quarkus.iris.rabbitmq-port[quarkus.iris.rabbitmq-port]`
+
+
+[.description]
+--
+RabbitMQ port
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RABBITMQ_PORT+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RABBITMQ_PORT+++`
+endif::add-copy-button-to-env-var[]
+--|int
+|`${rabbitmq-port}`
+
+
+a| [[quarkus-iris_quarkus.iris.rabbitmq-ssl]]`link:#quarkus-iris_quarkus.iris.rabbitmq-ssl[quarkus.iris.rabbitmq-ssl]`
+
+
+[.description]
+--
+Use ssl for RabbitMQ broker connection
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RABBITMQ_SSL+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RABBITMQ_SSL+++`
+endif::add-copy-button-to-env-var[]
+--|boolean
+|`${rabbitmq-ssl}`
+
+
+a| [[quarkus-iris_quarkus.iris.rabbitmq-username]]`link:#quarkus-iris_quarkus.iris.rabbitmq-username[quarkus.iris.rabbitmq-username]`
+
+
+[.description]
+--
+RabbitMQ broker username
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RABBITMQ_USERNAME+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RABBITMQ_USERNAME+++`
+endif::add-copy-button-to-env-var[]
+--|string
+|`${rabbitmq-username:guest}`
+
+
+a| [[quarkus-iris_quarkus.iris.rabbitmq-password]]`link:#quarkus-iris_quarkus.iris.rabbitmq-password[quarkus.iris.rabbitmq-password]`
+
+
+[.description]
+--
+RabbitMQ broker password
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RABBITMQ_PASSWORD+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RABBITMQ_PASSWORD+++`
+endif::add-copy-button-to-env-var[]
+--|string
+|`${rabbitmq-password:guest}`
+
+
+a| [[quarkus-iris_quarkus.iris.rabbitmq-virtual-host]]`link:#quarkus-iris_quarkus.iris.rabbitmq-virtual-host[quarkus.iris.rabbitmq-virtual-host]`
+
+
+[.description]
+--
+RabbitMQ broker virtual host
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_IRIS_RABBITMQ_VIRTUAL_HOST+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_IRIS_RABBITMQ_VIRTUAL_HOST+++`
+endif::add-copy-button-to-env-var[]
+--|string
+|`${rabbitmq-virtual-host:/}`
+
+|===

@@ -4,14 +4,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.junit.jupiter.api.Test;
 
 class ConnectionFactoryProviderTest {
 
     @Test
     void shouldSetAllProperties() {
-        final IrisRabbitMQConfig irisConfiguration = new IrisRabbitMQConfig();
+        final IrisConfig irisConfiguration = new IrisConfig();
 
         final var username = "username.mock";
         final var password = "password.mock";
@@ -43,7 +43,7 @@ class ConnectionFactoryProviderTest {
         final var password = "p@$$word.m//ck";
         final var port = 5432;
 
-        final IrisRabbitMQConfig irisConfiguration = new IrisRabbitMQConfig()
+        final IrisConfig irisConfiguration = new IrisConfig()
                 .setUsername(username)
                 .setPassword(password)
                 .setPort(port)
