@@ -4,8 +4,8 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
-@ConfigRoot(name = "iris", phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
-public final class IrisBuildConfiguration {
+@ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
+public final class IrisBuildTimeConfig {
     /**
      * disable initialization of consumers
      */

@@ -22,7 +22,6 @@
         <connection>scm:git:git@github.com:iris-events/iris.git</connection>
         <developerConnection>scm:git:git@github.com:iris-events/iris.git</developerConnection>
         <url>https://github.com/iris-events/iris</url>
-      <tag>v5.0.8</tag>
   </scm>
     <!--
     sort poms
@@ -38,7 +37,7 @@
         <version.httpclient>4.5.14</version.httpclient>
         <version.jackson>2.15.2</version.jackson>
         <version.jakarta.annotations>2.1.1</version.jakarta.annotations>
-        <version.jandex>3.1.5</version.jandex>
+        <version.jandex>3.1.6</version.jandex>
         <version.jsonschema2pojo-core>1.2.1</version.jsonschema2pojo-core>
         <version.junit>5.10.0</version.junit>
         <version.maven>3.9.4</version.maven>
@@ -54,7 +53,7 @@
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.2.7.Final</version.quarkus>
+        <version.quarkus>3.2.9.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.1.0</version.resilience4j-retry>
         <version.slf4j-api>2.0.7</version.slf4j-api>

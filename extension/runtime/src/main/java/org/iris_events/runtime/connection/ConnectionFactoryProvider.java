@@ -9,7 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.iris_events.exception.IrisConnectionFactoryException;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +20,12 @@ public class ConnectionFactoryProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
 
-    private final IrisRabbitMQConfig config;
+    private final IrisConfig config;
 
     private ConnectionFactory connectionFactory;
 
     @Inject
-    public ConnectionFactoryProvider(IrisRabbitMQConfig config) {
+    public ConnectionFactoryProvider(IrisConfig config) {
         this.config = config;
     }
 
@@ -37,7 +37,7 @@ public class ConnectionFactoryProvider {
         });
     }
 
-    private ConnectionFactory buildConnectionFactory(IrisRabbitMQConfig config) {
+    private ConnectionFactory buildConnectionFactory(IrisConfig config) {
         int port = config.getPort();
         String vhost = config.getVirtualHost();
 

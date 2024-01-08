@@ -47,7 +47,7 @@ import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.RpcMappingProvider;
 import org.iris_events.runtime.channel.ChannelKey;
 import org.iris_events.runtime.channel.ChannelService;
-import org.iris_events.runtime.configuration.IrisRabbitMQConfig;
+import org.iris_events.runtime.configuration.IrisConfig;
 import org.iris_events.tx.TransactionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +70,7 @@ public class EventProducer {
     private final ChannelService channelService;
     private final ObjectMapper objectMapper;
     private final EventContext eventContext;
-    private final IrisRabbitMQConfig config;
+    private final IrisConfig config;
     private final TransactionManager transactionManager;
     private final BasicPropertiesProvider basicPropertiesProvider;
     private final QueueNameProvider queueNameProvider;
@@ -89,7 +89,7 @@ public class EventProducer {
     public EventProducer(@Named("producerChannelService") ChannelService channelService,
             ObjectMapper objectMapper,
             EventContext eventContext,
-            IrisRabbitMQConfig config,
+            IrisConfig config,
             TransactionManager transactionManager,
             BasicPropertiesProvider basicPropertiesProvider,
             ExchangeNameProvider exchangeNameProvider,
