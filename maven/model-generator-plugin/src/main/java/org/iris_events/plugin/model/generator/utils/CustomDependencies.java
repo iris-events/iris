@@ -34,6 +34,10 @@ public class CustomDependencies {
     }
 
     private List<CustomDependency> parse(final String customDependency) {
+        if (customDependency == null) {
+            return List.of();
+        }
+
         final var trimmed = customDependency.trim();
         if (trimmed.isEmpty()) {
             return List.of();
