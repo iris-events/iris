@@ -130,7 +130,7 @@ public class DeliverCallbackProvider {
             Optional.ofNullable(securityIdentity)
                     .map(SecurityIdentity::getPrincipal)
                     .map(Principal::getName)
-                    .ifPresent(subject -> MDCEnricher.put(MDCProperties.GID_UUID, subject));
+                    .ifPresent(subject -> MDCEnricher.put(MDCProperties.USER_ID, subject));
             association.get().setIdentity(securityIdentity);
         } catch (java.lang.SecurityException securityException) {
             throw IrisExceptionHandler.getSecurityException(securityException);
