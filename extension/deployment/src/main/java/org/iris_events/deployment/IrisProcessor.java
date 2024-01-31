@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nullable;
+
 import org.iris_events.annotations.Scope;
 import org.iris_events.auth.IrisJwtValidator;
 import org.iris_events.consumer.ConsumerContainer;
@@ -42,7 +44,6 @@ import org.iris_events.runtime.recorder.RpcMappingRecorder;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Type;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

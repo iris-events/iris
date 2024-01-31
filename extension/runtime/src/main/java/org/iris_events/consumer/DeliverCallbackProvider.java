@@ -29,7 +29,9 @@ import io.quarkus.arc.Arc;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
 import io.quarkus.security.identity.SecurityIdentity;
-import io.smallrye.reactive.messaging.providers.helpers.VertxContext;
+import io.smallrye.common.vertx.VertxContext;
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
 
 public class DeliverCallbackProvider {
     private final EventContext eventContext;
@@ -72,8 +74,16 @@ public class DeliverCallbackProvider {
     public DeliverCallback createDeliverCallback(final Channel channel) {
         return (consumerTag, message) -> {
             final var newDuplicatedContext = VertxContext.createNewDuplicatedContext();
-            VertxContext.runOnContext(newDuplicatedContext, () -> handleMessage(channel, message));
+            runOnContext(newDuplicatedContext, () -> handleMessage(channel, message));
         };
+    }
+
+    private static void runOnContext(Context context, Runnable runnable) {
+        if (Vertx.currentContext() == context) {
+            runnable.run();
+        } else {
+            context.runOnContext(x -> runnable.run());
+        }
     }
 
     private void handleMessage(final Channel channel, final Delivery message) {

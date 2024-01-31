@@ -70,6 +70,16 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
     @DisplayName("Resolve valid JWT")
     @Test
+    /*
+     * @TestSecurity(user = "userJwt", roles = "AUTHENTICATED")
+     *
+     * @JwtSecurity(claims = {
+     *
+     * @Claim(key = "sub", value = "008b048c-817f-4d57-bd8c-cc567381d422"),
+     *
+     * @Claim(key = "globalid", value = "john")
+     * })
+     */
     void resolveJwt() throws Exception {
         final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
@@ -137,6 +147,7 @@ public class JwtAuthIT extends AbstractIntegrationTest {
     @DisplayName("Throw exception on invalid claim")
     @ParameterizedTest
     @EnumSource(value = TokenUtils.InvalidClaims.class, names = { "EXP", "ISSUER", "SIGNER", "ALG" })
+
     void expiredToken() throws Exception {
         final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json", Set.of(TokenUtils.InvalidClaims.EXP));
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());

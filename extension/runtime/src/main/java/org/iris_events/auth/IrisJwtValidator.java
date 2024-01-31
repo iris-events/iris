@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
+import io.quarkus.security.credential.TokenCredential;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
-import io.quarkus.smallrye.jwt.runtime.auth.JsonWebTokenCredential;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 
@@ -68,7 +68,7 @@ public class IrisJwtValidator {
 
     private SecurityIdentity createSecurityIdentity(final String jwtToken) {
         try {
-            JsonWebTokenCredential jsonWebTokenCredential = new JsonWebTokenCredential(jwtToken);
+            TokenCredential jsonWebTokenCredential = new TokenCredential(jwtToken, "bearer");
             JsonWebToken jwtPrincipal = this.parser.parse(jwtToken);
             return QuarkusSecurityIdentity.builder()
                     .setPrincipal(jwtPrincipal)
