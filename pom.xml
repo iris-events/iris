@@ -40,24 +40,24 @@
         <version.jakarta.annotations>2.1.1</version.jakarta.annotations>
         <version.jandex>3.1.6</version.jandex>
         <version.jsonschema2pojo-core>1.2.1</version.jsonschema2pojo-core>
-        <version.junit>5.10.0</version.junit>
-        <version.maven>3.9.4</version.maven>
+        <version.junit>5.10.1</version.junit>
+        <version.maven>3.9.6</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
         <version.maven-plugin-annotations>3.9.0</version.maven-plugin-annotations>
         <version.maven-plugin-testing-harness>3.3.0</version.maven-plugin-testing-harness>
         <version.maven-project>2.2.1</version.maven-project>
-        <version.maven-resolver-api>1.9.14</version.maven-resolver-api>
+        <version.maven-resolver-api>1.9.18</version.maven-resolver-api>
         <version.maven-surefire-plugin>3.0.0</version.maven-surefire-plugin>
         <version.plugin.plugin>3.8.2</version.plugin.plugin>
         <version.microprofile-config-api>3.0.3</version.microprofile-config-api>
-        <version.mockito-core>5.5.0</version.mockito-core>
+        <version.mockito-core>5.10.0</version.mockito-core>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.2.9.Final</version.quarkus>
+        <version.quarkus>3.2.10.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
-        <version.resilience4j-retry>2.1.0</version.resilience4j-retry>
-        <version.slf4j-api>2.0.7</version.slf4j-api>
+        <version.resilience4j-retry>2.2.0</version.resilience4j-retry>
+        <version.slf4j-api>2.0.11</version.slf4j-api>
         <version.victools>4.31.1</version.victools>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
@@ -188,7 +188,7 @@
             <dependency>
                 <groupId>org.jboss.logmanager</groupId>
                 <artifactId>jboss-logmanager</artifactId>
-                <version>3.0.0.Final</version>
+                <version>3.0.4.Final</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
