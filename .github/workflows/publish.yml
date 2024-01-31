@@ -7,13 +7,10 @@ jobs:
   publish-gh-release:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "target/*.jar,README.adoc"
           generateReleaseNotes: true
-          token: ${{ secrets.GHA_BOT_TOKEN }}
-
