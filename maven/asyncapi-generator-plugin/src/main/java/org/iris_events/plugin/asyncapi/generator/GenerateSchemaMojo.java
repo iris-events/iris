@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.apicurio.datamodels.Library;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -174,11 +176,9 @@ public class GenerateSchemaMojo extends AbstractMojo {
             getLog().info("Generated schema info:\n\t- # of component schemas: " + schemaComponentsSize
                     + "\n\t- # of channels: " + channelsSize);
 
+            write(schema);
             if (apicurioRegistryUrl != null) {
-                write(schema);
                 uploadToApicurio(schema);
-            } else {
-                write(schema);
             }
         } catch (IOException | ClassNotFoundException ex) {
             getLog().error(ex);
@@ -240,8 +240,9 @@ public class GenerateSchemaMojo extends AbstractMojo {
         return propertyMap.getMap();
     }
 
-    private void write(AsyncApi26Document schema) throws MojoExecutionException {
+    private void write(AsyncApi26Document document) throws MojoExecutionException {
         try {
+            var schema = Library.writeDocument(document);
             if (outputDirectory == null) {
                 // no destination file specified => print to stdout
                 getLog().info(IrisObjectMapper.getObjectMapper().writeValueAsString(schema));
@@ -250,7 +251,6 @@ public class GenerateSchemaMojo extends AbstractMojo {
                 if (!Files.exists(directory)) {
                     Files.createDirectories(directory);
                 }
-
                 writeSchemaFile(directory, schemaFilename + ".yaml", schema, IrisObjectMapper.getYamlObjectMapper());
                 writeSchemaFile(directory, schemaFilename + ".json", schema, IrisObjectMapper.getObjectMapper());
 
@@ -261,12 +261,13 @@ public class GenerateSchemaMojo extends AbstractMojo {
         }
     }
 
-    private void writeSchemaFile(Path directory, String filename, AsyncApi26Document schema, ObjectMapper mapper)
+    private void writeSchemaFile(Path directory, String filename, ObjectNode schema, ObjectMapper mapper)
             throws IOException {
         Path file = Paths.get(directory.toString(), filename);
         if (!Files.exists(file)) {
             Files.createFile(file);
         }
+
         mapper.writerWithDefaultPrettyPrinter().writeValue(file.toFile(), schema);
     }
 

@@ -96,6 +96,7 @@ public class IrisAnnotationScannerTest extends IndexScannerTestBase {
         final var documentJsonNode = Library.writeDocument(document);
         final var schemaString = IrisObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(documentJsonNode);
+        System.out.println("Generated schema:\n" + schemaString);
         JSONAssert.assertEquals("Json contents should match", expectedContent, schemaString, JSONCompareMode.NON_EXTENSIBLE);
     }
 
