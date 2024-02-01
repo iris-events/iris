@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import io.apicurio.datamodels.models.asyncapi.AsyncApiOperation;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.api.AsyncApiConfig;
@@ -96,21 +97,24 @@ public abstract class BaseAnnotationScanner {
     }
 
     protected void createChannels(List<ChannelInfo> channelInfos, Map<String, Scope> messageScopes,
-            AsyncApi26Document asyncApi) {
-        final var channels = new AsyncApi26ChannelsImpl();
+            AsyncApi26Document document) {
+
+        final var channels = document.getChannels() == null? document.createChannels(): document.getChannels();
+        document.setChannels(channels);
 
         channelInfos.forEach(channelInfo -> {
             String messageKey = channelInfo.getEventKey();
-            AsyncApiChannelItem channelItem = new AsyncApi26ChannelItemImpl();
 
-            AsyncApi26Operation operation = new AsyncApi26OperationImpl();
+            AsyncApiChannelItem channelItem = channels.createChannelItem();
+
+            var operation = channelItem.createOperation();
 
             final var persistent = channelInfo.getOperationBindingsInfo().persistent();
             final var deliveryMode = getDeliveryMode(persistent);
             final var aaiAMQPOperationBinding = new GidAaiAMQPOperationBinding();
             aaiAMQPOperationBinding.setDeliveryMode(deliveryMode);
 
-            final var operationBindings = new AsyncApi26OperationBindingsImpl();
+            final var operationBindings = operation.createOperationBindings();
             operationBindings.setAmqp(aaiAMQPOperationBinding);
             operation.setBindings(operationBindings);
 
@@ -148,15 +152,7 @@ public abstract class BaseAnnotationScanner {
             channels.addItem(channelKey, channelItem);
         });
 
-        final var existingChannels = asyncApi.getChannels();
-        if (existingChannels != null) {
-            existingChannels.getItemNames().forEach(channelName -> {
-                final var existingChannel = existingChannels.getItem(channelName);
-                channels.addItem(channelName, existingChannel);
-            });
-        }
 
-        asyncApi.setChannels(channels);
     }
 
     private <T extends JsonNode> T getExchangeBindings(final String exchangeName, final ChannelInfo channelInfo) {
@@ -195,7 +191,7 @@ public abstract class BaseAnnotationScanner {
         return persistent ? DeliveryMode.PERSISTENT.getValue() : DeliveryMode.NON_PERSISTENT.getValue();
     }
 
-    private void setResponseType(final ChannelInfo channelInfo, final AsyncApi26Operation operation) {
+    private void setResponseType(final ChannelInfo channelInfo, final AsyncApiOperation operation) {
         final var responseType = channelInfo.getResponseType();
         if (responseType == null) {
             return;

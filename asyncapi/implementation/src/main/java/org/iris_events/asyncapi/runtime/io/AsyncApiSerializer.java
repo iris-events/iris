@@ -2,6 +2,7 @@ package org.iris_events.asyncapi.runtime.io;
 
 import java.io.IOException;
 
+import io.apicurio.datamodels.Library;
 import org.iris_events.asyncapi.runtime.json.IrisObjectMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,12 +32,13 @@ public class AsyncApiSerializer {
     public static String serialize(AsyncApi26Document asyncApi, Format format) throws IOException {
         try {
             ObjectMapper mapper;
+            var schema = Library.writeDocument(asyncApi);
             if (format == Format.JSON) {
                 mapper = IrisObjectMapper.getObjectMapper();
-                return mapper.writeValueAsString(asyncApi);
+                return mapper.writeValueAsString(schema);
             } else {
                 mapper = IrisObjectMapper.getYamlObjectMapper();
-                return mapper.writer().writeValueAsString(asyncApi);
+                return mapper.writer().writeValueAsString(schema);
             }
         } catch (JsonProcessingException e) {
             throw new IOException(e);
