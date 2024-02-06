@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import io.apicurio.datamodels.models.asyncapi.AsyncApiOperation;
 import org.iris_events.annotations.IrisGenerated;
 import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.api.AsyncApiConfig;
@@ -36,15 +35,11 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import io.apicurio.datamodels.Library;
 import io.apicurio.datamodels.models.ModelType;
 import io.apicurio.datamodels.models.asyncapi.AsyncApiChannelItem;
+import io.apicurio.datamodels.models.asyncapi.AsyncApiOperation;
 import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26BindingImpl;
 import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ChannelBindingsImpl;
-import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ChannelItemImpl;
-import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ChannelsImpl;
 import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26ComponentsImpl;
 import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Document;
-import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Operation;
-import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26OperationBindingsImpl;
-import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26OperationImpl;
 import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Schema;
 import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26SchemaImpl;
 
@@ -99,7 +94,7 @@ public abstract class BaseAnnotationScanner {
     protected void createChannels(List<ChannelInfo> channelInfos, Map<String, Scope> messageScopes,
             AsyncApi26Document document) {
 
-        final var channels = document.getChannels() == null? document.createChannels(): document.getChannels();
+        final var channels = document.getChannels() == null ? document.createChannels() : document.getChannels();
         document.setChannels(channels);
 
         channelInfos.forEach(channelInfo -> {
@@ -151,7 +146,6 @@ public abstract class BaseAnnotationScanner {
             String channelKey = String.format("%s/%s", exchangeName, queueName);
             channels.addItem(channelKey, channelItem);
         });
-
 
     }
 

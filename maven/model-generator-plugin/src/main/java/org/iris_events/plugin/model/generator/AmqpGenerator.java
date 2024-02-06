@@ -60,6 +60,7 @@ public class AmqpGenerator {
     private final Pattern REF_PATTERN = Pattern.compile(StringConstants.REF_REGEX);
     private final Map<String, ChannelDetails> channelDetails;
     private final Set<String> eventClassNames;
+    private final String irisVersion;
     private final SchemaFileGenerator schemaFileGenerator;
     private final PathResolver pathResolver;
     private final ObjectMapper objectMapper;
@@ -79,10 +80,12 @@ public class AmqpGenerator {
     private final ExistingJavaTypeProcessor existingJavaTypeProcessor;
     private final CustomDependencies customDependencies;
 
-    public AmqpGenerator(SchemaFileGenerator schemaFileGenerator, ObjectMapper objectMapper, PathResolver pathResolver,
+    public AmqpGenerator(String irisVersion, SchemaFileGenerator schemaFileGenerator, ObjectMapper objectMapper,
+            PathResolver pathResolver,
             FileInteractor fileInteractor, Log log, String packageName, String modelVersion, String modelName,
             String asyncApiFilename, String asyncApiDirectory, String apicurioUrl,
             final CustomDependencies customDependencies) {
+        this.irisVersion = irisVersion;
         this.schemaFileGenerator = schemaFileGenerator;
         this.log = log;
         this.packageName = packageName;
@@ -506,6 +509,7 @@ public class AmqpGenerator {
 
         return pomTemplate
                 .replace("@@ARTIFACT_ID@@", AmqpStringUtils.getPomArtifactId(modelName))
+                .replace("@@IRIS_VERSION@@", irisVersion)
                 .replace("@@APPLICATION_VERSION@@", modelVersion)
                 .replace("@@GROUP_ID@@", packageName)
                 .replace("@@CUSTOM_DEPENDENCIES@@", customDependencies.getDependenciesValue());
