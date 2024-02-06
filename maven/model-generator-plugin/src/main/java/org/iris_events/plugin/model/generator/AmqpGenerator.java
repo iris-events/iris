@@ -147,7 +147,8 @@ public class AmqpGenerator {
 
         fileInteractor.initializeDirectories();
 
-        channelDetails.putAll(createChannelDetailsMap(channelsJsonNode));
+//        channelDetails.putAll(createChannelDetailsMap(channelsJsonNode));
+        channelDetails.putAll(createChannelDetailsMap(channelsJsonNode.get("_items")));
         eventClassNames.addAll(findEventClassNames(channelDetails, schemasJsonNode));
 
         schemaFileGenerator.createSchemaFiles(schemasJsonNode, eventClassNames);
