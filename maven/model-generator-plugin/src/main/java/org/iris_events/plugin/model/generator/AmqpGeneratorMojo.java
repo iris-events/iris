@@ -2,10 +2,8 @@ package org.iris_events.plugin.model.generator;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugins.annotations.*;
 import org.iris_events.plugin.model.generator.exception.AmqpGeneratorException;
 import org.iris_events.plugin.model.generator.models.ArtifactSource;
 import org.iris_events.plugin.model.generator.utils.CustomDependencies;
@@ -52,6 +50,9 @@ public class AmqpGeneratorMojo extends AbstractMojo {
     @Parameter(property = "customDependency", defaultValue = "")
     String customDependency;
 
+    @Component
+    PluginDescriptor pluginDescriptor;
+
     public void execute() throws MojoExecutionException {
         final var log = getLog();
 
@@ -69,7 +70,8 @@ public class AmqpGeneratorMojo extends AbstractMojo {
                 objectMapper);
         fileInteractor.cleanUpDirectories(pathResolver.getWorkingDirectory());
 
-        final var generator = new AmqpGenerator(schemaFileGenerator, objectMapper, pathResolver, fileInteractor, log,
+        final var generator = new AmqpGenerator(pluginDescriptor.getVersion(), schemaFileGenerator, objectMapper, pathResolver,
+                fileInteractor, log,
                 packageName, modelVersion, modelName, asyncApiFilename, asyncApiDirectory, apicurioUrl, customDependencies);
 
         try {

@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.apicurio.datamodels.Library;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -34,7 +32,9 @@ import org.iris_events.asyncapi.spec.AAIConfig;
 import org.jboss.jandex.IndexView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.apicurio.datamodels.Library;
 import io.apicurio.datamodels.models.asyncapi.v26.AsyncApi26Document;
 import io.apicurio.registry.rest.client.RegistryClientFactory;
 

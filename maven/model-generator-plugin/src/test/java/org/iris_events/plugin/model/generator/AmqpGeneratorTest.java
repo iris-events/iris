@@ -92,6 +92,7 @@ class AmqpGeneratorTest {
                 objectMapper);
 
         AmqpGenerator generator = new AmqpGenerator(
+                "6.0.4",
                 schemaFileGenerator,
                 objectMapper,
                 pathResolver,
