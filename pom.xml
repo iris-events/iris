@@ -57,7 +57,7 @@
         <version.quarkus>3.2.10.Final</version.quarkus>
         <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.2.0</version.resilience4j-retry>
-        <version.slf4j-api>2.0.11</version.slf4j-api>
+        <version.slf4j-api>2.0.12</version.slf4j-api>
         <version.victools>4.31.1</version.victools>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
