@@ -41,10 +41,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-health</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
@@ -98,13 +100,10 @@
                 <version>${version.quarkus}</version>
                 <executions>
                     <execution>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>extension-descriptor</goal>
                         </goals>
-                        <phase>compile</phase>
-                        <configuration>
-                            <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
