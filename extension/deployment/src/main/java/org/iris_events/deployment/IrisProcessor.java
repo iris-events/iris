@@ -92,7 +92,6 @@ class IrisProcessor {
                                 ConnectionFactoryProvider.class,
                                 MessageRequeueHandler.class,
                                 CorrelationIdProvider.class,
-                                IrisJwtValidator.class,
                                 FrontendEventConsumer.class,
                                 IrisExceptionHandler.class,
                                 QueueNameProvider.class,
@@ -105,6 +104,8 @@ class IrisProcessor {
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
     }
+
+
 
     @SuppressWarnings("unused")
     @BuildStep
@@ -327,26 +328,7 @@ class IrisProcessor {
     }
 
     @SuppressWarnings("unused")
-    @BuildStep
-    HealthBuildItem addReadinessCheck(Capabilities capabilities, IrisBuildTimeConfig configuration) {
-        if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
-            return new HealthBuildItem(IrisReadinessCheck.class.getName(),
-                    configuration.readinessCheckEnabled);
-        } else {
-            return null;
-        }
-    }
 
-    @SuppressWarnings("unused")
-    @BuildStep
-    HealthBuildItem addLivenessCheck(Capabilities capabilities, IrisBuildTimeConfig configuration) {
-        if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
-            return new HealthBuildItem(IrisLivenessCheck.class.getName(),
-                    configuration.livenessCheckEnabled);
-        } else {
-            return null;
-        }
-    }
 
     @Nullable
     private static Class<?> getMessageHandlerReturnEventClass(final QuarkusClassLoader cl,

@@ -30,10 +30,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-health-deployment</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt-deployment</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
