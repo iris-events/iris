@@ -9,7 +9,7 @@
     </parent>
     <groupId>org.iris-events</groupId>
     <artifactId>iris-parent</artifactId>
-    <version>6.0.5-SNAPSHOT</version>
+    <version>6.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
@@ -35,11 +35,11 @@
         <version.commons-logging>1.13.0</version.commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
         <version.httpclient>4.5.14</version.httpclient>
-        <version.jackson>2.16.1</version.jackson>
+        <version.jackson>2.17.0</version.jackson>
         <version.jakarta.annotations>2.1.1</version.jakarta.annotations>
-        <version.jandex>3.1.6</version.jandex>
+        <version.jandex>3.1.7</version.jandex>
         <version.jsonschema2pojo-core>1.2.1</version.jsonschema2pojo-core>
-        <version.junit>5.10.1</version.junit>
+        <version.junit>5.10.2</version.junit>
         <version.maven>3.9.6</version.maven>
         <version.maven-compat>3.8.1</version.maven-compat>
         <version.maven-plugin-annotations>3.11.0</version.maven-plugin-annotations>
@@ -49,12 +49,12 @@
         <version.maven-surefire-plugin>3.0.0</version.maven-surefire-plugin>
         <version.plugin.plugin>3.8.2</version.plugin.plugin>
         <version.microprofile-config-api>3.0.3</version.microprofile-config-api>
-        <version.mockito-core>5.10.0</version.mockito-core>
+        <version.mockito-core>5.11.0</version.mockito-core>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.2.10.Final</version.quarkus>
-        <version.rabbit.amqp-client>5.16.1</version.rabbit.amqp-client>
+        <version.quarkus>3.8.3</version.quarkus>
+        <version.rabbit.amqp-client>5.21.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.2.0</version.resilience4j-retry>
         <version.slf4j-api>2.0.11</version.slf4j-api>
         <version.victools>4.31.1</version.victools>

@@ -1,4 +1,4 @@
-package org.iris_events.it.rpc;
+package org.iris_events.it;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;

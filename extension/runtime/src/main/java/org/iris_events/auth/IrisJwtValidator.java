@@ -6,7 +6,6 @@ import static org.iris_events.common.MessagingHeaders.Message.JWT;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -23,7 +22,6 @@ import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 
-@ApplicationScoped
 public class IrisJwtValidator {
     private static final Logger log = LoggerFactory.getLogger(IrisJwtValidator.class);
 

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
@@ -54,7 +55,7 @@ public class ConsumerContainer {
             final EventProducer producer,
             final QueueNameProvider queueNameProvider,
             final ExchangeNameProvider exchangeNameProvider,
-            final IrisJwtValidator jwtValidator,
+            final Instance<IrisJwtValidator> jwtValidator,
             final FrontendEventConsumer frontendEventConsumer,
             final IrisExceptionHandler errorHandler,
             final QueueDeclarator queueDeclarator,
@@ -65,7 +66,7 @@ public class ConsumerContainer {
         this.consumerChannelService = consumerChannelService;
         this.queueNameProvider = queueNameProvider;
         this.exchangeNameProvider = exchangeNameProvider;
-        this.jwtValidator = jwtValidator;
+        this.jwtValidator = jwtValidator.stream().findAny().orElse(null);
         this.errorHandler = errorHandler;
         this.queueDeclarator = queueDeclarator;
         this.exchangeDeclarator = exchangeDeclarator;
