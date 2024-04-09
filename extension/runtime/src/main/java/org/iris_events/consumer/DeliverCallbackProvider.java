@@ -26,6 +26,7 @@ import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
 
 import io.quarkus.arc.Arc;
+import io.quarkus.arc.ManagedContext;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -87,43 +88,62 @@ public class DeliverCallbackProvider {
     }
 
     private void handleMessage(final Channel channel, final Delivery message) {
-        try {
-            Arc.container().requestContext().activate();
-            final var properties = message.getProperties();
-            final var envelope = message.getEnvelope();
-            eventContext.setBasicProperties(properties);
-            eventContext.setEnvelope(envelope);
-            MDCEnricher.enrichMDC(properties);
+        ManagedContext requestContext = Arc.container().requestContext();
+        if (requestContext.isActive()) {
+            try {
+                doInvoke(channel, message);
+            } catch (Throwable e) {
+                log.error("Exception handling message", e);
+                errorHandler.handleException(irisContext, message, channel, e);
+            }
+        } else {
+            requestContext.activate();
+            try {
+                doInvoke(channel, message);
+            } catch (Throwable e) {
+                log.error("Exception handling message", e);
+                errorHandler.handleException(irisContext, message, channel, e);
+            } finally {
+                requestContext.terminate();
+            }
+        }
 
-            authorizeMessage();
+    }
+
+    private void doInvoke(Channel channel, Delivery message) throws Throwable {
+        final var properties = message.getProperties();
+        final var envelope = message.getEnvelope();
+        eventContext.setBasicProperties(properties);
+        eventContext.setEnvelope(envelope);
+        MDCEnricher.enrichMDC(properties);
+
+        if (jwtValidator != null) { //only enabled if jwt extension is enabled
             //todo we only do security association aka jwt token mapping to identity in iris.
             //todo we would need to better handle case where handler method requires auth / or specific roles
-
-            final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
-            final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
-            final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
-            final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
-
-            if (irisContext.isRpc()) {
-                log.info(String.format("DeliverCallbackProvider handling RPC message!"));
-                Optional<String> requestId = eventContext.getMessageId();
-                if (requestId.isEmpty()) {
-                    throw new RuntimeException("RPC event without requestId can not be processed");
-                }
-                if (optionalReturnEventClass.isEmpty()) {
-                    throw new RuntimeException("RPC message handler without non-void return class can not be processed");
-                }
-
-                replyMessage(invocationResult, optionalReturnEventClass.get(),
-                        eventContext.getAmqpBasicProperties().getReplyTo());
-            } else {
-                optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
-            }
-            channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-        } catch (Throwable throwable) {
-            log.error("Exception handling message", throwable);
-            errorHandler.handleException(irisContext, message, channel, throwable);
+            authorizeMessage();
         }
+
+        final var handlerClassInstance = methodHandleContext.getHandlerClass().cast(eventHandlerInstance);
+        final var messageObject = objectMapper.readValue(message.getBody(), methodHandleContext.getEventClass());
+        final var invocationResult = methodHandle.invoke(handlerClassInstance, messageObject);
+        final var optionalReturnEventClass = Optional.ofNullable(methodHandleContext.getReturnEventClass());
+
+        if (irisContext.isRpc()) {
+            log.trace("DeliverCallbackProvider handling RPC message!");
+            Optional<String> requestId = eventContext.getMessageId();
+            if (requestId.isEmpty()) {
+                throw new RuntimeException("RPC event without requestId can not be processed");
+            }
+            if (optionalReturnEventClass.isEmpty()) {
+                throw new RuntimeException("RPC message handler without non-void return class can not be processed");
+            }
+
+            replyMessage(invocationResult, optionalReturnEventClass.get(),
+                    eventContext.getAmqpBasicProperties().getReplyTo());
+        } else {
+            optionalReturnEventClass.ifPresent(returnEventClass -> forwardMessage(invocationResult, returnEventClass));
+        }
+        channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
     }
 
     public IrisContext getIrisContext() {
@@ -159,7 +179,7 @@ public class DeliverCallbackProvider {
     }
 
     private void sendRpcResponse(final Object message, final String replyTo) {
-        log.info("Sending RPC response");
+        log.trace("Sending RPC response");
         final var messageAnnotation = AnnotationValueExtractor.getMessageAnnotation(message);
         producer.publish(message, routingDetailsProvider.getRpcRoutingDetails(messageAnnotation, replyTo));
     }
