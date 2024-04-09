@@ -8,6 +8,7 @@ import static org.iris_events.runtime.IrisExceptionHandler.AUTHENTICATION_FAILED
 import static org.iris_events.runtime.IrisExceptionHandler.FORBIDDEN_CLIENT_CODE;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -20,31 +21,48 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.hamcrest.MatcherAssert;
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
 import org.iris_events.common.Exchanges;
 import org.iris_events.common.MessagingHeaders;
-import org.iris_events.it.AbstractIntegrationTest;
+import org.iris_events.it.AbstractBaseTest;
 import org.iris_events.runtime.channel.ChannelService;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 
-import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.builder.Version;
+import io.quarkus.maven.dependency.Dependency;
+import io.quarkus.test.QuarkusUnitTest;
 
-@QuarkusTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class JwtAuthIT extends AbstractIntegrationTest {
+public class JwtAuthTest extends AbstractBaseTest {
 
-    public static final String JWT_AUTH_MESSAGE = "jwt-auth-message";
-    public static final String JWT_ROLE_SECURED_HANDLER_MESSAGE = "jwt-role-secured-handler";
-    private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
+    @RegisterExtension
+    static final QuarkusUnitTest config = new QuarkusUnitTest()
+            .setForcedDependencies(List.of(Dependency.of("io.quarkus", "quarkus-smallrye-jwt", Version.getVersion())))
+            .overrideConfigKey("smallrye.jwt.encrypt.key.location", "publicKey.pem")
+            .overrideConfigKey("mp.jwt.verify.publickey.location", "publicKey.pem")
+            .overrideConfigKey("mp.jwt.decrypt.key.location", "privateKey.pem")
+            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(
+                    JwtTestService.class,
+                    JwtAuthMessage.class,
+                    JwtRoleSecuredHandlerMessage.class,
+                    TokenUtils.class)
+                    .addAsResource("AuthenticatedToken.json")
+                    .addAsResource("GroupOwnerToken.json")
+                    .addAsResource("privateKey.pem")
+                    .addAsResource("publicKey.pem")
+
+            );
 
     @Inject
     JwtTestService service;
@@ -53,7 +71,6 @@ public class JwtAuthIT extends AbstractIntegrationTest {
     @Named("consumerChannelService")
     ChannelService channelService;
 
-    @Override
     public String getErrorMessageQueue() {
         return "error-message-jwt-aut-it";
     }
@@ -70,17 +87,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
     @DisplayName("Resolve valid JWT")
     @Test
-    /*
-     * @TestSecurity(user = "userJwt", roles = "AUTHENTICATED")
-     *
-     * @JwtSecurity(claims = {
-     *
-     * @Claim(key = "sub", value = "008b048c-817f-4d57-bd8c-cc567381d422"),
-     *
-     * @Claim(key = "globalid", value = "john")
-     * })
-     */
-    void resolveJwt() throws Exception {
+    public void resolveJwt() throws Exception {
+
         final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json");
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
         final var basicProperties = new AMQP.BasicProperties().builder()
@@ -107,8 +115,8 @@ public class JwtAuthIT extends AbstractIntegrationTest {
 
         final var errorMessage = getErrorResponse(5);
         assertThat(errorMessage, is(notNullValue()));
-        assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
-        assertThat(errorMessage.message(), is("Invalid authorization token"));
+        MatcherAssert.assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
+        MatcherAssert.assertThat(errorMessage.message(), is("Invalid authorization token"));
     }
 
     @DisplayName("Consume on role protected handler")
@@ -147,7 +155,6 @@ public class JwtAuthIT extends AbstractIntegrationTest {
     @DisplayName("Throw exception on invalid claim")
     @ParameterizedTest
     @EnumSource(value = TokenUtils.InvalidClaims.class, names = { "EXP", "ISSUER", "SIGNER", "ALG" })
-
     void expiredToken() throws Exception {
         final var token = TokenUtils.generateTokenString("/AuthenticatedToken.json", Set.of(TokenUtils.InvalidClaims.EXP));
         final var message = new JwtAuthMessage(UUID.randomUUID().toString());
@@ -161,6 +168,18 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         assertThat(errorMessage, is(notNullValue()));
         assertThat(errorMessage.code(), is(AUTHENTICATION_FAILED_CLIENT_CODE));
         assertThat(errorMessage.message(), is("Invalid authorization token"));
+    }
+
+    public static final String JWT_AUTH_MESSAGE = "jwt-auth-message";
+    public static final String JWT_ROLE_SECURED_HANDLER_MESSAGE = "jwt-role-secured-handler";
+    private static final String ERROR_EXCHANGE = Exchanges.ERROR.getValue();
+
+    @Message(name = JWT_AUTH_MESSAGE)
+    public record JwtAuthMessage(String name) {
+    }
+
+    @Message(name = JWT_ROLE_SECURED_HANDLER_MESSAGE)
+    public record JwtRoleSecuredHandlerMessage(String name) {
     }
 
     @SuppressWarnings("unused")
@@ -187,13 +206,5 @@ public class JwtAuthIT extends AbstractIntegrationTest {
         public CompletableFuture<String> getJwtSubject() {
             return jwtSubCompletableFuture;
         }
-    }
-
-    @Message(name = JWT_AUTH_MESSAGE)
-    public record JwtAuthMessage(String name) {
-    }
-
-    @Message(name = JWT_ROLE_SECURED_HANDLER_MESSAGE)
-    public record JwtRoleSecuredHandlerMessage(String name) {
     }
 }

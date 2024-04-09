@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nullable;
 
 import org.iris_events.annotations.Scope;
-import org.iris_events.auth.IrisJwtValidator;
 import org.iris_events.consumer.ConsumerContainer;
 import org.iris_events.consumer.FrontendEventConsumer;
 import org.iris_events.context.EventAppContext;
@@ -19,8 +18,6 @@ import org.iris_events.deployment.builditem.MessageHandlerInfoBuildItem;
 import org.iris_events.deployment.builditem.MessageInfoBuildItem;
 import org.iris_events.deployment.builditem.RpcMappingBuildItem;
 import org.iris_events.deployment.scanner.Scanner;
-import org.iris_events.health.IrisLivenessCheck;
-import org.iris_events.health.IrisReadinessCheck;
 import org.iris_events.producer.CorrelationIdProvider;
 import org.iris_events.producer.EventProducer;
 import org.iris_events.producer.ProducedEventExchangeInitializer;
@@ -32,7 +29,6 @@ import org.iris_events.runtime.QueueNameProvider;
 import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.runtime.channel.ConsumerChannelService;
 import org.iris_events.runtime.channel.ProducerChannelService;
-import org.iris_events.runtime.configuration.IrisBuildTimeConfig;
 import org.iris_events.runtime.connection.ConnectionFactoryProvider;
 import org.iris_events.runtime.connection.ConsumerConnectionProvider;
 import org.iris_events.runtime.connection.ProducerConnectionProvider;
@@ -52,15 +48,12 @@ import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
-import io.quarkus.deployment.Capabilities;
-import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.*;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
-import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
 
 @BuildSteps(onlyIf = IrisEnabled.class)
 class IrisProcessor {
@@ -95,8 +88,6 @@ class IrisProcessor {
                                 FrontendEventConsumer.class,
                                 IrisExceptionHandler.class,
                                 QueueNameProvider.class,
-                                IrisReadinessCheck.class,
-                                IrisLivenessCheck.class,
                                 TimestampProvider.class,
                                 BasicPropertiesProvider.class,
                                 ProducedEventExchangeInitializer.class)
@@ -104,8 +95,6 @@ class IrisProcessor {
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build());
     }
-
-
 
     @SuppressWarnings("unused")
     @BuildStep
@@ -328,7 +317,6 @@ class IrisProcessor {
     }
 
     @SuppressWarnings("unused")
-
 
     @Nullable
     private static Class<?> getMessageHandlerReturnEventClass(final QuarkusClassLoader cl,

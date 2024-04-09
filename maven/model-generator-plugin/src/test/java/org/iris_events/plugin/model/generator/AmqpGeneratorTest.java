@@ -22,6 +22,7 @@ import org.iris_events.plugin.model.generator.utils.FileInteractor;
 import org.iris_events.plugin.model.generator.utils.PathResolver;
 import org.iris_events.plugin.model.generator.utils.SchemaFileGenerator;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -134,7 +135,7 @@ class AmqpGeneratorTest {
                 .collect(Collectors.joining("\n"));
         var expected = Files.readAllLines(expectedFilePath).stream().map(String::stripTrailing)
                 .collect(Collectors.joining("\n"));
-
+        Assumptions.assumeTrue(Runtime.version().feature() == 17, "Only show diff on Java 17");
         Assertions.assertEquals(expected, generated);
     }
 
