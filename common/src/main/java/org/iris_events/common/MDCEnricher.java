@@ -33,6 +33,10 @@ public class MDCEnricher {
         MDC.put(property, value);
     }
 
+    public static void clear() {
+        MDC.clear();
+    }
+
     private static Optional<String> getStringHeader(BasicProperties props, String name) {
         return Optional.ofNullable(props.getHeaders())
                 .map(headers -> headers.get(name))

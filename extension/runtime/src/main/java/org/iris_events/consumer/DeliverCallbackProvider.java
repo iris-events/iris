@@ -95,6 +95,8 @@ public class DeliverCallbackProvider {
             } catch (Throwable e) {
                 log.error("Exception handling message", e);
                 errorHandler.handleException(irisContext, message, channel, e);
+            } finally {
+                MDCEnricher.clear();
             }
         } else {
             requestContext.activate();
@@ -105,9 +107,9 @@ public class DeliverCallbackProvider {
                 errorHandler.handleException(irisContext, message, channel, e);
             } finally {
                 requestContext.terminate();
+                MDCEnricher.clear();
             }
         }
-
     }
 
     private void doInvoke(Channel channel, Delivery message) throws Throwable {
