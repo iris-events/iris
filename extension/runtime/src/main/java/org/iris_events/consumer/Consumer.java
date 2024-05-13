@@ -85,9 +85,6 @@ public class Consumer implements RecoveryListener {
         final var exchange = getExchangeName();
         final var queueName = queueNameProvider.getQueueName(context);
 
-        // TODO not sure about this yet regarding RPC
-        final var consumerOnEveryInstance = context.isConsumerOnEveryInstance();
-
         // set prefetch count "quality of service"
         final int prefetchCount = context.getPrefetch();
         channel.basicQos(prefetchCount);
@@ -111,7 +108,7 @@ public class Consumer implements RecoveryListener {
                     "Declaring topology for RPC consumer.\nrequestExchange: %s\nresponseExchange: %s\nrequestQueue: %s\n",
                     rpcRequestExchange, rpcResponseExchange, queueName));
 
-            declareQueue(channel, consumerOnEveryInstance, queueName, queueDeclarationArgs);
+            declareQueue(channel, queueName, false, true, queueDeclarationArgs);
             exchangeDeclarator.declareExchange(rpcRequestExchange, ExchangeType.FANOUT, false);
             channel.queueBind(queueName, rpcRequestExchange, queueName);
 
@@ -134,7 +131,8 @@ public class Consumer implements RecoveryListener {
             }
 
             // declare queue & exchange
-            declareQueue(channel, consumerOnEveryInstance, queueName, queueDeclarationArgs);
+            final boolean autoDelete = context.isConsumerOnEveryInstance() || context.isAutoDelete();
+            declareQueue(channel, queueName, getDurable(), autoDelete, queueDeclarationArgs);
             exchangeDeclarator.declareExchange(exchange, exchangeType, context.isFrontendMessage());
 
             // bind queues
@@ -168,11 +166,8 @@ public class Consumer implements RecoveryListener {
         }
     }
 
-    private void declareQueue(final Channel channel, final boolean consumerOnEveryInstance, final String queueName,
+    private void declareQueue(final Channel channel, final String queueName, final boolean durable, final boolean autoDelete,
             final Map<String, Object> args) throws IOException {
-
-        final boolean durable = getDurable();
-        final boolean autoDelete = consumerOnEveryInstance || context.isAutoDelete();
         final var details = new QueueDeclarator.QueueDeclarationDetails(queueName, durable, false, autoDelete, args);
         queueDeclarator.declareQueueWithRecreateOnConflict(channel, details);
     }
@@ -188,6 +183,9 @@ public class Consumer implements RecoveryListener {
 
     private boolean getDurable() {
         if (context.isFrontendMessage()) {
+            return false;
+        }
+        if (context.isRpc()) {
             return false;
         }
 
