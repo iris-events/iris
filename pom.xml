@@ -58,7 +58,7 @@
         <version.rabbit.amqp-client>5.21.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.2.0</version.resilience4j-retry>
         <version.slf4j-api>2.0.11</version.slf4j-api>
-        <version.victools>4.31.1</version.victools>
+        <version.victools>4.35.0</version.victools>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
         <version.impsort.plugin>1.9.0</version.impsort.plugin>
