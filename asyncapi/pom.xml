@@ -18,7 +18,7 @@
         <module>implementation</module>
     </modules>
     <properties>
-        <version.jakarta-validation-api>3.0.2</version.jakarta-validation-api>
+        <version.jakarta-validation-api>3.1.0</version.jakarta-validation-api>
     </properties>
 
     <dependencyManagement>
