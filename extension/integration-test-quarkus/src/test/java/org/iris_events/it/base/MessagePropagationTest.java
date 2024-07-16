@@ -1,4 +1,4 @@
-package org.iris_events.it.sync;
+package org.iris_events.it.base;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -14,22 +14,24 @@ import jakarta.inject.Inject;
 
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
-import org.iris_events.context.EventContext;
-import org.iris_events.it.IsolatedEventContextTest;
 import org.iris_events.producer.EventProducer;
-import org.iris_events.runtime.InstanceInfoProvider;
-import org.junit.jupiter.api.AfterEach;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.QuarkusUnitTest;
 
-@QuarkusTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MessagePropagationIT extends IsolatedEventContextTest {
+public class MessagePropagationTest {
+
+    @RegisterExtension
+    static final QuarkusUnitTest config = new QuarkusUnitTest()
+            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(
+                    Service.class,
+                    ForwardedEvent.class,
+                    HandledEvent.class,
+                    ForwardedToService.class));
 
     private static final String INITIAL_CONSUMING_QUEUE = "initial-consuming-queue";
     private static final String FORWARDING_QUEUE = "forwarding-queue";
@@ -43,14 +45,6 @@ public class MessagePropagationIT extends IsolatedEventContextTest {
 
     @Inject
     ForwardedToService forwardedToService;
-
-    @InjectMock
-    InstanceInfoProvider instanceInfoProvider;
-
-    @AfterEach
-    void cleanup() {
-        Mockito.reset(instanceInfoProvider);
-    }
 
     @Test
     @DisplayName("Method handler return object should be forwarded to the annotated produced queue")
@@ -78,16 +72,13 @@ public class MessagePropagationIT extends IsolatedEventContextTest {
     @ApplicationScoped
     public static class ForwardedToService {
         private final CompletableFuture<ForwardedEvent> forwardedEventCompletableFuture = new CompletableFuture<>();
-        private final EventContext eventContext;
 
         @Inject
-        public ForwardedToService(EventContext eventContext) {
-            this.eventContext = eventContext;
+        public ForwardedToService() {
         }
 
         @MessageHandler
         public void handle(ForwardedEvent event) {
-            final var amqpBasicProperties = this.eventContext.getAmqpBasicProperties();
             forwardedEventCompletableFuture.complete(event);
         }
 
