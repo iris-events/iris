@@ -93,7 +93,7 @@ public class DeliverCallbackProvider {
             try {
                 doInvoke(channel, message);
             } catch (Throwable e) {
-                log.error("Exception handling message", e);
+                //log.error("Exception handling message", e);
                 errorHandler.handleException(irisContext, message, channel, e);
             } finally {
                 MDCEnricher.clear();
@@ -103,7 +103,7 @@ public class DeliverCallbackProvider {
             try {
                 doInvoke(channel, message);
             } catch (Throwable e) {
-                log.error("Exception handling message", e);
+                //log.error("Exception handling message", e);
                 errorHandler.handleException(irisContext, message, channel, e);
             } finally {
                 requestContext.terminate();
@@ -170,6 +170,9 @@ public class DeliverCallbackProvider {
     }
 
     private void forwardMessage(final Object invocationResult, final Class<?> returnEventClass) {
+        if (invocationResult == null) {
+            return;
+        }
         final var returnClassInstance = returnEventClass.cast(invocationResult);
         producer.send(returnClassInstance);
     }

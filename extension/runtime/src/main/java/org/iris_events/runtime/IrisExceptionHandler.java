@@ -96,7 +96,7 @@ public class IrisExceptionHandler {
         final var originalExchange = message.getEnvelope().getExchange();
         final var originalRoutingKey = message.getEnvelope().getRoutingKey();
         log.error(String.format(
-                "Security exception thrown. Message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s', errorType: '%s'",
+                "Security exception thrown. Message with is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s', errorType: '%s'",
                 exception.getClientCode(), originalExchange, originalRoutingKey, exception.getClass().getName()), exception);
 
         acknowledgeMessageAndSendError(message, channel, exception);
@@ -107,7 +107,7 @@ public class IrisExceptionHandler {
         final var originalExchange = message.getEnvelope().getExchange();
         final var originalRoutingKey = message.getEnvelope().getRoutingKey();
         log.error(String.format(
-                "Bad message received, message with given binding keys(s) is being discarded (acknowledged). error: '%s', exchange: '%s', routingKey: '%s'",
+                "Bad message received, message is being discarded. error: '%s', exchange: '%s', routingKey: '%s'",
                 exception.getClientCode(), originalExchange, originalRoutingKey), exception);
 
         acknowledgeMessageAndSendError(message, channel, exception);
@@ -127,14 +127,14 @@ public class IrisExceptionHandler {
         }
 
         if (exception.shouldRetry()) {
-            log.error("Encountered server exception while processing message. Sending to retry exchange.", throwable);
+            log.error("Server exception while processing message. Sending to retry exchange.", throwable);
             acknowledgeMessage(channel, message);
             retryEnqueuer.enqueueWithBackoff(irisContext, message, exception, exception.shouldNotifyFrontend());
         } else if (exception.shouldNotifyFrontend()) {
-            log.error("Encountered server exception while processing message. Notifying client with no retries.", throwable);
+            log.error("Server exception while processing message. Notifying client with no retries.", throwable);
             acknowledgeMessageAndSendError(message, channel, exception);
         } else {
-            log.error("Encountered server exception while processing message.", throwable);
+            log.error("Server exception while processing message.", throwable);
             acknowledgeMessage(channel, message);
         }
     }
