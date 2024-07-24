@@ -17,6 +17,8 @@ import org.iris_events.asyncapi.runtime.client.ClientDefinitionMerger;
 import org.iris_events.asyncapi.runtime.client.ClientDefinitionParser;
 import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
 import org.iris_events.asyncapi.runtime.util.VersionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,6 +29,7 @@ import io.apicurio.registry.rest.client.RegistryClientFactory;
 public class AsyncapiMergeMojo extends AbstractMojo {
     private static final String INITIAL_VERSION = "1.0.0";
     private static final String VERSION_PLACEHOLDER = "{VERSION}";
+    private static final Logger log = LoggerFactory.getLogger(AsyncapiMergeMojo.class);
 
     @Parameter(property = "apicurioUrl")
     String apicurioUrl;
@@ -95,12 +98,14 @@ public class AsyncapiMergeMojo extends AbstractMojo {
 
     private List<ClientDefinitions> getClientDefinitions(ApicurioClient client, String artifactGroup) {
         ClientDefinitionParser parser = new ClientDefinitionParser();
-        return client.getArtifactsInGroup(artifactGroup).stream().map(artifact -> {
-            try {
-                return parser.parse(getObjectMapper().readTree(artifact));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
+        return client.getArtifactsInGroup(artifactGroup)
+                .stream()
+                .map(artifact -> {
+                    try {
+                        return parser.parse(getObjectMapper().readTree(artifact));
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toList());
     }
 }
