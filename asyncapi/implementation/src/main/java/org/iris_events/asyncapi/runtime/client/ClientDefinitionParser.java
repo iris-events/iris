@@ -1,14 +1,6 @@
 package org.iris_events.asyncapi.runtime.client;
 
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -17,10 +9,14 @@ import org.iris_events.annotations.Scope;
 import org.iris_events.asyncapi.api.AsyncApiConstants;
 import org.iris_events.asyncapi.runtime.io.channel.operation.OperationConstant;
 import org.iris_events.asyncapi.runtime.scanner.model.ClientDefinitions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class ClientDefinitionParser {
+
+    private static final Logger log = LoggerFactory.getLogger(ClientDefinitionParser.class);
 
     public ClientDefinitions parse(JsonNode asyncapiRootNode) {
         EnumSet<Scope> scopes = EnumSet.of(Scope.FRONTEND, Scope.USER, Scope.SESSION, Scope.BROADCAST);
@@ -86,14 +82,28 @@ public class ClientDefinitionParser {
     }
 
     private Map<String, JsonNode> getChannelsInScope(JsonNode channelsNode, EnumSet<Scope> scopes) {
-        return fieldsToStream(channelsNode.fields()).filter(channelNode -> {
-            JsonNode operationNode = Optional.ofNullable(channelNode.getValue().get(OperationConstant.PROP_PUBLISH))
-                    .orElse(channelNode.getValue().get(OperationConstant.PROP_SUBSCRIBE));
-            String scopeValue = operationNode.get(OperationConstant.PROP_MESSAGE).get(AsyncApiConstants.HEADERS_NODE).get(
-                    AsyncApiConstants.PROPERTIES_NODE)
-                    .get(AsyncApiConstants.X_SCOPE_NODE).get(AsyncApiConstants.VALUE_NODE)
-                    .asText();
-            return scopes.contains(Scope.valueOf(scopeValue.toUpperCase()));
-        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return fieldsToStream(channelsNode.fields())
+                .filter(channelNode -> {
+                    JsonNode operationNode = Optional.ofNullable(channelNode.getValue().get(OperationConstant.PROP_PUBLISH))
+                            .orElse(channelNode.getValue().get(OperationConstant.PROP_SUBSCRIBE));
+
+                    var props = operationNode.get(OperationConstant.PROP_MESSAGE).get(AsyncApiConstants.HEADERS_NODE).get(
+                            AsyncApiConstants.PROPERTIES_NODE);
+                    if (props.hasNonNull(AsyncApiConstants.X_SCOPE_NODE)) {
+                        if (props.get(AsyncApiConstants.X_SCOPE_NODE).hasNonNull(AsyncApiConstants.VALUE_NODE)) {
+                            String scopeValue = props.get(AsyncApiConstants.X_SCOPE_NODE).get(AsyncApiConstants.VALUE_NODE)
+                                    .asText();
+                            return scopes.contains(Scope.valueOf(scopeValue.toUpperCase()));
+                        } else if (props.hasNonNull("enum")) { //node uses this bit different
+                            var scope = props.withArray("enum").get(0).textValue();
+                            return scopes.contains(Scope.valueOf(scope.toUpperCase()));
+                        }
+                    } else {
+                        log.warn("Missing scope value for: {}", channelNode.getKey());
+                        return false;
+                    }
+                    return false;
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
