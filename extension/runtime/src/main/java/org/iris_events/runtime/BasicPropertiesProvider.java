@@ -104,11 +104,15 @@ public class BasicPropertiesProvider {
 
         final var builder = basicProperties.builder();
         if (userId != null || sessionId != null) {
-            builder.correlationId(correlationIdProvider.getCorrelationId());
             headers.put(ORIGIN_SERVICE_ID, serviceId);
-            headers.remove(ROUTER);
 
-            Optional.ofNullable(userId).ifPresent(id -> headers.put(USER_ID, id));
+            Optional.ofNullable(userId).ifPresent(id -> {
+                // reset correlationId only in case when sending to specific user (to not break RPC contract on router)
+                builder.correlationId(correlationIdProvider.getCorrelationId());
+                // we want all router instances to get the message, because we don't know which one holds the user session
+                headers.remove(ROUTER);
+                headers.put(USER_ID, id);
+            });
             Optional.ofNullable(sessionId).ifPresent(id -> headers.put(SESSION_ID, id));
         }
 
