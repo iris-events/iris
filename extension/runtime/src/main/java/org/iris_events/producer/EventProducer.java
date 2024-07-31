@@ -262,6 +262,7 @@ public class EventProducer {
     }
 
     private void doSend(final Object message, final String userId, final boolean propagate) throws IrisSendException {
+        log.debug("Sending Iris message: {}, userId: {}, propagate: {}", message, userId, propagate);
         final var messageAnnotation = AnnotationValueExtractor.getMessageAnnotation(message);
 
         final var scope = MessageScopeParser.getFromAnnotationClass(messageAnnotation);
