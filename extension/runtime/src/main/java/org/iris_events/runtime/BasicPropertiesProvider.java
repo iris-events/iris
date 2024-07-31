@@ -27,9 +27,12 @@ import org.iris_events.producer.CorrelationIdProvider;
 import org.iris_events.producer.RoutingDetails;
 
 import com.rabbitmq.client.AMQP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class BasicPropertiesProvider {
+    private static final Logger log = LoggerFactory.getLogger(BasicPropertiesProvider.class);
     public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
 
     @Inject
@@ -67,8 +70,10 @@ public class BasicPropertiesProvider {
     }
 
     private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
+        final var correlationId = correlationIdProvider.getCorrelationId();
+        log.debug("Creating new AMQP.BasicProperties with correlationId: {}", correlationId);
         return new AMQP.BasicProperties().builder()
-                .correlationId(correlationIdProvider.getCorrelationId())
+                .correlationId(correlationId)
                 .headers(Map.of(ORIGIN_SERVICE_ID, serviceId))
                 .build();
     }
@@ -108,7 +113,9 @@ public class BasicPropertiesProvider {
 
             Optional.ofNullable(userId).ifPresent(id -> {
                 // reset correlationId only in case when sending to specific user (to not break RPC contract on router)
-                builder.correlationId(correlationIdProvider.getCorrelationId());
+                final var correlationId = correlationIdProvider.getCorrelationId();
+                log.debug("Sending to specific user - resetting correlationId to: {}", correlationId);
+                builder.correlationId(correlationId);
                 // we want all router instances to get the message, because we don't know which one holds the user session
                 headers.remove(ROUTER);
                 headers.put(USER_ID, id);
@@ -117,7 +124,9 @@ public class BasicPropertiesProvider {
         }
 
         if (!propagate) {
-            builder.correlationId(correlationIdProvider.getCorrelationId());
+            final var correlationId = correlationIdProvider.getCorrelationId();
+            log.debug("CorrelationId propagation was broken - resetting correlationId to: {}", correlationId);
+            builder.correlationId(correlationId);
         }
 
         builder.deliveryMode(getDeliveryMode(routingDetails));
