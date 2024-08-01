@@ -1,6 +1,7 @@
 package org.iris_events.runtime;
 
 import static org.iris_events.common.MessagingHeaders.Message.CACHE_TTL;
+import static org.iris_events.common.MessagingHeaders.Message.CLIENT_VERSION;
 import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
@@ -23,12 +24,13 @@ import org.iris_events.annotations.Scope;
 import org.iris_events.common.DeliveryMode;
 import org.iris_events.context.EventAppContext;
 import org.iris_events.context.EventContext;
+import org.iris_events.exception.IrisSendException;
 import org.iris_events.producer.CorrelationIdProvider;
 import org.iris_events.producer.RoutingDetails;
-
-import com.rabbitmq.client.AMQP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.rabbitmq.client.AMQP;
 
 @ApplicationScoped
 public class BasicPropertiesProvider {
@@ -74,6 +76,7 @@ public class BasicPropertiesProvider {
         log.debug("Creating new AMQP.BasicProperties with correlationId: {}", correlationId);
         return new AMQP.BasicProperties().builder()
                 .correlationId(correlationId)
+                // only set origin_service_id once and never break it as source cannot change
                 .headers(Map.of(ORIGIN_SERVICE_ID, serviceId))
                 .build();
     }
@@ -84,52 +87,60 @@ public class BasicPropertiesProvider {
         final var eventName = routingDetails.getEventName();
         final var scope = routingDetails.getScope();
         final var userId = routingDetails.getUserId();
-        final var sessionId = routingDetails.getSessionId();
         final var propagate = routingDetails.getPropagate();
+        final var subscriptionId = routingDetails.getSubscriptionId();
+        final var cacheTtl = routingDetails.getCacheTtl();
 
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(Optional.ofNullable(basicProperties.getHeaders()).orElse(new HashMap<>()));
+        final var currentUserId = headers.get(USER_ID);
         headers.put(CURRENT_SERVICE_ID, serviceId);
         headers.put(INSTANCE_ID, hostName);
         headers.put(EVENT_TYPE, eventName);
         headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
+        Optional.ofNullable(subscriptionId).ifPresent(id -> headers.put(SUBSCRIPTION_ID, id));
+        Optional.ofNullable(cacheTtl).ifPresent(ttl -> headers.put(CACHE_TTL, ttl));
+
         if (scope != Scope.INTERNAL) {
             // never propagate JWT when "leaving" backend
             headers.remove(JWT);
         }
 
-        final var subscriptionId = routingDetails.getSubscriptionId();
-        if (subscriptionId != null) {
-            headers.put(SUBSCRIPTION_ID, subscriptionId);
+        if (userId != null) {
+            // message is being sent to specific user
+            headers.put(USER_ID, userId);
+            if (currentUserId != null && !currentUserId.equals(userId)) {
+                // Message is being triggered by another users action. For such message this service is an origin.
+                headers.put(ORIGIN_SERVICE_ID, serviceId);
+                // do not propagate JWT in this case, as it no longer belongs to the user within message header
+                headers.remove(JWT);
+                // we should clean routing related headers as they will provide biased info to the router
+                headers.remove(ROUTER);
+                headers.remove(CLIENT_VERSION);
+                headers.remove(SESSION_ID);
+            }
         }
-        final var cacheTtl = routingDetails.getCacheTtl();
-        if (cacheTtl != null) {
-            headers.put(CACHE_TTL, cacheTtl);
+
+        if (scope == Scope.USER) {
+            if (!headers.containsKey(USER_ID)) {
+                throw new IrisSendException("Can not send USER scoped message without userId available from existing" +
+                        " context or being provided as argument to send method.");
+            }
+            // make sure that none of router instances ignore the user scoped message
+            // because user could have active sessions on multiple router instances
+            headers.remove(ROUTER);
         }
 
         final var builder = basicProperties.builder();
-        if (userId != null || sessionId != null) {
-            headers.put(ORIGIN_SERVICE_ID, serviceId);
-
-            Optional.ofNullable(userId).ifPresent(id -> {
-                // reset correlationId only in case when sending to specific user (to not break RPC contract on router)
-                final var correlationId = correlationIdProvider.getCorrelationId();
-                log.debug("Sending to specific user - resetting correlationId to: {}", correlationId);
-                builder.correlationId(correlationId);
-                // we want all router instances to get the message, because we don't know which one holds the user session
-                headers.remove(ROUTER);
-                headers.put(USER_ID, id);
-            });
-            Optional.ofNullable(sessionId).ifPresent(id -> headers.put(SESSION_ID, id));
-        }
+        builder.deliveryMode(getDeliveryMode(routingDetails));
 
         if (!propagate) {
+            // We should never reset correlationId automatically.
+            // It should be done with care as it breaks correlation of events within backend.
             final var correlationId = correlationIdProvider.getCorrelationId();
-            log.debug("CorrelationId propagation was broken - resetting correlationId to: {}", correlationId);
+            log.debug("CorrelationId propagation was purposely broken - resetting correlationId to: {}", correlationId);
             builder.correlationId(correlationId);
         }
-
-        builder.deliveryMode(getDeliveryMode(routingDetails));
 
         return builder.headers(headers).build();
     }
