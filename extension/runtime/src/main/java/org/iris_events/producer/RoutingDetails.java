@@ -12,14 +12,13 @@ public final class RoutingDetails {
     private final String routingKey;
     private final Scope scope;
     private final String userId;
-    private final String sessionId;
     private final String subscriptionId;
     private final boolean persistent;
     private final Integer cacheTtl;
     private final boolean propagate;
 
     public RoutingDetails(final String eventName, final String exchange, final ExchangeType exchangeType,
-            final String routingKey, final Scope scope, final String userId, final String sessionId,
+            final String routingKey, final Scope scope, final String userId,
             final String subscriptionId, final boolean persistent, final Integer cacheTtl, final boolean propagate) {
         this.eventName = eventName;
         this.exchange = exchange;
@@ -27,7 +26,6 @@ public final class RoutingDetails {
         this.routingKey = routingKey;
         this.scope = scope;
         this.userId = userId;
-        this.sessionId = sessionId;
         this.subscriptionId = subscriptionId;
         this.persistent = persistent;
         this.cacheTtl = cacheTtl;
@@ -56,10 +54,6 @@ public final class RoutingDetails {
 
     public String getUserId() {
         return userId;
-    }
-
-    public String getSessionId() {
-        return sessionId;
     }
 
     public String getSubscriptionId() {
@@ -93,14 +87,13 @@ public final class RoutingDetails {
                 exchange, that.exchange) && exchangeType == that.exchangeType && Objects.equals(routingKey,
                         that.routingKey)
                 && scope == that.scope && Objects.equals(userId, that.userId)
-                && Objects.equals(sessionId, that.sessionId) && Objects.equals(subscriptionId,
-                        that.subscriptionId)
+                && Objects.equals(subscriptionId, that.subscriptionId)
                 && Objects.equals(cacheTtl, that.cacheTtl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventName, exchange, exchangeType, routingKey, scope, userId, sessionId, subscriptionId, persistent,
+        return Objects.hash(eventName, exchange, exchangeType, routingKey, scope, userId, subscriptionId, persistent,
                 cacheTtl);
     }
 
@@ -210,11 +203,6 @@ public final class RoutingDetails {
             return this;
         }
 
-        public MiscRoutingDetailsBuilder sessionId(final String sessionId) {
-            this.sessionId = sessionId;
-            return this;
-        }
-
         public MiscRoutingDetailsBuilder subscriptionId(final String subscriptionId) {
             this.subscriptionId = subscriptionId;
             return this;
@@ -236,7 +224,7 @@ public final class RoutingDetails {
         }
 
         public RoutingDetails build() {
-            return new RoutingDetails(eventName, exchange, exchangeType, routingKey, scope, userId, sessionId, subscriptionId,
+            return new RoutingDetails(eventName, exchange, exchangeType, routingKey, scope, userId, subscriptionId,
                     persistent, cacheTtl, propagate);
         }
     }

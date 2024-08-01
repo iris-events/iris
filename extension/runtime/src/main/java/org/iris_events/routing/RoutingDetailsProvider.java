@@ -56,17 +56,11 @@ public class RoutingDetailsProvider {
                 .exchangeType(ExchangeType.TOPIC)
                 .routingKey(routingKey)
                 .scope(scope)
+                // message should be sent to specific user (not necessarily the same as current user)
                 .userId(userId)
                 .persistent(persistent);
 
-        final var optionalSessionId = eventContext.getSessionId();
-        final var optionalUserId = eventContext.getUserId();
-
-        optionalSessionId.ifPresent(builder::sessionId);
-        optionalUserId.ifPresent(builder::userId);
-
-        return builder
-                .build();
+        return builder.build();
     }
 
     public RoutingDetails getRoutingDetailsFromAnnotation(final org.iris_events.annotations.Message messageAnnotation,

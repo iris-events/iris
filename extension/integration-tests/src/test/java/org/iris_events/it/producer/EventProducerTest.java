@@ -3,7 +3,6 @@ package org.iris_events.it.producer;
 import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
-import static org.iris_events.common.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
 import static org.iris_events.producer.EventProducer.SERVICE_ID_UNAVAILABLE_FALLBACK;
@@ -92,12 +91,13 @@ public class EventProducerTest {
     @MethodSource
     void send(Object event, String eventName, String expectedExchange, String expectedRoutingKey, DeliveryMode deliveryMode)
             throws Exception {
-        mockBasicProperties(eventName);
+        final var userId = UUID.randomUUID().toString();
+        mockBasicProperties(eventName, userId);
 
         producer.send(event);
 
         final byte[] bytes = objectMapper.writeValueAsBytes(event);
-        final var basicProperties = getBasicPropertiesBuilder(eventName, null, true, deliveryMode).build();
+        final var basicProperties = getBasicPropertiesBuilder(eventName, userId, true, deliveryMode).build();
         Mockito.verify(channel)
                 .basicPublish(expectedExchange,
                         expectedRoutingKey,
@@ -121,7 +121,7 @@ public class EventProducerTest {
     void sendDoNotPropagate() throws IOException {
         final var correlationIdMock = UUID.randomUUID().toString();
         mockCorrelationIdProvider(correlationIdMock);
-        mockBasicProperties(AMQP_PRODUCER_TEST_NO_PROPAGATE_EVENT);
+        mockBasicProperties(AMQP_PRODUCER_TEST_NO_PROPAGATE_EVENT, null);
         var event = getInternalNoPropagateEvent();
 
         producer.send(event, false);
@@ -139,7 +139,7 @@ public class EventProducerTest {
 
     @Test
     void sendToSubscription() throws Exception {
-        mockBasicProperties(AMQP_PRODUCER_TEST_SESSION_EVENT);
+        mockBasicProperties(AMQP_PRODUCER_TEST_SESSION_EVENT, null);
 
         final var resourceType = "amqpProducerTestEventResource";
         final var resourceId = UUID.randomUUID().toString();
@@ -161,7 +161,7 @@ public class EventProducerTest {
 
     @Test
     void sendToUser() throws Exception {
-        mockBasicProperties(AMQP_PRODUCER_TEST_SESSION_EVENT);
+        mockBasicProperties(AMQP_PRODUCER_TEST_SESSION_EVENT, null);
         final var event = getSessionEvent();
         final var userId = UUID.randomUUID().toString();
 
@@ -178,11 +178,12 @@ public class EventProducerTest {
                         bytes);
     }
 
-    private void mockBasicProperties(final String eventName) {
+    private void mockBasicProperties(final String eventName, String userId) {
         final var basicPropertiesMock = mock(AMQP.BasicProperties.class);
-        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName, null, true, DeliveryMode.NON_PERSISTENT);
+        final var basicPropertiesBuilder = getBasicPropertiesBuilder(eventName, userId, true, DeliveryMode.NON_PERSISTENT);
         when(basicPropertiesMock.builder()).thenReturn(basicPropertiesBuilder);
-        when(eventContext.getAmqpBasicProperties()).thenReturn(basicPropertiesMock);
+        final var basicProperties = basicPropertiesMock.builder().build();
+        when(eventContext.getAmqpBasicProperties()).thenReturn(basicProperties);
     }
 
     private void mockCorrelationIdProvider(final String correlationIdMock) {
@@ -199,7 +200,6 @@ public class EventProducerTest {
         headers.put(SERVER_TIMESTAMP, CURRENT_TIMESTAMP);
 
         if (userId != null) {
-            headers.put(ORIGIN_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK);
             headers.put(USER_ID, userId);
         }
 
