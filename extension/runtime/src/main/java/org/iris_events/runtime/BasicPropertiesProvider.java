@@ -63,10 +63,16 @@ public class BasicPropertiesProvider {
      * @return AmqpBasicProperties
      */
     public AMQP.BasicProperties getOrCreateAmqpBasicProperties(final RoutingDetails routingDetails) {
-        final var eventAppContext = Optional.ofNullable(eventAppInfoProvider.getEventAppContext());
-        final var serviceId = eventAppContext.map(EventAppContext::getId).orElse(SERVICE_ID_UNAVAILABLE_FALLBACK);
-        final var basicProperties = Optional.ofNullable(eventContext.getAmqpBasicProperties())
-                .orElse(createAmqpBasicProperties(serviceId));
+        String serviceId = SERVICE_ID_UNAVAILABLE_FALLBACK;
+        final EventAppContext eventAppContext = eventAppInfoProvider.getEventAppContext();
+        if (eventAppContext != null) {
+            serviceId = eventAppContext.getId();
+        }
+        AMQP.BasicProperties basicProperties = eventContext.getAmqpBasicProperties();
+        if (basicProperties == null) {
+            log.debug("No basic properties found within eventContext - building new one.");
+            basicProperties = createAmqpBasicProperties(serviceId);
+        }
 
         return buildAmqpBasicPropertiesWithCustomHeaders(basicProperties, serviceId, routingDetails);
     }
