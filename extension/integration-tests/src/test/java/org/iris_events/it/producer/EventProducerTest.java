@@ -1,11 +1,9 @@
 package org.iris_events.it.producer;
 
-import static org.iris_events.common.MessagingHeaders.Message.CURRENT_SERVICE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
-import static org.iris_events.producer.EventProducer.SERVICE_ID_UNAVAILABLE_FALLBACK;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -194,7 +192,6 @@ public class EventProducerTest {
             final boolean propagate,
             final DeliveryMode deliveryMode) {
         final Map<String, Object> headers = new HashMap<>();
-        headers.put(CURRENT_SERVICE_ID, SERVICE_ID_UNAVAILABLE_FALLBACK);
         headers.put(INSTANCE_ID, INSTANCE_NAME);
         headers.put(EVENT_TYPE, eventName);
         headers.put(SERVER_TIMESTAMP, CURRENT_TIMESTAMP);

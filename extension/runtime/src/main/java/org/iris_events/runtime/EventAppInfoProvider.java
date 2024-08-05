@@ -21,6 +21,6 @@ public class EventAppInfoProvider {
     }
 
     public String getApplicationId() {
-        return eventAppContext.getId();
+        return eventAppContext != null ? eventAppContext.getId() : null;
     }
 }

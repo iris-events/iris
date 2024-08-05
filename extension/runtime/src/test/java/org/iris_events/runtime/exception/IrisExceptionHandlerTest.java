@@ -9,6 +9,7 @@ import jakarta.validation.ConstraintViolationException;
 
 import org.iris_events.context.EventContext;
 import org.iris_events.context.IrisContext;
+import org.iris_events.runtime.EventAppInfoProvider;
 import org.iris_events.runtime.IrisExceptionHandler;
 import org.iris_events.runtime.TimestampProvider;
 import org.iris_events.runtime.requeue.MessageRequeueHandler;
@@ -36,7 +37,7 @@ class IrisExceptionHandlerTest {
         MessageRequeueHandler messageRequeueHandler = Mockito.mock();
         TimestampProvider timestampProvider = Mockito.mock();
         exceptionHandler = new IrisExceptionHandler(new ObjectMapper(), new EventContext(), messageRequeueHandler,
-                timestampProvider);
+                timestampProvider, new EventAppInfoProvider());
     }
 
     @Test

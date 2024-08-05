@@ -41,18 +41,21 @@ public class IrisExceptionHandler {
     private final EventContext eventContext;
     private final MessageRequeueHandler retryEnqueuer;
     private final TimestampProvider timestampProvider;
+    private final EventAppInfoProvider eventAppInfoProvider;
 
     @Inject
     public IrisExceptionHandler(
             final ObjectMapper objectMapper,
             final EventContext eventContext,
             final MessageRequeueHandler retryEnqueuer,
-            final TimestampProvider timestampProvider) {
+            final TimestampProvider timestampProvider,
+            EventAppInfoProvider eventAppInfoProvider) {
 
         this.objectMapper = objectMapper;
         this.eventContext = eventContext;
         this.retryEnqueuer = retryEnqueuer;
         this.timestampProvider = timestampProvider;
+        this.eventAppInfoProvider = eventAppInfoProvider;
     }
 
     public void handleException(final IrisContext irisContext, final Delivery message, final Channel channel,
@@ -161,6 +164,7 @@ public class IrisExceptionHandler {
         final var errorMessageDetails = ErrorMessageDetailsBuilder
                 .build(originalExchange,
                         originalMessageHeaders,
+                        eventAppInfoProvider.getApplicationId(),
                         currentTimestamp);
 
         final var messageHeaders = errorMessageDetails.messageHeaders();

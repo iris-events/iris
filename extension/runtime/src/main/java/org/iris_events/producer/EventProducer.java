@@ -63,7 +63,6 @@ import com.rabbitmq.client.ReturnListener;
 public class EventProducer {
     private static final Logger log = LoggerFactory.getLogger(EventProducer.class);
 
-    public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
     private static final long WAIT_TIMEOUT_MILLIS = 2000;
     private static final String RESOURCE = "resource";
 

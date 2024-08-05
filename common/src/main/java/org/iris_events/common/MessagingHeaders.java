@@ -12,6 +12,7 @@ public class MessagingHeaders {
         public static final String DEVICE = "x-device";
         public static final String CLIENT_TRACE_ID = "x-client-trace-id";
         public static final String EVENT_TYPE = "x-event-type";
+        public static final String ORIGIN_EVENT_TYPE = "x-origin-event-type";
         public static final String SESSION_ID = "x-session-id";
         public static final String USER_ID = "x-user-id";
         public static final String ROUTER = "x-router";

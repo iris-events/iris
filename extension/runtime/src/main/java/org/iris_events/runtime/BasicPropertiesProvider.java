@@ -22,7 +22,6 @@ import jakarta.inject.Inject;
 
 import org.iris_events.annotations.Scope;
 import org.iris_events.common.DeliveryMode;
-import org.iris_events.context.EventAppContext;
 import org.iris_events.context.EventContext;
 import org.iris_events.exception.IrisSendException;
 import org.iris_events.producer.CorrelationIdProvider;
@@ -35,7 +34,6 @@ import com.rabbitmq.client.AMQP;
 @ApplicationScoped
 public class BasicPropertiesProvider {
     private static final Logger log = LoggerFactory.getLogger(BasicPropertiesProvider.class);
-    public static final String SERVICE_ID_UNAVAILABLE_FALLBACK = "N/A";
 
     @Inject
     EventAppInfoProvider eventAppInfoProvider;
@@ -63,11 +61,7 @@ public class BasicPropertiesProvider {
      * @return AmqpBasicProperties
      */
     public AMQP.BasicProperties getOrCreateAmqpBasicProperties(final RoutingDetails routingDetails) {
-        String serviceId = SERVICE_ID_UNAVAILABLE_FALLBACK;
-        final EventAppContext eventAppContext = eventAppInfoProvider.getEventAppContext();
-        if (eventAppContext != null) {
-            serviceId = eventAppContext.getId();
-        }
+        final String serviceId = eventAppInfoProvider.getApplicationId();
         AMQP.BasicProperties basicProperties = eventContext.getAmqpBasicProperties();
         if (basicProperties == null) {
             log.debug("No basic properties found within eventContext - building new one.");
@@ -80,11 +74,12 @@ public class BasicPropertiesProvider {
     private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
         final var correlationId = correlationIdProvider.getCorrelationId();
         log.debug("Creating new AMQP.BasicProperties with correlationId: {}", correlationId);
-        return new AMQP.BasicProperties().builder()
+        final var builder = new AMQP.BasicProperties().builder()
                 .correlationId(correlationId)
-                // only set origin_service_id once and never break it as source cannot change
-                .headers(Map.of(ORIGIN_SERVICE_ID, serviceId))
-                .build();
+                .headers(Map.of());
+        // only set origin_service_id once and never break it as source cannot change
+        Optional.ofNullable(serviceId).ifPresent(id -> builder.headers(Map.of(ORIGIN_SERVICE_ID, serviceId)));
+        return builder.build();
     }
 
     private AMQP.BasicProperties buildAmqpBasicPropertiesWithCustomHeaders(final AMQP.BasicProperties basicProperties,
@@ -100,7 +95,7 @@ public class BasicPropertiesProvider {
         final var hostName = instanceInfoProvider.getInstanceName();
         final var headers = new HashMap<>(Optional.ofNullable(basicProperties.getHeaders()).orElse(new HashMap<>()));
         final var currentUserId = headers.get(USER_ID);
-        headers.put(CURRENT_SERVICE_ID, serviceId);
+        Optional.ofNullable(serviceId).ifPresent(id -> headers.put(CURRENT_SERVICE_ID, serviceId));
         headers.put(INSTANCE_ID, hostName);
         headers.put(EVENT_TYPE, eventName);
         headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
