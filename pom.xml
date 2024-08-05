@@ -9,7 +9,7 @@
     </parent>
     <groupId>org.iris-events</groupId>
     <artifactId>iris-parent</artifactId>
-    <version>6.1.5-SNAPSHOT</version>
+    <version>6.1.5</version>
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
@@ -22,7 +22,7 @@
         <connection>scm:git:git@github.com:iris-events/iris.git</connection>
         <developerConnection>scm:git:git@github.com:iris-events/iris.git</developerConnection>
         <url>https://github.com/iris-events/iris</url>
-    <tag>v6.1.1</tag>
+    <tag>v6.1.5</tag>
   </scm>
     <!--
     sort poms
