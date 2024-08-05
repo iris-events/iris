@@ -16,20 +16,24 @@ public class ErrorMessageDetailsBuilder {
     public static ErrorMessageDetails build(
             final String originalMessageExchange,
             final Map<String, Object> currentMessageHeaders,
+            final String currentServiceId,
             final long currentTimestamp) {
 
         final var exchange = Exchanges.ERROR.getValue();
         final var routingKey = getRoutingKey(originalMessageExchange);
-        final var messageHeaders = buildMessageHeaders(currentMessageHeaders, currentTimestamp);
+        final var messageHeaders = buildMessageHeaders(currentMessageHeaders, currentServiceId, currentTimestamp);
 
         return new ErrorMessageDetails(exchange, routingKey, messageHeaders);
     }
 
     private static Map<String, Object> buildMessageHeaders(final Map<String, Object> currentMessageHeaders,
-            final long currentTimestamp) {
+            String currentServiceId, final long currentTimestamp) {
         final var messageHeaders = new HashMap<>(currentMessageHeaders);
         messageHeaders.remove(MessagingHeaders.Message.JWT);
+        messageHeaders.put(MessagingHeaders.Message.ORIGIN_EVENT_TYPE,
+                currentMessageHeaders.get(MessagingHeaders.Message.EVENT_TYPE));
         messageHeaders.put(MessagingHeaders.Message.EVENT_TYPE, Exchanges.ERROR.getValue());
+        messageHeaders.put(MessagingHeaders.Message.CURRENT_SERVICE_ID, currentServiceId);
         messageHeaders.put(MessagingHeaders.Message.SERVER_TIMESTAMP, currentTimestamp);
 
         return messageHeaders;
