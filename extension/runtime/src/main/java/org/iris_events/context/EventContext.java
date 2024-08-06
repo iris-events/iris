@@ -5,7 +5,6 @@ import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
 import static org.iris_events.common.MessagingHeaders.RequeueMessage.X_RETRY_COUNT;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -70,8 +69,8 @@ public class EventContext {
 
     public Map<String, Object> getHeaders() {
         final AMQP.BasicProperties amqpBasicProperties = getAmqpBasicProperties();
-        if (amqpBasicProperties == null) {
-            return Collections.emptyMap();
+        if (amqpBasicProperties == null || amqpBasicProperties.getHeaders() == null) {
+            return Map.of();
         }
 
         return amqpBasicProperties.getHeaders();
