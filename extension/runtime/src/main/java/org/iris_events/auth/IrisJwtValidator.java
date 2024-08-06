@@ -80,7 +80,8 @@ public class IrisJwtValidator {
     }
 
     public Optional<String> getToken() {
-        return Optional.ofNullable(eventContext.getHeaders().get(JWT))
+        return Optional.ofNullable(eventContext.getHeaders())
+                .map(headers -> headers.get(JWT))
                 .map(Object::toString);
     }
 }
