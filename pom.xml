@@ -64,6 +64,8 @@
         <version.impsort.plugin>1.9.0</version.impsort.plugin>
         <version.formatter-maven-plugin>2.23.0</version.formatter-maven-plugin>
         <version.release.plugin>3.0.1</version.release.plugin>
+        <version.jakarta-validation-api>3.1.0</version.jakarta-validation-api>
+        <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
     </properties>
 
     <dependencyManagement>
@@ -92,6 +94,13 @@
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${version.jackson}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${version.jakarta.ws.rs-api}</version>
             </dependency>
 
             <dependency>
