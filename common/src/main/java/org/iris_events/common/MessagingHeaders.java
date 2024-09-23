@@ -21,6 +21,7 @@ public class MessagingHeaders {
         public static final String REQUEST_VIA = "x-request-via";
         public static final String REQUEST_REFERER = "x-request-referer";
         public static final String REQUEST_URI = "x-request-uri";
+        public static final String REQUEST_ID = "x-request-id";
         public static final String SERVER_TIMESTAMP = "x-server-timestamp";
         public static final String SUBSCRIPTION_ID = "x-subscription-id";
         public static final String CACHE_TTL = "x-cache-ttl";

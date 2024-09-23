@@ -7,6 +7,7 @@ import static org.iris_events.common.MessagingHeaders.Message.EVENT_TYPE;
 import static org.iris_events.common.MessagingHeaders.Message.INSTANCE_ID;
 import static org.iris_events.common.MessagingHeaders.Message.JWT;
 import static org.iris_events.common.MessagingHeaders.Message.ORIGIN_SERVICE_ID;
+import static org.iris_events.common.MessagingHeaders.Message.REQUEST_ID;
 import static org.iris_events.common.MessagingHeaders.Message.ROUTER;
 import static org.iris_events.common.MessagingHeaders.Message.SERVER_TIMESTAMP;
 import static org.iris_events.common.MessagingHeaders.Message.SESSION_ID;
@@ -14,12 +15,13 @@ import static org.iris_events.common.MessagingHeaders.Message.SUBSCRIPTION_ID;
 import static org.iris_events.common.MessagingHeaders.Message.USER_ID;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import org.iris_events.annotations.Scope;
 import org.iris_events.common.DeliveryMode;
 import org.iris_events.context.EventContext;
@@ -50,6 +52,9 @@ public class BasicPropertiesProvider {
     @Inject
     TimestampProvider timestampProvider;
 
+    @Context
+    ContainerRequestContext requestContext;
+
     /**
      * Gets AmqpBasicProperties from eventContext or creates new, if eventContext returns null. Basic properties headers are
      * modified according to provided routingDetails.
@@ -72,13 +77,18 @@ public class BasicPropertiesProvider {
     }
 
     private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
-        final var correlationId = correlationIdProvider.getCorrelationId();
+        // when thread was started by HTTP request we check for x-request-id header and use it as a correlation id
+        final var correlationId = Optional.ofNullable(requestContext)
+                .map(requestContext -> requestContext.getHeaderString(REQUEST_ID))
+                .orElseGet(() -> correlationIdProvider.getCorrelationId());
         log.debug("Creating new AMQP.BasicProperties with correlationId: {}", correlationId);
         final var builder = new AMQP.BasicProperties().builder()
-                .correlationId(correlationId)
-                .headers(Map.of());
+                .correlationId(correlationId);
+        final var headers = new HashMap<String, Object>();
         // only set origin_service_id once and never break it as source cannot change
-        Optional.ofNullable(serviceId).ifPresent(id -> builder.headers(Map.of(ORIGIN_SERVICE_ID, serviceId)));
+        Optional.ofNullable(serviceId).ifPresent(id -> headers.put(ORIGIN_SERVICE_ID, serviceId));
+        builder.headers(headers);
+
         return builder.build();
     }
 
