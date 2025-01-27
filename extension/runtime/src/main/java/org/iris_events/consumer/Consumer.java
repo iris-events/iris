@@ -222,11 +222,20 @@ public class Consumer implements RecoveryListener {
     @Override
     public void handleRecovery(Recoverable recoverable) {
         log.info("handleRecovery called for consumer {}", context.getName());
-        try {
-            initChannel();
-        } catch (IOException e) {
-            log.error(String.format("Failed handling recovery for consumer %s", context.getName()), e);
-            throw new RuntimeException(e);
+
+        if (recoverable instanceof Channel) {
+            Channel channel = (Channel) recoverable;
+            if (channel.getConnection().isOpen()) {
+                log.info("handleRecovery channel connection is open, reinitializing channel");
+                try {
+                    initChannel();
+                } catch (IOException e) {
+                    log.error(String.format("Failed handling recovery for consumer %s", context.getName()), e);
+                    throw new RuntimeException(e);
+                }
+            } else {
+                log.warn("handleRecovery connection is not yet open, cannot initialize channel");
+            }
         }
     }
 
