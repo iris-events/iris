@@ -12,10 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ShutdownListener;
-import com.rabbitmq.client.ShutdownSignalException;
 
-public abstract class AbstractChannelService implements ChannelService, ShutdownListener {
+public abstract class AbstractChannelService implements ChannelService {
     private final static Logger log = LoggerFactory.getLogger(AbstractChannelService.class);
     private final ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
     private AbstractConnectionProvider connectionProvider;
@@ -42,7 +40,7 @@ public abstract class AbstractChannelService implements ChannelService, Shutdown
 
     @Override
     public void removeChannel(String channelId) {
-        Optional.ofNullable(channelMap.get(channelId)).ifPresent(channel -> {
+        Optional.ofNullable(channelMap.remove(channelId)).ifPresent(channel -> {
             if (channel.isOpen()) {
                 try {
                     channel.close();
@@ -50,7 +48,6 @@ public abstract class AbstractChannelService implements ChannelService, Shutdown
                     log.warn(String.format("Exception while closing channel %s", channelId), e);
                 }
             }
-            channelMap.remove(channelId);
         });
     }
 
@@ -71,23 +68,11 @@ public abstract class AbstractChannelService implements ChannelService, Shutdown
     @Override
     public void closeAndRemoveAllChannels() {
         channelMap.forEach((key, channel) -> {
-            if (channel.isOpen()) {
-                try {
-                    channel.close();
-                } catch (IOException | TimeoutException e) {
-                    log.error("Could not close amqp channel", e);
-                }
-            }
+            removeChannel(key);
         });
-        channelMap.clear();
     }
 
     public ConcurrentHashMap<String, Channel> getChannelMap() {
         return channelMap;
-    }
-
-    @Override
-    public void shutdownCompleted(final ShutdownSignalException cause) {
-        this.closeAndRemoveAllChannels();
     }
 }

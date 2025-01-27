@@ -222,12 +222,6 @@ public class Consumer implements RecoveryListener {
     @Override
     public void handleRecovery(Recoverable recoverable) {
         log.info("handleRecovery called for consumer {}", context.getName());
-        try {
-            initChannel();
-        } catch (IOException e) {
-            log.error(String.format("Failed handling recovery for consumer %s", context.getName()), e);
-            throw new RuntimeException(e);
-        }
     }
 
     @Override

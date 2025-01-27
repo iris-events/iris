@@ -14,11 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.RecoveryDelayHandler;
 
 @ApplicationScoped
-public class ConnectionFactoryProvider {
+public class ConnectionFactoryProvider implements RecoveryDelayHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(ConnectionFactoryProvider.class);
 
     private final IrisConfig config;
 
@@ -41,7 +42,7 @@ public class ConnectionFactoryProvider {
         int port = config.getPort();
         String vhost = config.getVirtualHost();
 
-        LOG.info(String.format("Iris AMQP connection config: host=%s, port=%s, username=%s, ssl=%s",
+        log.info(String.format("Iris AMQP connection config: host=%s, port=%s, username=%s, ssl=%s",
                 config.getHost(), port, config.getUsername(), config.isSsl()));
 
         try {
@@ -51,6 +52,10 @@ public class ConnectionFactoryProvider {
             connectionFactory.setHost(config.getHost());
             connectionFactory.setPort(port);
             connectionFactory.setVirtualHost(vhost);
+
+            connectionFactory.setAutomaticRecoveryEnabled(true);
+            connectionFactory.setRecoveryDelayHandler(this);
+
             if (config.isSsl()) {
                 connectionFactory.useSslProtocol(SSLContext.getDefault());
                 connectionFactory.enableHostnameVerification();
@@ -58,8 +63,16 @@ public class ConnectionFactoryProvider {
 
             return connectionFactory;
         } catch (NoSuchAlgorithmException e) {
-            LOG.error("Could not create AMQP ConnectionFactory!", e);
+            log.error("Could not create AMQP ConnectionFactory!", e);
             throw new IrisConnectionFactoryException("Could not create AMQP ConnectionFactory", e);
         }
+    }
+
+    @Override
+    public long getDelay(final int recoveryAttempts) {
+        final var backoffIntervalMillis = config.getBackoffIntervalMillis();
+        final var backoffMultiplier = config.getBackoffMultiplier();
+
+        return (long) Math.min((backoffIntervalMillis * backoffMultiplier * recoveryAttempts), 30000);
     }
 }
