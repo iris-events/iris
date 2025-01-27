@@ -22,6 +22,12 @@ public class IrisConfig {
     double backoffMultiplier;
 
     /**
+     * Connection retry max backoff multiplier
+     */
+    @ConfigItem(name = "backoff-max-interval-millis", defaultValue = "30000")
+    long backoffMaxIntervalMillis;
+
+    /**
      * Connection max retries
      */
     @ConfigItem(name = "max-retries", defaultValue = "10")
@@ -96,6 +102,15 @@ public class IrisConfig {
 
     public IrisConfig setBackoffIntervalMillis(final long backoffIntervalMillis) {
         this.backoffIntervalMillis = backoffIntervalMillis;
+        return this;
+    }
+
+    public long getBackoffMaxIntervalMillis() {
+        return backoffMaxIntervalMillis;
+    }
+
+    public IrisConfig setBackoffMaxIntervalMillis(final long backoffMaxIntervalMillis) {
+        this.backoffMaxIntervalMillis = backoffMaxIntervalMillis;
         return this;
     }
 

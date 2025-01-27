@@ -13,10 +13,6 @@ import org.slf4j.Logger;
 
 import com.rabbitmq.client.Connection;
 
-import io.github.resilience4j.core.IntervalFunction;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
-
 public abstract class AbstractConnectionProvider {
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
@@ -43,83 +39,27 @@ public abstract class AbstractConnectionProvider {
         this.connecting = new AtomicBoolean(false);
     }
 
-    public Connection getConnection() {
+    public synchronized Connection getConnection() {
         if (isConnectionOpen() || isConnecting()) {
             return connection;
         }
 
         log.info("Establishing new AMQP connection with resilience.");
         setConnecting(true);
-        this.connection = connectWithResilience(
-                config.getBackoffIntervalMillis(),
-                config.getBackoffMultiplier(),
-                config.getMaxRetries());
+        connect();
 
         return connection;
     }
 
     protected abstract String getConnectionNamePrefix();
 
-    private Connection connectWithResilience(final long initialInterval, final double multiplier, final int maxRetries) {
-        final var intervalFn = IntervalFunction.ofExponentialBackoff(initialInterval, multiplier);
-
-        final var retryConfig = RetryConfig.custom()
-                .maxAttempts(maxRetries)
-                .intervalFunction(intervalFn)
-                .retryExceptions(IrisConnectionException.class)
-                .failAfterMaxAttempts(true)
-                .build();
-        final var retry = Retry.of("executeConnection", retryConfig);
-        registerEventPublisher(retry.getEventPublisher());
-
-        final var connectFn = Retry.decorateFunction(retry, v -> connect());
-
-        return connectFn.apply(null);
-    }
-
-    private void registerEventPublisher(Retry.EventPublisher eventPublisher) {
-        eventPublisher.onRetry(onRetryEvent -> {
-            log.warn(String.format("Establishing AMQP connection - retry. attempt: %d/%d, interval: %ds, last exception: %s",
-                    onRetryEvent.getNumberOfRetryAttempts(),
-                    config.getMaxRetries(),
-                    onRetryEvent.getWaitInterval().getSeconds(),
-                    onRetryEvent.getLastThrowable()));
-            setConnecting(true);
-            setTimedOut(false);
-        });
-
-        eventPublisher.onError(onErrorEvent -> {
-            log.error(String.format("Error establishing AMQP connection. attempt: %d/%d",
-                    onErrorEvent.getNumberOfRetryAttempts(),
-                    config.getMaxRetries()));
-            setConnecting(false);
-            setTimedOut(true);
-        });
-
-        eventPublisher.onSuccess(onSuccessEvent -> {
-            log.info(String.format("AMQP connection established. attempt: %d/%d",
-                    onSuccessEvent.getNumberOfRetryAttempts(),
-                    config.getMaxRetries()));
-            setConnecting(false);
-            setTimedOut(false);
-        });
-
-        eventPublisher.onIgnoredError(onIgnoredEvent -> {
-            log.error(String.format("Ignored exception encountered while establishing AMQP connection."
-                    + " attempt: %d/%d, last exception: %s",
-                    onIgnoredEvent.getNumberOfRetryAttempts(),
-                    config.getMaxRetries(),
-                    onIgnoredEvent.getLastThrowable()));
-        });
-    }
-
-    private Connection connect() {
+    private void connect() {
         try {
-            Connection connection = connectionFactoryProvider.getConnectionFactory()
-                    .newConnection(getConnectionNamePrefix() + instanceInfoProvider.getInstanceName());
+            final var connectionName = getConnectionNamePrefix() + instanceInfoProvider.getInstanceName();
+            this.connection = connectionFactoryProvider.getConnectionFactory()
+                    .newConnection(connectionName);
             setConnecting(false);
             setTimedOut(false);
-            return connection;
         } catch (IOException | TimeoutException e) {
             throw new IrisConnectionException("Could not create new AMQP connection", e);
         }

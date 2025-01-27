@@ -1,8 +1,8 @@
 package org.iris_events.runtime.connection;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.iris_events.health.IrisLivenessCheck;
 import org.iris_events.health.IrisReadinessCheck;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import io.quarkus.runtime.StartupEvent;
 
-@ApplicationScoped
+@Singleton
 public class ProducerConnectionProvider extends AbstractConnectionProvider {
     private static final Logger log = LoggerFactory.getLogger(ProducerConnectionProvider.class);
 
