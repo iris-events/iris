@@ -19,9 +19,9 @@ import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+
 import org.iris_events.annotations.Scope;
 import org.iris_events.common.DeliveryMode;
 import org.iris_events.context.EventContext;
