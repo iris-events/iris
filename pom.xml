@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>45</version>
+        <version>48</version>
         <relativePath />
     </parent>
     <groupId>org.iris-events</groupId>
     <artifactId>iris-parent</artifactId>
-    <version>6.1.9-SNAPSHOT</version>
+    <version>6.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Iris Parent</name>
     <modules>
@@ -55,11 +55,11 @@
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
 
-        <version.quarkus>3.8.5</version.quarkus>
+        <version.quarkus>3.15.3</version.quarkus>
         <version.rabbit.amqp-client>5.21.0</version.rabbit.amqp-client>
         <version.resilience4j-retry>2.2.0</version.resilience4j-retry>
         <version.slf4j-api>2.0.13</version.slf4j-api>
-        <version.victools>4.35.0</version.victools>
+        <version.victools>4.36.0</version.victools>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
         <version.impsort.plugin>1.9.0</version.impsort.plugin>

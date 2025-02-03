@@ -56,7 +56,7 @@ public abstract class AbstractChannelService implements ChannelService {
         try {
             Channel channel = connectionProvider.getConnection().createChannel();
 
-            if (channel != null && config.getConfirmationBatchSize() > 0) {
+            if (channel != null && config.confirmationBatchSize() > 0) {
                 channel.confirmSelect();
             }
             return channel;
