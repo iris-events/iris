@@ -68,7 +68,7 @@ public class MessageRequeueHandler {
 
         newHeaders.put(X_ORIGINAL_EXCHANGE, message.getEnvelope().getExchange());
         newHeaders.put(X_ORIGINAL_ROUTING_KEY, message.getEnvelope().getRoutingKey());
-        newHeaders.put(X_MAX_RETRIES, config.getRetryMaxCount());
+        newHeaders.put(X_MAX_RETRIES, config.retryMaxCount());
         newHeaders.put(X_ERROR_CODE, messagingException.getClientCode());
         newHeaders.put(X_ERROR_TYPE, messagingException.getErrorType().name());
         newHeaders.put(X_ERROR_MESSAGE, messagingException.getMessage());

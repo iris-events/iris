@@ -20,9 +20,10 @@ public class CapabilitiesProcessor {
             BuildProducer<HealthBuildItem> healthChecks,
             IrisBuildTimeConfig config) {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
-            healthChecks.produce(new HealthBuildItem("org.iris_events.health.IrisLivenessCheck", config.livenessCheckEnabled));
             healthChecks
-                    .produce(new HealthBuildItem("org.iris_events.health.IrisReadinessCheck", config.readinessCheckEnabled));
+                    .produce(new HealthBuildItem("org.iris_events.health.IrisLivenessCheck", config.livenessCheckEnabled()));
+            healthChecks
+                    .produce(new HealthBuildItem("org.iris_events.health.IrisReadinessCheck", config.readinessCheckEnabled()));
             return new AdditionalBeanBuildItem.Builder()
                     .addBeanClasses(
                             IrisReadinessCheck.class,

@@ -167,7 +167,7 @@ public class EventProducer {
      *
      */
     public <T> T sendAndReceive(final Object message, Class<T> responseType) {
-        return sendAndReceive(message, responseType, config.getRpcTimeout());
+        return sendAndReceive(message, responseType, config.rpcTimeout());
     }
 
     /**
@@ -417,8 +417,8 @@ public class EventProducer {
     }
 
     private boolean shouldWaitForConfirmations() {
-        return config.getConfirmationBatchSize() > 0
-                && count.incrementAndGet() == config.getConfirmationBatchSize();
+        return config.confirmationBatchSize() > 0
+                && count.incrementAndGet() == config.confirmationBatchSize();
     }
 
     private class ProducerSynchronization implements Synchronization {
