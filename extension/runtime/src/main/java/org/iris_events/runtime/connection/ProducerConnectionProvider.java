@@ -11,6 +11,8 @@ import org.iris_events.runtime.configuration.IrisConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.rabbitmq.client.Recoverable;
+
 import io.quarkus.runtime.StartupEvent;
 
 @Singleton
@@ -36,5 +38,25 @@ public class ProducerConnectionProvider extends AbstractConnectionProvider {
     @Override
     protected String getConnectionNamePrefix() {
         return PRODUCER_PREFIX;
+    }
+
+    @Override
+    public void handleRecovery(final Recoverable recoverable) {
+        log.warn("ProducerConnectionProvider handleRecovery!");
+        super.setConnecting(false);
+        super.setTimedOut(false);
+    }
+
+    @Override
+    public void handleRecoveryStarted(final Recoverable recoverable) {
+        log.warn("ProducerConnectionProvider handleRecoveryStarted!");
+        super.setConnecting(true);
+    }
+
+    @Override
+    public void handleTopologyRecoveryStarted(final Recoverable recoverable) {
+        log.warn("ProducerConnectionProvider handleTopologyRecoveryStarted!");
+        super.handleTopologyRecoveryStarted(recoverable);
+        super.setConnecting(true);
     }
 }
