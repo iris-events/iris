@@ -12,8 +12,10 @@ import org.iris_events.runtime.configuration.IrisConfig;
 import org.slf4j.Logger;
 
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.RecoverableConnection;
+import com.rabbitmq.client.RecoveryListener;
 
-public abstract class AbstractConnectionProvider {
+public abstract class AbstractConnectionProvider implements RecoveryListener {
     private ConnectionFactoryProvider connectionFactoryProvider;
     private InstanceInfoProvider instanceInfoProvider;
     private IrisConfig config;
@@ -48,6 +50,10 @@ public abstract class AbstractConnectionProvider {
         setConnecting(true);
         connect();
 
+        if (this.connection instanceof RecoverableConnection) {
+            ((RecoverableConnection) this.connection).addRecoveryListener(this);
+        }
+
         return connection;
     }
 
@@ -65,12 +71,12 @@ public abstract class AbstractConnectionProvider {
         }
     }
 
-    private void setConnecting(boolean connecting) {
+    protected void setConnecting(boolean connecting) {
         this.connecting.set(connecting);
         this.readinessCheck.setConnecting(connecting);
     }
 
-    private void setTimedOut(boolean timedOut) {
+    protected void setTimedOut(boolean timedOut) {
         this.readinessCheck.setTimedOut(timedOut);
         this.livenessCheck.setTimedOut(timedOut);
     }
