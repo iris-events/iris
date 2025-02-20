@@ -14,6 +14,7 @@ import jakarta.inject.Inject;
 
 import org.iris_events.annotations.Message;
 import org.iris_events.annotations.MessageHandler;
+import org.iris_events.it.TestRestResource;
 import org.iris_events.producer.EventProducer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -31,7 +32,8 @@ public class MessagePropagationTest {
                     Service.class,
                     ForwardedEvent.class,
                     HandledEvent.class,
-                    ForwardedToService.class));
+                    ForwardedToService.class,
+                    TestRestResource.class));
 
     private static final String INITIAL_CONSUMING_QUEUE = "initial-consuming-queue";
     private static final String FORWARDING_QUEUE = "forwarding-queue";
@@ -61,7 +63,6 @@ public class MessagePropagationTest {
     @SuppressWarnings("unused")
     @ApplicationScoped
     public static class Service {
-
         @MessageHandler
         public ForwardedEvent handle(HandledEvent event) {
             return new ForwardedEvent(event.eventPropertyValue());
