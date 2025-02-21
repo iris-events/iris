@@ -18,9 +18,10 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 
 import org.iris_events.annotations.Scope;
 import org.iris_events.common.DeliveryMode;
@@ -32,6 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.AMQP;
+
+import io.quarkus.arc.Arc;
+import io.quarkus.vertx.http.runtime.CurrentVertxRequest;
 
 @ApplicationScoped
 public class BasicPropertiesProvider {
@@ -53,18 +57,19 @@ public class BasicPropertiesProvider {
     TimestampProvider timestampProvider;
 
     @Context
-    ContainerRequestContext requestContext;
+    HttpHeaders httpHeaders;
 
     /**
      * Gets AmqpBasicProperties from eventContext or creates new, if eventContext returns null. Basic properties headers are
      * modified according to provided routingDetails.
-     *
+     * <p>
      * If provided RoutingDetails.Scope is INTERNAL, existing JWT token will be removed from the headers.
      * RoutingDetails.UserId and RoutingDetails.SessionId are mutually exclusive
      *
      * @param routingDetails routingDetails that dictate header generation in properties
      * @return AmqpBasicProperties
      */
+    @ActivateRequestContext
     public AMQP.BasicProperties getOrCreateAmqpBasicProperties(final RoutingDetails routingDetails) {
         final String serviceId = eventAppInfoProvider.getApplicationId();
         AMQP.BasicProperties basicProperties = eventContext.getAmqpBasicProperties();
@@ -78,9 +83,12 @@ public class BasicPropertiesProvider {
 
     private AMQP.BasicProperties createAmqpBasicProperties(final String serviceId) {
         // when thread was started by HTTP request we check for x-request-id header and use it as a correlation id
-        final var correlationId = Optional.ofNullable(requestContext)
-                .map(requestContext -> requestContext.getHeaderString(REQUEST_ID))
-                .orElseGet(() -> correlationIdProvider.getCorrelationId());
+        var activeRequest = Arc.container().instance(CurrentVertxRequest.class).get();
+
+        var correlationId = Optional.ofNullable(activeRequest.getCurrent())
+                .map(ctx -> httpHeaders.getHeaderString(REQUEST_ID))
+                .orElseGet(correlationIdProvider::getCorrelationId);
+
         log.debug("Creating new AMQP.BasicProperties with correlationId: {}", correlationId);
         final var builder = new AMQP.BasicProperties().builder()
                 .correlationId(correlationId);
