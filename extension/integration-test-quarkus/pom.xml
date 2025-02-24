@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.iris-events</groupId>
         <artifactId>iris-extension-parent</artifactId>
-        <version>6.2.2-SNAPSHOT</version>
+        <version>6.2.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>iris-integration-test-quarkus</artifactId>
