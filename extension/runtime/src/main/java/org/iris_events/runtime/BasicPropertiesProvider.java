@@ -106,6 +106,7 @@ public class BasicPropertiesProvider {
         final var eventName = routingDetails.getEventName();
         final var scope = routingDetails.getScope();
         final var userId = routingDetails.getUserId();
+        final var sessionId = routingDetails.getSessionId();
         final var propagate = routingDetails.getPropagate();
         final var subscriptionId = routingDetails.getSubscriptionId();
         final var cacheTtl = routingDetails.getCacheTtl();
@@ -118,6 +119,7 @@ public class BasicPropertiesProvider {
         headers.put(EVENT_TYPE, eventName);
         headers.put(SERVER_TIMESTAMP, timestampProvider.getCurrentTimestamp());
         Optional.ofNullable(subscriptionId).ifPresent(id -> headers.put(SUBSCRIPTION_ID, id));
+        Optional.ofNullable(sessionId).ifPresent(sId -> headers.put(SESSION_ID, sId));
         Optional.ofNullable(cacheTtl).ifPresent(ttl -> headers.put(CACHE_TTL, ttl));
 
         if (scope != Scope.INTERNAL) {
