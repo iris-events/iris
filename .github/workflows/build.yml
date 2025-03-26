@@ -27,7 +27,7 @@ jobs:
           #overwrite-settings: false
       - name: test with JDK ${{ matrix.java-version }}
         shell: sh
-        run: mvn --batch-mode verify
+        run: mvn --batch-mode -ntp verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: ${{ matrix.java-version == '21' }}
