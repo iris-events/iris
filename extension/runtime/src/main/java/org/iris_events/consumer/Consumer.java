@@ -23,7 +23,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Recoverable;
 import com.rabbitmq.client.RecoveryListener;
-import com.rabbitmq.client.ShutdownSignalException;
 
 public class Consumer implements RecoveryListener {
     private static final Logger log = LoggerFactory.getLogger(Consumer.class);
@@ -117,8 +116,7 @@ public class Consumer implements RecoveryListener {
 
             // start consuming
             channel.basicConsume(queueName, false, this.callback,
-                    consumerTag -> log.warn("Channel canceled for {}", queueName),
-                    (consumerTag, sig) -> reInitChannel(sig, queueName, consumerTag));
+                    consumerTag -> log.warn("Channel canceled for {}", queueName));
 
             log.info("consumer (RPC) started on queue '{}' --> {} binding key(s): {}", queueName, exchange, queueName);
         } else {
@@ -143,8 +141,7 @@ public class Consumer implements RecoveryListener {
 
             // start consuming
             channel.basicConsume(queueName, false, this.callback,
-                    consumerTag -> log.warn("Channel canceled for {}", queueName),
-                    (consumerTag, sig) -> reInitChannel(sig, queueName, consumerTag));
+                    consumerTag -> log.warn("Channel canceled for {}", queueName));
 
             log.info("consumer started on queue '{}' --> {} binding key(s): {}", queueName, exchange,
                     String.join(", ", bindingKeys));
@@ -153,17 +150,6 @@ public class Consumer implements RecoveryListener {
 
     private String getExchangeName() {
         return context.getName();
-    }
-
-    private void reInitChannel(ShutdownSignalException sig, String queueName, String consumerTag) {
-        log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag);
-        try {
-            this.channelService.removeChannel(this.channelId);
-            this.channelId = UUID.randomUUID().toString();
-            initChannel();
-        } catch (IOException e) {
-            log.error(String.format("Could not re-initialize channel for queue %s", queueName), e);
-        }
     }
 
     private void declareQueue(final Channel channel, final String queueName, final boolean durable, final boolean autoDelete,
