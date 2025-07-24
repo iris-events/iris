@@ -284,6 +284,16 @@ public class FilteredIndexView implements IndexView {
     }
 
     @Override
+    public Collection<ClassInfo> getKnownDirectImplementations(DotName dotName) {
+        return delegate.getKnownDirectImplementations(dotName);
+    }
+
+    @Override
+    public Collection<ClassInfo> getAllKnownImplementations(DotName dotName) {
+        return delegate.getAllKnownImplementations(dotName);
+    }
+
+    @Override
     public Collection<ClassInfo> getClassesInPackage(DotName packageName) {
         return this.delegate.getClassesInPackage(packageName).stream().filter(ci -> accepts(ci.name()))
                 .collect(Collectors.toList());
@@ -360,4 +370,5 @@ public class FilteredIndexView implements IndexView {
     public Collection<ClassInfo> getKnownUsers(DotName className) {
         return this.delegate.getKnownUsers(className);
     }
+
 }
