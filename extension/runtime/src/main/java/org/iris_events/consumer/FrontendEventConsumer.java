@@ -120,20 +120,12 @@ public class FrontendEventConsumer implements RecoveryListener {
     private ConsumerShutdownSignalCallback getShutdownCallback() {
         return (consumerTag, sig) -> {
             log.warn("Channel shut down for with signal:{}, queue: {}, consumer: {}", sig, queueName, consumerTag);
-            try {
-                channelService.removeChannel(channelId);
-                channelId = UUID.randomUUID().toString();
-                initChannel();
-            } catch (IOException e) {
-                log.error(String.format("Could not re-initialize channel for queue %s", queueName), e);
-            }
         };
     }
 
     @Override
     public void handleRecovery(Recoverable recoverable) {
         log.info("handleRecovery called for frontend consumer for queue {}", queueName);
-        initChannel();
     }
 
     @Override
