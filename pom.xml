@@ -49,7 +49,7 @@
         <version.maven-resolver-api>1.9.20</version.maven-resolver-api>
         <version.maven-surefire-plugin>3.0.0</version.maven-surefire-plugin>
         <version.plugin.plugin>3.8.2</version.plugin.plugin>
-        <version.microprofile-config-api>3.0.3</version.microprofile-config-api>
+        <version.microprofile-config-api>3.1</version.microprofile-config-api>
         <version.mockito-core>5.12.0</version.mockito-core>
         <version.org.skyscreamer>1.5.1</version.org.skyscreamer>
         <!-- plugin dependencies -->
