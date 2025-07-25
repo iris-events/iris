@@ -7,6 +7,7 @@
         <version>6.3.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+    <name>Iris: Common</name>
     <artifactId>iris-common</artifactId>
 
     <dependencies>
