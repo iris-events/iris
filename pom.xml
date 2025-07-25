@@ -34,7 +34,7 @@
         <version.aether-api>1.1.0</version.aether-api>
         <version.apicurio-data-models>2.0.4</version.apicurio-data-models>
         <version.apicurio-registry-client>2.6.1.Final</version.apicurio-registry-client>
-        <version.hamcrest>2.2</version.hamcrest>
+        <version.hamcrest>3.0</version.hamcrest>
         <version.httpclient>4.5.14</version.httpclient>
         <version.jackson>2.19.2</version.jackson>
         <version.jakarta.annotations>3.0.0</version.jakarta.annotations>
